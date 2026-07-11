@@ -1,0 +1,15 @@
+# Extraction shim for the Aeneas→Lean lid (L4) on the `big_integer` module.
+# Deliberately EXCLUDED from the der-verified workspace (see root Cargo.toml) so it
+# never enters the Kani gate. Pinned to Charon's nightly; re-exposes the SAME
+# big_integer.rs (no copy → no drift). A SEPARATE crate from `lean/extract` (the
+# length shim) so each module's extracted model + drift-check stay independent.
+[package]
+name = "der-bigint-extract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]

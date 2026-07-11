@@ -1,0 +1,4 @@
+# Per-project Rust pin (isolation contract rule 1). `stable` resolves to the
+# already-installed toolchain; Kani uses its own bundled toolchain internally.
+[toolchain]
+channel = "stable"

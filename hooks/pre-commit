@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Pre-commit gate — runs the FAST verification layer (check_fast.sh: doc/provenance gates + cargo test)
+# on every commit; a red result blocks the commit. The slow proof floor (cargo kani + the Lean lids)
+# stays in check.sh, run at milestones — see check_fast.sh for why.
+#
+# Unset git's hook env first: git exports GIT_DIR/GIT_INDEX_FILE/GIT_WORK_TREE into hooks, and any
+# git-touching check would otherwise operate on the real repo's index. Defensive here (these checks
+# don't touch git), but the strip costs nothing.
+root="$(git rev-parse --show-toplevel)"
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX GIT_COMMON_DIR GIT_INTERNAL_SUPER_PREFIX
+exec sh "$root/check_fast.sh"

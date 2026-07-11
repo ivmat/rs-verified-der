@@ -1,0 +1,13 @@
+# Extraction shim for the Aeneas→Lean lid (L4). Deliberately EXCLUDED from the
+# der-verified workspace (see root Cargo.toml) so it never enters the Kani gate.
+# Pinned to Charon's nightly; re-exposes the SAME length.rs (no copy → no drift).
+[package]
+name = "der-length-extract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]

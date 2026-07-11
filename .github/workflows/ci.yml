@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: test + clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # rust-toolchain.toml pins the channel; rustup honours it. Add the lint components.
+      - name: Add rustfmt + clippy
+        run: rustup component add clippy
+      - name: Doc + provenance gates
+        run: |
+          python3 gates/check_links.py
+          python3 gates/check_provenance.py
+      - name: Build
+        run: cargo build --verbose
+      - name: Test
+        run: cargo test --verbose
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+  kani:
+    name: kani proof floor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Kani
+        uses: model-checking/kani-github-action@v1
+        with:
+          # Match the crate's pinned Kani (see PROOF_MANIFEST.md).
+          kani-version: '0.67.0'
+          args: '-Z stubbing'

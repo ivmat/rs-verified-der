@@ -1,0 +1,16 @@
+name = "der-verified-lean"
+defaultTargets = ["DerVerified"]
+
+# The L4 "lid": we depend on Aeneas's Lean library (which transitively pulls
+# mathlib @ v4.30.0-rc2). Local path → reuse the already-built Aeneas + mathlib
+# under the isolated tools dir; never re-clones from git. This couples the lid
+# to the tools dir, which is why check.sh guards the Lean step on toolchain
+# presence (the L3 Kani floor is the always-on gate).
+[[require]]
+name = "Aeneas"
+path = "../../../Downloads/verified_rs_tools/aeneas/backends/lean"
+
+[[lean_lib]]
+name = "DerVerified"
+srcDir = "."
+roots = ["DerLengthExtract", "LengthProofs", "DerBigintExtract", "BigIntProofs", "DerOidExtract", "OidProofs"]
