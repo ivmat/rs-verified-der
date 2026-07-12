@@ -6,17 +6,13 @@ scope boundary referenced below.
 
 ## Known limitations (verification)
 
-- [ ] **`x509_name::validate_never_panics` is CBMC-intractable at the current bound.** The harness
-      inlines `set_of::cmp_padded` (the SET-OF §11.6 padded comparison) and the SAT instance blows up
-      (no verdict after a long run at `[u8; N]` / `unwind 20`). Consequence: `./check.sh` may not
-      complete end-to-end on modest hardware, even though every *other* harness verifies green and the
-      X.509 composition harnesses pass (they stub `validate_name` away — see `PROOF_MANIFEST.md`).
-      Candidate fixes:
-  - reduce the harness buffer/unwind to the smallest bound that still exercises a multi-RDN,
-    multi-ATV path (the technique already used for `x509_extension::validate_extensions_never_panics`),
-    with the residual covered compositionally;
-  - or decompose/stub `cmp_padded` (proven independently) inside this harness;
-  - or run it on a machine with more solver headroom.
+- [x] **`x509_name::validate_never_panics` — RESOLVED via a modular proof (DECISIONS.md D26).** The
+      monolithic harness blew up (>100 GB in CBMC symbolic execution: `set_of::cmp_padded` re-derived
+      over symbolic content). Split into `validate_rdn_never_panics` (the heavy SET-OF/ATV layer at
+      one-RDN scale, ~17 GB) + `validate_never_panics` stubbing `validate_rdn` with its proven
+      postcondition (~510 MB). Same theorem, now compositional; `./check.sh` completes end-to-end
+      (161/161 Kani + the L4 lids). The same review also fixed a pre-existing fixed-vs-symbolic input
+      length gap across all modular harnesses.
 - [ ] Record, per harness, the wall-clock/solver cost so the intractable ones are visible up front.
 
 ## Verification breadth
@@ -36,12 +32,15 @@ scope boundary referenced below.
 
 ## Publishing
 
-- [ ] Decide crates.io publication: remove `publish = false`, set a real `version` (currently
-      `0.0.0`), fill remaining package metadata, and confirm the crate name (`der-verified` is
-      available on crates.io).
-- [ ] Confirm the `repository` URL in `der-verified/Cargo.toml` matches the final repo.
-- [ ] Fresh-clone verification on a clean machine/container: follow the README verbatim, confirm
-      `cargo test` + `cargo kani -Z stubbing` are green (the end-to-end reproducibility check).
+- [x] crates.io prep done: `publish = false` removed, package metadata filled (`authors`, `readme`,
+      description, license, keywords, categories), crate README added, crate name `der-verified`
+      confirmed available. Version deliberately kept at `0.0.0` (name-reservation / initial release
+      per owner) — bump for the first real release.
+- [x] `repository` URL confirmed = `https://github.com/ivmat/rs-verified-der`.
+- [ ] `cargo publish` (needs a crates.io token via `cargo login`) — owner runs it manually.
+- [x] Reproducibility: the full L3+L4 toolchain (Kani + Aeneas/Charon/Lean) was rebuilt from scratch
+      and `./check.sh` is green end-to-end (2026-07-12). A pristine-container run is still nice-to-have
+      before a tagged release.
 
 ## Good first issues
 

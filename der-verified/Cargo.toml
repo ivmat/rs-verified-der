@@ -2,9 +2,8 @@
 name = "der-verified"
 version = "0.0.0"
 edition = "2021"
-# Keep off crates.io until the publish decision (see TODO.md); this guards against an accidental
-# `cargo publish`. Remove when publishing, and bump the version.
-publish = false
+authors = ["Ivo Matijašević"]
+readme = "README.md"
 description = "Formally verified DER (X.690) encoding/decoding — encoding layer only."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ivmat/rs-verified-der"

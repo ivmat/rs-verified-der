@@ -40,7 +40,7 @@ Not yet published to crates.io. Use as a git dependency:
 
 ```toml
 [dependencies]
-der-verified = { git = "https://github.com/<owner>/rs-verified-der" }
+der-verified = { git = "https://github.com/ivmat/rs-verified-der" }
 ```
 
 ```rust
