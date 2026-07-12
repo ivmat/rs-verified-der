@@ -110,13 +110,35 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 
 ## Continuous integration
 
-[GitHub Actions](.github/workflows/ci.yml) runs `cargo test`, `cargo clippy -D warnings`, and the
-**memory-tractable share of the Kani proof floor** on every push and PR — 135 of the 160 harnesses,
-sharded by module across runners. The other 25 harnesses (`set_of`, `sequence`, `x509_name`,
-`x509_tbs_certificate`, `x509_certificate`, `x509_extension`) peak above a standard 7 GB runner's RAM
-(the heaviest, `x509_extension`, needs ~20 GB), so — like the L4 Lean lids — they are a **local-milestone
-check**: run the full floor with `./check.sh` (or on a ≥24 GB runner via the `kani-heavy` job stub in the
-workflow). Every harness is still verified from a fresh clone; the split is purely about CI runner memory.
+[GitHub Actions](.github/workflows/ci.yml) runs three jobs on every push and PR: `cargo test`,
+`cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — 135 of the 160
+harnesses, sharded by module across three parallel runners. The other 25 (`set_of`, `sequence`,
+`x509_certificate`, `x509_tbs_certificate`, `x509_extension`, `x509_name`) peak above a standard 7 GB
+runner, so — like the L4 Lean lids — they are a **local-milestone check** via `./check.sh` (or the
+`kani-heavy` job stub in the workflow, on a large-memory runner).
+
+### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
+
+**159 of 160 harnesses verify locally with 0 failures.** Approximate Kani solve times:
+
+| Stage | Harnesses | Solve time | Peak RAM |
+|---|---|---|---|
+| `cargo test` + `clippy` (no external deps) | — | ~2 s | — |
+| CI shard `codecs-a` | 84 | ~28 s | < 0.2 GB |
+| CI shard `codecs-b` | 42 | ~40 s | ~1 GB |
+| CI shard `utf8` | 9 | ~247 s | 2.7 GB |
+| local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | 23 | ~30 min | ~20 GB (`x509_extension`) |
+| local: `x509_tbs_certificate` | 1 | ~97 s | < 23 GB |
+
+The three CI Kani shards run in parallel (~4–5 min wall). The full local floor of the 159 tractable
+harnesses is ~37 min of proving.
+
+**Known limit — `x509_name::validate_never_panics` needs > 37 GB and is not verified in this repo's CI or
+on a 29 GB machine.** Its CBMC formula *construction* (not the SAT solve) blows up enumerating nested
+`Name` paths (`RDNSequence` → SET OF `RelativeDistinguishedName` → SET OF `AttributeTypeAndValue`);
+kissat and CaDiCaL both exceed ~34 GB (RAM + swap) before the solver runs. Verify it on a high-memory
+host or with generous swap; it is a candidate for a tighter unwind bound. Every *other* harness is
+verified from a fresh clone — the CI split is purely about runner memory.
 
 ## Documentation
 
