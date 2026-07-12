@@ -111,8 +111,12 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs `cargo test`, `cargo clippy -D warnings`, and the
-`cargo kani` proof floor on every push and PR. The L4 Lean lids are a local-milestone check (the
-Aeneas/Charon/Lean stack is heavy to provision in CI) — run them locally as above.
+**memory-tractable share of the Kani proof floor** on every push and PR — 135 of the 160 harnesses,
+sharded by module across runners. The other 25 harnesses (`set_of`, `sequence`, `x509_name`,
+`x509_tbs_certificate`, `x509_certificate`, `x509_extension`) peak above a standard 7 GB runner's RAM
+(the heaviest, `x509_extension`, needs ~20 GB), so — like the L4 Lean lids — they are a **local-milestone
+check**: run the full floor with `./check.sh` (or on a ≥24 GB runner via the `kani-heavy` job stub in the
+workflow). Every harness is still verified from a fresh clone; the split is purely about CI runner memory.
 
 ## Documentation
 

@@ -28,14 +28,60 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
 
+  # The Kani proof floor is SHARDED across runners by module. Two reasons:
+  #  1. GitHub's standard runner has ~7 GB RAM. A single `cargo kani` run peaks well above
+  #     that on the heaviest harnesses (see the heavy tier below), so it OOM-kills the job.
+  #  2. Sharding also parallelises the multi-minute proof floor.
+  # Each shard selects harnesses by fully-qualified-name substring (`--harness <module>::`).
+  # This matrix covers the 135 harnesses whose peak memory fits a 7 GB runner. The remaining
+  # 25 (the heavy tier) are verified locally via ./check.sh — see `kani-heavy` below and README.
   kani:
-    name: kani proof floor
+    name: kani (${{ matrix.shard }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: codecs-a
+            filters: >-
+              --harness restricted_string:: --harness generalized_time::
+              --harness utc_time:: --harness big_integer::
+              --harness integer:: --harness length::
+          - shard: codecs-b
+            filters: >-
+              --harness bit_string:: --harness tag:: --harness octet_string::
+              --harness tlv:: --harness oid:: --harness enumerated::
+              --harness boolean:: --harness null:: --harness context_tag::
+              --harness x509_algorithm_identifier:: --harness x509_spki::
+              --harness x509_validity::
+          - shard: utf8
+            filters: "--harness utf8_string::"
     steps:
       - uses: actions/checkout@v4
-      - name: Run Kani
+      - name: Run Kani (${{ matrix.shard }})
         uses: model-checking/kani-github-action@v1
         with:
           # Match the crate's pinned Kani (see PROOF_MANIFEST.md).
           kani-version: '0.67.0'
-          args: '-Z stubbing'
+          args: "-Z stubbing ${{ matrix.filters }}"
+
+  # Heavy tier — proofs whose CBMC peak exceeds a 7 GB runner (measured):
+  #   set_of::* , sequence::* , utf8 is fine but these are not:
+  #   x509_name , x509_tbs_certificate , x509_certificate , x509_extension  (~7-20 GB each).
+  # These are NOT run on GitHub's standard runners (they OOM). They ARE verified locally by
+  # ./check.sh (the full proof floor) — the same local-milestone treatment as the L4 Lean lids.
+  # To run them in CI, provide a runner with >=24 GB RAM (a self-hosted runner or a GitHub
+  # larger runner) and enable the job below.
+  #
+  # kani-heavy:
+  #   name: kani (heavy, needs >=24 GB RAM)
+  #   runs-on: [self-hosted, linux, x64]   # or a GitHub larger-runner label
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: model-checking/kani-github-action@v1
+  #       with:
+  #         kani-version: '0.67.0'
+  #         args: >-
+  #           -Z stubbing --harness set_of:: --harness sequence::
+  #           --harness x509_name:: --harness x509_tbs_certificate::
+  #           --harness x509_certificate:: --harness x509_extension::
