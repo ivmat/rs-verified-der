@@ -491,7 +491,12 @@ mod proofs {
     #[kani::unwind(12)]
     fn parse_tbs_certificate_never_panics() {
         let buf: [u8; 10] = kani::any();
-        let _ = parse_tbs_certificate(&buf);
+        // Symbolic input length: this lemma discharges `x509_certificate`'s `stub_parse_tbs_certificate`,
+        // whose caller invokes `parse_tbs_certificate` on a suffix slice shorter than the full buffer —
+        // a fixed-length proof would leave those call lengths undischarged (control flow is length-dependent).
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let _ = parse_tbs_certificate(&buf[..len]);
     }
 }
 

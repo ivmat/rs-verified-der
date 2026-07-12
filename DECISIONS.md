@@ -1395,3 +1395,42 @@ DER OBJECT IDENTIFIER canonical-form property proven over inputs of any length, 
 of the three, unanimously reviewed SOUND. Confidence **high** (loop-invariant de-tautologized, faithful to
 §8.19, zero assumed opaque specs, refactor behaviour-preservation Kani- + test-proven).
 
+## D26 — `x509_name` made tractable via a modular (stubbed) proof + a repo-wide symbolic-length soundness fix  ·  landed (high)
+
+**Problem (the wall D25 flagged).** `x509_name::validate_never_panics` (monolithic, `[u8;16]`/unwind 20) was
+intractable: CBMC's **symbolic-execution formula construction** — not the SAT solve — exceeds **~100 GB**
+(measured: killed still climbing past ~34 GB on a 29 GB box; even `[u8;13]`/unwind 8 exceeds ~34 GB). Root
+cause (identified in review, empirically confirmed): a depth-3 loop nest (RDN walk × [SET-OF §11.6 ordering walk +
+`Elements` ATV walk] × per-child `validate_oid`/`decode_tlv`) under one global unwind makes CBMC build the
+**product** of the loops' unrolled copies, dominated by `set_of::cmp_padded` re-derived over symbolic content
+per member-partition. Unwind depth and buffer size barely move it (both tested); it is a proof-structuring
+problem, not an inherent cost.
+
+**Fix (mirrors D23's TBS modular proof).** Split into (a) `validate_rdn_never_panics` — the full SET-OF §11.6
++ ATV proof at **one-RDN** scale, which fits (**~16.6 GB**, verified green); and (b) `validate_never_panics`,
+which **`#[kani::stub]`s `validate_rdn`** with a nondeterministic `Result<usize,_>` carrying the lemma's proven
+postcondition `2 <= used <= input.len()` (needed for the RDN walk's progress + in-bounds slicing), leaving CBMC
+only the real outer `RDNSequence` envelope + walk glue (**~510 MB**, verified green). Same theorem as before
+(never-panics on all inputs up to 16 octets), now compositional. `x509_name` is now verifiable on a normal
+machine for the first time (161/161 harnesses pass locally); the `validate_rdn` lemma stays in the
+heavy/local CI tier, the stub glue is cheap.
+
+**A pre-existing soundness gap, found in review and fixed repo-wide (the important part).** The modular idiom
+(D23) discharged each stub's contract at a **fixed** input length (`validate_name` at exactly 16, etc.) while
+the *composition* calls the stubbed function on **shorter suffix slices**. Because the parsers' control flow is
+length-dependent (every truncation check reads `input.len()`) with no embedding argument, a hypothetical defect
+reachable only at an intermediate length would pass both harnesses yet panic in the real composition — i.e. the
+contract was discharged at a length no call site uses. Fix: every discharging lemma now takes a **symbolic input
+length** (`let len = kani::any(); assume(len <= buf.len()); f(&buf[..len])`), applied to `validate_rdn_never_panics`,
+`validate_never_panics`, **and the pre-existing `x509_extension`/`x509_tbs_certificate`/`x509_certificate`
+harnesses**. Cheap (strict prunings of the fixed-length case) and it makes the "up to N octets" prose actually
+true. Also corrected a cost-model comment (the widest single loop is 10 — `cmp_padded`'s virtual-padding tail —
+not 8; lemma unwind raised 10→12 accordingly) and softened `validate_name`'s "never panics on any input" doc to
+"…up to 16 octets".
+
+**Assurance.** Design + soundness independently reviewed: verdict SOUND after the symbolic-length
+and unwind fixes (over-approximation valid, assumed postcondition = lemma's asserted postcondition and true of
+the real `validate_rdn` per `decode_set_of_tlv`'s `used <= input.len()` contract, DAG chain no circularity,
+unwind bounds fail-loud). All five affected harnesses re-verified green (0 failures) inside a desktop-safe
+`systemd-run` memory-capped cgroup. PROOF_MANIFEST (4 stubs / 3 harnesses; 161 count) + check.sh updated.
+

@@ -4,7 +4,7 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 160 proof harnesses over 25 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 161 proof harnesses over 25 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
 - **L4 — Aeneas → Lean 4** (unbounded proofs): three codecs (`length`, `big_integer`, `oid`) are
@@ -67,7 +67,7 @@ cargo test                                    # 294 tests
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
 cargo kani setup
-cargo kani -Z stubbing                          # 160 proof harnesses
+cargo kani -Z stubbing                          # 161 proof harnesses
 ```
 
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
@@ -77,7 +77,7 @@ Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lid
 ./check_fast.sh     # fast subset: doc/provenance gates + cargo test
 ```
 
-`-Z stubbing` is required: two X.509 harnesses are **modular** proofs that stub an
+`-Z stubbing` is required: three X.509 harnesses are **modular** proofs that stub an
 independently-proven sub-parser (disclosed in `PROOF_MANIFEST.md`). Harnesses without a stub are
 unaffected by the flag.
 
@@ -111,15 +111,15 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs three jobs on every push and PR: `cargo test`,
-`cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — 135 of the 160
-harnesses, sharded by module across three parallel runners. The other 25 (`set_of`, `sequence`,
+`cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — 135 of the 161
+harnesses, sharded by module across three parallel runners. The other 26 (`set_of`, `sequence`,
 `x509_certificate`, `x509_tbs_certificate`, `x509_extension`, `x509_name`) peak above a standard 7 GB
 runner, so — like the L4 Lean lids — they are a **local-milestone check** via `./check.sh` (or the
 `kani-heavy` job stub in the workflow, on a large-memory runner).
 
 ### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
 
-**159 of 160 harnesses verify locally with 0 failures.** Approximate Kani solve times:
+**All 161 harnesses verify locally with 0 failures.** Approximate Kani solve times:
 
 | Stage | Harnesses | Solve time | Peak RAM |
 |---|---|---|---|
@@ -128,17 +128,18 @@ runner, so — like the L4 Lean lids — they are a **local-milestone check** vi
 | CI shard `codecs-b` | 42 | ~40 s | ~1 GB |
 | CI shard `utf8` | 9 | ~247 s | 2.7 GB |
 | local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | 23 | ~30 min | ~20 GB (`x509_extension`) |
-| local: `x509_tbs_certificate` | 1 | ~97 s | < 23 GB |
+| local: `x509_tbs_certificate` + `x509_name` (`validate_name` stub + `validate_rdn` lemma) | 3 | ~9 min | ~17 GB (`validate_rdn`) |
 
-The three CI Kani shards run in parallel (~4–5 min wall). The full local floor of the 159 tractable
-harnesses is ~37 min of proving.
+The three CI Kani shards run in parallel (~4–5 min wall). The full local floor is ~40 min of proving;
+peak RAM ~20 GB.
 
-**Known limit — `x509_name::validate_never_panics` needs > 37 GB and is not verified in this repo's CI or
-on a 29 GB machine.** Its CBMC formula *construction* (not the SAT solve) blows up enumerating nested
-`Name` paths (`RDNSequence` → SET OF `RelativeDistinguishedName` → SET OF `AttributeTypeAndValue`);
-kissat and CaDiCaL both exceed ~34 GB (RAM + swap) before the solver runs. Verify it on a high-memory
-host or with generous swap; it is a candidate for a tighter unwind bound. Every *other* harness is
-verified from a fresh clone — the CI split is purely about runner memory.
+**`x509_name` is a modular proof.** A monolithic never-panics proof over `validate_name` is intractable
+(>100 GB in CBMC symbolic execution — the SET-OF §11.6 ordering re-derived over symbolic content, before
+the SAT solve). It is split: `validate_rdn_never_panics` proves the heavy SET-OF/ATV layer at one-RDN
+scale (~17 GB), and `validate_never_panics` stubs `validate_rdn` with its proven postcondition and
+verifies the outer-`Name` glue (~510 MB). Same theorem, now compositional; both fit a normal machine.
+Each modular stub is discharged over a *symbolic input length*, so it holds at every length the
+composition uses. See [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) and `DECISIONS.md` D26.
 
 ## Documentation
 

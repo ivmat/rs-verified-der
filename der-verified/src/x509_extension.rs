@@ -336,7 +336,12 @@ mod proofs {
     #[kani::unwind(12)]
     fn validate_extensions_never_panics() {
         let buf: [u8; 13] = kani::any();
-        let _ = validate_extensions(&buf);
+        // Symbolic input length: this lemma discharges `x509_tbs_certificate`'s `stub_validate_extensions`,
+        // whose caller invokes `validate_extensions` on suffix slices shorter than the full buffer — a
+        // fixed-length proof would leave those call lengths undischarged (control flow is length-dependent).
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let _ = validate_extensions(&buf[..len]);
     }
 }
 

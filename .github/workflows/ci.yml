@@ -66,13 +66,13 @@ jobs:
           args: "-Z stubbing ${{ matrix.filters }}"
 
   # Heavy tier — proofs whose CBMC peak exceeds a 7 GB runner (measured on 16-core/29 GB):
-  #   set_of::* , sequence::* , x509_certificate , x509_tbs_certificate (<23 GB),
-  #   x509_extension (~20 GB), and x509_name (>37 GB — formula-construction blow-up; verified
-  #   nowhere yet, needs a high-memory host / added swap, candidate for a tighter unwind bound).
-  # These are NOT run on GitHub's standard runners (they OOM). The tractable ones (all but x509_name)
-  # ARE verified locally by ./check.sh — the same local-milestone treatment as the L4 Lean lids.
-  # To run them in CI, provide a large-memory runner (self-hosted or a GitHub larger runner; x509_name
-  # needs substantially more than a 32 GB runner) and enable the job below.
+  #   set_of::* , sequence::* , x509_certificate , x509_tbs_certificate , x509_extension (~20 GB),
+  #   and x509_name (modular: validate_rdn lemma ~17 GB + a cheap validate_name stub — see DECISIONS.md
+  #   D26; the monolithic proof was >100 GB, now split so both pieces fit a normal machine).
+  # These are NOT run on GitHub's standard runners (they OOM). ALL of them are verified locally by
+  # ./check.sh — the same local-milestone treatment as the L4 Lean lids.
+  # To run them in CI, provide a large-memory runner (self-hosted or a GitHub larger runner, ~24 GB+)
+  # and enable the job below.
   #
   # kani-heavy:
   #   name: kani (heavy, needs >=24 GB RAM)

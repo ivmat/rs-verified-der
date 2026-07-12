@@ -40,7 +40,7 @@ longer than the harness's buffers. Where an unbounded (∀-length) guarantee is 
 supplies it (below). Unwind depths in use range from 1 to 22 (most codecs at 16); the per-module
 column lists each module's range.
 
-- **160 Kani harnesses** across 25 modules. Run: `cargo kani -Z stubbing` (or `./check.sh`).
+- **161 Kani harnesses** across 25 modules. Run: `cargo kani -Z stubbing` (or `./check.sh`).
 - **294 unit and regression tests** (`cargo test`) exercise concrete vectors (incl. seeded-bad
   specimens) alongside the proofs. These are example-based tests, not property-based/generator-driven.
 
@@ -72,9 +72,9 @@ boundary and is stated here rather than hidden.
 still passes on the L3 Kani floor alone on a machine without the extraction stack. The L4 lids are
 *additive* assurance, not a build prerequisite. Installing the stack: see the README.
 
-## Modular proofs via stubs (disclosed — 3 stubs, 2 harnesses)
+## Modular proofs via stubs (disclosed — 4 stubs, 3 harnesses)
 
-Two X.509 composition harnesses are **modular proofs**: they replace an already-independently-proven
+Three X.509 composition harnesses are **modular proofs**: they replace an already-independently-proven
 sub-parser with a `#[kani::stub]` that captures its proven contract, so CBMC can verify the
 composition glue tractably. This is sound *because each stubbed function is separately proven at its
 own harness* — but it is a compositional argument, not a single monolithic proof, and is disclosed as
@@ -82,8 +82,17 @@ such:
 
 | Harness (module) | Stubs | Each stub's own proof lives at |
 |---|---|---|
+| `x509_name` never-panics | `validate_rdn` | `x509_name::validate_rdn_never_panics` |
 | `x509_tbs_certificate` never-panics | `validate_name`, `validate_extensions` | `x509_name`, `x509_extension` harnesses |
 | `x509_certificate` never-panics | `parse_tbs_certificate` | `x509_tbs_certificate` harness |
+
+The chain is a DAG (`x509_certificate` → `x509_tbs_certificate` → {`x509_name` → `x509_name` lemma,
+`x509_extension`}); each link is a real function separately proven panic-free. **Each stub's contract
+is discharged over a *symbolic input length* (`0..=N`)**, covering every length the caller can pass a
+suffix slice at — not just the full `N`-byte buffer; a fixed-length discharge would leave the shorter
+call lengths unproven, since the parsers' control flow is length-dependent. `x509_name`'s harness is
+modular because the monolithic proof's SET-OF §11.6 ordering over symbolic content is intractable
+(>100 GB in CBMC symbolic execution); see that module's Kani comment and DECISIONS.md D26.
 
 `cargo kani -Z stubbing` (in `check.sh`) enables the feature; harnesses without a `#[kani::stub]` are
 unaffected by the flag.
@@ -154,7 +163,7 @@ range; "L4" marks a codec additionally lifted to ∀-length in Lean.
 | `set_of` | §11.6 | `cmp_padded`, `decode_set_of`, `decode_set_of_tlv`, `decode_set_of_tlv_strict`, `encode_set_of_into` | 13 | 16 | |
 | `x509_algorithm_identifier` | RFC 5280 §4.1.1.2 | `parse_algorithm_identifier` | 1 | 20 | |
 | `x509_spki` | §4.1.2.7 | `parse_subject_public_key_info` | 1 | 20 | |
-| `x509_name` | §4.1.2.4 | `validate_name` | 1 | 20 | |
+| `x509_name` | §4.1.2.4 | `validate_name` | 2 | 10..12 | modular (stub) |
 | `x509_validity` | §4.1.2.5 | `parse_validity` | 1 | 20 | |
 | `x509_extension` | §4.1.2.9 | `parse_extension`, `validate_extensions` | 2 | 12..20 | |
 | `x509_tbs_certificate` | §4.1.1.1 | `parse_tbs_certificate` | 1 | 12 | modular (stub) |

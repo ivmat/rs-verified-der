@@ -189,8 +189,8 @@ fn validate_rdn(input: &[u8]) -> Result<usize, NameError> {
 ///    ([`crate::set_of::decode_set_of`]) and each one's `type`/`value` field tiling
 ///    ([`validate_atv`]).
 ///
-/// Never panics on any input (proven by the `validate_never_panics` Kani harness below); returns a
-/// classified [`NameError`] on any structural deviation. Returns `Ok(())` — this is a validator,
+/// Never panics on any input up to 16 octets (proven by the `validate_never_panics` Kani harness
+/// below); returns a classified [`NameError`] on any structural deviation. Returns `Ok(())` — this is a validator,
 /// not a materializing parser; see the module docs for why.
 pub fn validate_name(input: &[u8]) -> Result<(), NameError> {
     // 1. Outer RDNSequence: must consume the whole input (top-level anti-trailing-data).
@@ -206,29 +206,92 @@ pub fn validate_name(input: &[u8]) -> Result<(), NameError> {
 }
 
 // ---------------------------------------------------------------------------
-// Kani proof harness.
+// Kani proof harnesses (MODULAR — see below).
 // ---------------------------------------------------------------------------
 //
-// Buffer sizing / unwind: a 16-octet symbolic buffer covers a small but structurally complete Name
-// (e.g. one RDN with one short ATV, or a truncated/malformed variant thereof). Kani's `--unwind N`
-// bounds each loop independently (not cumulatively across nesting), so the relevant figure is the
-// *widest single loop* reachable, not the sum across the call tree: `validate_name`'s outer RDN
-// walk, `decode_set_of`'s (via `decode_set_of_tlv`) child walk, `Elements`'s ATV walk, and
-// `validate_oid`'s subidentifier walk each individually iterate at most `content.len() / 2 <= 8`
-// times against a 16-byte buffer (every accepted TLV consumes `>= 2` bytes), and `decode_tlv`'s own
-// header decode needs up to ~11 iterations for a maximal (high-tag + long-length) header.
-// `#[kani::unwind(20)]` covers all of these with margin, matching `x509_spki::parse_never_panics`'s
-// bound; if Kani reports an unwinding-assertion failure, raise this bound (do not weaken scope).
+// `validate_name` is proven panic-free MODULARLY, because a monolithic harness over the whole
+// validator is intractable for CBMC. The loops nest three deep — the outer RDN walk (`validate_name`)
+// around the SET-OF §11.6 ordering walk + `Elements` ATV walk (`validate_rdn` via `decode_set_of`)
+// around the per-child `validate_oid` / `decode_tlv` loops — and a single global unwind makes
+// symbolic execution build the PRODUCT of those loops' unrolled copies, not their max. (The widest
+// SINGLE loop is only 10 iterations at 16 bytes — `set_of::cmp_padded`'s virtual-padding tail over an
+// adjacent 2-byte/12-byte pair; `decode_tag` ≤ 6 and `decode_length` ≤ 4 are SEPARATE, shorter loops
+// — so unwind depth is NOT the driver; the nesting product is.) The §11.6
+// `set_of::cmp_padded` comparison, re-derived over symbolic content for every member-partition,
+// dominates: empirically the monolithic `[u8;16]/unwind(20)` harness exceeds ~100 GB during symex
+// (before any SAT solve), and even `[u8;13]/unwind(8)` exceeds ~34 GB.
+//
+// Fix (mirrors `x509_tbs_certificate`, which stubs `validate_name`): prove the heavy SET-OF/RDN layer
+// (`validate_rdn`) panic-free at its own one-RDN scale in `validate_rdn_never_panics`, then have
+// `validate_never_panics` STUB `validate_rdn` with a nondeterministic `Result` carrying that lemma's
+// proven postcondition — so CBMC verifies only the real outer `RDNSequence` envelope + RDN-walk glue.
+// Both require `-Z stubbing` (wired into `check.sh`). If Kani reports an unwinding-assertion failure,
+// raise the bound (do not weaken scope).
 #[cfg(kani)]
 mod proofs {
     use super::*;
 
-    /// Robustness: `validate_name` never panics on any input up to 16 octets.
+    // Modular stub for the heavy SET-OF/RDN sub-parser. `validate_rdn` is INDEPENDENTLY proven
+    // panic-free — and proven to return `Ok(used)` only with `2 <= used <= input.len()` — by
+    // `validate_rdn_never_panics` below. Replacing its body with a nondeterministic `Result` whose
+    // `used` is constrained to that PROVEN postcondition is SOUND for this composition's panic-freedom:
+    // `validate_name`'s loop uses only the Ok/Err outcome and advances `off` by the returned `used`,
+    // and `2 <= used <= remaining` is exactly what keeps `off` progressing and in bounds. Returning
+    // BOTH Ok and Err over-approximates the real `validate_rdn` (which returns Ok on a strict subset of
+    // inputs) — sound, because exploring MORE control-flow outcomes cannot hide a panic. The returned
+    // error variant is immaterial: the caller propagates any `Err` verbatim via `?`. The `used` bound
+    // is an ASSUMED postcondition, DISCHARGED by `validate_rdn_never_panics` — never assume what is not
+    // separately proven (PROOF_MANIFEST modular-proof rule).
+    // (rustc's dead-code lint doesn't see the `#[kani::stub]` reference below as a use.)
+    #[allow(dead_code)]
+    fn stub_validate_rdn(input: &[u8]) -> Result<usize, NameError> {
+        if kani::any() {
+            let used: usize = kani::any();
+            kani::assume(2 <= used && used <= input.len());
+            Ok(used)
+        } else {
+            Err(NameError::EmptyRdn)
+        }
+    }
+
+    /// Lemma discharging `stub_validate_rdn`'s contract: `validate_rdn` never panics on any input up
+    /// to 16 octets, and on `Ok(used)` returns `2 <= used <= input.len()` — the postcondition the RDN
+    /// walk in `validate_name` (and the stub above) rely on for progress and in-bounds slicing. This
+    /// is the full SET-OF §11.6 ordering + `Elements`/ATV walk proof at one-RDN scale (a 16-octet
+    /// buffer admits a two-`AttributeTypeAndValue` RDN, so real §11.6 ordering between well-formed
+    /// ATVs is exercised). The input LENGTH is symbolic (`0..=16`): the composition consumes
+    /// `validate_rdn` at outer-content suffix lengths `1..=14`, never exactly 16, and its control flow
+    /// is length-dependent — so the contract must be discharged across all consumed lengths, not just
+    /// the full buffer. Unwind 12: the widest single loop is 10 (`set_of::cmp_padded`'s virtual-padding
+    /// tail over an adjacent 2-byte/12-byte pair), +2 margin.
     #[kani::proof]
-    #[kani::unwind(20)]
+    #[kani::unwind(12)]
+    fn validate_rdn_never_panics() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        if let Ok(used) = validate_rdn(input) {
+            assert!(2 <= used && used <= input.len());
+        }
+    }
+
+    /// Robustness: `validate_name` never panics on any input up to 16 octets, with the heavy
+    /// SET-OF/RDN sub-parser (`validate_rdn`) MODULARLY STUBBED (see the comment above). Exercises the
+    /// REAL outer `RDNSequence` SEQUENCE envelope decode and the real RDN-walk offset arithmetic and
+    /// bounds. The input LENGTH is symbolic (`0..=16`) so the "up to 16 octets" claim holds at every
+    /// length (with a fixed 16-byte buffer, `decode_sequence_tlv_strict`'s anti-trailing-data check
+    /// means only a length-14 content ever reaches the RDN walk; symbolic length also exercises the
+    /// empty-`Name` and short-envelope paths). Unwind 10: with the stub advancing `off` by `>= 2`, the
+    /// outer walk runs `<= 7` over a `<= 14`-octet content, and the envelope's header loops are `<= 6`.
+    #[kani::proof]
+    #[kani::stub(validate_rdn, stub_validate_rdn)]
+    #[kani::unwind(10)]
     fn validate_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let _ = validate_name(&buf);
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let _ = validate_name(&buf[..len]);
     }
 }
 

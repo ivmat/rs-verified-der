@@ -254,7 +254,11 @@ mod proofs {
     #[kani::unwind(12)]
     fn parse_certificate_never_panics() {
         let buf: [u8; 12] = kani::any();
-        let _ = parse_certificate(&buf);
+        // Symbolic input length so the "up to 12 octets" claim holds at every length its own callers
+        // (and the anti-trailing-data envelope) can produce, not just the full buffer.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let _ = parse_certificate(&buf[..len]);
     }
 }
 
