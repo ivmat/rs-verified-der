@@ -59,7 +59,7 @@ scope boundary referenced below.
       confirmed available. Version deliberately kept at `0.0.0` (name-reservation / initial release
       per owner) — bump for the first real release.
 - [x] `repository` URL confirmed = `https://github.com/ivmat/rs-verified-der`.
-- [ ] `cargo publish` (needs a crates.io token via `cargo login`) — owner runs it manually.
+- [x] Published `der-verified` to crates.io — 0.0.0 (name reservation) then 0.1.0 (2026-07-13).
 - [x] Reproducibility: the full L3+L4 toolchain (Kani + Aeneas/Charon/Lean) was rebuilt from scratch
       and `./check.sh` is green end-to-end (2026-07-12). A pristine-container run is still nice-to-have
       before a tagged release.

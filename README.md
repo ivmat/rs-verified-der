@@ -1,5 +1,9 @@
 # der-verified
 
+[![crates.io](https://img.shields.io/crates/v/der-verified.svg)](https://crates.io/crates/der-verified)
+[![docs.rs](https://img.shields.io/docsrs/der-verified)](https://docs.rs/der-verified)
+[![license: MIT OR Apache-2.0](https://img.shields.io/crates/l/der-verified.svg)](#license)
+
 A **formally verified** DER (X.690) encoding/decoding core in Rust — the encoding layer where real
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
@@ -36,12 +40,17 @@ decisions recorded in [`DECISIONS.md`](DECISIONS.md).
 
 ## Use
 
-Not yet published to crates.io. Use as a git dependency:
+```sh
+cargo add der-verified
+```
 
 ```toml
 [dependencies]
-der-verified = { git = "https://github.com/ivmat/rs-verified-der" }
+der-verified = "0.1.0"
 ```
+
+(Or pin to the repo as a git dependency:
+`der-verified = { git = "https://github.com/ivmat/rs-verified-der" }`.)
 
 ```rust
 use der_verified::length::decode_length;
