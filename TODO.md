@@ -68,5 +68,5 @@ scope boundary referenced below.
 
 - [ ] More reject-differential test vectors (non-canonical encodings a lax parser would accept).
 - [ ] Rustdoc usage examples per module (they double as doctests).
-- [ ] A short "threat model / what a verified decoder buys you" section in the README or a `docs/`
-      page.
+- [x] A "why / threat-model" writeup covering what a verified decoder buys you —
+      [`docs/why-verified.md`](docs/why-verified.md).

@@ -152,6 +152,8 @@ composition uses. See [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) and `DECISIONS.md
 
 ## Documentation
 
+- [`docs/why-verified.md`](docs/why-verified.md) — why a verified DER decoder, the two-layer
+  (Kani + Aeneas→Lean) approach, the honesty envelope, and the modular-proof war story.
 - [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) — what is proven, bounds, assumptions, stubs, and non-goals.
 - [`DECISIONS.md`](DECISIONS.md) — the contestable-decisions ledger: every scope narrowing and design
   fork, with its rationale and review outcome.
