@@ -150,8 +150,8 @@ fn decode_time_tlv(input: &[u8]) -> Result<(Time<'_>, usize), TimeError> {
 ///
 /// Decodes, in order:
 /// 1. the outer SEQUENCE envelope ([`decode_sequence_tlv_strict`]);
-/// 2. `notBefore`, a `Time` CHOICE ([`decode_time_tlv`]);
-/// 3. `notAfter`, a `Time` CHOICE ([`decode_time_tlv`]), requiring it to exactly fill what remains
+/// 2. `notBefore`, a `Time` CHOICE (`decode_time_tlv`);
+/// 3. `notAfter`, a `Time` CHOICE (`decode_time_tlv`), requiring it to exactly fill what remains
 ///    of the outer content.
 ///
 /// Never panics on any input (proven by the `parse_never_panics` Kani harness below); returns a

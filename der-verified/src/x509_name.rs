@@ -184,10 +184,10 @@ fn validate_rdn(input: &[u8]) -> Result<usize, NameError> {
 /// 1. the outer `RDNSequence` SEQUENCE envelope, requiring it to consume the entire input
 ///    ([`decode_sequence_tlv_strict`]);
 /// 2. each `RelativeDistinguishedName` child, in the order they appear — a plain `SEQUENCE OF`
-///    has no §11.6 ordering requirement of its own — via [`validate_rdn`];
+///    has no §11.6 ordering requirement of its own — via `validate_rdn`;
 /// 3. inside each RDN, its `AttributeTypeAndValue` children: §11.6 encoding-order among siblings
 ///    ([`crate::set_of::decode_set_of`]) and each one's `type`/`value` field tiling
-///    ([`validate_atv`]).
+///    (`validate_atv`).
 ///
 /// Never panics on any input up to 16 octets (proven by the `validate_never_panics` Kani harness
 /// below); returns a classified [`NameError`] on any structural deviation. Returns `Ok(())` — this is a validator,

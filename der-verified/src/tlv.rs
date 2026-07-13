@@ -13,7 +13,9 @@ use crate::tag::{decode_tag, encode_tag, Tag, TagError};
 /// A decoded DER TLV: the identifier and a borrow of exactly the value octets.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Tlv<'a> {
+    /// The decoded identifier (class, constructed flag, tag number).
     pub tag: Tag,
+    /// A borrow of exactly the value octets (the `V` in TLV) — no copy.
     pub value: &'a [u8],
 }
 

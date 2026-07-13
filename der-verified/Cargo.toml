@@ -1,7 +1,8 @@
 [package]
 name = "der-verified"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
+rust-version = "1.70"
 authors = ["Ivo Matijašević"]
 readme = "README.md"
 description = "Formally verified DER (X.690) encoding/decoding — encoding layer only."

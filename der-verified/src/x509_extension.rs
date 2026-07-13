@@ -177,7 +177,7 @@ fn decode_extn_id_tlv(input: &[u8]) -> Result<(&[u8], usize), ExtensionError> {
 ///
 /// Decodes, in order:
 /// 1. the outer SEQUENCE envelope ([`decode_sequence_tlv_strict`]);
-/// 2. `extnID`, an OBJECT IDENTIFIER ([`decode_extn_id_tlv`]);
+/// 2. `extnID`, an OBJECT IDENTIFIER (`decode_extn_id_tlv`);
 /// 3. the optional `critical` BOOLEAN ([`crate::boolean::decode_bool`]) — present only if the next
 ///    TLV's identifier is UNIVERSAL 1; **enforces DER §11.5**: a present `critical` must encode
 ///    `TRUE` (see the module docs);

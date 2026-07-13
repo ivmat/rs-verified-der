@@ -87,8 +87,22 @@
 //! correctness. Three codecs (`length`, `big_integer`, `oid`) are additionally proven ∀-length via
 //! an Aeneas→Lean lid. The bounds, assumptions, and stubs behind each claim — and what is *not*
 //! proven — are the honest envelope in `PROOF_MANIFEST.md`; read it before relying on any of this.
+//!
+//! # Example
+//!
+//! ```
+//! use der_verified::length::decode_length;
+//!
+//! // A canonical DER short-form length: 0x05 encodes the value 5 in a single octet.
+//! let (value, consumed) = decode_length(&[0x05]).unwrap();
+//! assert_eq!((value, consumed), (5, 1));
+//!
+//! // Decoders are strict: malformed input is rejected, never guessed at.
+//! assert!(decode_length(&[]).is_err()); // no length octet
+//! ```
 
 #![forbid(unsafe_code)]
+#![deny(missing_docs)]
 // This crate deliberately favours explicit, verification-legible control flow over some of clippy's
 // idiomatic rewrites. Explicit range comparisons (kept over `RangeInclusive::contains`) and explicit
 // byte comparisons keep each Kani harness's reasoning and each X.690 spec-rule mapping one-to-one with

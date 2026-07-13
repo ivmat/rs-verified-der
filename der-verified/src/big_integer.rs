@@ -22,7 +22,7 @@
 //! inspects `content[2..]`. `crate::integer::decode_integer`'s minimality check is already exactly
 //! this rule, unmodified by its `i64` cap; only its subsequent `content.len() > 8 -> TooLarge` and
 //! i64-materialization bound it to small integers. This module keeps the identical minimality rule
-//! and drops the cap: any content length is structurally valid. [`minimality_is_local`] machine-checks
+//! and drops the cap: any content length is structurally valid. `minimality_is_local` machine-checks
 //! the locality claim directly (same leading two octets, arbitrary differing tail => same verdict).
 
 /// The universal tag number for INTEGER (same UNIVERSAL 2 as [`crate::integer`]; this module is

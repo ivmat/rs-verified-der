@@ -13,17 +13,24 @@
 /// The tag class (X.690 §8.1.2.2).
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Class {
+    /// UNIVERSAL — the built-in ASN.1 types (tag numbers assigned by X.680).
     Universal,
+    /// APPLICATION — application-scoped types.
     Application,
+    /// CONTEXT-SPECIFIC — meaning depends on the enclosing structure (the `[n]` tags in X.509).
     ContextSpecific,
+    /// PRIVATE — enterprise / private-use types.
     Private,
 }
 
 /// A decoded DER identifier: class, primitive/constructed flag, and tag number.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Tag {
+    /// The tag class (UNIVERSAL / APPLICATION / CONTEXT-SPECIFIC / PRIVATE).
     pub class: Class,
+    /// `true` for a constructed encoding (nested TLVs), `false` for primitive (raw content octets).
     pub constructed: bool,
+    /// The tag number (X.690 §8.1.2); the high-tag-number form is decoded, oversized values rejected.
     pub number: u32,
 }
 
