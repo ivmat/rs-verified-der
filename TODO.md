@@ -29,6 +29,28 @@ scope boundary referenced below.
       `version` v3-required-if-extensions; UTCTime `≤ 2049` / GeneralizedTime `≥ 2050`; name
       constraints. Keep it a separate layer on top of the verified codecs.
 - [ ] `oid`: optionally materialize arcs (allocation-aware) — currently validate-only.
+- [ ] **`no_std` support (later).** The crate is already `#![forbid(unsafe_code)]`, allocation-free on
+      decode paths, and near-`core`-only (one `std::` use). Making it `#![no_std]` (gated on a `std`
+      feature) would make a zero-dep, formally-verified DER core usable in embedded / bootloader /
+      kernel contexts. Low priority; a strong differentiator when done.
+
+## 0.1.0 release checklist
+
+`0.0.0` is published (name reservation). For the first *real* release:
+
+- [ ] Bump `version` to `0.1.0` in `der-verified/Cargo.toml`.
+- [ ] **Fix rustdoc intra-doc links** — `cargo doc` (with `-D warnings`) currently errors on broken /
+      private-item links, incl. `validate_name` → private `validate_rdn`/`validate_atv` (from the D26
+      modular-proof docs), plus `minimality_is_local`, `decode_extn_id_tlv`, `decode_time_tlv`. These
+      render broken on docs.rs.
+- [ ] `#![deny(missing_docs)]` + a top-level crate-doc example (parse a cert end-to-end) so docs.rs
+      reads well and the public API is fully documented.
+- [ ] Add `CHANGELOG.md` (Keep-a-Changelog) with the 0.1.0 entry.
+- [ ] Declare an MSRV (`rust-version` in Cargo.toml) and CI-check it.
+- [ ] Confirm CI is green on the public repo and that docs.rs builds cleanly.
+- [ ] Final public-API review (0.1.0 is the API you're committing to; breaking changes still allowed
+      pre-1.0 but keep it coherent).
+- [ ] `cargo publish` the 0.1.0.
 
 ## Publishing
 
