@@ -3,7 +3,7 @@
 This document is the **honest proof envelope**. It states exactly what is machine-checked, under
 what bounds, with what assumptions and stubs, and — as importantly — **what is not proven**.
 
-> **Counts are inventory, not coverage.** "294 tests, 160 Kani harnesses, 3 Lean lids" describes how
+> **Counts are inventory, not coverage.** "294 tests, 161 Kani harnesses, 3 Lean lids" describes how
 > much verification exists, not a guarantee that every reachable behaviour is covered. The claim of
 > this crate is precisely the per-property, per-bound statement below — nothing broader. Read the
 > harnesses and proofs themselves as ground truth; this manifest is a map to them.
@@ -175,7 +175,7 @@ range; "L4" marks a codec additionally lifted to ∀-length in Lean.
 ## Reproduce
 
 ```
-./check.sh        # doc/provenance gates + cargo test + cargo kani (L3) + Lean lids (L4, guarded)
+./check.sh        # doc gate + cargo test + cargo kani (L3) + Lean lids (L4, guarded)
 ```
 
 See the README for a fresh-clone walkthrough (rustc + Kani install, and the optional Aeneas/Lean

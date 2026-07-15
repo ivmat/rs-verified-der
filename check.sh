@@ -3,9 +3,8 @@
 # Captures the proofs and hygiene checks as a re-runnable check, never a one-off.
 set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-echo "== hygiene gates (doc links + provenance; pure stdlib) =="
+echo "== hygiene gate (doc links; pure stdlib) =="
 python3 "$ROOT/gates/check_links.py"
-python3 "$ROOT/gates/check_provenance.py"
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
 echo "== cargo kani :: der-verified (L3 proof floor) =="

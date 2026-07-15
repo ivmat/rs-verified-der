@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pre-commit gate — runs the FAST verification layer (check_fast.sh: doc/provenance gates + cargo test)
+# Pre-commit gate — runs the FAST verification layer (check_fast.sh: doc gate + cargo test)
 # on every commit; a red result blocks the commit. The slow proof floor (cargo kani + the Lean lids)
 # stays in check.sh, run at milestones — see check_fast.sh for why.
 #

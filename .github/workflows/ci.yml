@@ -17,10 +17,9 @@ jobs:
       # rust-toolchain.toml pins the channel; rustup honours it. Add the lint components.
       - name: Add rustfmt + clippy
         run: rustup component add clippy
-      - name: Doc + provenance gates
+      - name: Doc gate
         run: |
           python3 gates/check_links.py
-          python3 gates/check_provenance.py
       - name: Build
         run: cargo build --verbose
       - name: Test

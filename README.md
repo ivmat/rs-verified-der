@@ -38,6 +38,26 @@ validity-against-clock); general `SET` (§10.3). The crate is a strict, delibera
 the narrowings (e.g. leap-second rejection, range caps, primitive-form-only rules) are design
 decisions recorded in [`DECISIONS.md`](DECISIONS.md).
 
+## Strict decoding — exact consumption, no trailing bytes
+
+X.690 §8.1.1.1 requires a DER value to be *exactly one* complete TLV with no trailing data. This crate
+makes that explicit at the API boundary: the top-level entry points are **strict** and fail closed on
+any trailing byte.
+
+- `tlv::decode_tlv_strict` and `sequence::decode_sequence_tlv_strict` require the input to be exactly
+  one TLV / one SEQUENCE and return a distinct `TrailingData` error otherwise;
+  `x509_certificate::parse_certificate` uses the strict form, so appended bytes are rejected at the
+  outer SEQUENCE. The non-strict `decode_tlv` / `decode_sequence_tlv` exist only to drive recursive
+  parsing of *inner* values — where consuming one TLV and leaving a suffix is correct — and are never
+  the top-level entry point.
+- A Kani harness (`decode_tlv_structure`) proves, over a symbolic buffer, that an accepted TLV consumes
+  exactly `header + declared_length` bytes and never over-reads; a second (`strict_rejects_trailing`)
+  proves the strict wrapper returns `TrailingData` on a valid TLV followed by an arbitrary trailing
+  byte. Both are bounded proofs — see [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md).
+
+Trailing-byte acceptance is a classic parser-differential surface; here it is closed at the top level
+and machine-checked on that domain.
+
 ## Use
 
 ```sh
@@ -83,7 +103,7 @@ Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lid
 
 ```sh
 ./check.sh          # full gate (Kani + Lean run here; minutes)
-./check_fast.sh     # fast subset: doc/provenance gates + cargo test
+./check_fast.sh     # fast subset: doc gate + cargo test
 ```
 
 `-Z stubbing` is required: three X.509 harnesses are **modular** proofs that stub an
