@@ -13,7 +13,9 @@ scope boundary referenced below.
       postcondition (~510 MB). Same theorem, now compositional; `./check.sh` completes end-to-end
       (161/161 Kani + the L4 lids). The same review also fixed a pre-existing fixed-vs-symbolic input
       length gap across all modular harnesses.
-- [ ] Record, per harness, the wall-clock/solver cost so the intractable ones are visible up front.
+- [x] Record, per harness, the wall-clock/solver cost so the intractable ones are visible up front —
+      [`docs/verification-cost.md`](docs/verification-cost.md) (cost tiers, the heavy `set_of` §11.6
+      family, the two harnesses that need a >16 GB box, and a measured solver-selection note).
 
 ## Verification breadth
 
