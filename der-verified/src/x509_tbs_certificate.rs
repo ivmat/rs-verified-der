@@ -485,6 +485,41 @@ mod proofs {
     /// offset arithmetic + `&content[off..off+used]` slicing. Requires `-Z stubbing` (wired into
     /// `check.sh`). If Kani reports an unwinding-assertion failure, raise the bound (do not weaken
     /// scope).
+    ///
+    /// Cover (T6 primary rule + T2-COROLLARY-A): this harness stacks a `[u8; 10]` bound AND TWO
+    /// stubs (`validate_name`, `validate_extensions`) on `parse_tbs_certificate` -- per the
+    /// corollary, the intersection of stacked reductions must be checked for vacuity, not assumed.
+    /// The module doc claims this harness "exercises the REAL TBS glue: outer-SEQUENCE walk, `[0]`
+    /// version, both INTEGER decodes, AlgId/Validity/SPKI, `[1]`/`[2]`/`[3]` context peeks, offset
+    /// arithmetic." Reaching the function's `Ok` tail is the deepest available post-state witness
+    /// through its opaque `Result` that ALL of that real glue ran to completion, not just that some
+    /// early field rejected the input.
+    ///
+    /// **VACUITY FINDING (2026-07-21): this cover is UNSATISFIABLE at `[u8; 10]`.** Kani reports
+    /// `VERIFICATION: SUCCESSFUL` (0 panics) but `0 of 1 cover properties satisfied` — i.e. the
+    /// harness's own claimed 10-octet buffer can never actually reach `parse_tbs_certificate`'s
+    /// `Ok` tail, even with `validate_name`/`validate_extensions` fully stubbed away. This is
+    /// arithmetically forced, not a cover-authoring bug: reaching `Ok` still requires REAL (never
+    /// stubbed) valid encodings of `serialNumber` (>=3 octets), `signature`/`AlgorithmIdentifier`
+    /// (>=5 octets for even a minimal 1-octet OID), a real TLV header for the `issuer`/`subject`
+    /// spans (decode_tlv still runs on them even though their CONTENT validation is stubbed), a
+    /// real `Validity` (two time fields, >=32 octets for the minimal UTCTime/UTCTime case), and a
+    /// real `SubjectPublicKeyInfo` (AlgorithmIdentifier + BIT STRING, >=11 octets) — all inside one
+    /// outer SEQUENCE. The arithmetic floor is well over 60 octets, six times this harness's
+    /// buffer. So the module's "exercises the REAL TBS glue ... all the way to a working parse"
+    /// framing was never machine-checked, and — at this buffer size — CANNOT be: the reduction
+    /// that makes this harness tractable (10 octets, chosen to keep CBMC's composition-depth cost
+    /// down) is fundamentally incompatible with ever reaching the happy path. What IS proven at
+    /// this buffer size is the REJECTION-side glue: the outer-SEQUENCE walk, the `[0]` version
+    /// peek/decode, the serial/signature framing checks, and the offset arithmetic up to wherever
+    /// the short buffer runs out — all panic-free, but never through to `Ok`. Left in place
+    /// (rather than deleted) because a cover reporting "0 of 1 satisfied" IS the honest,
+    /// machine-checked record of this gap — removing the cover would hide it again. A future
+    /// harness intended to witness the true happy path would need either a much larger buffer
+    /// (reintroducing the composition-depth cost this modular split exists to avoid) or a
+    /// dedicated positive-construction harness that fixes some fields concrete (a valid serial +
+    /// signature + minimal issuer/validity/subject/spki skeleton) while leaving only a few bytes
+    /// symbolic — a real, un-deferred follow-up, not a quick win.
     #[kani::proof]
     #[kani::stub(validate_name, stub_validate_name)]
     #[kani::stub(validate_extensions, stub_validate_extensions)]
@@ -496,7 +531,14 @@ mod proofs {
         // a fixed-length proof would leave those call lengths undischarged (control flow is length-dependent).
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
-        let _ = parse_tbs_certificate(&buf[..len]);
+        let result = parse_tbs_certificate(&buf[..len]);
+        kani::cover(
+            result.is_ok(),
+            "parse_tbs_certificate reaches its Ok tail: the real outer-SEQUENCE walk, version \
+             peek, both INTEGER decodes, AlgId/Validity/SPKI parses, and strict tiling all ran to \
+             completion over the two stubbed callees' Ok outcomes",
+        );
+        let _ = result;
     }
 }
 
