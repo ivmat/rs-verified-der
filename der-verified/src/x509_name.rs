@@ -284,6 +284,15 @@ mod proofs {
     /// means only a length-14 content ever reaches the RDN walk; symbolic length also exercises the
     /// empty-`Name` and short-envelope paths). Unwind 10: with the stub advancing `off` by `>= 2`, the
     /// outer walk runs `<= 7` over a `<= 14`-octet content, and the envelope's header loops are `<= 6`.
+    ///
+    /// Cover (T6 primary rule + T2-COROLLARY-A): `validate_never_panics` stacks TWO reductions on
+    /// `validate_name` -- a `[u8; 16]` bound AND a `validate_rdn` stub -- so per the corollary the
+    /// intersection must be checked for vacuity, not assumed non-vacuous. The strongest observable
+    /// post-state fact through `validate_name`'s opaque `Result<(), NameError>` is that the REAL
+    /// outer-envelope decode + RDN-walk glue reaches the `Ok` tail -- which requires
+    /// `decode_sequence_tlv_strict` to accept the envelope AND the walk loop to run to completion
+    /// on the stub's Ok outcomes (never inspecting a stubbed value, exactly as the module comment
+    /// argues). This would NOT be SAT if `validate_name`'s body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::stub(validate_rdn, stub_validate_rdn)]
     #[kani::unwind(10)]
@@ -291,7 +300,13 @@ mod proofs {
         let buf: [u8; 16] = kani::any();
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
-        let _ = validate_name(&buf[..len]);
+        let result = validate_name(&buf[..len]);
+        kani::cover(
+            result.is_ok(),
+            "validate_name reaches its Ok tail: the real outer RDNSequence envelope decode + \
+             RDN-walk glue ran to completion over the stubbed validate_rdn's Ok outcomes",
+        );
+        let _ = result;
     }
 }
 
