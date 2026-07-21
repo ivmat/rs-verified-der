@@ -389,6 +389,60 @@ mod proofs {
         );
         let _ = result;
     }
+
+    /// **VACUITY FINDING (re-measured on the dedicated 32 GB Linux box, 2026-07-21):** the cover
+    /// above is **UNSATISFIABLE at `[u8; 13]`** — not merely "undetermined" (as it was when this
+    /// harness OOM'd on the shared box before reaching any verdict; see
+    /// `docs/verification-cost.md`'s heavy-harness table). On a dedicated 28 GB cgroup cap this
+    /// harness now CONVERGES (`VERIFICATION: SUCCESSFUL`, peak RSS ~20.5 GiB, ~600 s wall) and
+    /// reports **`0 of 1 cover properties satisfied`**: the walk's second iteration and a real
+    /// `Ok` never co-occur within 13 octets. The module's own doc comment's arithmetic was wrong —
+    /// a minimal single `Extension` inside an `Extensions` wrapper is 9 octets (`30 07 30 05 06 01
+    /// 2a 04 00`), so TWO such members plus the outer envelope need **16** octets, not 13; the
+    /// 13-octet buffer can hold at most one complete `Extension` member, so the walk's second
+    /// `decode_tlv` at a non-zero offset is never reachable together with `validate_extensions`
+    /// returning `Ok`. Same pattern as `x509_validity::parse_never_panics`'s and
+    /// `x509_tbs_certificate::parse_tbs_certificate_never_panics`'s closed vacuity findings — left
+    /// in place, unmodified, as the honest "0 of 1 satisfied" record (the project's stated
+    /// convention: a non-satisfied cover IS the machine-checked evidence of the gap, not a bug to
+    /// hide). Closed by the companion positive-construction witness harness below, mirroring
+    /// `parse_validity_ok_path_witnessed`.
+    #[kani::proof]
+    #[kani::unwind(12)]
+    fn validate_extensions_ok_path_witnessed() {
+        // Concrete, valid, minimal TWO-`Extension` `Extensions` (16 octets) -- byte-for-byte
+        // identical to `tests::EXTENSIONS_TWO_MINIMAL` below: two members, each the smallest
+        // possible well-formed `Extension` (a 1-octet OID content, no `critical`, an empty
+        // `extnValue`). Valid-by-construction (T4), not `assume(validate(x))`, and drawn from this
+        // module's own test fixtures.
+        //
+        // `30 0e`                              SEQUENCE (Extensions), len 14
+        //    `30 05`                            SEQUENCE (Extension #1), len 5
+        //       `06 01 2a`                      OID content `0x2a` (1 octet, canonical)
+        //       `04 00`                         OCTET STRING (extnValue), len 0
+        //    `30 05`                            SEQUENCE (Extension #2), len 5
+        //       `06 01 2b`                      OID content `0x2b` (1 octet, canonical)
+        //       `04 00`                         OCTET STRING (extnValue), len 0
+        #[rustfmt::skip]
+        const EXTENSIONS_TWO_MINIMAL: [u8; 16] = [
+            0x30, 0x0e,
+                0x30, 0x05,
+                    0x06, 0x01, 0x2a,
+                    0x04, 0x00,
+                0x30, 0x05,
+                    0x06, 0x01, 0x2b,
+                    0x04, 0x00,
+        ];
+
+        let result = validate_extensions(&EXTENSIONS_TWO_MINIMAL);
+        kani::cover(
+            result.is_ok(),
+            "validate_extensions reaches its Ok tail on a real, fully-concrete, valid two-member \
+             Extensions -- the existence witness the fully-symbolic [u8; 13] harness's cover could \
+             not produce (see that harness's VACUITY FINDING comment)",
+        );
+        let _ = result;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -685,5 +739,34 @@ mod tests {
                 TlvError::Truncated
             ))))
         );
+    }
+
+    /// A minimal, real TWO-`Extension` `Extensions`: each member is the smallest possible
+    /// well-formed `Extension` (a 1-octet OID content, no `critical`, an empty `extnValue`).
+    /// Exists to positively witness (concretely, outside Kani) that a genuine second-iteration
+    /// walk requires **16** octets, not 13 -- see `validate_extensions_never_panics`'s cover
+    /// (UNSATISFIABLE at `[u8; 13]`) and its companion positive-construction witness harness.
+    ///
+    /// `30 0e`                              SEQUENCE (Extensions), len 14
+    ///    `30 05`                            SEQUENCE (Extension #1), len 5
+    ///       `06 01 2a`                      OID content `0x2a` (1 octet, canonical: bit8 clear)
+    ///       `04 00`                         OCTET STRING (extnValue), len 0
+    ///    `30 05`                            SEQUENCE (Extension #2), len 5
+    ///       `06 01 2b`                      OID content `0x2b` (1 octet, canonical: bit8 clear)
+    ///       `04 00`                         OCTET STRING (extnValue), len 0
+    #[rustfmt::skip]
+    const EXTENSIONS_TWO_MINIMAL: [u8; 16] = [
+        0x30, 0x0e,
+            0x30, 0x05,
+                0x06, 0x01, 0x2a,
+                0x04, 0x00,
+            0x30, 0x05,
+                0x06, 0x01, 0x2b,
+                0x04, 0x00,
+    ];
+
+    #[test]
+    fn validates_two_minimal_extensions() {
+        assert_eq!(validate_extensions(&EXTENSIONS_TWO_MINIMAL), Ok(()));
     }
 }

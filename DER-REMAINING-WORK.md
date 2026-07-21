@@ -5,6 +5,28 @@ Not committed by this pass (uncommitted map file — driver commits). Sources: `
 `docs/verification-cost.md`, `TODO.md`, `METHODS-APPLICATION-ANALYSIS-2026-07-21.md`, and a direct
 grep of `der-verified/src/*.rs`.
 
+**UPDATE 2026-07-21/22 (dedicated 32 GB box, no other worker, 28 GB cgroup cap):** both items in
+§2's "Cloud Kani" table below are now CLOSED locally — neither needed a cloud box after all; the
+prior OOMs were shared-box working-set pressure, not a genuine >32 GB wall.
+`x509_name::validate_rdn_never_panics` converged `VERIFICATION: SUCCESSFUL` (peak RSS ~17.1 GiB,
+wall ~851 s / ~14.2 min) — no cover on this harness (by design; the cover lives on its sibling
+`validate_never_panics`, itself cheap/green, `1 of 1` satisfied). `x509_extension::validate_extensions_never_panics`
+ALSO converged `VERIFICATION: SUCCESSFUL` this time (peak RSS ~20.5 GiB, wall ~602 s / ~10 min) —
+but surfaced a genuine, previously-undetermined **cover vacuity** (`0 of 1 cover properties
+satisfied`): the module's own doc-comment arithmetic for the 13-octet buffer was wrong (a real
+two-`Extension` `Extensions` needs 16 octets, not 13), so the walk's claimed "genuine second
+iteration" never co-occurs with a real `Ok` at that buffer size. Closed the same way as the two
+prior vacuities (positive-construction witness, no stub needed): new harness
+`x509_extension::validate_extensions_ok_path_witnessed` on a concrete, hand-built minimal
+two-`Extension` `Extensions` (16 octets) — `VERIFICATION: SUCCESSFUL`, `1 of 1 cover properties
+satisfied`, peak RSS ~16.7 GiB, wall ~201 s. A full crate-wide `cargo kani -Z stubbing` re-run
+(164 harnesses, sequential, same 28 GB cap) afterwards: **164/164 SUCCESSFUL, 0 failures** — the
+only three `0 of 1` (vacuous, unsatisfiable-by-design) covers remaining are the three
+already-documented ones (`x509_validity::parse_never_panics`, `x509_tbs_certificate::parse_tbs_certificate_never_panics`,
+and now `x509_extension::validate_extensions_never_panics`), each immediately preceded in the run
+by its own `1 of 1`-satisfied positive-construction witness sibling. **Der's two remaining heavy
+items are now fully closed, local, no cloud needed.**
+
 ## 1. Local Kani (cheap, doable on the 32 GB box under the ~12 GB shared-box cap) — anything left?
 
 **No open local-Kani work identified.** The 2026-07-21 cover-retrofit swept every proof module:
@@ -28,23 +50,28 @@ Everything else in the local-Kani tier is measured fast (sub-second to tens of s
 /`sequence`/`utf8_string` family runs 79–256 s but is TIME-heavy, not RAM-heavy, and already green —
 see `docs/verification-cost.md`).
 
-## 2. Cloud Kani (bounded-RAM walls needing a bigger box) — confirmed set
+## 2. Cloud Kani — RESOLVED, neither needs cloud (both closed locally, 2026-07-21/22)
 
-Exactly the two named in the task brief, both re-measured on this Linux 32 GB desktop
-(`docs/verification-cost.md`, `METHODS-APPLICATION-ANALYSIS-2026-07-21.md` §"2.6 Cloud"):
+**Superseded by the 2026-07-21/22 dedicated-box pass (see the UPDATE note at the top of this
+file).** Both harnesses previously suspected to need a bigger-than-32GB box turned out to be
+shared-box working-set artifacts, not genuine >32 GB walls — on a DEDICATED 32 GB box (28 GB
+cgroup cap, no other worker), both converged:
 
-| Harness | Measured RSS | Status |
-|---|---|---|
-| `x509_name::proofs::validate_rdn_never_panics` | **~17 GB peak RSS** | `VERIFICATION: SUCCESSFUL` — SAT/bounded, fits a genuine 32 GB box outright, just not this shared box's ~12 GB working cap. The heavy SET-OF/RDN §11.6 lemma at one-RDN scale; `validate_name` itself is proven cheaply (~0.5 GB) by *stubbing* this lemma's already-proven postcondition (`2 ≤ used ≤ input.len()`). |
-| `x509_extension::proofs::validate_extensions_never_panics` | **~19 GB (cadical, default solver) / ~16 GB (kissat)** | Genuine RAM wall, **both solvers OOM at the same post-slicing SSA-encoding stage** (CBMC's own "appears to have run out of memory" verdict) — this one did NOT reach a verdict on the 32 GB box either (unlike `validate_rdn`, which converges SUCCESSFUL). `--slice-formula` (T8) is already Kani's default and did not help; classified RAM-bound, not TIME-bound. |
+| Harness | Peak RSS (dedicated box) | Wall | Status |
+|---|---|---|---|
+| `x509_name::proofs::validate_rdn_never_panics` | **~17.1 GiB** | ~851 s (~14.2 min) | `VERIFICATION: SUCCESSFUL`, 0 of 300 failed. No `kani::cover` on this harness itself (by design — the cover lives on sibling `validate_never_panics`, which is cheap: ~5.6 s, `1 of 1 cover properties satisfied`). |
+| `x509_extension::proofs::validate_extensions_never_panics` | **~20.5 GiB** | ~602 s (~10 min) | `VERIFICATION: SUCCESSFUL`, 0 of 255 failed — BUT surfaced a genuine, previously-undetermined cover vacuity: `0 of 1 cover properties satisfied`. The module's own "13 octets leaves room for a genuine second iteration" doc-comment claim was arithmetically wrong (two minimal `Extension`s + envelope = 16 octets, not 13). Closed the same way as the `x509_validity`/`x509_tbs_certificate` precedent: a new positive-construction witness harness, `validate_extensions_ok_path_witnessed`, on a concrete hand-built 16-octet two-`Extension` `Extensions` — `VERIFICATION: SUCCESSFUL`, `1 of 1 cover properties satisfied`, ~16.7 GiB peak RSS, ~201 s wall. No stub needed (same shallow-composition pattern as `x509_validity`'s witness). |
 
-Both are **cloud-crushable** in the sense the task brief means (256 GB removes the wall trivially
-for `validate_rdn` — SAT already, just wants headroom — and very likely for `validate_extensions`
-too, though that one has not yet been observed to converge at any RAM size on this box; a cloud run
-would be the first data point on whether it's a RAM-wall-with-a-ceiling or something structurally
-larger). Neither needs code changes to attempt on cloud — same harness, same buffer, same unwind
-bound, just run with more RAM. No other der harness is in this bucket; the `set_of`/`sequence`
-family (79–256 s, ~5 GB) is TIME-heavy but not RAM-walled and is NOT a cloud candidate.
+Neither needed a code change to converge — same harness, same buffer, same unwind bound as
+originally written; just isolation from shared-box memory pressure via a per-harness `systemd-run
+--scope -p MemoryMax=28G -p MemorySwapMax=0` cgroup cap. Both solvers (cadical default, kissat via
+T7) had previously been tried on the shared box and OOM'd around 16–19 GB; the true peaks (~17.1
+and ~20.5 GiB) fit comfortably under a real 28 GB cap. **No cloud run is needed for der.** A
+full crate-wide re-run afterwards (164 harnesses, sequential, same cap) confirms **164/164
+SUCCESSFUL, 0 failures**, with exactly the three expected (and now all closed-via-witness) vacuous
+covers remaining as an honest record — see §4. No other der harness is RAM-walled; the
+`set_of`/`sequence` family (79–256 s, ~5 GB) is TIME-heavy but not RAM-walled and was never a cloud
+candidate.
 
 ## 3. Lean lids (Aeneas/Charon/Lean) — existing coverage + next lid
 
@@ -79,8 +106,8 @@ invest in L4 breadth next.
 
 ## 4. Vacuity findings — open?
 
-**None open.** Both `kani::cover`-vacuity findings the 2026-07-21 cover-retrofit surfaced are now
-closed:
+**None open.** All three `kani::cover`-vacuity findings found across the 2026-07-21 cover-retrofit
+and the 2026-07-21/22 dedicated-box heavy-harness pass are now closed:
 
 - `x509_tbs_certificate::parse_tbs_certificate_never_panics`'s `Ok`-tail cover (UNSATISFIABLE at
   `[u8; 10]`) — closed by `parse_tbs_certificate_ok_path_witnessed` (commit `d2dc80d`, prior pass):
@@ -90,28 +117,40 @@ closed:
   `parse_validity_ok_path_witnessed` (commit `cd4a365`, **this pass, Task A**): **no stubs needed**
   (shallow call graph — one outer `decode_tlv` + at most two `decode_time_tlv` calls, each a single
   inlined leaf time-decoder), ~0.58 GB peak RSS / ~6 s wall.
+- `x509_extension::validate_extensions_never_panics`'s `Ok`-plus-second-iteration cover
+  (UNSATISFIABLE at `[u8; 13]`, only DETERMINED on the 2026-07-21/22 dedicated-box run — previously
+  the harness OOM'd on the shared box before reaching any verdict at all) — closed by
+  `validate_extensions_ok_path_witnessed` (this pass, Task B/dedicated-box pass): **no stub
+  needed** (same shallow-composition pattern as `x509_validity`'s witness), concrete 16-octet
+  two-`Extension` `Extensions` fixture, ~16.7 GiB peak RSS / ~201 s wall.
 
-Both original vacuous-cover harnesses are left in place, unmodified, as the honest "0 of 1
-satisfied" record — per the project's own stated convention (a cover reporting non-satisfaction
-IS the machine-checked evidence of the gap, not a bug to hide).
+Total: exactly **three** cover-vacuity findings have ever existed in this crate, all now closed by
+a companion positive-construction witness harness, each left alongside its original (unmodified,
+honestly-"0 of 1"-reporting) symbolic harness per the project's stated convention (a cover
+reporting non-satisfaction IS the machine-checked evidence of the gap, not a bug to hide).
 
 `x509_certificate::parse_certificate_never_panics` (the third, outermost modular-stub harness in
-the DAG, stubbing `parse_tbs_certificate`) was checked directly during this Task B pass:
+the DAG, stubbing `parse_tbs_certificate`) was checked directly during the earlier Task B pass:
 `cargo kani --harness x509_certificate::proofs::parse_certificate_never_panics` → `VERIFICATION:
 SUCCESSFUL`, **`1 of 1 cover properties satisfied`** (~48 s, cheap). **No vacuity gap here** — at
 `[u8; 12]` with a symbolic length and ONE stub (`parse_tbs_certificate`, returning a nondet
-`Result`), the happy path IS reachable, unlike `x509_tbs_certificate`/`x509_validity` whose deeper
-unstubbed compositions pushed the arithmetic floor for a real `Ok` past their harnesses' buffers.
-Confirms the crate has exactly two (now-closed) vacuity findings, not three.
+`Result`), the happy path IS reachable, unlike `x509_tbs_certificate`/`x509_validity`/
+`x509_extension`, whose deeper unstubbed compositions pushed the arithmetic floor for a real `Ok`
+past their harnesses' buffers.
 
 ## Summary for dispatch
 
-- **Local Kani:** essentially done; one optional micro-check (`enumerated`'s unguarded `assume`) if
-  the driver wants a fully exhaustive close-out — not a real gap.
-- **Cloud Kani:** dispatch `x509_name::validate_rdn_never_panics` (~17 GB, expect SUCCESSFUL) and
-  `x509_extension::validate_extensions_never_panics` (~19 GB, currently unresolved/OOM even at
-  32 GB — genuinely worth a cloud run to get a first convergent data point) to a 256 GB box.
+- **Local Kani:** done, crate-wide. A full sequential `cargo kani -Z stubbing` re-run of all 164
+  harnesses under a 28 GB cgroup cap (2026-07-21/22, dedicated box): **164/164 SUCCESSFUL, 0
+  failures.** One optional micro-check remains (`enumerated`'s unguarded `assume`) if the driver
+  wants a fully exhaustive close-out — not a real gap.
+- **Cloud Kani:** RESOLVED — **neither heavy harness needs a cloud box.** Both
+  `x509_name::validate_rdn_never_panics` (~17.1 GiB peak, ~14.2 min) and
+  `x509_extension::validate_extensions_never_panics` (~20.5 GiB peak, ~10 min) converge
+  `VERIFICATION: SUCCESSFUL` under a dedicated 28 GB cap; the prior OOMs were shared-box working-set
+  pressure, not a genuine >32 GB wall. Der's cloud-candidate list is now empty.
 - **Lean:** next lid is a `sequence`/`tlv` round-trip ∀-length *consumer* correctness lid — real
   effort, owner-scoped, not urgent.
-- **Vacuity:** closed (tbs + validity); `x509_certificate` checked directly this pass — not vacuous
-  (`1 of 1` cover already satisfied). Total: exactly 2 findings existed, both now closed.
+- **Vacuity:** closed (tbs, validity, and now extensions); `x509_certificate` checked directly —
+  not vacuous (`1 of 1` cover already satisfied). Total: exactly 3 findings ever existed, all now
+  closed.
