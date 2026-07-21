@@ -251,11 +251,20 @@ mod proofs {
     }
 
     /// Robustness: `decode_set_of` on any `[u8; 8]` content never panics.
+    ///
+    /// Cover (T6 primary rule): witnesses the `Ok` tail with at least two children (the walk loop
+    /// genuinely iterates and the `cmp_padded` ordering check actually runs on a real adjacent
+    /// pair), AND separately that `Unsorted` actually fires — turning "the ordering check is live,
+    /// not vacuously always-true" into a checked post-state fact. Would NOT be SAT if
+    /// `decode_set_of`'s body were a no-op.
     #[kani::proof]
     #[kani::unwind(16)]
     fn iterate_never_panics() {
         let content: [u8; 8] = kani::any();
-        let _ = decode_set_of(&content);
+        let result = decode_set_of(&content);
+        kani::cover(result == Ok(2), "the walk genuinely takes a second iteration, exercising cmp_padded on a real adjacent pair");
+        kani::cover(matches!(result, Err(SetOfError::Unsorted { .. })), "the §11.6 ordering check actually rejects a real unsorted pair");
+        let _ = result;
     }
 
     /// **No over-read.** Independent index-walk (own `decode_tlv` loop from raw offsets, exactly

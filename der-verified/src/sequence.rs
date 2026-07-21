@@ -196,11 +196,23 @@ mod proofs {
     /// Robustness: iterating `Elements` (and thus `decode_sequence`) over *arbitrary* content
     /// never panics or overflows, and the iterator always terminates within the unwind bound
     /// (each accepted child consumes `>= 2` bytes, so `rest` strictly shrinks).
+    ///
+    /// Cover (T6 primary rule): witnesses the `Ok` tail is reached with at least two children (the
+    /// walk loop genuinely iterates more than once, not just the trivial 0- or 1-child case) AND,
+    /// separately, that a malformed child is surfaced as `Element(..)` — turning "the loop
+    /// actually loops, and the error path actually fires" from an unwind-bound assumption into a
+    /// checked post-state fact. Would NOT be SAT if `decode_sequence`'s body were a no-op.
     #[kani::proof]
     #[kani::unwind(16)]
     fn iterate_never_panics() {
         let content: [u8; 8] = kani::any();
-        let _ = decode_sequence(&content);
+        let result = decode_sequence(&content);
+        kani::cover(result == Ok(2), "the walk genuinely takes a second iteration (2 children tiled)");
+        kani::cover(
+            matches!(result, Err(SequenceError::Element(_))),
+            "a malformed child is surfaced as Element(..)",
+        );
+        let _ = result;
     }
 
     /// **No over-read.** Walking the content — exactly what [`Elements::next`] does: `decode_tlv`

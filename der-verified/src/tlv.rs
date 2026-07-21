@@ -121,11 +121,23 @@ mod proofs {
     /// Robustness: `decode_tlv` never panics or overflows on *any* input. The 16-byte buffer
     /// covers the maximal header (6-byte high-tag + 5-byte long length = 11) plus value octets,
     /// so every header construct is exercised (the review's HIGH bounds-gap fix).
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached with a non-empty value AND,
+    /// separately, that a genuine multi-octet header (tag+length together > 2 bytes) is decoded —
+    /// so both the tag and length sub-decodes' non-trivial branches are live, not just the
+    /// minimal 1-tag-octet/1-length-octet/0-value case. Would NOT be SAT if `decode_tlv`'s body
+    /// were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_tlv_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let _ = decode_tlv(&buf);
+        let result = decode_tlv(&buf);
+        kani::cover(result.is_ok(), "a well-formed TLV reaches decode_tlv's Ok tail");
+        if let Ok((tlv, used)) = result {
+            kani::cover(!tlv.value.is_empty(), "a non-empty TLV value is accepted");
+            kani::cover(used > 2, "a genuine multi-octet header (beyond the minimal 1+1+0 form) is decoded");
+        }
+        let _ = result;
     }
 
     /// Structural correctness + **no over-read**: an accepted TLV consumes exactly
