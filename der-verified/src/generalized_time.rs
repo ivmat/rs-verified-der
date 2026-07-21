@@ -364,13 +364,25 @@ mod proofs {
     /// unbounded axis, and the decode logic over it (a digit loop + a last-octet test) is uniform, so
     /// no new behaviour appears beyond 3 fraction digits; the bounded L3 floor's ∀-length counterpart
     /// would be a Lean lid, as on the length codec.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached for BOTH the no-fraction (`n ==
+    /// 15`) AND the with-fraction (`n >= 16`) shapes -- so the module's claim that this window
+    /// "covers no-fraction, empty-fraction, and 1..=3-digit fractions" is a checked post-state
+    /// fact, not just an input-length observation. Would NOT be SAT if `decode_generalized_time`'s
+    /// body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(20)]
     fn decode_never_panics() {
         let buf: [u8; 19] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 19);
-        let _ = decode_generalized_time(&buf[..n]);
+        let result = decode_generalized_time(&buf[..n]);
+        kani::cover(result.is_ok(), "a well-formed GeneralizedTime reaches the Ok tail");
+        if let Ok(t) = result {
+            kani::cover(t.fraction.is_empty(), "a no-fraction GeneralizedTime is accepted");
+            kani::cover(!t.fraction.is_empty(), "a with-fraction GeneralizedTime is accepted");
+        }
+        let _ = result;
     }
 
     /// Canonicality (re-encode form): any accepted content re-encodes to *itself*.

@@ -226,17 +226,30 @@ mod proofs {
     }
 
     /// Robustness: `validate_integer_content` never panics on any content up to `N` octets.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached for a genuine multi-octet minimal
+    /// integer (`n >= 2`), not just the trivial single-octet case, so the two-octet
+    /// leading-padding check is actually exercised on a non-rejected input. Would NOT be SAT if
+    /// `validate_integer_content`'s body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(1)]
     fn validate_never_panics() {
         let buf: [u8; N] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= N);
-        let _ = validate_integer_content(&buf[..n]);
+        let result = validate_integer_content(&buf[..n]);
+        kani::cover(result.is_ok(), "a minimal INTEGER content reaches validate_integer_content's Ok tail");
+        kani::cover(result.is_ok() && n >= 2, "a genuine multi-octet minimal INTEGER (n >= 2) is accepted");
+        let _ = result;
     }
 
     /// Robustness: `encode_minimal_integer_into` never panics on any content up to `N` octets, into
     /// an `out` buffer of any length up to `N` (undersized `out` is a documented `None`, not a panic).
+    ///
+    /// Cover (T6 primary rule): witnesses `Some` is reached AND, separately, that stripping
+    /// actually removed at least one redundant leading byte (`written < n`) -- so the stripping
+    /// loop's non-trivial iteration is live, not just the immediate already-minimal pass-through.
+    /// Would NOT be SAT if `encode_minimal_integer_into`'s body were a no-op always returning `None`.
     #[kani::proof]
     #[kani::unwind(20)]
     fn encode_never_panics() {
@@ -246,7 +259,12 @@ mod proofs {
         let mut out: [u8; N] = kani::any();
         let out_len: usize = kani::any();
         kani::assume(out_len <= N);
-        let _ = encode_minimal_integer_into(&buf[..n], &mut out[..out_len]);
+        let result = encode_minimal_integer_into(&buf[..n], &mut out[..out_len]);
+        kani::cover(result.is_some(), "encode_minimal_integer_into reaches its Some tail");
+        if let Some(written) = result {
+            kani::cover(written < n, "the stripping loop genuinely removes >=1 redundant leading byte");
+        }
+        let _ = result;
     }
 
     /// Empty content is rejected by both the validator and the minimizer.

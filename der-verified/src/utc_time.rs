@@ -240,13 +240,19 @@ mod proofs {
     /// to the tested non-13 lengths — length 13 (the only one that indexes) and its neighbours 12/14
     /// exercise the whole reachable behaviour. (Bounded is the nature of the L3 Kani floor; the
     /// unbounded ∀-length lid is the Lean layer, as on the length codec.)
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached (a genuine 13-octet canonical
+    /// UTCTime decodes), not merely that every non-13 length is rejected on the length check
+    /// alone. Would NOT be SAT if `decode_utc_time`'s body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(14)]
     fn decode_never_panics() {
         let buf: [u8; 14] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 14);
-        let _ = decode_utc_time(&buf[..n]);
+        let result = decode_utc_time(&buf[..n]);
+        kani::cover(result.is_ok(), "a well-formed UTCTime reaches decode_utc_time's Ok tail");
+        let _ = result;
     }
 
     /// Canonicality (re-encode form, matching the repo pattern): any accepted content re-encodes to
