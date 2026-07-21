@@ -117,11 +117,18 @@ mod proofs {
     }
 
     /// Robustness: `decode_length` never panics or overflows on *any* input.
+    ///
+    /// Cover (T6 primary rule): witnesses that the symbolic 8-byte buffer actually reaches the
+    /// `Ok` tail (a real short- or long-form length decodes successfully), not merely that every
+    /// malformed prefix is rejected. Would NOT be SAT if `decode_length`'s body were a no-op
+    /// always returning `Err`.
     #[kani::proof]
     #[kani::unwind(10)]
     fn decode_never_panics() {
         let buf: [u8; 8] = kani::any();
-        let _ = decode_length(&buf);
+        let result = decode_length(&buf);
+        kani::cover(result.is_ok(), "a well-formed length field reaches decode_length's Ok tail");
+        let _ = result;
     }
 
     /// Canonicality (the security property): if `decode_length` accepts a byte string,

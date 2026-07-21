@@ -69,11 +69,26 @@ mod proofs {
     use super::*;
 
     /// Robustness: `validate_oid` never panics on any content up to 6 octets.
+    ///
+    /// Cover (T6 primary rule): witnesses that the symbolic 6-byte buffer actually reaches the
+    /// `Ok` tail (a genuine multi-subidentifier canonical OID), not merely that malformed content
+    /// is rejected. `at_subid_start` is single-loop internal state, so the post-state fact used
+    /// here is: `Ok(())` AND the buffer contains at least one terminator octet (bit 8 clear)
+    /// before the last byte, i.e. at least two subidentifiers are present. Would NOT be SAT if
+    /// `validate_oid`'s body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(8)]
     fn validate_never_panics() {
         let buf: [u8; 6] = kani::any();
-        let _ = validate_oid(&buf);
+        let result = validate_oid(&buf);
+        kani::cover(result.is_ok(), "a canonical OID reaches validate_oid's Ok tail");
+        let multi_subid = buf[..5].iter().any(|b| b & 0x80 == 0);
+        kani::cover(
+            result.is_ok() && multi_subid,
+            "a canonical OID with at least two subidentifiers is accepted (a terminator octet \
+             occurs before the final byte)",
+        );
+        let _ = result;
     }
 
     /// Empty content is `Empty`.

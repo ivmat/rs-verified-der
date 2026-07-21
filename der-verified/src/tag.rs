@@ -167,11 +167,21 @@ mod proofs {
     }
 
     /// Robustness: `decode_tag` never panics or overflows on *any* input.
+    ///
+    /// Cover (T6 primary rule): witnesses that the symbolic 7-byte buffer actually reaches the
+    /// `Ok` tail (both the low-tag single-octet form AND a genuine multi-octet high-tag form are
+    /// live), not merely that malformed prefixes are rejected. Would NOT be SAT if `decode_tag`'s
+    /// body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(12)]
     fn decode_tag_never_panics() {
         let buf: [u8; 7] = kani::any();
-        let _ = decode_tag(&buf);
+        let result = decode_tag(&buf);
+        kani::cover(result.is_ok(), "a well-formed identifier reaches decode_tag's Ok tail");
+        if let Ok((_, used)) = result {
+            kani::cover(used > 1, "a genuine multi-octet high-tag identifier is decoded (not just low-tag)");
+        }
+        let _ = result;
     }
 
     /// Canonicality: if `decode_tag` accepts a byte string, that string is the unique
