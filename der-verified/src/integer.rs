@@ -90,13 +90,21 @@ mod proofs {
     }
 
     /// Robustness: `decode_integer` never panics/overflows on any content up to 10 octets.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached for a genuine multi-octet minimal
+    /// integer (not just the trivial single-octet case), so the accumulator loop actually iterates
+    /// more than once. Would NOT be SAT if `decode_integer`'s body were a no-op always returning
+    /// `Err`.
     #[kani::proof]
     #[kani::unwind(12)]
     fn decode_never_panics() {
         let buf: [u8; 10] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 10);
-        let _ = decode_integer(&buf[..n]);
+        let result = decode_integer(&buf[..n]);
+        kani::cover(result.is_ok(), "a minimal INTEGER encoding reaches decode_integer's Ok tail");
+        kani::cover(result.is_ok() && n >= 2, "a genuine multi-octet minimal INTEGER is decoded (accumulator loop runs >1 iteration)");
+        let _ = result;
     }
 
     /// Canonicality: any accepted content is exactly the minimal encoding of its value. The

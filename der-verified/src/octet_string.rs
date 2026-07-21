@@ -84,11 +84,21 @@ mod proofs {
     }
 
     /// Robustness: `decode_octet_string` never panics or overflows on *any* input.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached with a genuine non-empty value
+    /// (the TLV envelope, tag check, and constructed-flag check all pass on real content), not
+    /// merely that malformed inputs are rejected. Would NOT be SAT if `decode_octet_string`'s body
+    /// were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let _ = decode_octet_string(&buf);
+        let result = decode_octet_string(&buf);
+        kani::cover(result.is_ok(), "a well-formed OCTET STRING reaches decode_octet_string's Ok tail");
+        if let Ok((content, _used)) = result {
+            kani::cover(!content.is_empty(), "a non-empty OCTET STRING value is accepted");
+        }
+        let _ = result;
     }
 
     /// Structure + **no over-read**: an accepted OCTET STRING consumes no more than the input and

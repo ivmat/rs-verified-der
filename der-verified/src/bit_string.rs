@@ -159,13 +159,26 @@ mod proofs {
     /// Robustness: `decode_bit_string` never panics/overflows. The decision reads only the first
     /// octet and — under a non-empty guard — the last, so it is length-independent: a 6-octet
     /// symbolic buffer exercises every branch (empty, unused-only, single- and multi-octet value).
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached for a genuine multi-octet value
+    /// (not just the trivial empty-bit-string `[0x00]` case), so the padding-mask arithmetic on
+    /// `data[data.len() - 1]` is actually exercised. Would NOT be SAT if `decode_bit_string`'s body
+    /// were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(8)]
     fn decode_never_panics() {
         let buf: [u8; 6] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 6);
-        let _ = decode_bit_string(&buf[..n]);
+        let result = decode_bit_string(&buf[..n]);
+        kani::cover(result.is_ok(), "a well-formed BIT STRING reaches decode_bit_string's Ok tail");
+        if let Ok(bs) = result {
+            kani::cover(
+                !bs.data.is_empty(),
+                "a non-empty BIT STRING value is accepted (exercises the trailing-padding-mask check)",
+            );
+        }
+        let _ = result;
     }
 
     /// Canonicality: any accepted content re-encodes to *itself* — so `decode` admits a byte
