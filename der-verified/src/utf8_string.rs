@@ -362,11 +362,21 @@ mod proofs {
     }
 
     /// Robustness: `decode_utf8_string` never panics on *any* input.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached AND, separately, that a genuine
+    /// non-empty (well-formed UTF-8) value is accepted -- so the TLV envelope, tag check, and the
+    /// `validate_utf8` content walk all pass on real content, not merely on the trivial empty
+    /// value. Would NOT be SAT if `decode_utf8_string`'s body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_never_panics() {
         let buf: [u8; 8] = kani::any();
-        let _ = decode_utf8_string(&buf);
+        let result = decode_utf8_string(&buf);
+        kani::cover(result.is_ok(), "a well-formed UTF8String reaches decode_utf8_string's Ok tail");
+        if let Ok((content, _used)) = result {
+            kani::cover(!content.is_empty(), "a non-empty well-formed UTF-8 value is accepted");
+        }
+        let _ = result;
     }
 
     /// Structural anti-differential: the *constructed* form of UNIVERSAL 12 (identifier `0x2C`) —

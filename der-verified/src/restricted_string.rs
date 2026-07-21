@@ -395,6 +395,11 @@ mod proofs {
     // 4. Robustness: decode never panics, for any input and any charset.
     // -----------------------------------------------------------------------
 
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached for EACH of the four charsets
+    /// individually (not merely "some charset, some input") -- so the per-charset `contains`
+    /// dispatch and the TLV/tag-number wiring are each independently exercised on real content,
+    /// not just that at least one arm happens to be live. Would NOT be SAT if
+    /// `decode_restricted_string`'s body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_never_panics() {
@@ -405,7 +410,24 @@ mod proofs {
             2 => Charset::Numeric,
             _ => Charset::Visible,
         };
-        let _ = decode_restricted_string(&buf, charset);
+        let result = decode_restricted_string(&buf, charset);
+        kani::cover(
+            result.is_ok() && charset == Charset::Printable,
+            "a well-formed PrintableString reaches the Ok tail",
+        );
+        kani::cover(
+            result.is_ok() && charset == Charset::Ia5,
+            "a well-formed IA5String reaches the Ok tail",
+        );
+        kani::cover(
+            result.is_ok() && charset == Charset::Numeric,
+            "a well-formed NumericString reaches the Ok tail",
+        );
+        kani::cover(
+            result.is_ok() && charset == Charset::Visible,
+            "a well-formed VisibleString reaches the Ok tail",
+        );
+        let _ = result;
     }
 
     // -----------------------------------------------------------------------
