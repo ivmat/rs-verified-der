@@ -473,6 +473,32 @@ mod proofs {
         if kani::any() { Ok(()) } else { Err(ExtensionsError::EmptyExtensions) }
     }
 
+    /// A THIRD modular stub, used only by `parse_tbs_certificate_ok_path_witnessed` below (not by
+    /// the harness above): `parse_validity` is independently proven panic-free at its own harness
+    /// (`x509_validity::proofs::parse_never_panics`), and the same two-condition soundness argument
+    /// applies -- `parse_tbs_certificate` uses the returned `Result`'s Ok/Err to drive control flow
+    /// and, on `Ok`, stores the materialized `Validity` value verbatim into its own return struct
+    /// WITHOUT branching on its contents; it advances `off` by `validity_used`, a length from its
+    /// OWN real `decode_tlv` call on `content[off..]`, never from `parse_validity`'s return. So a
+    /// stub is sound here for the same reason it is sound for `validate_name`/`validate_extensions`.
+    /// Unlike those two (which return `()` and can be represented by a plain nondet `Result`),
+    /// `parse_validity` returns an owned `Validity<'a>` that the caller stores -- the stub therefore
+    /// returns a fixed, concrete (not nondet) `Validity` value on its `Ok` arm; this is still sound
+    /// (a *narrower* set of Ok payloads than the real parser's is a valid, if not maximally general,
+    /// over-approximation for the purpose of witnessing that the `Ok` control-flow arm is reachable
+    /// and panic-free -- this harness's cover only requires `parse_tbs_certificate(..).is_ok()`, not
+    /// anything about the specific `Validity` value carried).
+    #[allow(dead_code)]
+    fn stub_parse_validity(_input: &[u8]) -> Result<Validity<'_>, ValidityError> {
+        use crate::utc_time::UtcTime;
+        use crate::x509_validity::Time;
+        let fixed = Validity {
+            not_before: Time::Utc(UtcTime { year2: 99, month: 1, day: 1, hour: 0, minute: 0, second: 0 }),
+            not_after: Time::Utc(UtcTime { year2: 99, month: 12, day: 31, hour: 23, minute: 59, second: 59 }),
+        };
+        if kani::any() { Ok(fixed) } else { Err(ValidityError::MissingNotBefore) }
+    }
+
     /// Robustness: `parse_tbs_certificate` never panics on any input up to 16 octets, with the two
     /// heaviest sub-parsers (`validate_name`, `validate_extensions`) MODULARLY STUBBED to
     /// nondeterministic `Result`s — see the comment above for why the monolithic composition is
@@ -537,6 +563,130 @@ mod proofs {
             "parse_tbs_certificate reaches its Ok tail: the real outer-SEQUENCE walk, version \
              peek, both INTEGER decodes, AlgId/Validity/SPKI parses, and strict tiling all ran to \
              completion over the two stubbed callees' Ok outcomes",
+        );
+        let _ = result;
+    }
+
+    /// **Positive-construction companion to `parse_tbs_certificate_never_panics`** — closes the
+    /// vacuity gap that harness's own cover discovered (see its doc comment: the `Ok` cover is
+    /// UNSATISFIABLE at `[u8; 10]`, so that modular/stubbed harness never actually witnessed a
+    /// successful parse; it only ever proved the REJECTION-side glue panic-free).
+    ///
+    /// **Measured investigation that shaped this harness's design (recorded in full — including two
+    /// dead ends — because it corrects assumptions this task started with and documents a real,
+    /// reproducible tractability cliff worth knowing about elsewhere in the crate).**
+    ///
+    /// 1. *First attempt: call the REAL, fully UNSTUBBED `parse_tbs_certificate` on a fully concrete
+    ///    135-octet buffer*, reasoning that a concrete input has "only one path" and so should
+    ///    sidestep the composition-depth cost the module comment above describes. **Wrong, measured
+    ///    wrong**: CBMC does not partially evaluate the GOTO program against concrete values before
+    ///    symbolic execution — it still builds and explores ONE unified symbolic-execution state for
+    ///    the ENTIRE inlined call graph (every callee is analyzed as arbitrary code; concrete values
+    ///    only prune paths via `assume(false)` *during* that exploration, not before it). `unwind(1)`
+    ///    through `unwind(20)` were tried; `unwind(1)` converged cheaply (~6 GB) but FAILED an
+    ///    unwinding assertion (too few iterations to reach `Ok`); every bound `>= 13` (needed for
+    ///    `utc_time::decode_utc_time`'s fixed 12-iteration field walk, both `validity` fields here
+    ///    are UTCTime) climbed past 11+ GB while still in the symex "aborting path on assume(false)"
+    ///    phase and was killed before converging.
+    /// 2. *Second attempt: reuse the sibling harness's two stubs* (`stub_validate_name`,
+    ///    `stub_validate_extensions`) on the same concrete buffer, expecting the concrete input to
+    ///    make the STUBBED composition cheap where the unstubbed one wasn't. **Still measured
+    ///    intractable at the SAME threshold**: `unwind(12)` converged cheaply (~5.4 GB, symex ~40s)
+    ///    but still failed the same unwinding assertion; `unwind(13)` — the minimum needed to
+    ///    actually reach `Ok` — reproducibly climbed past 12 GB and was killed. This is a genuine,
+    ///    sharp phase transition exactly at the point `Validity`'s time-field loop can complete, not
+    ///    a measurement fluke (reproduced twice at unwind 13 with the same OOM signature symex saw in
+    ///    the unstubbed attempt) — i.e. `validate_name`/`validate_extensions` were never the cost
+    ///    driver for THIS concrete input; `parse_algorithm_identifier`/`parse_validity`/
+    ///    `parse_subject_public_key_info` running for real, composed together, are.
+    /// 3. **The fix that actually works: add a THIRD modular stub, `stub_parse_validity`** (see its
+    ///    doc comment above for the soundness argument — `parse_tbs_certificate` never branches on
+    ///    the materialized `Validity` value, only stores it, so a fixed concrete `Ok` payload is a
+    ///    sound, if narrower, over-approximation). Removing `Validity`'s genuine time-decoder loops
+    ///    from this harness's exploration entirely is what makes the composition's `Ok` tail
+    ///    actually reachable at low cost (measured below) — confirming the module comment's
+    ///    diagnosis that composition DEPTH, not input concreteness, is what stubbing exists to tame,
+    ///    and extending that same lever to the one remaining heavy real sub-call this harness's
+    ///    input happens to reach for real.
+    ///
+    /// **What this harness therefore still exercises for real** (unstubbed): the outer-SEQUENCE
+    /// walk, the DEFAULT-v1 version-absence path, both real INTEGER/BIG-INTEGER decodes (serial),
+    /// the real `parse_algorithm_identifier` call (a real Ed25519 OID), the real `decode_tlv` calls
+    /// that find the `issuer`/`subject`/`validity` spans, the real `parse_subject_public_key_info`
+    /// call (a real Ed25519 SPKI, including its BIT STRING content), the `[1]`/`[2]` uniqueID peek,
+    /// the absent-extensions path, and the final strict-tiling check — everything EXCEPT the two
+    /// variable-count `Name` walks' content (`validate_name`, independently proven) and `Validity`'s
+    /// own time-decoder internals (`parse_validity`, independently proven). This is a strictly
+    /// narrower residual than the never-panics harness's TWO stubs, and it is the one that makes the
+    /// `Ok` tail — the thing that harness could never reach — into a machine-checked existence fact.
+    ///
+    /// Every byte of the buffer is copied verbatim from the same known-good specimens the module's
+    /// own `#[cfg(test)]` fixtures use (`build_v1_minimal_tbs`: no `[0]` version wrapper — DEFAULT
+    /// v1 — no `extensions`, `serialNumber` = 1, `signature` = a real Ed25519 `AlgorithmIdentifier`,
+    /// `issuer`/`subject` = `CN=Example CA`, `validity` = UTCTime/UTCTime, `subjectPublicKeyInfo` = a
+    /// real Ed25519 SPKI) — valid-by-construction (T4), not `assume(validate(x))`.
+    ///
+    /// Proves: (a) `parse_tbs_certificate` does not panic on this valid input, with `validate_name`/
+    /// `validate_extensions`/`parse_validity` stubbed (Kani's implicit checks); (b) the
+    /// `kani::cover` below on the `Ok` post-state IS satisfiable when all three stubs happen to
+    /// return `Ok` — the exact existence witness the fully-symbolic `[u8; 10]` harness's cover could
+    /// never produce (see its VACUITY FINDING comment). Together with that harness (which proves
+    /// panic-freedom across the full `Err`-heavy input space at a small representative bound) this
+    /// gives the composition BOTH a breadth witness and a genuine happy-path existence witness, at a
+    /// cost each harness can actually afford.
+    ///
+    /// `#[kani::unwind(12)]`: measured sufficient once `Validity`'s time-decoder loops are stubbed
+    /// away — covers `decode_length`'s long-form loop, `integer::decode_integer`'s loop, the OID arc
+    /// walk in `parse_algorithm_identifier`, and every other loop this concrete path still reaches
+    /// for real, with margin. **Measured cost with all three stubs and this bound: `VERIFICATION:
+    /// SUCCESSFUL`, `1 of 1 cover properties satisfied` (the gap is closed), ~11.3 GB peak RSS,
+    /// ~206 s wall (symex ~106 s, solve ~3.4 s — most of the wall is symex, not the SAT solve).**
+    /// Below the ~12 GB budget but not far under it — a real, structural cost from exercising the
+    /// full unstubbed `AlgorithmIdentifier`/`SubjectPublicKeyInfo`/outer-glue call graph together,
+    /// even on a fully concrete input (see the investigation notes above: concreteness alone did not
+    /// make this cheap; only removing `Validity`'s loops via a third stub did). If Kani reports an
+    /// unwinding-assertion failure, raise the bound (do not weaken scope) — but see point 2 above
+    /// before raising it past a single-digit margin: this composition has a measured cliff, not a
+    /// smooth cost curve, and a higher bound risks reproducing the >12 GB wall measured there.
+    #[kani::proof]
+    #[kani::stub(validate_name, stub_validate_name)]
+    #[kani::stub(validate_extensions, stub_validate_extensions)]
+    #[kani::stub(parse_validity, stub_parse_validity)]
+    #[kani::unwind(12)]
+    fn parse_tbs_certificate_ok_path_witnessed() {
+        // Concrete, valid, minimal v1 TBSCertificate (135 octets) -- byte-for-byte identical to
+        // `tests::build_v1_minimal_tbs()`'s output: serialNumber=1, signature=Ed25519 AlgId,
+        // issuer=subject=`CN=Example CA`, validity=UTCTime/UTCTime, subjectPublicKeyInfo=Ed25519
+        // SPKI. No `[0]` version wrapper (DEFAULT v1) and no `[3]` extensions -- the shortest field
+        // set that still reaches the function's `Ok` tail.
+        #[rustfmt::skip]
+        const V1_MINIMAL_TBS: [u8; 135] = [
+            0x30, 0x81, 0x84, 0x02, 0x01, 0x01, 0x30, 0x05,
+            0x06, 0x03, 0x2b, 0x65, 0x70, 0x30, 0x15, 0x31,
+            0x13, 0x30, 0x11, 0x06, 0x03, 0x55, 0x04, 0x03,
+            0x0c, 0x0a, 0x45, 0x78, 0x61, 0x6d, 0x70, 0x6c,
+            0x65, 0x20, 0x43, 0x41, 0x30, 0x1e, 0x17, 0x0d,
+            0x39, 0x39, 0x30, 0x31, 0x30, 0x31, 0x30, 0x30,
+            0x30, 0x30, 0x30, 0x30, 0x5a, 0x17, 0x0d, 0x39,
+            0x39, 0x31, 0x32, 0x33, 0x31, 0x32, 0x33, 0x35,
+            0x39, 0x35, 0x39, 0x5a, 0x30, 0x15, 0x31, 0x13,
+            0x30, 0x11, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c,
+            0x0a, 0x45, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65,
+            0x20, 0x43, 0x41, 0x30, 0x2a, 0x30, 0x05, 0x06,
+            0x03, 0x2b, 0x65, 0x70, 0x03, 0x21, 0x00, 0x01,
+            0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+            0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11,
+            0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
+            0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20,
+        ];
+
+        let result = parse_tbs_certificate(&V1_MINIMAL_TBS);
+        kani::cover(
+            result.is_ok(),
+            "parse_tbs_certificate reaches its Ok tail on a real, fully-concrete, valid \
+             TBSCertificate, with validate_name/validate_extensions/parse_validity stubbed -- the \
+             existence witness the fully-symbolic [u8; 10] harness's cover could not produce \
+             (see that harness's VACUITY FINDING comment)",
         );
         let _ = result;
     }
