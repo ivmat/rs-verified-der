@@ -37,6 +37,7 @@ worst case: `length` 0.4 s, `integer` 0.5 s, `oid` 0.04 s, `boolean` 0.03 s, `bi
 | `tlv` (5 harnesses) | ~6 s total | |
 | `x509_algorithm_identifier::parse_never_panics` | ~6 s | |
 | `x509_certificate::parse_certificate_never_panics` | ~50 s | the full-cert composition (modularly stubbed) |
+| `x509_validity::parse_validity_ok_path_witnessed` | ~6 s, ~0.58 GB peak RSS | positive-construction cover-vacuity closer, unstubbed (see below) |
 
 **Heavy (1–5 minutes on this box) — the ones to know about:**
 
@@ -99,6 +100,19 @@ closed here:
   never reached a verdict. This is left as an open, honestly-logged item (not claimed SATISFIED),
   pending either a larger-RAM box or a scope-narrowing change to the harness (out of scope for a
   same-day pass; see the heavy-harness table entry above).
+- **`x509_validity::parse_never_panics`'s `Ok`-tail cover is UNSATISFIABLE at `[u8; 16]`** —
+  `decode_utc_time` requires exactly-13-octet content (minimal `Time` TLV = 15 octets), and a
+  `Validity` needs an outer SEQUENCE header plus TWO such `Time` fields — an arithmetic floor of 32
+  octets, twice this harness's buffer. That harness is **left in place, cover and all** (an honest
+  "0 of 1 satisfied" record). The gap is closed (2026-07-21) by a new, separate harness,
+  `parse_validity_ok_path_witnessed` (see `src/x509_validity.rs`), which drives the real, fully
+  unstubbed `parse_validity` on a concrete 32-octet `Validity` (copied from the module's own
+  `VALIDITY_UTC_UTC` test fixture) and proves its `Ok`-tail cover IS satisfied. Unlike the
+  `x509_tbs_certificate` positive harness above, **no stubbing was needed here** —
+  `Validity`'s call graph is shallow (one outer `decode_tlv` plus at most two `decode_time_tlv`
+  calls, each a single inlined leaf time-decoder), so it does not hit the composition-depth wall
+  that forced three stubs on the TBS harness: `VERIFICATION: SUCCESSFUL`, `1 of 1 cover properties
+  satisfied`, ~0.58 GB peak RSS, ~6 s wall.
 
 ## Solver selection (measured, harness-dependent)
 

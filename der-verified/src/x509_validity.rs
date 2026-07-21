@@ -235,6 +235,68 @@ mod proofs {
         kani::cover(result.is_ok(), "a well-formed Validity reaches the Ok tail");
         let _ = result;
     }
+
+    /// **Positive-construction companion to `parse_never_panics`** — closes the vacuity gap that
+    /// harness's own cover discovered (see its doc comment: the `Ok` cover is UNSATISFIABLE at
+    /// `[u8; 16]`, since a genuine `Validity` needs an arithmetic floor of 32 octets). Mirrors
+    /// `x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed`'s pattern: a fully
+    /// CONCRETE, valid specimen, run through the REAL (unstubbed) `parse_validity`, with a
+    /// `kani::cover(result.is_ok(), ..)` that IS satisfied.
+    ///
+    /// Unlike `parse_tbs_certificate` (which needed THREE `#[kani::stub]`s to make its `Ok` tail
+    /// tractable — see that harness's doc comment and its two measured dead ends), `Validity`'s own
+    /// call graph is shallow: `decode_sequence_tlv_strict` (one `decode_tlv`) followed by up to two
+    /// `decode_time_tlv` calls, each itself one `decode_tlv` plus ONE inlined leaf decoder
+    /// (`decode_utc_time`'s fixed 12-digit loop or `decode_generalized_time`'s 14-digit-plus-fraction
+    /// loop) — no nested SEQUENCE-of-SEQUENCE-of-SET composition (unlike `x509_name`) and no
+    /// multi-field outer struct pulling in several OTHER modules' parsers (unlike
+    /// `x509_tbs_certificate`). So no stubbing was attempted first; this harness runs the real,
+    /// complete `parse_validity` end to end on a concrete 32-octet input, measured cheap (see the
+    /// bound comment below) — no modular split needed here, unlike the TBS positive harness.
+    ///
+    /// The specimen is byte-for-byte identical to `tests::VALIDITY_UTC_UTC` above (`notBefore` =
+    /// UTCTime 1999-01-01 00:00:00Z, `notAfter` = UTCTime 1999-12-31 23:59:59Z) — valid-by-
+    /// construction (T4), not `assume(validate(x))`, and drawn from this module's own existing test
+    /// fixtures per the task's instruction to mirror der's own test specimens.
+    ///
+    /// `#[kani::unwind(20)]`: same bound as `parse_never_panics` above — covers a maximal-header
+    /// `decode_tlv` (~11) plus a full 13-octet UTCTime content walk (12 digit-checks + 1 `Z` check)
+    /// with margin; this concrete specimen's real path needs strictly fewer iterations than the
+    /// worst case that bound was sized for, so no bound increase was needed.
+    ///
+    /// **Measured cost: `VERIFICATION: SUCCESSFUL`, `1 of 1 cover properties satisfied` (the gap is
+    /// closed), ~0.58 GB peak RSS, ~6 s wall (`/usr/bin/time -v`, isolated single-harness run)** --
+    /// far below the ~12 GB shared-box budget, and no stubs were needed: `Validity`'s shallow,
+    /// two-leaf-call composition does not hit the composition-depth wall `x509_tbs_certificate`
+    /// measured (that harness needed three `#[kani::stub]`s and still cost ~11.3 GB / ~206 s).
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_validity_ok_path_witnessed() {
+        // Concrete, valid Validity (32 octets) -- byte-for-byte identical to
+        // `tests::VALIDITY_UTC_UTC` above: notBefore = UTCTime 1999-01-01 00:00:00Z, notAfter =
+        // UTCTime 1999-12-31 23:59:59Z.
+        //
+        // `30 1e`                                       SEQUENCE, len 30
+        //    `17 0d "990101000000Z"`                     UTCTime (notBefore), len 13
+        //    `17 0d "991231235959Z"`                     UTCTime (notAfter), len 13
+        #[rustfmt::skip]
+        const VALIDITY_UTC_UTC: [u8; 32] = [
+            0x30, 0x1e,
+                0x17, 0x0d,
+                    0x39, 0x39, 0x30, 0x31, 0x30, 0x31, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x5a,
+                0x17, 0x0d,
+                    0x39, 0x39, 0x31, 0x32, 0x33, 0x31, 0x32, 0x33, 0x35, 0x39, 0x35, 0x39, 0x5a,
+        ];
+
+        let result = parse_validity(&VALIDITY_UTC_UTC);
+        kani::cover(
+            result.is_ok(),
+            "parse_validity reaches its Ok tail on a real, fully-concrete, valid Validity -- the \
+             existence witness the fully-symbolic [u8; 16] harness's cover could not produce (see \
+             that harness's VACUITY FINDING comment)",
+        );
+        let _ = result;
+    }
 }
 
 // ---------------------------------------------------------------------------
