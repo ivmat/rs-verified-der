@@ -322,16 +322,38 @@ mod proofs {
     use super::*;
 
     /// Robustness: `parse_extension` never panics on any input up to 16 octets.
+    ///
+    /// Cover (T6 primary rule): witnesses the parser's real `Ok` tail (extnID + critical-peek +
+    /// extnValue all decoded and exactly tiled) actually fires for some symbolic input, not just
+    /// that the harness ran. Would NOT be SAT if `parse_extension`'s body were a no-op always
+    /// returning `Err`.
     #[kani::proof]
     #[kani::unwind(20)]
     fn parse_extension_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let _ = parse_extension(&buf);
+        let result = parse_extension(&buf);
+        kani::cover(result.is_ok(), "a well-formed Extension reaches parse_extension's Ok tail");
+        let _ = result;
     }
 
     /// Robustness: `validate_extensions` never panics on any input up to 13 octets (a documented
     /// reduction from the sibling 16 -- see the module's Kani comment for why, and how the residual
     /// is covered compositionally by `parse_extension_never_panics` @ 16).
+    ///
+    /// Cover (T6 primary rule + T2-COROLLARY-B): the module comment above claims the 13-octet
+    /// reduction "leaves enough trailing content that the walk loop takes a genuine *second*
+    /// iteration" — i.e. the SEQUENCE-OF walk's `while off < outer.len()` fires a second
+    /// `decode_tlv` at a non-zero offset. That claim was previously prose only. To turn it into a
+    /// machine-checked POST-STATE fact (not a pre-state input-length predicate), this harness
+    /// independently re-derives, using the same public primitives `validate_extensions` itself
+    /// calls (`decode_sequence_tlv_strict`, `decode_tlv`), whether a second child TLV is actually
+    /// reachable at a non-zero offset within the same outer content — then covers the CONJUNCTION
+    /// of that fact with the real call's outcome. This is not vacuous: a cover of `len==13` alone
+    /// (or `true`) would be SAT even if `validate_extensions`'s body were a no-op, since it depends
+    /// only on the harness's own input construction. The cover below additionally requires that the
+    /// SAME public decode primitives, applied to the SAME bytes the real call saw, exhibit a live
+    /// second iteration -- so it fails to be SAT unless the input genuinely admits the two-child
+    /// shape the reduction's soundness argument depends on.
     #[kani::proof]
     #[kani::unwind(12)]
     fn validate_extensions_never_panics() {
@@ -341,7 +363,31 @@ mod proofs {
         // fixed-length proof would leave those call lengths undischarged (control flow is length-dependent).
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
-        let _ = validate_extensions(&buf[..len]);
+        let input = &buf[..len];
+        let result = validate_extensions(input);
+
+        // Independently re-walk the SAME bytes with the SAME public primitives the real function
+        // uses, to witness (outside the function's own opaque Result) that a second Extension TLV
+        // genuinely starts at a non-zero offset -- i.e. the walk loop's second iteration is LIVE,
+        // not merely permitted by the buffer size.
+        let mut second_child_at_nonzero_offset = false;
+        if let Ok(outer) = decode_sequence_tlv_strict(input) {
+            if let Ok((_first_tlv, first_used)) = decode_tlv(outer) {
+                if first_used > 0 && first_used < outer.len() {
+                    if decode_tlv(&outer[first_used..]).is_ok() {
+                        second_child_at_nonzero_offset = true;
+                    }
+                }
+            }
+        }
+
+        kani::cover(
+            result.is_ok() && second_child_at_nonzero_offset,
+            "validate_extensions reaches Ok while the walk genuinely takes a second iteration \
+             (a second child TLV starts at a non-zero offset) -- the reduced 13-octet buffer is \
+             representative, not accidentally single-pass",
+        );
+        let _ = result;
     }
 }
 
