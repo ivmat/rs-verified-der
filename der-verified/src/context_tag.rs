@@ -89,12 +89,23 @@ mod proofs {
 
     /// Robustness: `decode_explicit_context` never panics on any input up to 16 octets, for any
     /// expected tag number.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached with a genuine non-empty inner
+    /// TLV (a real EXPLICIT wrapper: context-specific class, matching number, constructed flag,
+    /// AND a non-empty wrapped value all pass), not merely that malformed/mismatched inputs are
+    /// rejected. Would NOT be SAT if `decode_explicit_context`'s body were a no-op always
+    /// returning `Err`.
     #[kani::proof]
     #[kani::unwind(20)]
     fn decode_explicit_context_never_panics() {
         let buf: [u8; 16] = kani::any();
         let n: u32 = kani::any();
-        let _ = decode_explicit_context(n, &buf);
+        let result = decode_explicit_context(n, &buf);
+        kani::cover(result.is_ok(), "a well-formed EXPLICIT [n] wrapper reaches the Ok tail");
+        if let Ok((inner, _used)) = result {
+            kani::cover(!inner.is_empty(), "a non-empty wrapped inner TLV is accepted");
+        }
+        let _ = result;
     }
 }
 

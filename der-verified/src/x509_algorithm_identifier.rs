@@ -147,11 +147,23 @@ mod proofs {
     use super::*;
 
     /// Robustness: `parse_algorithm_identifier` never panics on any input up to 16 octets.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached AND, separately, both shapes of
+    /// the OPTIONAL `parameters` field are live -- `None` (the Ed25519-shaped one-field case) and
+    /// `Some` (the RSA-shaped two-field case) -- so the composition of SEQUENCE + OID + optional
+    /// ANY parameters genuinely exercises both arms, not just one. Would NOT be SAT if
+    /// `parse_algorithm_identifier`'s body were a no-op always returning `Err`.
     #[kani::proof]
     #[kani::unwind(20)]
     fn parse_algorithm_identifier_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let _ = parse_algorithm_identifier(&buf);
+        let result = parse_algorithm_identifier(&buf);
+        kani::cover(result.is_ok(), "a well-formed AlgorithmIdentifier reaches the Ok tail");
+        if let Ok((algid, _used)) = result {
+            kani::cover(algid.parameters.is_none(), "a one-field AlgorithmIdentifier (no parameters) is accepted");
+            kani::cover(algid.parameters.is_some(), "a two-field AlgorithmIdentifier (with parameters) is accepted");
+        }
+        let _ = result;
     }
 }
 

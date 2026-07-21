@@ -200,11 +200,40 @@ mod proofs {
     use super::*;
 
     /// Robustness: `parse_validity` never panics on any input up to 16 octets.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached (a genuine Validity: outer
+    /// SEQUENCE strict, both Time CHOICE fields decode and exactly tile) -- not merely that
+    /// malformed 16-byte inputs are rejected. Would NOT be SAT if `parse_validity`'s body were a
+    /// no-op always returning `Err`.
+    ///
+    /// **VACUITY FINDING (2026-07-21): this cover is UNSATISFIABLE at `[u8; 16]`.** Kani reports
+    /// `VERIFICATION: SUCCESSFUL` (0 panics) but `0 of 1 cover properties satisfied` — the
+    /// harness's 16-octet buffer can never reach `parse_validity`'s `Ok` tail. This is
+    /// arithmetically forced, not a cover-authoring bug: [`crate::utc_time::decode_utc_time`]
+    /// requires content of *exactly* 13 octets (`content.len() != 13` is rejected outright), so
+    /// the smallest possible `Time::Utc` TLV is `tag(1) + len(1) + content(13) = 15` octets, and
+    /// [`crate::generalized_time::decode_generalized_time`]'s minimal content is even larger (14
+    /// digits + `Z`, no fraction). `Validity` needs an outer SEQUENCE header (>= 2 octets) plus
+    /// TWO such `Time` fields — an arithmetic floor of `2 + 15 + 15 = 32` octets, exactly twice
+    /// this harness's buffer. The happy path is structurally unreachable at this size.
+    ///
+    /// What IS proven at 16 octets: the rejection-side glue (the outer-SEQUENCE walk, the
+    /// `notBefore`/`notAfter` presence checks, the `Time` CHOICE tag dispatch, and the offset
+    /// arithmetic) is panic-free up to wherever the short buffer runs out — but never through to
+    /// `Ok`. The module's implicit "exercises the CHOICE dispatch's Ok arm" framing was never
+    /// machine-checked at this size, and cannot be at 16 octets. Left in place (rather than
+    /// removed) because a cover reporting "0 of 1 satisfied" IS the honest, machine-checked record
+    /// of the gap. A dedicated follow-up would need either a >= 32-byte buffer (raising this
+    /// harness's cost) or a modular split mirroring `x509_tbs_certificate`'s stub pattern (stub
+    /// `decode_time_tlv` with a nondet `Result<Time, TimeError>` and prove the OUTER tiling logic
+    /// alone) — not attempted here.
     #[kani::proof]
     #[kani::unwind(20)]
     fn parse_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let _ = parse_validity(&buf);
+        let result = parse_validity(&buf);
+        kani::cover(result.is_ok(), "a well-formed Validity reaches the Ok tail");
+        let _ = result;
     }
 }
 

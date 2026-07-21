@@ -188,11 +188,19 @@ mod proofs {
     use super::*;
 
     /// Robustness: `parse_subject_public_key_info` never panics on any input up to 16 octets.
+    ///
+    /// Cover (T6 primary rule): witnesses the Ok tail is reached for a genuine, fully-tiled SPKI
+    /// (outer SEQUENCE strict, delegated AlgorithmIdentifier, then the subjectPublicKey BIT
+    /// STRING all decode and exactly tile) -- not merely that malformed 16-byte inputs are
+    /// rejected. Would NOT be SAT if `parse_subject_public_key_info`'s body were a no-op always
+    /// returning `Err`.
     #[kani::proof]
     #[kani::unwind(20)]
     fn parse_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let _ = parse_subject_public_key_info(&buf);
+        let result = parse_subject_public_key_info(&buf);
+        kani::cover(result.is_ok(), "a well-formed SubjectPublicKeyInfo reaches the Ok tail");
+        let _ = result;
     }
 }
 
