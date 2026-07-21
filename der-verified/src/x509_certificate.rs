@@ -249,6 +249,16 @@ mod proofs {
     /// `parse_tbs_certificate` MODULARLY STUBBED (see above). Exercises the real Certificate glue:
     /// the outer SEQUENCE walk, the tbs-span extraction, the real signatureAlgorithm
     /// (AlgorithmIdentifier) + signatureValue (BIT STRING) parses, and the strict tiling.
+    ///
+    /// Cover (T6 primary rule + T2-COROLLARY-A): this harness stacks a `[u8; 12]` bound AND a
+    /// `parse_tbs_certificate` stub -- per the corollary, the intersection must be checked for
+    /// vacuity. The module doc claims this harness "verifies the REAL Certificate-specific glue:
+    /// the outer-SEQUENCE walk, the tbs-span extraction ..., the REAL `signatureAlgorithm` ... and
+    /// `signatureValue` ... parses, and the strict tiling." Reaching `Ok` is the deepest available
+    /// post-state witness through the opaque `Result` that all of that real glue ran to completion
+    /// (tbs-span extraction, both real field parses, strict tiling), not just that an early field
+    /// rejected the input. Would NOT be SAT if `parse_certificate`'s body were a no-op always
+    /// returning `Err`.
     #[kani::proof]
     #[kani::stub(crate::x509_tbs_certificate::parse_tbs_certificate, stub_parse_tbs_certificate)]
     #[kani::unwind(12)]
@@ -258,7 +268,14 @@ mod proofs {
         // (and the anti-trailing-data envelope) can produce, not just the full buffer.
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
-        let _ = parse_certificate(&buf[..len]);
+        let result = parse_certificate(&buf[..len]);
+        kani::cover(
+            result.is_ok(),
+            "parse_certificate reaches its Ok tail: the real outer-SEQUENCE walk, tbs-span \
+             extraction, real signatureAlgorithm + signatureValue parses, and strict tiling all \
+             ran to completion over the stubbed parse_tbs_certificate's Ok outcome",
+        );
+        let _ = result;
     }
 }
 
