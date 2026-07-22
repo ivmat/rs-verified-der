@@ -46,8 +46,15 @@ pub enum TlvError {
 /// of constructed values. If the entire `input` must be a single TLV (e.g. a signature block),
 /// use [`decode_tlv_strict`].
 pub fn decode_tlv(input: &[u8]) -> Result<(Tlv<'_>, usize), TlvError> {
-    let (tag, t_used) = decode_tag(input).map_err(TlvError::Tag)?;
-    let (len_u32, l_used) = decode_length(&input[t_used..]).map_err(TlvError::Length)?;
+    // NOTE: the closures below (`|e| TlvError::Tag(e)`) are deliberately NOT the point-free
+    // `TlvError::Tag`/`TlvError::Length` form (behaviorally identical): Aeneas materializes a
+    // point-free enum-variant-as-value reference as a standalone function whose auto-generated
+    // name collides with the variant's own qualified constructor name ("name clash" error),
+    // blocking Lean extraction. This is the `tlv` lid's own instance of the `writing-verifiable-
+    // rust.md` §4 "write for Aeneas extraction" guidance — a pure style change, re-verified by
+    // the unchanged Kani harnesses + tests below (see D-series decision log).
+    let (tag, t_used) = decode_tag(input).map_err(|e| TlvError::Tag(e))?;
+    let (len_u32, l_used) = decode_length(&input[t_used..]).map_err(|e| TlvError::Length(e))?;
     let header = t_used + l_used;
     // Portability: `decode_length` yields a u32; on targets where `usize` is narrower this
     // could truncate, so convert fallibly rather than `as`-cast. Unreachable on 32/64-bit.

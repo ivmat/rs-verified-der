@@ -5,6 +5,24 @@ Not committed by this pass (uncommitted map file — driver commits). Sources: `
 `docs/verification-cost.md`, `TODO.md`, `METHODS-APPLICATION-ANALYSIS-2026-07-21.md`, and a direct
 grep of `der-verified/src/*.rs`.
 
+**UPDATE 2026-07-22: §3's next-valuable-lid item is CLOSED — landed as the 4th L4 lid, on `tlv`
+(DECISIONS.md D27, `lean/TlvProofs.lean`, `decode_tlv_structure`).** Priority-1 pick from §3 below:
+the first L4 coverage on the crate's structural *composition* layer (not another leaf codec) —
+`decode_tlv`'s structural/no-over-read correctness, ∀-length. Required a one-line behavior-
+preserving source fix (`tlv.rs`'s point-free `.map_err(TlvError::Tag)` → an explicit closure, to
+unblock an Aeneas naming-clash on extraction — a *different* pre-flight issue than §3's flagged
+depth-2-return rule, though `decode_tag`'s own early-return-in-a-loop shape was also hit and
+disclosed via an assumed spec rather than refactored in this pass). 7 disclosed assumed specs (2
+of which restate an already-`sorry`-free-proved `LengthProofs.lean` fact, working around a
+duplicate-extraction Lean-namespace collision, not new unverified trust). `check_lean.sh`
+extended (drift-guard + cfg-split guard for `tlv.rs`) and confirmed **non-vacuous** via a
+sorry-injection test (fails closed, then reverted). Full `sh check_lean.sh`: green, 1700 jobs,
+`PASS (sorry-free)`. Der's Lean track is now **4 lids**: `length`, `big_integer`, `oid`, `tlv`.
+Next, if pursued: the larger `sequence`/consumer-walk lid (§3's item 1's OTHER half — a genuinely
+bigger separate piece, since `sequence` walks an unbounded child count, a loop `decode_tlv` itself
+lacks), or a D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` (would leanen `tlv`'s
+own trust surface too).
+
 **UPDATE 2026-07-21/22 (dedicated 32 GB box, no other worker, 28 GB cgroup cap):** both items in
 §2's "Cloud Kani" table below are now CLOSED locally — neither needed a cloud box after all; the
 prior OOMs were shared-box working-set pressure, not a genuine >32 GB wall.

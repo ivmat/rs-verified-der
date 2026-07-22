@@ -3,4 +3,4 @@ resolver = "2"
 members = ["der-verified"]
 # The Aeneas→Lean extraction shims are nightly-pinned tooling, not part of the
 # verified crate; keep them out of der-verified's build and its Kani gate.
-exclude = ["lean/extract", "lean/extract-bigint", "lean/extract-oid"]
+exclude = ["lean/extract", "lean/extract-bigint", "lean/extract-oid", "lean/extract-tlv"]

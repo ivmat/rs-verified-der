@@ -1,0 +1,4 @@
+# Pin to Charon's nightly so Charon/Aeneas drive extraction consistently.
+# Local to this crate only — der-verified keeps its own `stable` pin + Kani gate.
+[toolchain]
+channel = "nightly-2026-06-01"

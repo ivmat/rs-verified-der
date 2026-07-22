@@ -56,6 +56,15 @@ for fn in validate_oid; do
     exit 1
   fi
 done
+TLV_RS="$HERE/../der-verified/src/tlv.rs"
+for fn in decode_tlv decode_tlv_strict encode_tlv_into; do
+  cnt="$(grep -cE "^pub fn ${fn}\b" "$TLV_RS" || true)"
+  if [ "$cnt" != "1" ]; then
+    echo "!! lean lid: FAIL - expected exactly one 'pub fn ${fn}' in tlv.rs (found ${cnt});" >&2
+    echo "   a cfg-split would let the Kani floor and the Lean lid prove different code." >&2
+    exit 1
+  fi
+done
 
 # 0b) Pin the extraction/proof toolchain revision (review L4-lean-lid-03). The
 #    DerLengthExtract.lean diff below catches *textual* model drift, but not a
@@ -97,6 +106,33 @@ fi
 if ! diff -q "$TMP/DerOidExtract.lean" "$HERE/DerOidExtract.lean" >/dev/null; then
   echo "!! lean lid: FAIL - regenerated model differs from committed DerOidExtract.lean." >&2
   echo "   oid.rs changed; re-extract and re-prove before committing." >&2
+  exit 1
+fi
+# tlv: --opaque on tag::encode_tag + tlv::encode_tlv_into — both have a Rust parameter named
+# `tag` shadowing the `tag` module in Aeneas's Lean dot-notation resolution ("Invalid field"
+# elaboration errors), a pre-existing Aeneas naming limitation independent of this lid's own
+# map_err fix; neither function is needed for the `decode_tlv` structural property this lid
+# proves, so marking them opaque (bodyless axioms) is honest and lossless for this lid's scope.
+# `aeneas` itself EXPECTEDLY exits non-zero here (tag.rs's decode_tag has an early-return-in-a-
+# loop, so Aeneas emits it as a disclosed bodyless axiom and reports that as an "error" even
+# though the rest of the file — including tlv.decode_tlv, the function this lid actually proves
+# about — extracts correctly). So this call runs with `set -e` OFF, same pattern as the `lake
+# build` step below; the diff check right after is what actually gates on drift/regression.
+set +e
+( cd "$HERE/extract-tlv" && "$CHARON_BIN" cargo --preset=aeneas \
+    --opaque "der_tlv_extract::tag::encode_tag" \
+    --opaque "der_tlv_extract::tlv::encode_tlv_into" \
+    --dest "$TMP" >/dev/null 2>&1 )
+"$AENEAS_BIN" -backend lean "$TMP/der_tlv_extract.llbc" -dest "$TMP" >/dev/null 2>&1
+set -e
+if [ ! -f "$TMP/DerTlvExtract.lean" ]; then
+  echo "!! lean lid: FAIL - tlv re-extraction produced no DerTlvExtract.lean at all (a" >&2
+  echo "   genuine extraction failure, not the expected decode_tag bodyless-axiom warning)." >&2
+  exit 1
+fi
+if ! diff -q "$TMP/DerTlvExtract.lean" "$HERE/DerTlvExtract.lean" >/dev/null; then
+  echo "!! lean lid: FAIL - regenerated model differs from committed DerTlvExtract.lean." >&2
+  echo "   tag.rs/length.rs/tlv.rs changed; re-extract and re-prove before committing." >&2
   exit 1
 fi
 

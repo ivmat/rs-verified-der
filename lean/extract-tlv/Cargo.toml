@@ -1,0 +1,18 @@
+# Extraction shim for the Aeneas→Lean lid (L4) on the `tlv` module. Deliberately EXCLUDED
+# from the der-verified workspace (see root Cargo.toml) so it never enters the Kani gate.
+# Pinned to Charon's nightly; re-exposes the SAME tag.rs/length.rs/tlv.rs (no copy → no
+# drift). A SEPARATE crate from `lean/extract` (length), `lean/extract-bigint`
+# (big_integer), and `lean/extract-oid` (oid) so each module's extracted model + drift-check
+# stay independent. `tlv.rs` composes `crate::tag` + `crate::length`, so this shim exposes
+# all three as sibling modules under the same crate root (matching der-verified's own
+# `crate::tag` / `crate::length` paths used inside tlv.rs).
+[package]
+name = "der-tlv-extract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]

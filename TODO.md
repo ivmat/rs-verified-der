@@ -19,8 +19,16 @@ scope boundary referenced below.
 
 ## Verification breadth
 
-- [ ] A 4th L4 (Aeneas→Lean) lid — either another codec, or a **correctness** lid on a consumer slice
-      (the current 3 lids cover `length`, `big_integer`, `oid`; the X.509 slices are Kani-only).
+- [x] **A 4th L4 (Aeneas→Lean) lid — landed on `tlv` (DECISIONS.md D27).** The first L4 lid on the
+      crate's structural *composition* layer (composing `tag` + `length`), not another leaf codec:
+      `decode_tlv`'s structural/no-over-read correctness, ∀-length (`lean/TlvProofs.lean`). Required a
+      one-line behavior-preserving source fix (`tlv.rs`'s point-free `map_err` → explicit closures, to
+      unblock an Aeneas naming clash) — re-verified by Kani + tests. 7 disclosed assumed specs (2 of
+      which restate an already-proved `LengthProofs.lean` fact, worked around a duplicate-extraction
+      namespace collision, not new trust). `check_lean.sh` extended + confirmed non-vacuous
+      (sorry-injection test). The lids now cover `length`, `big_integer`, `oid`, `tlv`; the larger
+      `sequence`/consumer-walk lid (a loop over an unbounded child count) and a `tag.rs` D25-style
+      refactor to fully de-opaque `decode_tag` remain open, larger, separate items.
 - [ ] Add the L4 Lean job to CI if a hosted runner can provision the pinned Aeneas/Charon/Lean stack
       (currently a local-milestone check — see the README).
 

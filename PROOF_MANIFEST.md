@@ -3,7 +3,7 @@
 This document is the **honest proof envelope**. It states exactly what is machine-checked, under
 what bounds, with what assumptions and stubs, and — as importantly — **what is not proven**.
 
-> **Counts are inventory, not coverage.** "294 tests, 161 Kani harnesses, 3 Lean lids" describes how
+> **Counts are inventory, not coverage.** "294 tests, 161 Kani harnesses, 4 Lean lids" describes how
 > much verification exists, not a guarantee that every reachable behaviour is covered. The claim of
 > this crate is precisely the per-property, per-bound statement below — nothing broader. Read the
 > harnesses and proofs themselves as ground truth; this manifest is a map to them.
@@ -44,9 +44,9 @@ column lists each module's range.
 - **294 unit and regression tests** (`cargo test`) exercise concrete vectors (incl. seeded-bad
   specimens) alongside the proofs. These are example-based tests, not property-based/generator-driven.
 
-### L4 reach — Aeneas → Lean (`lean/check_lean.sh`) — **unbounded, on three codecs**
+### L4 reach — Aeneas → Lean (`lean/check_lean.sh`) — **unbounded, on four codecs**
 
-Three codecs are additionally extracted Rust → Charon → Aeneas → Lean 4 (mathlib) and machine-checked
+Four codecs are additionally extracted Rust → Charon → Aeneas → Lean 4 (mathlib) and machine-checked
 over inputs of **any length**, lifting the corresponding bounded Kani harnesses to ∀-length:
 
 | Codec | Lean file | Unbounded property proven |
@@ -54,6 +54,7 @@ over inputs of **any length**, lifting the corresponding bounded Kani harnesses 
 | `length` (§8.1.3) | `lean/LengthProofs.lean` | every branch of `decode_length` ∀-length; round-trip canonicality (`decode_accepts_only_canonical`), which also proves both loops of `encode_length` |
 | `big_integer` (§8.3) | `lean/BigIntProofs.lean` | minimality biconditional (validate side) and encode-side round-trip / canonicality, ∀-length |
 | `oid` (§8.19) | `lean/OidProofs.lean` | OID canonical-form biconditional (validate side), ∀-length |
+| `tlv` (the TLV reader, composing `tag`+`length`) | `lean/TlvProofs.lean` | `decode_tlv`'s structural correctness ∀-length (`decode_tlv_structure`): an accepted TLV's `used` equals `header + declared-length`, its value is exactly that window, and — the security-critical no-over-read fact — `used ≤ input.length`, for an input of *any* length. The first L4 lid on the crate's structural *composition* layer (not a leaf codec) — see its docstring for the disclosed 7-axiom trust surface (`decode_tag` is itself a bodyless Aeneas axiom, an early-return-in-a-loop shape; refactoring `tag.rs` for full ∀-length `decode_tag` canonicality is a separate, larger follow-on item). |
 
 All L4 proofs are **`sorry`-free**, and this is a *gate*, not an eyeball check: `lean/check_lean.sh`
 fails closed if `sorryAx` or a `declaration uses 'sorry'` warning appears. The full non-standard axiom
@@ -103,7 +104,7 @@ Harnesses use `kani::assume(...)` preconditions (130 across the crate) to constr
 input — e.g. bounding a declared length so a loop stays within its unwind depth. **An assumption
 excludes inputs from the proof's domain.** The properties hold *for inputs satisfying the
 assumptions*; inputs outside them are simply not claimed. The assumptions are visible inline in each
-harness. The three Lean lids remove the length-bound assumption for their codecs (that is the point
+harness. The four Lean lids remove the length-bound assumption for their codecs (that is the point
 of the L4 layer).
 
 ## Deliberate deviations from full DER/X.509 (documented, not defects)
@@ -129,7 +130,7 @@ decisions, each recorded in `DECISIONS.md`:
   trust validation. `der-verified` is an *encoding-layer* core.
 - **No full X.509 profile semantics**: cross-field RFC 5280 rules (e.g. `signatureAlgorithm` ==
   `tbsCertificate.signature`, name constraints, validity-against-clock) are left to the caller.
-- **Not unbounded except the three L4 codecs**: every other property is bounded verification over the
+- **Not unbounded except the four L4 codecs**: every other property is bounded verification over the
   harness input domain described above.
 - **rustc-semantics gap for L4**: the Aeneas translation, not rustc, is what the Lean proofs check
   (stated above).
@@ -145,7 +146,7 @@ range; "L4" marks a codec additionally lifted to ∀-length in Lean.
 |---|---|---|---:|---|:--:|
 | `tag` | §8.1.2 | `encode_tag`, `decode_tag` | 7 | 12 | |
 | `length` | §8.1.3, §10.1 | `encode_length`, `decode_length` | 9 | 10 | ✅ |
-| `tlv` | §8.1 | `decode_tlv`, `decode_tlv_strict`, `encode_tlv_into` | 5 | 16 | |
+| `tlv` | §8.1 | `decode_tlv`, `decode_tlv_strict`, `encode_tlv_into` | 5 | 16 | ✅ |
 | `context_tag` | §8.14.2 | `decode_explicit_context` | 1 | 20 | |
 | `boolean` | §8.2 | `encode_bool`, `decode_bool` | 3 | — | |
 | `integer` | §8.3 | `encode_integer`, `decode_integer` | 7 | 12 | |

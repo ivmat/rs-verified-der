@@ -1434,3 +1434,116 @@ the real `validate_rdn` per `decode_set_of_tlv`'s `used <= input.len()` contract
 unwind bounds fail-loud). All five affected harnesses re-verified green (0 failures) inside a desktop-safe
 `systemd-run` memory-capped cgroup. PROOF_MANIFEST (4 stubs / 3 harnesses; 161 count) + check.sh updated.
 
+
+---
+
+## D27 — 4th L4 Lean lid on `tlv`: the ∀-length TLV structural/no-over-read correctness lid, the first on the composition layer  ·  landed (high)
+
+**Call.** Per `DER-REMAINING-WORK.md`'s dispatch note, the next L4 lid — highest priority per the
+methods analysis — is a `sequence`/`tlv` round-trip/consumer-correctness lid: the first coverage on
+the crate's **structural composition layer** (composing `tag` + `length`), not just another leaf
+codec. Scoped to `tlv` (not the larger `sequence`, which walks a whole content buffer and would be
+substantially more effort per the analysis's own "research-grade, selective" framing): `decode_tlv`
+is itself **loop-free** (a single sequential composition of `decode_tag` then `decode_length` then
+overflow-checked arithmetic), so the lid's job is composing already-extracted facts rather than
+proving a new loop invariant from scratch — well-scoped for one session, and still the crate's
+first composition-layer L4 coverage (the headline ask).
+
+**Property proven: `decode_tlv`'s structural correctness, ∀-length (`decode_tlv_structure`,
+`lean/TlvProofs.lean`).** The unbounded companion to Kani's `tlv::proofs::decode_tlv_structure`
+(bounded, 16-byte buffer): whenever `decode_tlv input` accepts `Ok (t, used)`, both sub-decodes
+succeeded with `used` equal to their combined consumption plus the declared value length, the
+returned value is exactly that window, and — the security-critical fact — **`used ≤ input.length`:
+an accepted TLV never claims bytes beyond the input, for an input of *any* length** (the crate's
+own module doc names this "the security-critical property proven here"). Conditioned on one honest
+hypothesis, `32 ≤ Usize.numBits` — `tlv.rs`'s own documented deployment boundary (32/64-bit
+targets; the module already documents 16-bit as out of scope) and the same assumption Kani's
+harnesses make (Kani models `usize` as 64-bit).
+
+**A one-line, behavior-preserving source fix was required first (mirrors D25's `oid` refactor,
+smaller in scope).** Extraction initially failed with a genuine Aeneas naming-scheme bug (not the
+D25 early-return-in-loop shape): `tlv.rs`'s point-free `.map_err(TlvError::Tag)` /
+`.map_err(TlvError::Length)` forced Aeneas to materialize the variant constructors as standalone
+function values, whose auto-generated names collided with the variants' own qualified constructor
+names ("name clash... the generated code will be incorrect"). Neither `-impl-namespace` (a
+different collision class) nor `#[aeneas::rename(...)]` (needs `#![feature(register_tool)]`, a
+nightly-only gate incompatible with `der-verified`'s `stable` pin) fixed it. Fix: rewrote the two
+point-free `map_err` calls as explicit closures (`.map_err(|e| TlvError::Tag(e))` /
+`.map_err(|e| TlvError::Length(e))`) in the shipped `tlv.rs` — a pure style change, zero behavior
+change. Re-verified: all 295 crate tests, all 5 `tlv::proofs::*` Kani harnesses, and (since they
+depend on `tlv` transitively) `sequence::proofs::roundtrip_two_children` /
+`sequence::proofs::tag_correctness` — all pass unchanged after the edit.
+
+**A second, independent Aeneas naming issue surfaced and was worked around, not fixed in source.**
+`tag::encode_tag` and `tlv::encode_tlv_into` both have a Rust parameter literally named `tag`
+(`tag: Tag`), which shadows the `tag` **module** in Aeneas's Lean dot-notation resolution — Aeneas
+emits `tag.class_bits tag.«class»` intending "the `class_bits` function from the `tag` namespace,
+applied to the `tag` parameter's `.class` field", but Lean's elaborator resolves `tag.class_bits`
+as dot-notation on the parameter, failing ("Invalid field `class_bits`... environment does not
+contain `Tag.class_bits`"). Neither function is needed for `decode_tlv_structure` (the lid never
+calls `encode_tag`/`encode_tlv_into`), so `--opaque der_tlv_extract::tag::encode_tag --opaque
+der_tlv_extract::tlv::encode_tlv_into` on the Charon extraction turns both into clean bodyless
+axioms instead — honest (they were never going to be used) and avoids a second source change in
+one pass. `lean/check_lean.sh` was updated to pass the same `--opaque` flags on re-extraction, with
+`set -e` OFF around that one step (mirroring the `lake build` pattern) because `aeneas` itself
+EXPECTEDLY exits non-zero here (the disclosed `decode_tag` early-return-in-loop bodyless-axiom
+"error" — a pre-existing Aeneas limitation, not a regression) even when the file it emits is
+correct; the drift-check right after (`diff` against the committed `DerTlvExtract.lean`) is what
+actually gates.
+
+**Extraction.** New workspace-excluded shim crate `lean/extract-tlv` (per-module isolation, like
+`extract-oid`/`extract-bigint`; committed model `lean/DerTlvExtract.lean`, 1020 lines). Re-exposes
+all three shipped files (`tag.rs`, `length.rs`, `tlv.rs`) as sibling modules under the same crate
+root, matching der-verified's own module layout so `tlv.rs`'s internal `crate::tag`/`crate::length`
+paths resolve unchanged. `tlv.decode_tlv`, `tlv.decode_tlv_strict` extract as fully transparent
+(proof-eligible) definitions; `tag.decode_tag` extracts as a bodyless axiom (the pre-existing D25-
+class early-return-in-a-loop shape, disclosed, not fixed in this pass — a real, larger, owner-scoped
+follow-on if full ∀-length `decode_tag` canonicality is ever wanted); `tag.encode_tag` and
+`tlv.encode_tlv_into` extract as bodyless axioms via `--opaque` (the parameter-shadowing issue
+above, not needed for this lid's scope).
+
+**Trust base — 7 disclosed assumed specs (the `first_spec` pattern), not the leanest lid but each
+individually minimal and justified.** `#print axioms decode_tlv_structure` = `[propext,
+Classical.choice, Quot.sound, length_decode_total, length_decode_used_le, result_map_err_err_spec,
+result_map_err_ok_spec, tag_decode_total, tag_decode_used_bounds, try_from_u32_usize_spec,
+tag.decode_tag, Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+core.result.Result.map_err, core.slice.Slice.first]` — the 3 standard Lean axioms, the 7 assumed
+specs (see `TlvProofs.lean`'s module doc for the full justification of each), and the 4 underlying
+opaque Aeneas primitives they characterize. Two of the seven (`length_decode_total`,
+`length_decode_used_le`) are NOT new unverified trust: `LengthProofs.lean`'s own
+`decode_accepts_only_canonical` already proves totality **sorry-free**, unconditionally, over the
+byte-identical `length.rs` source — but `lean/extract-tlv` runs its own independent Charon/Aeneas
+pass (needed since `tlv.rs` requires `length` as a sibling module), producing a Lean namespace that
+collides with `lean/extract`'s own `DerLengthExtract` if both are imported into the same file (a
+genuine Lean-level limitation of this duplicate-extraction structure, not a semantic gap); these two
+axioms restate an already-proved fact to work around that collision. The other five are honest,
+minimal, `first_spec`-style characterizations of genuinely opaque primitives (`decode_tag`'s
+consumption bounds + totality; `map_err`'s textbook semantics; `usize::try_from(u32)`'s totality
+under the 32-bit-usize hypothesis).
+
+**Gate.** `check_lean.sh` extended with a `tlv.rs` cfg-split guard (`pub fn decode_tlv` /
+`decode_tlv_strict` / `encode_tlv_into`, each count == 1) + a fourth re-extract/drift-check
+(regenerate `DerTlvExtract.lean` from the shipped sources and fail on drift, with the `--opaque`
+flags and the `set -e`-off carve-out above). Full `sh check_lean.sh` re-runs green (1700 jobs,
+`PASS (sorry-free)`). Verified non-vacuous: injecting a `sorry` into `decode_tlv_structure`'s proof
+makes `check_lean.sh` FAIL closed (`sorryAx` appears in the axiom dump, `lake build` reports the
+error, the script exits 1) — confirmed, then the injection was reverted and the gate re-confirmed
+green.
+
+**L3 Kani floor.** Unaffected by the `tlv.rs` closure-style edit: re-ran all 5 `tlv::proofs::*`
+harnesses plus 2 `sequence::proofs::*` harnesses that depend on `tlv` transitively — all `VERIFICATION:
+SUCCESSFUL`, 0 failures, identical cover-satisfaction to before the edit. `cargo test` (295 tests,
+crate-wide) green.
+
+**Der's Lean track is now 4 lids: `length`, `big_integer`, `oid`, `tlv`.** Next, if pursued: either
+the D25-style refactor to unblock full ∀-length `decode_tag` canonicality (unlocking a leaner `tlv`
+trust surface and a standalone `tag` lid), or the larger `sequence`/consumer-walk lid the methods
+analysis originally flagged as the *other* half of this dispatch item (a genuinely bigger, separate
+piece of work — `sequence` walks an unbounded number of children per content buffer, a loop
+`decode_tlv` itself does not have).
+
+**Method.** Implementation with iterative Lean-goal-driven proof construction (no blind large tactic
+scripts — each step verified against the real elaborator goal state via `lake build`'s error
+output before proceeding). verify-not-auto-apply throughout: every extraction step, the source
+refactor's Kani/test re-verification, and the sorry-gate's non-vacuity were confirmed via real exit
+codes, not assumed.
