@@ -139,7 +139,7 @@ pub fn decode_sequence(content: &[u8]) -> Result<usize, SequenceError> {
 /// inside larger structures; a top-level caller should check the returned length against
 /// `input.len()`.
 pub fn decode_sequence_tlv(input: &[u8]) -> Result<(&[u8], usize), SequenceError> {
-    let (tlv, used) = decode_tlv(input).map_err(SequenceError::Tlv)?;
+    let (tlv, used) = decode_tlv(input).map_err(|e| SequenceError::Tlv(e))?;
     if tlv.tag.class != Class::Universal || tlv.tag.number != TAG {
         return Err(SequenceError::WrongTag);
     }

@@ -29,8 +29,20 @@ scope boundary referenced below.
       (sorry-injection test). The lids now cover `length`, `big_integer`, `oid`, `tlv`; the larger
       `sequence`/consumer-walk lid (a loop over an unbounded child count) and a `tag.rs` D25-style
       refactor to fully de-opaque `decode_tag` remain open, larger, separate items.
-- [ ] Add the L4 Lean job to CI if a hosted runner can provision the pinned Aeneas/Charon/Lean stack
-      (currently a local-milestone check — see the README).
+- [x] **A 5th L4/L5 (Aeneas→Lean) lid — landed on `sequence` (DECISIONS.md D28).** The larger
+      `sequence`/consumer-walk lid flagged above: `decode_sequence`'s structural/no-over-read
+      correctness, ∀-length AND ∀-children (`lean/SequenceProofs.lean`) — the crate's first
+      **unbounded-LOOP** lid (`tlv::decode_tlv` is itself loop-free). Required the SAME map_err
+      name-clash fix as D27, this time in `sequence.rs`, plus a documented `check_lean.sh` patch step
+      working around a genuine Aeneas codegen gap (the `Iterator` trait's `step_by`/`enumerate`/`take`
+      defaults aren't filled for a user-defined `impl Iterator` that only defines `next`) — filled with
+      Aeneas's own generic default-method combinators, inert for this lid's scope. Same 7 disclosed
+      assumed specs as `tlv`'s lid (restated for the new extraction pass's namespace). `check_lean.sh`
+      extended + confirmed non-vacuous (sorry-injection test, both at the `lake build` and full-gate
+      level). The lids now cover `length`, `big_integer`, `oid`, `tlv`, `sequence`; a `tag.rs`
+      D25-style refactor to fully de-opaque `decode_tag` remains open, a separate item.
+- [ ] Add the L4/L5 Lean job to CI if a hosted runner can provision the pinned Aeneas/Charon/Lean
+      stack (currently a local-milestone check — see the README).
 
 ## API / scope
 

@@ -23,6 +23,31 @@ bigger separate piece, since `sequence` walks an unbounded child count, a loop `
 lacks), or a D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` (would leanen `tlv`'s
 own trust surface too).
 
+**UPDATE 2026-07-22 (later same day): the `sequence`/consumer-walk lid flagged above is ALSO
+CLOSED — landed as the 5th L4/L5 lid (DECISIONS.md D28, `lean/SequenceProofs.lean`,
+`decode_sequence_structure`).** The crate's first **unbounded-LOOP** lid: `decode_sequence`'s
+structural/no-over-read correctness, ∀-length AND ∀-children (`tlv::decode_tlv`, composed here, is
+itself loop-free — Kani's own `#[kani::unwind(16)]`-capped harness is inherently bounded on BOTH
+buffer width and trip count; this lid removes both caps). Required the SAME map_err name-clash fix
+as D27, this time in `sequence.rs` (`decode_sequence_tlv`'s `.map_err(SequenceError::Tlv)`), plus a
+genuinely NEW Aeneas limitation surfaced and worked around: the `Iterator` trait's `step_by`/
+`enumerate`/`take` default-method fields are not auto-filled by Aeneas for a hand-written `impl
+Iterator` that only defines `next` (as `Elements` does) — a real codegen gap for user-defined
+iterators (library iterators get hand-specialized adapters in Aeneas's own Std; a user type gets
+none). Fixed by a documented, re-runnable `check_lean.sh` patch step that fills the three fields
+with Aeneas's own generic default-method combinators (inert scaffolding — none of the three is ever
+called by the functions this lid proves anything about). Reuses the SAME 7 disclosed assumed specs
+as `tlv`'s D27 lid (restated for this pass's own extraction namespace, per the established
+duplicate-extraction-namespace pattern). Proved via `loop.spec_decr_nat` with measure
+`iter.rest.length`, strictly decreasing every accepted child — the mechanism that lets the
+induction close for *any* number of children. `check_lean.sh` extended (drift-guard + cfg-split
+guard for `sequence.rs` + the Iterator-fields patch step) and confirmed **non-vacuous** via a
+sorry-injection test at BOTH the single-file `lake build` level and the full-gate level (fails
+closed both times, then reverted). Full `sh check_lean.sh`: green, 1702 jobs, `PASS (sorry-free)`.
+Der's Lean track is now **5 lids**: `length`, `big_integer`, `oid`, `tlv`, `sequence`. Next, if
+pursued: a D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` (would leanen both `tlv`'s
+and `sequence`'s trust surfaces).
+
 **UPDATE 2026-07-21/22 (dedicated 32 GB box, no other worker, 28 GB cgroup cap):** both items in
 §2's "Cloud Kani" table below are now CLOSED locally — neither needed a cloud box after all; the
 prior OOMs were shared-box working-set pressure, not a genuine >32 GB wall.
@@ -93,34 +118,36 @@ candidate.
 
 ## 3. Lean lids (Aeneas/Charon/Lean) — existing coverage + next lid
 
-**3 sorry-free lids exist today**, all gate-enforced (`lean/check_lean.sh` fails closed on any
-`sorryAx`/"uses 'sorry'"), each re-extracting from the shipped `.rs` (drift-guarded, not a stale
-snapshot):
+**5 sorry-free lids exist today** (D27 landed `tlv`, D28 landed `sequence` — both superseding this
+section's earlier "3 lids"/"next lid" framing, kept below only for the historical trail), all
+gate-enforced (`lean/check_lean.sh` fails closed on any `sorryAx`/"uses 'sorry'"), each
+re-extracting from the shipped `.rs` (drift-guarded, not a stale snapshot):
 
 | Codec | Lean file | Property (∀-length, unbounded) |
 |---|---|---|
 | `length` (§8.1.3) | `lean/LengthProofs.lean` | every branch of `decode_length`; round-trip canonicality (also proves both `encode_length` loops) |
 | `big_integer` (§8.3) | `lean/BigIntProofs.lean` | minimality biconditional + encode-side round-trip/canonicality |
 | `oid` (§8.19) | `lean/OidProofs.lean` | canonical-form biconditional (validate side) |
+| `tlv` (§8.1, composing `tag`+`length`) | `lean/TlvProofs.lean` | `decode_tlv`'s structural/no-over-read correctness, ∀-length (D27) |
+| `sequence` (§8.9/§8.10, composing `tag`+`length`+`tlv`) | `lean/SequenceProofs.lean` | `decode_sequence`'s structural/no-over-read correctness, ∀-length AND ∀-children — the crate's first unbounded-LOOP lid (D28) |
 
-**All X.509 structural modules (`x509_*`) are Kani-only — no L4 lid.** `TODO.md` and the methods
-analysis both flag "a 4th L4 lid" as the crate's one open *breadth* item (not a defect — a
-deliberate, disclosed scope boundary per `PROOF_MANIFEST.md`'s L4 section).
+**All X.509 structural modules (`x509_*`) are Kani-only — no L4 lid.** Still the crate's one open
+*breadth* item (not a defect — a deliberate, disclosed scope boundary per `PROOF_MANIFEST.md`'s L4
+section).
 
-**Next valuable lid (per the methods analysis, §2.3/§2.5), in priority order:**
-1. **A `sequence` or `tlv` round-trip ∀-length correctness lid** — the analysis's top pick: a
-   *consumer*-level correctness lid (not just another leaf codec) would be the first L4 coverage on
-   the crate's structural composition layer, not just its primitive codecs. Real proof-engineering
-   effort (T5 is "research-grade, selective" per the methods KB), not a quick win.
-2. A 4th primitive **codec** lid (candidates deliberately excluded: `tag`/`boolean`/`null` are "too
-   trivial to be worth a lid" per the analysis — no real ∀-length risk beyond what Kani already
-   fully characterizes at 1–3 bytes).
+**Next valuable lid, if pursued:**
+1. A D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` (currently a bodyless Aeneas
+   axiom in both `tlv`'s and `sequence`'s lids, the early-return-in-a-loop shape) — would leanen
+   both existing composition-layer lids' trust surfaces and unlock a standalone `tag` lid.
+2. An X.509 structural-module lid (bigger scope, no consumer-walk precedent yet at that layer).
 3. Pre-flight check before either: audit the candidate's control flow for a depth-2-nested `return`
    (the `writing-verifiable-rust.md` §4 rule — Aeneas silently emits a bodyless axiom/sorry-
-   equivalent for this shape; `oid`'s own extraction needed exactly this refactor per D25).
+   equivalent for this shape; `oid`'s own extraction needed exactly this refactor per D25) AND for
+   a hand-written `impl Iterator`/similar trait impl relying on default methods (the D28-discovered
+   `step_by`/`enumerate`/`take` codegen gap — same disclosed-patch workaround pattern applies).
 
 No Lean work is blocked on Task A/B; this is a clean scoping item for whenever the driver wants to
-invest in L4 breadth next.
+invest in L4/L5 breadth next.
 
 ## 4. Vacuity findings — open?
 
@@ -167,8 +194,9 @@ past their harnesses' buffers.
   `x509_extension::validate_extensions_never_panics` (~20.5 GiB peak, ~10 min) converge
   `VERIFICATION: SUCCESSFUL` under a dedicated 28 GB cap; the prior OOMs were shared-box working-set
   pressure, not a genuine >32 GB wall. Der's cloud-candidate list is now empty.
-- **Lean:** next lid is a `sequence`/`tlv` round-trip ∀-length *consumer* correctness lid — real
-  effort, owner-scoped, not urgent.
+- **Lean:** both `tlv` (D27) and `sequence` (D28) consumer-correctness lids are now landed
+  (5 sorry-free lids total). Next, if pursued: a D25-style `tag.rs` refactor to fully de-opaque
+  `decode_tag` — owner-scoped, not urgent.
 - **Vacuity:** closed (tbs, validity, and now extensions); `x509_certificate` checked directly —
   not vacuous (`1 of 1` cover already satisfied). Total: exactly 3 findings ever existed, all now
   closed.

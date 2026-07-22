@@ -11,8 +11,9 @@ evidence is **re-runnable from a fresh clone**: the proofs are the product, not 
 - **L3 — Kani** (bounded model checking): 161 proof harnesses over 25 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
-- **L4 — Aeneas → Lean 4** (unbounded proofs): three codecs (`length`, `big_integer`, `oid`) are
-  additionally proven over inputs of **any length**, `sorry`-free.
+- **L4/L5 — Aeneas → Lean 4** (unbounded proofs): five codecs (`length`, `big_integer`, `oid`,
+  `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
+  ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free.
 - **294** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
@@ -110,7 +111,7 @@ Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lid
 independently-proven sub-parser (disclosed in `PROOF_MANIFEST.md`). Harnesses without a stub are
 unaffected by the flag.
 
-### 2. The L4 Lean lids (optional; unbounded proofs on 3 codecs)
+### 2. The L4/L5 Lean lids (optional; unbounded proofs on 5 codecs)
 
 `./check.sh` runs the Lean lids if — and only if — the Aeneas/Lean toolchain is present; otherwise it
 **skips them and still passes on the Kani floor**. To run them you need, in an isolated location

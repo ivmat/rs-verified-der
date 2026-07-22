@@ -1547,3 +1547,127 @@ scripts — each step verified against the real elaborator goal state via `lake 
 output before proceeding). verify-not-auto-apply throughout: every extraction step, the source
 refactor's Kani/test re-verification, and the sorry-gate's non-vacuity were confirmed via real exit
 codes, not assumed.
+
+## D28 — 5th L4/L5 Lean lid: the `sequence` consumer-walk ∀-length, ∀-children correctness lid — the crate's first unbounded-LOOP lid  ·  landed (high)
+
+**Call.** Per D27's own dispatch note, the `sequence`/consumer-walk lid — the larger, deferred half
+of the original dispatch item — is the next L4/L5 target: `sequence.rs`'s child-walk iterates an
+UNBOUNDED number of children per content buffer, a loop `tlv::decode_tlv` itself does not have
+(that function is a single sequential composition, loop-free). This makes `sequence` the crate's
+first coverage of an unbounded LOOP in Lean, not just an unbounded input length — the property
+Kani's own `#[kani::unwind(16)]`-capped harnesses (`sequence::proofs::no_over_read` /
+`ok_implies_exact_tiling`) are inherently unable to reach past a fixed trip count.
+
+**Property proven: `decode_sequence`'s structural correctness, ∀-length AND ∀-children
+(`decode_sequence_structure`, `lean/SequenceProofs.lean`).** The unbounded companion to Kani's
+`sequence::proofs::no_over_read` / `ok_implies_exact_tiling` (bounded, 8-byte content buffer, ≤ 4
+children): whenever `decode_sequence content` accepts (`Ok _`), the child-walk it performs (via
+`Elements::next`, repeatedly calling `tlv.decode_tlv` on the remaining suffix and advancing by the
+bytes it consumed) reaches a state whose remaining suffix is **exhausted** — the walk consumes
+*exactly* `content`'s bytes, for a content slice of *any* length and *any* number of children (no
+bound on the walk's trip count). Because the walk's `rest` field is, at every step, provably *some*
+`content.drop(off)` (a genuine tail, never a slice manufactured out of thin air — an invariant
+threaded through the induction, not assumed), "the final `rest` is empty" is exactly the
+security-critical "no over-read" claim, doubly unbounded.
+
+**Proved in three layers** (mirroring `LengthProofs.lean`'s loop-invariant / headline-theorem
+split): (1) `decode_tlv_progress` — the minimal corollary of D27's `decode_tlv_structure` this lid
+needs (an accepted `decode_tlv` call consumes `1 ≤ used ≤ input.length`); (2) `elements_next_progress`
+— lifts (1) through the slice-drop `Elements::next` performs, PLUS a companion fact for the `none`
+(walk-exhausted) outcome; (3) `decode_sequence_loop_spec` — the ∀-trip-count loop invariant over
+`sequence.decode_sequence_loop`, proved by `loop.spec_decr_nat` with measure `iter.rest.length`
+(strictly decreasing every accepted child, by (2)) — the mechanism that lets the induction close
+for *any* number of children, not just the ≤ 4 an 8-byte Kani buffer can exhibit. `decode_sequence_
+structure` (4) specializes (3) at the initial state from `Elements::new`. A genuine totality lemma
+(`decode_tlv_total`/`decode_tlv_total_spec`) was also needed beyond D27's own accept-conditioned
+theorem: Lean's `spec (fail e) P ↔ False` means a proof step where `decode_tlv` might fault is
+UNPROVABLE (not vacuously true) unless `decode_tlv` is first pinned to an `ok _` result — the
+`none`-outcome half of `elements_next_progress`'s postcondition needed this.
+
+**The SAME map_err name-clash fix as D27, this time in `sequence.rs`.** Extraction failed
+identically to D27's `tlv.rs` case: `decode_sequence_tlv`'s point-free `.map_err(SequenceError::
+Tlv)` collided with the `SequenceError::Tlv` variant's own qualified constructor name under
+Aeneas's naming scheme. Fixed identically: rewritten as the explicit closure `.map_err(|e| SequenceError::Tlv(e))`
+— a pure style change, zero behavior change. Re-verified: all 21 `sequence`-module tests plus the
+crate's 295-test suite pass unchanged (this function, `decode_sequence_tlv`, is not itself one of
+the functions this lid proves anything about — `decode_sequence`/`Elements::next` are — so the fix
+is purely a pre-flight unblock).
+
+**A genuinely NEW Aeneas limitation surfaced, worked around via a documented `check_lean.sh` patch
+step (not a source change).** Aeneas's Lean codegen does not fill in the `Iterator` trait's other
+three fields (`step_by`, `enumerate`, `take`) for a hand-written `impl Iterator` that only defines
+`next` — relying on Rust's own trait *default* methods for the rest, exactly as `sequence.rs`'s
+`Elements` does. This is a genuine codegen gap specific to *user-defined* iterators: library
+iterators (`Vec`'s, slice's, …) get hand-specialized adapter instances in Aeneas's own Std library
+(`VecIter.lean`, `SliceIter.lean`, …), but a user's own `Elements` type gets none, so the generated
+`Iterator` instance is missing three required fields and fails to typecheck as-is. Neither a
+`--translate-all-methods` Charon flag (translates every default `Iterator` method crate-wide,
+including several that don't extract cleanly — `try_fold`, lifetime-constrained adapters, …) nor
+marking the three methods `--opaque` on the Charon call changed the generated instance's shape (the
+gap is in how Aeneas BUILDS the trait dictionary for a partial impl, not in what it chooses to
+translate). Removing `impl Iterator for Elements` from the source was rejected as too invasive:
+`sequence.rs`'s own `for` loop AND `x509_name.rs`'s consumer both rely on the trait (not just
+tests), so the change would ripple into the crate's public API for a published crate — out of
+scope for an extraction-shim-only fix. The fix actually applied: `check_lean.sh`'s re-extraction
+step now applies a small, documented, deterministic post-extraction patch (embedded in the gate
+script itself, applied identically on every run) that fills the three missing fields using Aeneas's
+own GENERIC default-method combinators (`core.iter.traits.iterator.Iterator.{step_by,enumerate,
+take}.default`) — the exact Lean model of what `rustc` itself synthesizes for any `impl Iterator`
+that doesn't override them. None of the three is ever called by `decode_sequence`/`Elements::next`
+(the only functions this lid proves anything about), so this is inert scaffolding needed only to
+make the trait dictionary's structure well-typed — not new trust, not a behavior change, and fully
+reproducible (the gate re-derives and re-diffs it on every run, same "provably concerns the exact
+bytes the Kani floor proves" contract as every other lid).
+
+**Extraction.** New workspace-excluded shim crate `lean/extract-sequence` (per-module isolation,
+like `extract-tlv`/`extract-oid`/`extract-bigint`; committed model `lean/DerSequenceExtract.lean`,
+~1395 lines, mechanical Aeneas output — the Iterator-fields patch is applied only inside
+`check_lean.sh`'s re-extraction/diff step, not baked into the committed file's own docstrings, to
+keep the committed model provably mechanical). Re-exposes all four shipped files (`tag.rs`,
+`length.rs`, `tlv.rs`, `sequence.rs`) as sibling modules under the same crate root. `sequence.
+decode_sequence`, `Elements::new`, `Elements::next` (as the `Iterator` impl's `next` method) extract
+as fully transparent (proof-eligible) definitions; `tag.decode_tag` extracts as a bodyless axiom
+(same D25-class shape as D27, disclosed, not fixed in this pass); `tag.encode_tag` and `tlv.
+encode_tlv_into` extract as bodyless axioms via `--opaque` (same parameter-shadowing workaround as
+D27, not needed for this lid's scope).
+
+**Trust base — the SAME 7 disclosed assumed specs as D27's `tlv` lid**, restated in this pass's own
+`der_sequence_extract` namespace (the same duplicate-extraction-namespace workaround D27 itself
+used for 2 of its 7). `#print axioms decode_sequence_structure` = `[propext, Classical.choice,
+Quot.sound, length_decode_total, length_decode_used_le, result_map_err_err_spec,
+result_map_err_ok_spec, tag_decode_total, tag_decode_used_bounds, try_from_u32_usize_spec,
+tag.decode_tag, Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+core.result.Result.map_err, core.slice.Slice.first]` — the 3 standard Lean axioms, the 7 assumed
+specs (same justification as `TlvProofs.lean`'s, see `SequenceProofs.lean`'s module doc for the
+restatement), and the 4 underlying opaque Aeneas primitives they characterize. No new trust beyond
+what D27 already disclosed.
+
+**Gate.** `check_lean.sh` extended with a `sequence.rs` cfg-split guard (`pub fn decode_sequence` /
+`decode_sequence_tlv` / `decode_sequence_tlv_strict` / `encode_sequence_into`, each count == 1) + a
+fifth re-extract/drift-check (regenerate `DerSequenceExtract.lean` from the shipped sources, apply
+the Iterator-fields patch, and fail on drift — with the same `--opaque` flags and `set -e`-off
+carve-out as D27's `tlv` step). Full `sh check_lean.sh` re-runs green (1702 jobs, `PASS
+(sorry-free)`). Verified non-vacuous TWICE: injecting a `sorry` into `decode_sequence_loop_spec`'s
+proof makes both a direct `lake build SequenceProofs` AND the full `sh check_lean.sh` FAIL closed
+(`sorryAx` appears in the axiom dump of both `decode_sequence_loop_spec` and its dependent
+`decode_sequence_structure`; the gate script's own sorry-grep fires and exits 1) — confirmed at
+both levels, then the injection was reverted and both re-confirmed green.
+
+**L3 Kani floor.** Unaffected by the `sequence.rs` closure-style edit: re-ran all 7
+`sequence::proofs::*` harnesses (0 of 322 checks failed, 2 of 2 cover properties satisfied) and all
+5 `tlv::proofs::*` harnesses (0 of 96 checks failed, 3 of 3 cover properties satisfied) — both
+`VERIFICATION: SUCCESSFUL`, identical to before the edit. `cargo test` (295 tests, crate-wide)
+green.
+
+**Der's Lean track is now 5 lids: `length`, `big_integer`, `oid`, `tlv`, `sequence`.** Next, if
+pursued: the D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` — would leanen both
+`tlv`'s and `sequence`'s trust surfaces (both currently carry it as a disclosed bodyless-axiom
+dependency) and unlock a standalone `tag` lid.
+
+**Method.** Implementation with iterative Lean-goal-driven proof construction (no blind large
+tactic scripts — each step verified against the real elaborator goal state via `lake build`'s error
+output before proceeding, including several genuine dead-ends on the loop-invariant's exact
+anonymous-constructor nesting that were diagnosed via the elaborator's own displayed goal rather
+than guessed). verify-not-auto-apply throughout: every extraction step, the source refactor's
+Kani/test re-verification, the Iterator-fields patch's reproducibility, and the sorry-gate's
+non-vacuity (at both the file and full-gate level) were confirmed via real exit codes, not assumed.

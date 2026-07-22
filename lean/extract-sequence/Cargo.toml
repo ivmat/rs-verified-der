@@ -1,0 +1,19 @@
+# Extraction shim for the Aeneas→Lean lid (L5) on the `sequence` module. Deliberately EXCLUDED
+# from the der-verified workspace (see root Cargo.toml) so it never enters the Kani gate.
+# Pinned to Charon's nightly; re-exposes the SAME tag.rs/length.rs/tlv.rs/sequence.rs (no copy →
+# no drift). A SEPARATE crate from `lean/extract` (length), `lean/extract-bigint` (big_integer),
+# `lean/extract-oid` (oid), and `lean/extract-tlv` (tlv) so each module's extracted model + drift-
+# check stay independent. `sequence.rs` composes `crate::tag` + `crate::tlv` (which itself composes
+# `crate::length`), so this shim exposes all four as sibling modules under the same crate root
+# (matching der-verified's own `crate::tag`/`crate::length`/`crate::tlv` paths used inside
+# sequence.rs).
+[package]
+name = "der-sequence-extract"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]

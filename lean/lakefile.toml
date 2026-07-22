@@ -13,4 +13,4 @@ path = "../../../Downloads/verified_rs_tools/aeneas/backends/lean"
 [[lean_lib]]
 name = "DerVerified"
 srcDir = "."
-roots = ["DerLengthExtract", "LengthProofs", "DerBigintExtract", "BigIntProofs", "DerOidExtract", "OidProofs", "DerTlvExtract", "TlvProofs"]
+roots = ["DerLengthExtract", "LengthProofs", "DerBigintExtract", "BigIntProofs", "DerOidExtract", "OidProofs", "DerTlvExtract", "TlvProofs", "DerSequenceExtract", "SequenceProofs"]

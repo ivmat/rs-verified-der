@@ -44,10 +44,11 @@ column lists each module's range.
 - **294 unit and regression tests** (`cargo test`) exercise concrete vectors (incl. seeded-bad
   specimens) alongside the proofs. These are example-based tests, not property-based/generator-driven.
 
-### L4 reach — Aeneas → Lean (`lean/check_lean.sh`) — **unbounded, on four codecs**
+### L4/L5 reach — Aeneas → Lean (`lean/check_lean.sh`) — **unbounded, on five codecs**
 
-Four codecs are additionally extracted Rust → Charon → Aeneas → Lean 4 (mathlib) and machine-checked
-over inputs of **any length**, lifting the corresponding bounded Kani harnesses to ∀-length:
+Five codecs are additionally extracted Rust → Charon → Aeneas → Lean 4 (mathlib) and machine-checked
+over inputs of **any length** (and, for `sequence`, ALSO any number of children — the crate's first
+unbounded-LOOP lid), lifting the corresponding bounded Kani harnesses to ∀-length/∀-children:
 
 | Codec | Lean file | Unbounded property proven |
 |---|---|---|
@@ -55,6 +56,7 @@ over inputs of **any length**, lifting the corresponding bounded Kani harnesses 
 | `big_integer` (§8.3) | `lean/BigIntProofs.lean` | minimality biconditional (validate side) and encode-side round-trip / canonicality, ∀-length |
 | `oid` (§8.19) | `lean/OidProofs.lean` | OID canonical-form biconditional (validate side), ∀-length |
 | `tlv` (the TLV reader, composing `tag`+`length`) | `lean/TlvProofs.lean` | `decode_tlv`'s structural correctness ∀-length (`decode_tlv_structure`): an accepted TLV's `used` equals `header + declared-length`, its value is exactly that window, and — the security-critical no-over-read fact — `used ≤ input.length`, for an input of *any* length. The first L4 lid on the crate's structural *composition* layer (not a leaf codec) — see its docstring for the disclosed 7-axiom trust surface (`decode_tag` is itself a bodyless Aeneas axiom, an early-return-in-a-loop shape; refactoring `tag.rs` for full ∀-length `decode_tag` canonicality is a separate, larger follow-on item). |
+| `sequence` (the SEQUENCE/SET child-walk, composing `tag`+`length`+`tlv`) | `lean/SequenceProofs.lean` | `decode_sequence`'s structural correctness, ∀-length AND ∀-children (`decode_sequence_structure`): whenever `decode_sequence content` accepts, the child-walk it performs reaches a state whose remaining suffix is exhausted — the walk consumes *exactly* `content`'s bytes, for a content slice of *any* length and *any* number of children (no bound on the walk's trip count, unlike Kani's `#[kani::unwind(16)]`-capped harness). The crate's first coverage of an **unbounded LOOP** in Lean (`tlv::decode_tlv` is itself loop-free) — proved via `loop.spec_decr_nat` with measure `iter.rest.length`, strictly decreasing each accepted child. Reuses the same disclosed 7-axiom trust surface as `tlv`'s lid (restated for this pass's own extraction namespace — see its docstring). |
 
 All L4 proofs are **`sorry`-free**, and this is a *gate*, not an eyeball check: `lean/check_lean.sh`
 fails closed if `sorryAx` or a `declaration uses 'sorry'` warning appears. The full non-standard axiom
