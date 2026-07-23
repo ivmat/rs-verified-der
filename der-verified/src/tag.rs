@@ -110,28 +110,37 @@ pub fn decode_tag(input: &[u8]) -> Result<(Tag, usize), TagError> {
             1,
         ));
     }
-    // high-tag form: base-128 continuation octets
+    // high-tag form: base-128 continuation octets.
+    //
+    // Single-loop, break-with-accumulated-`Result` shape (mirrors `oid::validate_oid`, D25):
+    // Aeneas's Lean backend cannot extract a `return` nested inside a `loop` ("Breaks to outer
+    // loops are not supported yet"), which degrades extraction to a bodyless axiom. Every
+    // early exit that used to be a `return` is now a `break` carrying the outcome in `state`;
+    // the loop's own condition (`i >= input.len()`, i.e. running off the slice) is the only
+    // other way out, and is itself folded into `state` before the `break` so there is exactly
+    // one post-loop match, never a `return` at depth > 0.
     let mut number: u32 = 0;
     let mut i = 1usize;
     let mut count = 0usize;
-    loop {
+    let state: Result<(u32, usize), TagError> = loop {
         let byte = match input.get(i) {
             Some(&b) => b,
-            None => return Err(TagError::Truncated),
+            None => break Err(TagError::Truncated),
         };
         if count == 0 && byte == 0x80 {
-            return Err(TagError::NonMinimal); // leading-zero continuation group
+            break Err(TagError::NonMinimal); // leading-zero continuation group
         }
         if number > (u32::MAX >> 7) {
-            return Err(TagError::TooLarge); // a further 7-bit group would exceed u32
+            break Err(TagError::TooLarge); // a further 7-bit group would exceed u32
         }
         number = (number << 7) | (byte & 0x7F) as u32;
         count += 1;
         i += 1;
         if byte & 0x80 == 0 {
-            break; // last octet (continuation bit clear)
+            break Ok((number, i)); // last octet (continuation bit clear)
         }
-    }
+    };
+    let (number, i) = state?;
     if number <= 30 {
         return Err(TagError::NonMinimal); // high-tag form for a low-tag-representable number
     }

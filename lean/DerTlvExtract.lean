@@ -619,13 +619,111 @@ def tag.class_bits (c : tag.Class) : Result Std.U8 := do
     Visibility: public -/
 axiom tag.encode_tag : tag.Tag → Result ((Array Std.U8 6#usize) × Std.Usize)
 
-/-- [der_tlv_extract::tag::decode_tag]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 94:0-139:1
+/-- [der_tlv_extract::tag::decode_tag]: loop body 0:
+    Source: 'src/../../../der-verified/src/tag.rs', lines 125:48-142:5
     Visibility: public -/
-axiom tag.decode_tag
+@[rust_loop_body]
+def tag.decode_tag_loop.body
+  (input : Slice Std.U8) (i : Std.Usize) (number : Std.U32) (count : Std.Usize)
   :
-  Slice Std.U8 → Result (core.result.Result (tag.Tag × Std.Usize)
-    tag.TagError)
+  Result (ControlFlow (Std.Usize × Std.U32 × Std.Usize) (core.result.Result
+    (Std.U32 × Std.Usize) tag.TagError))
+  := do
+  let o ←
+    core.slice.Slice.get (core.slice.index.SliceIndexUsizeSlice Std.U8) input i
+  match o with
+  | none => ok (done (core.result.Result.Err tag.TagError.Truncated))
+  | some b =>
+    if count = 0#usize
+    then
+      if b = 128#u8
+      then ok (done (core.result.Result.Err tag.TagError.NonMinimal))
+      else
+        let i1 ← core.num.U32.MAX >>> 7#i32
+        if number > i1
+        then ok (done (core.result.Result.Err tag.TagError.TooLarge))
+        else
+          let i2 ← number <<< 7#i32
+          let i3 ← lift (b &&& 127#u8)
+          let i4 ← lift (UScalar.cast .U32 i3)
+          let number1 ← lift (i2 ||| i4)
+          let count1 ← count + 1#usize
+          let i5 ← i + 1#usize
+          let i6 ← lift (b &&& 128#u8)
+          if i6 = 0#u8
+          then ok (done (core.result.Result.Ok (number1, i5)))
+          else ok (cont (i5, number1, count1))
+    else
+      let i1 ← core.num.U32.MAX >>> 7#i32
+      if number > i1
+      then ok (done (core.result.Result.Err tag.TagError.TooLarge))
+      else
+        let i2 ← number <<< 7#i32
+        let i3 ← lift (b &&& 127#u8)
+        let i4 ← lift (UScalar.cast .U32 i3)
+        let number1 ← lift (i2 ||| i4)
+        let count1 ← count + 1#usize
+        let i5 ← i + 1#usize
+        let i6 ← lift (b &&& 128#u8)
+        if i6 = 0#u8
+        then ok (done (core.result.Result.Ok (number1, i5)))
+        else ok (cont (i5, number1, count1))
+
+/-- [der_tlv_extract::tag::decode_tag]: loop 0:
+    Source: 'src/../../../der-verified/src/tag.rs', lines 125:48-142:5
+    Visibility: public -/
+@[rust_loop]
+def tag.decode_tag_loop
+  (i : Std.Usize) (input : Slice Std.U8) (number : Std.U32) (count : Std.Usize)
+  :
+  Result (core.result.Result (Std.U32 × Std.Usize) tag.TagError)
+  := do
+  loop
+    (fun (i1, number1, count1) => tag.decode_tag_loop.body input i1 number1
+      count1)
+    (i, number, count)
+
+/-- [der_tlv_extract::tag::decode_tag]:
+    Source: 'src/../../../der-verified/src/tag.rs', lines 94:0-148:1
+    Visibility: public -/
+def tag.decode_tag
+  (input : Slice Std.U8) :
+  Result (core.result.Result (tag.Tag × Std.Usize) tag.TagError)
+  := do
+  let o ← core.slice.Slice.first input
+  match o with
+  | none => ok (core.result.Result.Err tag.TagError.Truncated)
+  | some b =>
+    let i ← b >>> 6#i32
+    let class1 ←
+      match i with
+      | 0#uscalar => ok tag.Class.Universal
+      | 1#uscalar => ok tag.Class.Application
+      | 2#uscalar => ok tag.Class.ContextSpecific
+      | _ => ok tag.Class.Private
+    let i1 ← lift (b &&& 32#u8)
+    let i2 ← lift (b &&& 31#u8)
+    if i2 != 31#u8
+    then
+      let i3 ← lift (b &&& 31#u8)
+      let i4 ← lift (UScalar.cast .U32 i3)
+      ok (core.result.Result.Ok
+        ({ «class» := class1, constructed := (i1 != 0#u8), number := i4 },
+        1#usize))
+    else
+      let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+      let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let (number, i3) := val
+        if number <= 30#u32
+        then ok (core.result.Result.Err tag.TagError.NonMinimal)
+        else
+          ok (core.result.Result.Ok
+            ({ «class» := class1, constructed := (i1 != 0#u8), number }, i3))
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
+          (tag.Tag × Std.Usize) (core.convert.FromSame tag.TagError) residual
 
 /-- [der_tlv_extract::tlv::Tlv]
     Source: 'src/../../../der-verified/src/tlv.rs', lines 15:0-20:1
@@ -842,12 +940,12 @@ def tlv.TlvError.Insts.CoreMarkerCopy : core.marker.Copy tlv.TlvError := {
 }
 
 /-- [der_tlv_extract::tlv::decode_tlv::closure#1]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 57:68-57:91 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 62:68-62:91 -/
 @[reducible]
 def tlv.decode_tlv.closure_1 := Unit
 
 /-- [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::length::LengthError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure#1}::call_once]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 57:68-57:91 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 62:68-62:91 -/
 def
   tlv.decode_tlv.closure_1.Insts.CoreOpsFunctionFnOnceTupleLengthErrorTlvError.call_once
   (c : tlv.decode_tlv.closure_1) (tupled_args : length.LengthError) :
@@ -856,7 +954,7 @@ def
   ok (tlv.TlvError.Length tupled_args)
 
 /-- Trait implementation: [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::length::LengthError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure#1}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 57:68-57:91 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 62:68-62:91 -/
 @[reducible]
 def
   tlv.decode_tlv.closure_1.Insts.CoreOpsFunctionFnOnceTupleLengthErrorTlvError
@@ -867,12 +965,12 @@ def
 }
 
 /-- [der_tlv_extract::tlv::decode_tlv::closure]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 56:50-56:70 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 60:50-60:70 -/
 @[reducible]
 def tlv.decode_tlv.closure := Unit
 
 /-- [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::tag::TagError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure}::call_once]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 56:50-56:70 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 60:50-60:70 -/
 def
   tlv.decode_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTagErrorTlvError.call_once
   (c : tlv.decode_tlv.closure) (tupled_args : tag.TagError) :
@@ -881,7 +979,7 @@ def
   ok (tlv.TlvError.Tag tupled_args)
 
 /-- Trait implementation: [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::tag::TagError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 56:50-56:70 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 60:50-60:70 -/
 @[reducible]
 def tlv.decode_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTagErrorTlvError :
   core.ops.function.FnOnce tlv.decode_tlv.closure tag.TagError tlv.TlvError
@@ -891,7 +989,7 @@ def tlv.decode_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTagErrorTlvError :
 }
 
 /-- [der_tlv_extract::tlv::decode_tlv]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 48:0-74:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 48:0-79:1
     Visibility: public -/
 def tlv.decode_tlv
   (input : Slice Std.U8) :
@@ -947,7 +1045,7 @@ def tlv.decode_tlv
       (tlv.Tlv × Std.Usize) (core.convert.FromSame tlv.TlvError) residual
 
 /-- [der_tlv_extract::tlv::decode_tlv_strict]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 81:0-87:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 86:0-92:1
     Visibility: public -/
 def tlv.decode_tlv_strict
   (input : Slice Std.U8) :
@@ -967,7 +1065,7 @@ def tlv.decode_tlv_strict
       tlv.Tlv (core.convert.FromSame tlv.TlvError) residual
 
 /-- [der_tlv_extract::tlv::encode_tlv_into]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 93:0-107:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 98:0-112:1
     Visibility: public -/
 axiom tlv.encode_tlv_into
   :

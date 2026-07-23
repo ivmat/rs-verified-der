@@ -75,6 +75,15 @@ for fn in decode_sequence decode_sequence_tlv decode_sequence_tlv_strict encode_
     exit 1
   fi
 done
+TAG_RS="$HERE/../der-verified/src/tag.rs"
+for fn in decode_tag encode_tag; do
+  cnt="$(grep -cE "^pub fn ${fn}\b" "$TAG_RS" || true)"
+  if [ "$cnt" != "1" ]; then
+    echo "!! lean lid: FAIL - expected exactly one 'pub fn ${fn}' in tag.rs (found ${cnt});" >&2
+    echo "   a cfg-split would let the Kani floor and the Lean lid prove different code." >&2
+    exit 1
+  fi
+done
 
 # 0b) Pin the extraction/proof toolchain revision (review L4-lean-lid-03). The
 #    DerLengthExtract.lean diff below catches *textual* model drift, but not a
@@ -118,26 +127,34 @@ if ! diff -q "$TMP/DerOidExtract.lean" "$HERE/DerOidExtract.lean" >/dev/null; th
   echo "   oid.rs changed; re-extract and re-prove before committing." >&2
   exit 1
 fi
+# tag: --opaque on tag::encode_tag — its Rust parameter named `tag` shadows the `tag` module in
+# Aeneas's Lean dot-notation resolution ("Invalid field" elaboration errors), the SAME
+# parameter-shadowing workaround the tlv/sequence lids below use; `decode_tag` (what this lid
+# proves) never calls `encode_tag`, so this loses nothing. `decode_tag` itself now extracts WITH
+# A BODY (the D25-style single-loop/depth-1-return refactor — see tag.rs's own doc comment on
+# `decode_tag`), so `aeneas` exits 0 here (no more disclosed bodyless-axiom "error").
+( cd "$HERE/extract-tag" && "$CHARON_BIN" cargo --preset=aeneas \
+    --opaque "der_tag_extract::tag::encode_tag" --dest "$TMP" >/dev/null 2>&1 )
+"$AENEAS_BIN" -backend lean "$TMP/der_tag_extract.llbc" -dest "$TMP" >/dev/null 2>&1
+if ! diff -q "$TMP/DerTagExtract.lean" "$HERE/DerTagExtract.lean" >/dev/null; then
+  echo "!! lean lid: FAIL - regenerated model differs from committed DerTagExtract.lean." >&2
+  echo "   tag.rs changed; re-extract and re-prove before committing." >&2
+  exit 1
+fi
 # tlv: --opaque on tag::encode_tag + tlv::encode_tlv_into — both have a Rust parameter named
 # `tag` shadowing the `tag` module in Aeneas's Lean dot-notation resolution ("Invalid field"
 # elaboration errors), a pre-existing Aeneas naming limitation independent of this lid's own
 # map_err fix; neither function is needed for the `decode_tlv` structural property this lid
 # proves, so marking them opaque (bodyless axioms) is honest and lossless for this lid's scope.
-# `aeneas` itself EXPECTEDLY exits non-zero here (tag.rs's decode_tag has an early-return-in-a-
-# loop, so Aeneas emits it as a disclosed bodyless axiom and reports that as an "error" even
-# though the rest of the file — including tlv.decode_tlv, the function this lid actually proves
-# about — extracts correctly). So this call runs with `set -e` OFF, same pattern as the `lake
-# build` step below; the diff check right after is what actually gates on drift/regression.
-set +e
+# `tag.rs`'s `decode_tag` now extracts WITH A BODY (the D25-style refactor, see `extract-tag`'s
+# comment above), so `aeneas` exits 0 here too (no more disclosed bodyless-axiom "error").
 ( cd "$HERE/extract-tlv" && "$CHARON_BIN" cargo --preset=aeneas \
     --opaque "der_tlv_extract::tag::encode_tag" \
     --opaque "der_tlv_extract::tlv::encode_tlv_into" \
     --dest "$TMP" >/dev/null 2>&1 )
 "$AENEAS_BIN" -backend lean "$TMP/der_tlv_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-set -e
 if [ ! -f "$TMP/DerTlvExtract.lean" ]; then
-  echo "!! lean lid: FAIL - tlv re-extraction produced no DerTlvExtract.lean at all (a" >&2
-  echo "   genuine extraction failure, not the expected decode_tag bodyless-axiom warning)." >&2
+  echo "!! lean lid: FAIL - tlv re-extraction produced no DerTlvExtract.lean at all." >&2
   exit 1
 fi
 if ! diff -q "$TMP/DerTlvExtract.lean" "$HERE/DerTlvExtract.lean" >/dev/null; then
@@ -146,18 +163,14 @@ if ! diff -q "$TMP/DerTlvExtract.lean" "$HERE/DerTlvExtract.lean" >/dev/null; th
   exit 1
 fi
 # sequence: same --opaque carve-out as tlv (tag::encode_tag / tlv::encode_tlv_into, the
-# parameter-shadowing issue) plus the SAME expected non-zero `aeneas` exit (decode_tag's
-# disclosed bodyless axiom). `set -e` OFF around this call for the same reason as tlv's.
-set +e
+# parameter-shadowing issue); `aeneas` exits 0 here too (decode_tag extracts with a body).
 ( cd "$HERE/extract-sequence" && "$CHARON_BIN" cargo --preset=aeneas \
     --opaque "der_sequence_extract::tag::encode_tag" \
     --opaque "der_sequence_extract::tlv::encode_tlv_into" \
     --dest "$TMP" >/dev/null 2>&1 )
 "$AENEAS_BIN" -backend lean "$TMP/der_sequence_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-set -e
 if [ ! -f "$TMP/DerSequenceExtract.lean" ]; then
-  echo "!! lean lid: FAIL - sequence re-extraction produced no DerSequenceExtract.lean at all" >&2
-  echo "   (a genuine extraction failure, not the expected decode_tag bodyless-axiom warning)." >&2
+  echo "!! lean lid: FAIL - sequence re-extraction produced no DerSequenceExtract.lean at all." >&2
   exit 1
 fi
 # POST-EXTRACTION PATCH (not raw Aeneas output — see the committed DerSequenceExtract.lean's

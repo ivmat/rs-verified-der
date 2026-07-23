@@ -54,15 +54,18 @@ This lid composes FOUR codecs (`tag`, `length`, `tlv`, `sequence`), reusing the 
 surface D27 (`TlvProofs.lean`) already disclosed and justified — `lean/extract-sequence` runs its
 own independent Charon/Aeneas pass (needed since `sequence.rs` requires `tag`/`length`/`tlv` as
 sibling modules), producing a **separate** Lean namespace (`der_sequence_extract`, vs. `tlv`'s
-`der_tlv_extract`) that cannot be imported alongside `TlvProofs.lean`'s. The seven axioms below are
-restated, byte-for-byte the same justification as `TlvProofs.lean`'s (see that file's module doc
-for the full accounting) — not new trust, the same duplicate-extraction-namespace workaround D27
-already used for `length`'s two axioms, extended to all seven since this pass re-extracts `tag`/
-`length`/`tlv` from scratch as `tlv.rs`'s own sibling-module dependencies. `tag.decode_tag` extracts
-as a bodyless axiom here too (the same D25-class early-return-in-a-loop shape, disclosed, not fixed
-in this pass); `tag.encode_tag`/`tlv.encode_tlv_into` are marked `--opaque` (same parameter-shadowing
-workaround as D27, not needed for this lid's scope — `decode_sequence`/`Elements::next` never call
-either).
+`der_tlv_extract`) that cannot be imported alongside `TlvProofs.lean`'s. `tag.rs`'s `decode_tag`
+**used to** extract as a bodyless axiom here too (the D25-class early-return-in-a-loop shape); the
+same D25-style refactor now applied to `tag.rs` (see `tag.rs`'s own doc comment on `decode_tag`)
+makes `decode_tag` extract WITH A BODY in this pass too, so `tag_decode_used_bounds` /
+`tag_decode_total` below are proven as THEOREMS (restated from `TagProofs.lean`'s own proof of the
+same facts, over the same source — this pass's own namespace is distinct, so the proof is
+duplicated rather than imported), not assumed. The five remaining axioms below are restated,
+byte-for-byte the same justification as `TlvProofs.lean`'s (see that file's module doc for the
+full accounting) — not new trust, the same duplicate-extraction-namespace workaround D27 already
+used for `length`'s two axioms. `tag.encode_tag`/`tlv.encode_tlv_into` are marked `--opaque` (same
+parameter-shadowing workaround as D27, not needed for this lid's scope — `decode_sequence`/
+`Elements::next` never call either).
 
 A one-line, behavior-preserving source fix was required first (the SAME map_err name-clash class
 D27 fixed in `tlv.rs`, this time in `sequence.rs`): `decode_sequence_tlv`'s point-free
@@ -72,9 +75,10 @@ constructor name under Aeneas's naming scheme. Fixed identically: rewritten as t
 21 `sequence`-module tests plus the crate's 295-test suite pass unchanged after the edit (this lid
 does not touch `decode_sequence`/`Elements`, the functions actually proved below, at all).
 
-`#print axioms` at the bottom shows the resulting theorems depend on exactly these seven axioms
-(the same as D27's `tlv` lid) plus the three standard Lean axioms (`propext`, `Classical.choice`,
-`Quot.sound`) plus the underlying opaque Aeneas primitives they characterize. No `sorryAx`.
+`#print axioms` at the bottom shows the resulting theorems depend on exactly the five remaining
+disclosed axioms (the same as `TlvProofs.lean`'s, minus `tag_decode_used_bounds`/`tag_decode_total`
+— now theorems) plus the three standard Lean axioms (`propext`, `Classical.choice`, `Quot.sound`)
+plus the underlying opaque Aeneas primitives they characterize. No `sorryAx`.
 -/
 
 open Aeneas Aeneas.Std Result
@@ -85,18 +89,254 @@ namespace DerVerified.Sequence
 /-! ## Assumed specs (disclosed trust surface — restated from `TlvProofs.lean`, D27; same
     justification, different extraction-pass namespace) -/
 
-/-- **Assumed spec (structural only) for the opaque `tag.decode_tag` axiom.** See
-    `TlvProofs.lean`'s `tag_decode_used_bounds` for the full justification — restated here because
-    this lid's `lean/extract-sequence` extraction pass produces its own `der_sequence_extract.tag`
-    namespace, distinct from `der_tlv_extract.tag`. -/
-axiom tag_decode_used_bounds (input : Slice U8) (t : tag.Tag) (t_used : Usize) :
-    tag.decode_tag input = ok (core.result.Result.Ok (t, t_used)) →
-      1 ≤ t_used.val ∧ t_used.val ≤ input.val.length
+/-- **Assumed spec** for the opaque external `core::slice::<[T]>::first` — see `TlvProofs.lean`'s
+    `first_spec`; restated here because this lid's `lean/extract-sequence` extraction pass
+    produces its own `der_sequence_extract` namespace. -/
+axiom first_spec {T : Type} (s : Slice T) :
+    der_sequence_extract.core.slice.Slice.first s = ok s.val[0]?
 
-/-- **Assumed totality** for the opaque `tag.decode_tag` axiom. See `TlvProofs.lean`'s
-    `tag_decode_total`. -/
-axiom tag_decode_total (input : Slice U8) :
-    ∃ r : core.result.Result (tag.Tag × Usize) tag.TagError, tag.decode_tag input = ok r
+/-- **`decode_tag_loop`'s ∀-length invariant** — restated from `TagProofs.lean`'s
+    `decode_tag_loop_spec` / `TlvProofs.lean`'s `tag_decode_tag_loop_spec` (same proof; this lid's
+    `lean/extract-sequence` pass produces its own `der_sequence_extract.tag` namespace, distinct
+    from both). `tag.rs`'s `decode_tag` extracts WITH A BODY in this pass too (the D25-style
+    refactor, see `tag.rs`'s own doc comment on `decode_tag`), so this is a proven THEOREM. -/
+theorem tag_decode_tag_loop_spec (input : Slice U8) (i : Usize) (number : U32) (count : Usize)
+    (hi1 : 1 ≤ i.val) (hile : i.val ≤ input.val.length) (hcle : count.val ≤ i.val) :
+    tag.decode_tag_loop i input number count ⦃ r =>
+      ∃ r' : core.result.Result (U32 × Usize) tag.TagError, r = r' ∧
+        ∀ (number' : U32) (used : Usize),
+          r' = core.result.Result.Ok (number', used) →
+            i.val ≤ used.val ∧ used.val ≤ input.val.length ⦄ := by
+  unfold tag.decode_tag_loop
+  apply loop.spec_decr_nat
+    (measure := fun (⟨i1, _, _⟩ : Usize × U32 × Usize) => input.val.length - i1.val)
+    (inv := fun (⟨i1, _, count1⟩ : Usize × U32 × Usize) =>
+      i.val ≤ i1.val ∧ i1.val ≤ input.val.length ∧ count1.val ≤ i1.val)
+  · rintro ⟨i1, number1, count1⟩ ⟨hge1, hile1, hcle1⟩
+    simp only [tag.decode_tag_loop.body, core.slice.Slice.get, bind_tc_ok]
+    match hoeq : input.val[i1.val]? with
+    | none =>
+      simp only [hoeq, WP.spec_ok]
+      exact ⟨_, rfl, fun number' used heq => by injection heq⟩
+    | some b =>
+      have hi1lt : i1.val < input.val.length := by
+        by_contra hcon
+        push_neg at hcon
+        have hnone : input.val[i1.val]? = none := List.getElem?_eq_none (by omega)
+        rw [hoeq] at hnone
+        exact absurd hnone (by simp)
+      have hcmax : count1.val + 1 ≤ Usize.max := by
+        have := Slice.length_ineq (s := input); omega
+      simp only [hoeq]
+      by_cases hzero : count1 = 0#usize
+      · by_cases hb128 : b = 128#u8
+        · simp only [hzero, ↓reduceIte, hb128, WP.spec_ok]
+          exact ⟨_, rfl, fun number' used heq => by injection heq⟩
+        · simp only [hzero, ↓reduceIte, hb128]
+          step as ⟨i2, hi2⟩
+          by_cases htoolarge : number1 > i2
+          · simp only [htoolarge, ↓reduceIte, WP.spec_ok]
+            exact fun number' used heq => by injection heq
+          · simp only [htoolarge, ↓reduceIte]
+            step as ⟨i3, hi3⟩
+            step as ⟨i4, hi4⟩
+            step as ⟨i5, hi5⟩
+            step as ⟨number1', hn1⟩
+            step as ⟨count1', hc1⟩
+            step as ⟨i6, hi6⟩
+            have hi6val : i6.val = i1.val + 1 := by scalar_tac
+            step as ⟨i7, hi7⟩
+            by_cases hlast : i7 = 0#u8
+            · simp only [hlast, ↓reduceIte, WP.spec_ok]
+              exact fun number' used heq => by
+                  injection heq with heq1
+                  have h1 := congrArg Prod.fst heq1
+                  have h2 := congrArg Prod.snd heq1
+                  simp only at h1 h2
+                  subst h1; subst h2
+                  exact ⟨by scalar_tac, by rw [hi6val]; omega⟩
+            · simp only [hlast, ↓reduceIte, WP.spec_ok]
+              refine ⟨by scalar_tac, by rw [hi6val]; omega, by scalar_tac⟩
+      · simp only [hzero, ↓reduceIte]
+        step as ⟨i2, hi2⟩
+        by_cases htoolarge : number1 > i2
+        · simp only [htoolarge, ↓reduceIte, WP.spec_ok]
+          exact fun number' used heq => by injection heq
+        · simp only [htoolarge, ↓reduceIte]
+          step as ⟨i3, hi3⟩
+          step as ⟨i4, hi4⟩
+          step as ⟨i5, hi5⟩
+          step as ⟨number1', hn1⟩
+          step as ⟨count1', hc1⟩
+          step as ⟨i6, hi6⟩
+          have hi6val : i6.val = i1.val + 1 := by scalar_tac
+          step as ⟨i7, hi7⟩
+          by_cases hlast : i7 = 0#u8
+          · simp only [hlast, ↓reduceIte, WP.spec_ok]
+            exact fun number' used heq => by
+                injection heq with heq1
+                have h1 := congrArg Prod.fst heq1
+                have h2 := congrArg Prod.snd heq1
+                simp only at h1 h2
+                subst h1; subst h2
+                exact ⟨by scalar_tac, by rw [hi6val]; omega⟩
+          · simp only [hlast, ↓reduceIte, WP.spec_ok]
+            refine ⟨by scalar_tac, by rw [hi6val]; omega, by scalar_tac⟩
+  · exact ⟨le_refl _, hile, hcle⟩
+
+/-- **Totality of `decode_tag`'s final `number ≤ 30` guard**, GENERIC over the `Tag` fields it
+    doesn't touch — restated from `TagProofs.lean`'s `total_tail_ok`. -/
+theorem tag_total_tail_ok {class1 : tag.Class} {constructed : Bool} (number1 : U32) (i3 : Usize) :
+    (let (number, i3') := (number1, i3)
+     if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+     else ok (core.result.Result.Ok ({ «class» := class1, constructed, number }, i3'))
+     : Result (core.result.Result (tag.Tag × Usize) tag.TagError))
+    ⦃ (_ : core.result.Result (tag.Tag × Usize) tag.TagError) => True ⦄ := by
+  show (if number1 ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+        else ok (core.result.Result.Ok ({ «class» := class1, constructed, number := number1 }, i3))
+        : Result (core.result.Result (tag.Tag × Usize) tag.TagError))
+      ⦃ (_ : core.result.Result (tag.Tag × Usize) tag.TagError) => True ⦄
+  by_cases hle : number1 ≤ 30#u32
+  · rw [if_pos hle]; trivial
+  · rw [if_neg hle]; trivial
+
+/-- **`decode_tag`'s totality, ∀-length**, in `spec`/postcondition form — restated from
+    `TagProofs.lean`'s `tag_decode_total_spec`. -/
+theorem tag_decode_total_spec (input : Slice U8) :
+    tag.decode_tag input ⦃ (_ : core.result.Result (tag.Tag × Usize) tag.TagError) => True ⦄ := by
+  unfold tag.decode_tag
+  rw [first_spec]
+  match hfirst : input.val[0]? with
+  | none => simp [hfirst]
+  | some b =>
+    have hb_lt : 1 ≤ input.val.length := by
+      obtain ⟨h0, -⟩ := List.getElem?_eq_some_iff.mp hfirst
+      omega
+    simp only [bind_tc_ok]
+    step as ⟨i, hi⟩
+    split <;> simp only [bind_tc_ok]
+    all_goals
+      step as ⟨i1, hi1⟩
+      step as ⟨i2, hi2⟩
+      by_cases hlow : (i2 != 31#u8) = true
+      · rw [if_pos hlow]
+        step as ⟨i3, hi3⟩
+        step as ⟨i4, hi4⟩
+      · rw [if_neg hlow]
+        have hspec := tag_decode_tag_loop_spec input 1#usize 0#u32 0#usize (by scalar_tac) (by
+          scalar_tac) (by scalar_tac)
+        obtain ⟨y, hy, r', hyr', -⟩ := WP.spec_imp_exists hspec
+        rw [hy, hyr']
+        rcases r' with ⟨number1, i3⟩ | terr
+        · simp only [bind_tc_ok, core.result.Result.Insts.CoreOpsTry.branch]
+          exact tag_total_tail_ok number1 i3
+        · simp only [bind_tc_ok, core.result.Result.Insts.CoreOpsTry.branch]
+          trivial
+
+/-- **Assumed totality** for `tag.decode_tag` — now a THEOREM, restated from `TagProofs.lean`'s
+    `tag_decode_total`. Kept the SAME name as the discharged axiom this section used to declare,
+    so the composition proof below needs no further edits. -/
+theorem tag_decode_total (input : Slice U8) :
+    ∃ r : core.result.Result (tag.Tag × Usize) tag.TagError, tag.decode_tag input = ok r := by
+  obtain ⟨r, hr, -⟩ := WP.spec_imp_exists (tag_decode_total_spec input)
+  exact ⟨r, hr⟩
+
+/-- **The tail of `decode_tag`, from right after the `Class`-selector match onward** — restated
+    from `TagProofs.lean`'s `used_bounds_tail`. -/
+theorem tag_used_bounds_tail (input : Slice U8) (b : U8) (class1 : tag.Class)
+    (hb_lt : 1 ≤ input.val.length) :
+    (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if i2 != 31#u8
+      then do
+        let i3 ← lift (b &&& 31#u8)
+        let i4 ← lift (UScalar.cast .U32 i3)
+        ok (core.result.Result.Ok
+          ({ «class» := class1, constructed := (i1 != 0#u8), number := i4 }, 1#usize))
+      else do
+        let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+        let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+        match cf with
+        | core.ops.control_flow.ControlFlow.Continue val =>
+          let (number, i3) := val
+          if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+          else ok (core.result.Result.Ok
+            ({ «class» := class1, constructed := (i1 != 0#u8), number }, i3))
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
+            (tag.Tag × Usize) (core.convert.FromSame tag.TagError) residual
+      : Result (core.result.Result (tag.Tag × Usize) tag.TagError)) ⦃ r =>
+        ∀ (t : tag.Tag) (used : Usize),
+          r = core.result.Result.Ok (t, used) → 1 ≤ used.val ∧ used.val ≤ input.val.length ⦄ := by
+  step as ⟨i1, hi1⟩
+  step as ⟨i2, hi2⟩
+  by_cases hlow : (i2 != 31#u8) = true
+  · rw [if_pos hlow]
+    step as ⟨i3, hi3⟩
+    step as ⟨i4, hi4⟩
+    intro t used heq
+    injection heq with heq1
+    have h2 := congrArg Prod.snd heq1
+    simp only at h2
+    refine ⟨by scalar_tac, ?_⟩
+    rw [← h2]; scalar_tac
+  · rw [if_neg hlow]
+    have hspec := tag_decode_tag_loop_spec input 1#usize 0#u32 0#usize (by scalar_tac) (by
+      scalar_tac) (by scalar_tac)
+    obtain ⟨y, hy, r', hyr', hbound⟩ := WP.spec_imp_exists hspec
+    rw [hy, hyr']
+    rcases r' with ⟨number1, i3⟩ | terr
+    · simp only [bind_tc_ok, core.result.Result.Insts.CoreOpsTry.branch]
+      show (if number1 ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+            else ok (core.result.Result.Ok
+              ({ «class» := class1, constructed := i1 != 0#u8, number := number1 }, i3))
+            : Result (core.result.Result (tag.Tag × Usize) tag.TagError)) ⦃ r =>
+        ∀ (t : tag.Tag) (used : Usize),
+          r = core.result.Result.Ok (t, used) → 1 ≤ used.val ∧ used.val ≤ input.val.length ⦄
+      by_cases hle : number1 ≤ 30#u32
+      · rw [if_pos hle]
+        intro t used heq
+        exact absurd heq (by simp)
+      · rw [if_neg hle]
+        intro t used heq
+        injection heq with heq1
+        have h2 := congrArg Prod.snd heq1
+        simp only at h2
+        have hb := hbound number1 i3 rfl
+        rw [← h2]
+        exact ⟨by scalar_tac, hb.2⟩
+    · simp only [bind_tc_ok, core.result.Result.Insts.CoreOpsTry.branch]
+      intro t used heq
+      exact absurd heq (by simp)
+
+/-- **`decode_tag`'s consumption bound, ∀-length**, in `spec`/postcondition form — restated from
+    `TagProofs.lean`'s `tag_decode_used_bounds_spec`. -/
+theorem tag_decode_used_bounds_spec (input : Slice U8) :
+    tag.decode_tag input ⦃ r => ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) → 1 ≤ used.val ∧ used.val ≤ input.val.length ⦄ := by
+  unfold tag.decode_tag
+  rw [first_spec]
+  match hfirst : input.val[0]? with
+  | none => simp [hfirst]
+  | some b =>
+    have hb_lt : 1 ≤ input.val.length := by
+      obtain ⟨h0, -⟩ := List.getElem?_eq_some_iff.mp hfirst
+      omega
+    simp only [bind_tc_ok]
+    step as ⟨i, hi⟩
+    split <;> simp only [bind_tc_ok] <;> exact tag_used_bounds_tail input b _ hb_lt
+
+/-- **Assumed structural bound** for `tag.decode_tag` — now a THEOREM, restated from
+    `TagProofs.lean`'s `tag_decode_used_bounds`. Kept the SAME name/signature as the discharged
+    axiom this section used to declare, so the composition proof below needs no further edits. -/
+theorem tag_decode_used_bounds (input : Slice U8) (t : tag.Tag) (t_used : Usize) :
+    tag.decode_tag input = ok (core.result.Result.Ok (t, t_used)) →
+      1 ≤ t_used.val ∧ t_used.val ≤ input.val.length := by
+  intro heq
+  have hspec := tag_decode_used_bounds_spec input
+  rw [heq, WP.spec_ok] at hspec
+  exact hspec t t_used rfl
 
 /-- **Assumed spec for the opaque `core.result.Result.map_err` axiom.** See `TlvProofs.lean`'s
     `result_map_err_ok_spec` / `result_map_err_err_spec`. -/
