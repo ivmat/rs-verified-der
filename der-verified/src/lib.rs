@@ -78,6 +78,14 @@
 //!   certificate's validity window, materializing which arm each field took. Framing only: the
 //!   §4.1.2.5 UTCTime/GeneralizedTime year-2050 *profile* rule is left to the caller (accepts either
 //!   spelling for either field), consistent with the generic-syntax-vs-profile split elsewhere.
+//! - [`profile`] — the first slice of a **typed profile-validation layer**, built on top of (not
+//!   inside) the structural parsers above: cross-field RFC 5280 rules that the transfer-syntax
+//!   modules deliberately leave "to the caller" (e.g. [`x509_certificate`]'s and
+//!   [`x509_tbs_certificate`]'s own docs name this split explicitly). Currently enforces two rules
+//!   — §4.1.1.2's `signatureAlgorithm`/`tbsCertificate.signature` equality, and the
+//!   §4.1.2.1/§4.1.2.9 "extensions is v3-only" rule — establishing the pattern the rest of this
+//!   layer (key usage, basic constraints, name constraints, path validation, …) is expected to
+//!   follow.
 //!
 //! **Verification:** each module carries Kani proof harnesses in a `#[cfg(kani)]` block, so an
 //! ordinary `cargo build` / `cargo test` neither sees nor depends on Kani. Run the proofs with
@@ -125,6 +133,7 @@ pub mod length;
 pub mod null;
 pub mod octet_string;
 pub mod oid;
+pub mod profile;
 pub mod restricted_string;
 pub mod sequence;
 pub mod set_of;
