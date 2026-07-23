@@ -53,7 +53,12 @@ pub fn decode_tlv(input: &[u8]) -> Result<(Tlv<'_>, usize), TlvError> {
     // blocking Lean extraction. This is the `tlv` lid's own instance of the `writing-verifiable-
     // rust.md` §4 "write for Aeneas extraction" guidance — a pure style change, re-verified by
     // the unchanged Kani harnesses + tests below (see D-series decision log).
+    // `clippy::redundant_closure` would rewrite these to the point-free `TlvError::Tag` /
+    // `TlvError::Length` form, which reintroduces the Aeneas name-clash described in the NOTE
+    // above and breaks Lean extraction — so the closures are load-bearing, not redundant.
+    #[allow(clippy::redundant_closure)]
     let (tag, t_used) = decode_tag(input).map_err(|e| TlvError::Tag(e))?;
+    #[allow(clippy::redundant_closure)]
     let (len_u32, l_used) = decode_length(&input[t_used..]).map_err(|e| TlvError::Length(e))?;
     let header = t_used + l_used;
     // Portability: `decode_length` yields a u32; on targets where `usize` is narrower this

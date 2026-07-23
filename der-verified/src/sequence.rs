@@ -139,6 +139,9 @@ pub fn decode_sequence(content: &[u8]) -> Result<usize, SequenceError> {
 /// inside larger structures; a top-level caller should check the returned length against
 /// `input.len()`.
 pub fn decode_sequence_tlv(input: &[u8]) -> Result<(&[u8], usize), SequenceError> {
+    // Closure is load-bearing, not redundant: the point-free `SequenceError::Tlv` form triggers
+    // the Aeneas name-clash that blocks Lean extraction (see the NOTE in `tlv::decode_tlv`).
+    #[allow(clippy::redundant_closure)]
     let (tlv, used) = decode_tlv(input).map_err(|e| SequenceError::Tlv(e))?;
     if tlv.tag.class != Class::Universal || tlv.tag.number != TAG {
         return Err(SequenceError::WrongTag);
