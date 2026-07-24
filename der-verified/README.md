@@ -4,12 +4,12 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, re-runnable
 from a fresh clone: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 161 proof harnesses over 25 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 164 proof harnesses over 25 modules — memory safety, no
   panics, no overflow, plus functional properties (round-trip, canonicality/minimality, rejection of
   malformed/non-canonical encodings).
-- **L4 — Aeneas → Lean 4** (unbounded proofs): three codecs (`length`, `big_integer`, `oid`) are
-  additionally proven over inputs of **any length**, `sorry`-free.
-- **294** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
+- **L4 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`, `tag`,
+  `tlv`, `sequence`) are additionally proven over inputs of **any length**, `sorry`-free.
+- **309** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
 
 > Read [`PROOF_MANIFEST.md`](https://github.com/ivmat/rs-verified-der/blob/main/PROOF_MANIFEST.md)
 > before relying on any of this — the honest proof envelope: exactly what is proven, under what bounds
@@ -22,8 +22,11 @@ from a fresh clone: the proofs are the product, not a badge.
 `INTEGER`, `NULL`, `OBJECT IDENTIFIER`, `BIT STRING`, `OCTET STRING`, `ENUMERATED`, the restricted
 strings, `UTF8String`, `UTCTime`, `GeneralizedTime`, `SEQUENCE`, `SET OF` §11.6 ordering).
 **Structural framing (no semantics):** the `x509_*` modules parse RFC 5280 objects by composing the
-verified codecs. **Out of scope:** signature/crypto verification, path/trust validation, full RFC 5280
-profile semantics.
+verified codecs. **Typed profile layer (tested, not Kani/Lean-proven):** the `profile` module checks
+three RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
+UTCTime/GeneralizedTime year-2050 encoding choice) by `#[test]` only — see `PROOF_MANIFEST.md`.
+**Out of scope:** signature/crypto verification, path/trust validation, and every other RFC 5280
+profile rule (name constraints, key usage, basic constraints, validity-against-clock).
 
 ## Usage
 

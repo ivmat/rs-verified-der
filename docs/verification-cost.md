@@ -18,11 +18,13 @@ been going for minutes — is that normal?"*
   from `cbmc`'s process.
 - **Caveat:** these are point-in-time numbers on one machine; solver and CBMC versions move them.
   Treat the **tiers** as durable, the exact seconds as indicative. The project's reference CI box
-  verifies the full suite (all 161 harnesses) end-to-end.
+  verifies the full suite (currently 164 harnesses — count re-confirmed by source grep; the
+  per-harness timings below are the prior measurement pass and were not re-run for the newer
+  harnesses) end-to-end.
 
 ## Cost tiers
 
-**The large majority of the 161 harnesses are fast** — sub-second to a few seconds. Typical per-module
+**The large majority of the 164 harnesses are fast** — sub-second to a few seconds. Typical per-module
 worst case: `length` 0.4 s, `integer` 0.5 s, `oid` 0.04 s, `boolean` 0.03 s, `bit_string` 0.4 s,
 `tag` 0.5 s, `utc_time` 1.0 s, `big_integer` 0.7 s. Whole modules like `oid`, `boolean`, `null`,
 `enumerated`, `tag` finish in well under a second total.

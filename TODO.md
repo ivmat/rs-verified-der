@@ -11,8 +11,8 @@ scope boundary referenced below.
       over symbolic content). Split into `validate_rdn_never_panics` (the heavy SET-OF/ATV layer at
       one-RDN scale, ~17 GB) + `validate_never_panics` stubbing `validate_rdn` with its proven
       postcondition (~510 MB). Same theorem, now compositional; `./check.sh` completes end-to-end
-      (161/161 Kani + the L4 lids). The same review also fixed a pre-existing fixed-vs-symbolic input
-      length gap across all modular harnesses.
+      (161/161 Kani at the time — now 164/164 — + the L4 lids). The same review also fixed a
+      pre-existing fixed-vs-symbolic input length gap across all modular harnesses.
 - [x] Record, per harness, the wall-clock/solver cost so the intractable ones are visible up front —
       [`docs/verification-cost.md`](docs/verification-cost.md) (cost tiers, the heavy `set_of` §11.6
       family, the two harnesses that need a >16 GB box, and a measured solver-selection note).
@@ -41,15 +41,25 @@ scope boundary referenced below.
       extended + confirmed non-vacuous (sorry-injection test, both at the `lake build` and full-gate
       level). The lids now cover `length`, `big_integer`, `oid`, `tlv`, `sequence`; a `tag.rs`
       D25-style refactor to fully de-opaque `decode_tag` remains open, a separate item.
+- [x] **A 6th L4/L5 (Aeneas→Lean) lid — landed on `tag` (commit `0c2948a`).** The `tag.rs` D25-style
+      refactor flagged above: `decode_tag`'s high-tag loop refactored (return-inside-loop →
+      break-with-`Result`, behaviour-preserving) to unblock Aeneas extraction, then proved
+      `tag_decode_total` + `tag_decode_used_bounds` ∀-length in a new `lean/TagProofs.lean`.
+      **Discharged the 4 `tag_decode_*` trust-axiom instances** the `tlv`/`sequence` lids previously
+      assumed about `decode_tag` (their disclosed trust surface drops from 7 axioms to 6 each). The
+      lids now cover `length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence` — six total.
 - [ ] Add the L4/L5 Lean job to CI if a hosted runner can provision the pinned Aeneas/Charon/Lean
       stack (currently a local-milestone check — see the README).
 
 ## API / scope
 
-- [ ] A typed / profile API layer enforcing the cross-field RFC 5280 rules currently left to the
-      caller (deliberately out of the verified core): `signatureAlgorithm == tbsCertificate.signature`;
-      `version` v3-required-if-extensions; UTCTime `≤ 2049` / GeneralizedTime `≥ 2050`; name
-      constraints. Keep it a separate layer on top of the verified codecs.
+- [x] **A typed / profile API layer enforcing cross-field RFC 5280 rules — first slice landed
+      (commits `d65e7f0`, `6bcb8be`).** New `profile` module, built on top of (not inside) the
+      structural `x509_*` parsers: `signatureAlgorithm == tbsCertificate.signature` (§4.1.1.2);
+      `version` v3-required-if-extensions (§4.1.2.1/§4.1.2.9); UTCTime `≤ 2049` /
+      GeneralizedTime `≥ 2050` encoding choice (§4.1.2.5). **Tested (`#[test]`) only so far — no
+      Kani harness or Lean lid yet.** Still open, not yet covered by this layer: name constraints,
+      key usage, basic constraints, path validation.
 - [ ] `oid`: optionally materialize arcs (allocation-aware) — currently validate-only.
 - [ ] **`no_std` support (later).** The crate is already `#![forbid(unsafe_code)]`, allocation-free on
       decode paths, and near-`core`-only (one `std::` use). Making it `#![no_std]` (gated on a `std`

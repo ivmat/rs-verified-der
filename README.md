@@ -8,13 +8,13 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 161 proof harnesses over 25 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 164 proof harnesses over 25 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
-- **L4/L5 — Aeneas → Lean 4** (unbounded proofs): five codecs (`length`, `big_integer`, `oid`,
-  `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
+- **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
+  `tag`, `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
   ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free.
-- **294** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
+- **309** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
 > proof envelope: exactly what is proven, under what bounds and assumptions, what is stubbed, and
@@ -33,11 +33,21 @@ the canonical content codecs: `BOOLEAN`, `INTEGER` (`i64` and arbitrary-magnitud
 algorithm/key/signature/certificate semantics — a demonstration that the verified core is usable
 downstream, inside the same fence.
 
+**Typed profile-validation layer (tested, not Kani/Lean-proven):** the [`profile`] module is a first
+slice of a layer built *on top of* the structural parsers above, checking cross-field RFC 5280 rules
+those parsers deliberately leave to the caller. It currently enforces three rules: §4.1.1.2's
+`signatureAlgorithm == tbsCertificate.signature` equality, §4.1.2.1/§4.1.2.9's "extensions is
+v3-only" rule, and §4.1.2.5's UTCTime-through-2049/GeneralizedTime-from-2050 encoding-choice rule.
+**This layer has `#[test]` coverage only — no Kani harness, no Lean lid** — see
+[`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the honest framing. Not yet covered: name constraints,
+key usage, basic constraints, path validation, and any other RFC 5280 cross-field rule.
+
 **Out of scope (not implemented, not proven):** signature/crypto verification; certificate-path or
-trust validation; full X.509/RFC 5280 profile semantics (name constraints, cross-field rules,
-validity-against-clock); general `SET` (§10.3). The crate is a strict, deliberately narrowed profile —
-the narrowings (e.g. leap-second rejection, range caps, primitive-form-only rules) are design
-decisions recorded in [`DECISIONS.md`](DECISIONS.md).
+trust validation; full X.509/RFC 5280 profile semantics beyond the three `profile`-module rules above
+(name constraints, key usage, basic constraints, validity-against-clock, path validation); general
+`SET` (§10.3). The crate is a strict, deliberately narrowed profile — the narrowings (e.g.
+leap-second rejection, range caps, primitive-form-only rules) are design decisions recorded in
+[`DECISIONS.md`](DECISIONS.md).
 
 ## Strict decoding — exact consumption, no trailing bytes
 
@@ -92,12 +102,12 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 294 tests
+cargo test                                    # 309 tests
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
 cargo kani setup
-cargo kani -Z stubbing                          # 161 proof harnesses
+cargo kani -Z stubbing                          # 164 proof harnesses
 ```
 
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
@@ -111,7 +121,7 @@ Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lid
 independently-proven sub-parser (disclosed in `PROOF_MANIFEST.md`). Harnesses without a stub are
 unaffected by the flag.
 
-### 2. The L4/L5 Lean lids (optional; unbounded proofs on 5 codecs)
+### 2. The L4/L5 Lean lids (optional; unbounded proofs on 6 codecs)
 
 `./check.sh` runs the Lean lids if — and only if — the Aeneas/Lean toolchain is present; otherwise it
 **skips them and still passes on the Kani floor**. To run them you need, in an isolated location
@@ -141,24 +151,29 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs three jobs on every push and PR: `cargo test`,
-`cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — 135 of the 161
-harnesses, sharded by module across three parallel runners. The other 26 (`set_of`, `sequence`,
-`x509_certificate`, `x509_tbs_certificate`, `x509_extension`, `x509_name`) peak above a standard 7 GB
-runner, so — like the L4 Lean lids — they are a **local-milestone check** via `./check.sh` (or the
-`kani-heavy` job stub in the workflow, on a large-memory runner).
+`cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
+≈136 of the 164 harnesses (the shard filters are by module, not a pinned count; see
+`.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
+parallel runners. The remaining ≈28 (`set_of`, `sequence`, `x509_certificate`,
+`x509_tbs_certificate`, `x509_extension`, `x509_name`) peak above a standard 7 GB runner, so — like
+the L4 Lean lids — they are a **local-milestone check** via `./check.sh` (or the `kani-heavy` job
+stub in the workflow, on a large-memory runner).
 
 ### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
 
-**All 161 harnesses verify locally with 0 failures.** Approximate Kani solve times:
+**All 164 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
+harness counts below were re-derived from the current module counts by static count, not a fresh
+timing run — treat the *times themselves* as the prior measurement's indicative, possibly-stale
+numbers, and the counts as current):
 
 | Stage | Harnesses | Solve time | Peak RAM |
 |---|---|---|---|
 | `cargo test` + `clippy` (no external deps) | — | ~2 s | — |
 | CI shard `codecs-a` | 84 | ~28 s | < 0.2 GB |
-| CI shard `codecs-b` | 42 | ~40 s | ~1 GB |
+| CI shard `codecs-b` | ≈43 | ~40 s | ~1 GB |
 | CI shard `utf8` | 9 | ~247 s | 2.7 GB |
-| local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | 23 | ~30 min | ~20 GB (`x509_extension`) |
-| local: `x509_tbs_certificate` + `x509_name` (`validate_name` stub + `validate_rdn` lemma) | 3 | ~9 min | ~17 GB (`validate_rdn`) |
+| local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | ≈24 | ~30 min | ~20 GB (`x509_extension`) |
+| local: `x509_tbs_certificate` + `x509_name` (`validate_name` stub + `validate_rdn` lemma) | ≈4 | ~9 min | ~17 GB (`validate_rdn`) |
 
 The three CI Kani shards run in parallel (~4–5 min wall). The full local floor is ~40 min of proving;
 peak RAM ~20 GB.
@@ -179,6 +194,12 @@ composition uses. See [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) and `DECISIONS.md
 - [`DECISIONS.md`](DECISIONS.md) — the contestable-decisions ledger: every scope narrowing and design
   fork, with its rationale and review outcome.
 - [`SECURITY.md`](SECURITY.md) — private vulnerability disclosure.
+
+## Keeping docs in sync
+
+Every code/proof/feature change ships with a docs-sync pass — see
+[`DOCS-SYNC.md`](DOCS-SYNC.md) for exactly which doc(s) to touch for which kind of change (new
+harness, new Lean lid, new module/feature, …).
 
 ## License
 

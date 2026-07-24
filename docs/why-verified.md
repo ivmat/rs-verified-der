@@ -28,20 +28,27 @@ cross-field profile rules. That boundary is the whole honesty story (below).
 
 ## Two layers of proof
 
-**L3 — bounded, with Kani (CBMC under the hood).** 161 proof harnesses across 25 modules. Each proves,
+**L3 — bounded, with Kani (CBMC under the hood).** 164 proof harnesses across 25 modules. Each proves,
 for all inputs up to a stated size, the default safety properties (no panic, no overflow, no
 out-of-bounds) *plus* the functional ones: decode/encode round-trips, canonicality/minimality, and
 that malformed or non-canonical encodings are rejected with the right error. Bounded model checking is
 exhaustive within its bound — it doesn't sample inputs, it considers all of them symbolically.
 
 **L4 — unbounded, with Aeneas → Lean 4.** Bounded proofs leave a nagging question: what about inputs
-bigger than the bound? For three codecs — `length`, `big_integer`, and `oid` — the Rust is translated
-(via Charon → Aeneas) into a pure functional model and the properties are proven in Lean 4 for inputs
-of *any* length, `sorry`-free. The lid re-extracts from the shipped source and fails on drift, so it
-provably concerns the code you actually ship.
+bigger than the bound? For six codecs — `length`, `big_integer`, `oid`, `tag`, `tlv`, and `sequence`
+— the Rust is translated (via Charon → Aeneas) into a pure functional model and the properties are
+proven in Lean 4 for inputs of *any* length (and, for `sequence`, any number of children too),
+`sorry`-free. The lid re-extracts from the shipped source and fails on drift, so it provably concerns
+the code you actually ship.
 
-Plus 294 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
+Plus 309 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
 zero dependencies, and allocation-free decode paths.
+
+**A newer, separately-graded layer: typed profile validation.** The `profile` module checks three RFC
+5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
+UTCTime/GeneralizedTime year-2050 encoding choice) that sit *above* the structural `x509_*` parsers.
+It is currently backed by `#[test]` coverage only — no Kani harness, no Lean lid — so don't read it as
+carrying the same evidence grade as the codecs above; `PROOF_MANIFEST.md` states this explicitly.
 
 ## The honesty envelope
 
@@ -77,9 +84,9 @@ symbolic input length closed it (and closed the same latent gap in the other mod
 
 ```sh
 git clone https://github.com/ivmat/rs-verified-der && cd rs-verified-der
-cargo test                       # 294 tests
+cargo test                       # 309 tests
 cargo install --locked kani-verifier && cargo kani setup
-cargo kani -Z stubbing           # the 161-harness proof floor
+cargo kani -Z stubbing           # the 164-harness proof floor
 ./check.sh                       # everything, incl. the Lean lids if the toolchain is present
 ```
 

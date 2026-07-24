@@ -5,6 +5,29 @@ Not committed by this pass (uncommitted map file — driver commits). Sources: `
 `docs/verification-cost.md`, `TODO.md`, `METHODS-APPLICATION-ANALYSIS-2026-07-21.md`, and a direct
 grep of `der-verified/src/*.rs`.
 
+**UPDATE 2026-07-24 (docs-sync pass, no proofs re-run — see commits below):** two things landed
+since the "5 lids" state this file's body describes throughout (left unedited below as an honest
+point-in-time record; read this note as the current summary instead):
+
+- **A 6th L4/L5 lid landed on `tag`** (commit `0c2948a`), closing exactly the "Next valuable lid"
+  item #1 this file flagged in §3: the `tag.rs` D25-style refactor to fully de-opaque `decode_tag`.
+  New `lean/TagProofs.lean` proves `tag_decode_total` + `tag_decode_used_bounds` ∀-length. This
+  **discharged the 4 `tag_decode_*` trust-axiom instances** `tlv`'s and `sequence`'s lids previously
+  assumed about `decode_tag` — their disclosed trust surface drops from 7 axioms to 6 each (per the
+  commit's own message; not independently re-verified by this docs-sync pass — see `PROOF_MANIFEST.md`
+  for the current, corrected axiom-count framing). Der's Lean track is now **6 lids**: `length`,
+  `big_integer`, `oid`, `tag`, `tlv`, `sequence`. §3's remaining "next valuable lid" items (#2, an
+  X.509 structural-module lid) are still open.
+- **A new `profile` module landed** (commits `d65e7f0`, `6bcb8be`) — a first slice of the typed
+  profile-validation layer this file's "API/scope" counterpart in `TODO.md` had flagged as open:
+  three RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
+  UTCTime/GeneralizedTime year-2050 encoding choice), **tested (`#[test]`) only — no Kani harness,
+  no Lean lid**. This is new *breadth*, not a Kani/Lean-proof item, so it doesn't change this file's
+  Kani/Lean inventory sections directly, but see `PROOF_MANIFEST.md`'s dedicated section for the
+  honest framing of what grade of evidence backs it.
+- The Kani harness count referenced throughout this file as **164** is unchanged and still current
+  (re-confirmed by static grep on 2026-07-24; `profile` itself contributes 0 Kani harnesses).
+
 **UPDATE 2026-07-22: §3's next-valuable-lid item is CLOSED — landed as the 4th L4 lid, on `tlv`
 (DECISIONS.md D27, `lean/TlvProofs.lean`, `decode_tlv_structure`).** Priority-1 pick from §3 below:
 the first L4 coverage on the crate's structural *composition* layer (not another leaf codec) —

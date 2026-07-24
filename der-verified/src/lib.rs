@@ -81,20 +81,22 @@
 //! - [`profile`] — the first slice of a **typed profile-validation layer**, built on top of (not
 //!   inside) the structural parsers above: cross-field RFC 5280 rules that the transfer-syntax
 //!   modules deliberately leave "to the caller" (e.g. [`x509_certificate`]'s and
-//!   [`x509_tbs_certificate`]'s own docs name this split explicitly). Currently enforces two rules
-//!   — §4.1.1.2's `signatureAlgorithm`/`tbsCertificate.signature` equality, and the
-//!   §4.1.2.1/§4.1.2.9 "extensions is v3-only" rule — establishing the pattern the rest of this
-//!   layer (key usage, basic constraints, name constraints, path validation, …) is expected to
-//!   follow.
+//!   [`x509_tbs_certificate`]'s own docs name this split explicitly). Currently enforces three rules
+//!   — §4.1.1.2's `signatureAlgorithm`/`tbsCertificate.signature` equality, the §4.1.2.1/§4.1.2.9
+//!   "extensions is v3-only" rule, and the §4.1.2.5 UTCTime-through-2049/GeneralizedTime-from-2050
+//!   encoding-choice rule — establishing the pattern the rest of this layer (key usage, basic
+//!   constraints, name constraints, path validation, …) is expected to follow. Tested (`#[test]`)
+//!   only so far — no Kani harness or Lean lid backs this layer yet; see `PROOF_MANIFEST.md`.
 //!
 //! **Verification:** each module carries Kani proof harnesses in a `#[cfg(kani)]` block, so an
 //! ordinary `cargo build` / `cargo test` neither sees nor depends on Kani. Run the proofs with
 //! `cargo kani` (or `./check.sh`). Each codec is proven, over its harness's bounded input domain,
 //! to (1) round-trip, (2) never panic, and (3) be **canonical** — decode accepts a byte string only
 //! if it is the unique canonical encoding of the decoded value — plus per-variant error-class
-//! correctness. Three codecs (`length`, `big_integer`, `oid`) are additionally proven ∀-length via
-//! an Aeneas→Lean lid. The bounds, assumptions, and stubs behind each claim — and what is *not*
-//! proven — are the honest envelope in `PROOF_MANIFEST.md`; read it before relying on any of this.
+//! correctness. Six codecs (`length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence`) are
+//! additionally proven ∀-length via an Aeneas→Lean lid. The bounds, assumptions, and stubs behind
+//! each claim — and what is *not* proven — are the honest envelope in `PROOF_MANIFEST.md`; read it
+//! before relying on any of this.
 //!
 //! # Example
 //!
