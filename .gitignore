@@ -1,5 +1,6 @@
 /target
 **/target
+/PRIVATE/
 .lake/
 *.rs.bk
 .DS_Store
