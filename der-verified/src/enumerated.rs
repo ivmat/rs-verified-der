@@ -36,7 +36,41 @@ mod proofs {
         let buf: [u8; 8] = kani::any();
         let n: usize = kani::any();
         kani::assume(n >= 1 && n <= 8);
-        assert!(decode_enumerated(&buf[..n]) == crate::integer::decode_integer(&buf[..n]));
+        let r = decode_enumerated(&buf[..n]);
+        assert!(r == crate::integer::decode_integer(&buf[..n]));
+        // The equality above is an AGREEMENT property: it would hold just as well if both sides
+        // only ever rejected, or if the assumed length range only ever explored one width. These
+        // five witness that the delegation is genuinely exercised — each names a post-state effect
+        // and none would be satisfiable if `decode_enumerated`'s body did nothing.
+        //
+        // Read them as REACHABILITY witnesses, not as the property: the equality itself is proven
+        // symbolically for EVERY `n` in `1..=8`, so no width is left unproven by the shape of this
+        // list. What the list rules out is the vacuous reading — an agreement that holds only
+        // because one width, or only the reject path, was ever explored.
+        kani::cover(r.is_ok() && n == 1, "a 1-octet ENUMERATED is accepted through the delegation");
+        kani::cover(
+            r.is_ok() && n >= 2 && n <= 7,
+            "an INTERMEDIATE-width ENUMERATED is accepted through the delegation (not just the two \
+             ends of the assumed range)",
+        );
+        kani::cover(
+            r.is_ok() && n == 8,
+            "a full-width 8-octet ENUMERATED is accepted through the delegation (the accumulator \
+             loop runs to the i64 fence)",
+        );
+        kani::cover(
+            matches!(r, Ok(v) if v < 0),
+            "a negative two's-complement value survives the re-tag",
+        );
+        kani::cover(
+            r == Err(crate::integer::IntError::NonMinimal),
+            "the NonMinimal rejection path is reached through the delegation",
+        );
+        // The other two `IntError` variants are deliberately NOT witnessed here, because they are
+        // UNREACHABLE at this bound and a witness for them would be a known-unsatisfiable one (which
+        // Kani reports as SUCCESSFUL — `0 of 1 satisfied` — and no gate would catch): `Empty` needs
+        // `n == 0`, excluded by the assumption, and `TooLarge` needs `n > 8`, excluded by the buffer
+        // width. `integer`'s own harnesses classify both over their own domains.
     }
 
     /// Delegation contract: `encode_enumerated` returns literally the same result as

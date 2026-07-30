@@ -314,3 +314,45 @@ facts:
     full-suite run, and whether per-harness *cover satisfaction* was captured rather than just
     `SUCCESSFUL`. Under Kani's semantics those are different facts and only the coarse one was
     written down.
+
+## UPDATE 2026-07-30 (later still) — §4's `enumerated` cover residual is CLOSED
+
+Not a vacuity *disclosure* (nothing here is known-unsatisfiable); the opposite — the one place §8.2 of
+`PROOF_MANIFEST.md` said a harness's non-vacuity "rests on a sibling module's proofs rather than on its
+own witness" now witnesses itself.
+
+`enumerated::decode_delegates_to_integer` proves an **agreement** — that `decode_enumerated` returns
+literally what `crate::integer::decode_integer` returns — over an 8-octet buffer with symbolic length
+`assume(n >= 1 && n <= 8)`. An agreement property is exactly the shape that survives vacuity: it would
+hold just as well if both sides only ever rejected, or if only one width were ever explored. Five
+covers now pin that the delegation is genuinely exercised:
+
+| Cover | Why this one |
+|---|---|
+| `r.is_ok() && n == 1` | accept at the narrow end of the assumed range |
+| `r.is_ok() && n >= 2 && n <= 7` | accept at an INTERMEDIATE width — added after a second-model review objected that two endpoints are not "a spread" |
+| `r.is_ok() && n == 8` | accept at full width — the accumulator loop runs to the `i64` fence |
+| `matches!(r, Ok(v) if v < 0)` | a negative two's-complement value survives the re-tag |
+| `r == Err(IntError::NonMinimal)` | the rejection path is reached *through* the delegation |
+
+Result: `VERIFICATION: SUCCESSFUL`, **0 of 138 checks failed, 5 of 5 cover properties satisfied**,
+0.229 s (Kani 0.67.0, `-Z stubbing`, single-harness run, capped at 12 GB — peak nowhere near it).
+
+**Read the five as REACHABILITY witnesses, not as the property.** The agreement is proven symbolically
+for every `n` in `1..=8`; no width is unproven because of what the cover list happens to name. The
+endpoint-only first version drew exactly that misreading from the second-model reviewer ("a bug specific
+to an intermediate length would be missed" — it would not, the assert is verified over the whole range),
+but the objection to the *word* "spread" was fair, hence the intermediate cover.
+
+**Deliberately not covered:** the other two `IntError` variants. `Empty` requires `n == 0` (excluded by
+the assumption) and `TooLarge` requires `n > 8` (excluded by the buffer width), so a cover for either
+would be **known-unsatisfiable** — and Kani reports such a harness as `VERIFICATION: SUCCESSFUL` with
+`0 of 1 cover properties satisfied`, so no gate would catch it. The harness carries that reasoning
+in-line so a later "completeness" edit does not silently reintroduce a vacuity gap. `integer`'s own
+harnesses classify both variants over their own domains.
+
+Crate-wide effect on the §8.2 audit: `kani::cover` statements 47 → **52**; modules carrying a cover
+22 → **23** of 25 (the remaining two, `boolean` and `null`, are deliberate — they have no `assume` at
+all and characterise a 1-octet space exhaustively by biconditional); `assume`-narrowed-without-a-cover
+harnesses 83 → **82**. `x509_name::validate_rdn_never_panics` is now the crate's **only** harness whose
+non-vacuity argument points somewhere other than at itself.

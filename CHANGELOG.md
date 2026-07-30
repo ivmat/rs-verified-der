@@ -47,6 +47,16 @@ All notable changes to `der-verified` are documented here. The format is based o
   preceding commit.
 
 ### Verification
+- **Closed the last cheap non-vacuity residual.** `enumerated::decode_delegates_to_integer` proves an
+  *agreement* between `decode_enumerated` and `crate::integer::decode_integer` — a property that would
+  hold even if both sides only ever rejected — and carried no `kani::cover`, so its non-vacuity rested
+  on `integer`'s proofs rather than its own witness. It now carries five covers (accept at `n == 1`, at
+  an intermediate `2 ≤ n ≤ 7`, and at full width `n == 8`; an `Ok` with a negative two's-complement
+  value; and the exact `Err(NonMinimal)`): `5 of 5` satisfied, 0 of 138 checks failed, 0.229 s. They are
+  reachability witnesses — the agreement itself is proven for every `n` in `1..=8`. The unreachable
+  `Empty` / `TooLarge` variants are deliberately left uncovered, with the reasoning in-line, because a
+  known-unsatisfiable cover is reported by Kani as `SUCCESSFUL`. Crate-wide: 47 → **52** covers, **23**
+  of 25 harnessed modules now carry one. No new property proven and no source behaviour changed.
 - **L3 (Kani / CBMC):** Kani harness count is now **164** (was 161 at 0.1.0) — cover-retrofit added
   `kani::cover` properties across most proof modules (a T6-style non-vacuity check, not new
   properties proven) and a handful of new harnesses landed alongside it (notably

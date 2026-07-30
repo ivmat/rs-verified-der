@@ -62,7 +62,7 @@ deviations. Read the two differently.
 | `#[kani::proof]` harnesses | 164 |
 | `kani::assume` harness preconditions (narrow the proved domain) | 133 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and is not established at HEAD — §3.4) | 47 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and is not established at HEAD — §3.4) | 52 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 7 / 4 |
 | `#[test]` unit + regression tests | 309 |
@@ -280,7 +280,7 @@ carry that.
 | `bit_string` | 3 | 3 | 8 | 3..6 | 6..8 | 9 | 2 | 0 |  |
 | `boolean` | 2 | 2 | 3 | — | — | 0 | 0 | 0 |  |
 | `context_tag` | 1 | 1 | 1 | 16 | 20 | 0 | 2 | 0 |  |
-| `enumerated` | 2 | 2 | 3 | 8 | 12 | 1 | 0 | 0 |  |
+| `enumerated` | 2 | 2 | 3 | 8 | 12 | 1 | 5 | 0 |  |
 | `generalized_time` | 3 | 2 | 16 | 3..19 | 16..20 | 20 | 3 | 0 |  |
 | `integer` | 2 | 2 | 7 | 8..10 | 12 | 4 | 2 | 0 |  |
 | `length` | 2 | 2 | 9 | 8 | 10 | 7 | 1 | 0 | ✅ |
@@ -509,14 +509,14 @@ input space. This crate treats that as the default suspicion, and the check is m
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
 | harnesses | 164 |
-| `kani::cover` witnesses | 47, in 22 of the 25 modules that have harnesses |
+| `kani::cover` witnesses | 52, in 23 of the 25 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **0** |
-| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 83 |
+| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 82 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
 
 **The row that carries the weight is "implicit checks only", and it is 0.** Every harness in the crate either witnesses a post-state effect with `kani::cover` or asserts a functional outcome with `assert!`; none relies on Kani's implicit checks alone. That much is a static fact this script re-derives on every run, not a claim.
 
-What the remaining 83 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
+What the remaining 82 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
 **What the 133 harness assumptions actually restrict.** 89 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
@@ -571,24 +571,43 @@ Two things to hold in mind reading it. First, the classifier is deliberately con
 The covers are **authored against** a bar: witness a *post-state effect*, never an input predicate.
 `cover(len == N)` or `cover(true)` would be satisfiable even if the function body were replaced by a
 no-op, and are therefore worthless. The bar is "would this still be satisfiable if the body did
-nothing?" — and conformance to it is established by review of 47 hand-written covers, not by any
+nothing?" — and conformance to it is established by review of 52 hand-written covers, not by any
 gate; nothing mechanically rejects a weak cover. — for the stub-bearing composition harnesses that means covering that the
 real glue reached its `Ok` tail, and for `x509_extension` that a second walk iteration genuinely
 co-occurs with acceptance.
 
-**Three of the 25 harnessed modules carry no `kani::cover`.** Two are deliberate: `boolean` and
+**Two of the 25 harnessed modules carry no `kani::cover`, and both are deliberate:** `boolean` and
 `null` have no `kani::assume` at all and characterise a 1-octet input space exhaustively via
-`assert!` biconditionals, so a cover would be redundant. The third is `enumerated`, and it is a
-genuine (small) residual:
+`assert!` biconditionals, so a cover would be redundant.
 
-**One residual a reviewer should look at:** `enumerated::decode_delegates_to_integer` narrows a
-symbolic length with `assume(n >= 1 && n <= 8)` and has no cover confirming a representative spread
-of `n` — or both outcomes — is reachable through the delegation. It is very likely benign
-(`enumerated` is a thin re-tag of `integer`, whose own proofs cover the shape). It is cheap to close
-and has not been closed. It is not quite alone: `x509_name::validate_rdn_never_panics` also has no
-cover, and its conditional postcondition is not self-witnessed either — see the correction at the end
-of this section. Those two are the crate's complete list of harnesses whose non-vacuity argument
-points somewhere other than at themselves.
+**The `enumerated` residual this document previously flagged here is now closed.**
+`decode_delegates_to_integer` narrows a symbolic length with `assume(n >= 1 && n <= 8)` and used to
+carry no cover confirming that a spread of `n` — or both outcomes — is reachable through the
+delegation; its non-vacuity therefore rested on `integer`'s proofs rather than on its own witness. It
+now carries five: an accept at `n == 1`, an accept at some *intermediate* width `2 ≤ n ≤ 7`, an accept
+at the full width `n == 8`, an `Ok` carrying a **negative** two's-complement value, and the exact
+`Err(NonMinimal)` rejection. Why that set: the harness's own property is an *agreement* between two
+functions, which would hold just as well if both sides only ever rejected, or if only one width were
+ever explored.
+
+**These are reachability witnesses, not the property.** The equality is proven symbolically for every
+`n` in `1..=8`; no width is left unproven by the shape of the cover list. A second-model review read
+the endpoint-only version of this list as leaving intermediate lengths unchecked — it does not, but the
+intermediate cover was added because "a spread" should mean more than two endpoints.
+
+Reported **satisfied** — `5 of 5`, 0 of 138 checks failed, 0.229 s — by a single-harness run on
+2026-07-30 (Kani 0.67.0, `-Z stubbing`, CBMC's default solver). Per §3.4, read that as a
+*transcription* until a run log lands under `evidence/`.
+
+The remaining two `IntError` variants are deliberately **not** covered, and the harness says so
+in-line: `Empty` needs `n == 0` and `TooLarge` needs `n > 8`, both excluded here, so a cover for either
+would be a known-unsatisfiable one — which Kani reports as `SUCCESSFUL` and no gate would catch.
+`integer`'s own harnesses classify both over their own domains.
+
+**One such residual remains**, and it is the larger one: `x509_name::validate_rdn_never_panics` has
+no cover, and its conditional postcondition is not self-witnessed either — see the correction at the
+end of this section. It is now the crate's only harness whose non-vacuity argument points somewhere
+other than at itself.
 
 **Disclosed non-vacuity gaps.** Three harnesses have a cover that is **known-unsatisfiable at their
 bound**. They are left in place rather than deleted, because a cover reporting `0 of 1 satisfied`

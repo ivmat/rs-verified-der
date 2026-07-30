@@ -31,9 +31,17 @@ scope boundary referenced below.
       log anywhere in this repo** — every verdict in the docs is a prose transcription. The generator
       already reads `evidence/` and will report the verdict in the manifest automatically. Needs a
       ≥24 GB box (~21 GiB peak).
-- [ ] **Close the `enumerated::decode_delegates_to_integer` cover residual** — the crate's one
-      `assume`-narrowed harness whose non-vacuity rests on a sibling module's proofs rather than its
-      own witness (`PROOF_MANIFEST.md` §8.2). Cheap: one small harness, sub-second historically.
+- [x] **Closed the `enumerated::decode_delegates_to_integer` cover residual** — the harness's own
+      property is an *agreement* between `decode_enumerated` and `decode_integer`, which would hold
+      even if both sides only ever rejected, so five covers now witness the delegation being exercised:
+      accept at `n == 1`, accept at an intermediate `2 ≤ n ≤ 7`, accept at full width `n == 8`, an `Ok`
+      carrying a negative two's-complement value, and the exact `Err(NonMinimal)`. They are
+      *reachability* witnesses — the equality itself is proven for every `n` in `1..=8`.
+      `5 of 5` satisfied, 0 of 138 checks failed, 0.229 s. `Empty`/`TooLarge` are
+      deliberately not covered (unreachable at this bound — a cover for either would be
+      known-unsatisfiable, which Kani reports as `SUCCESSFUL`). `x509_name::validate_rdn_never_panics`
+      is now the crate's only harness whose non-vacuity argument points elsewhere (`PROOF_MANIFEST.md`
+      §8.2).
 - [ ] **Make the evidence reproducible on a laptop.** `./check.sh` needs ~24 GB RAM for the full Kani
       floor, which is a real adoption barrier: the re-runnable evidence *is* the product, and a
       prospective user who cannot run it gets a much weaker offer. Consider a documented
