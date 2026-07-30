@@ -206,6 +206,7 @@ mod proofs {
     /// malformed 16-byte inputs are rejected. Would NOT be SAT if `parse_validity`'s body were a
     /// no-op always returning `Err`.
     ///
+    // VACUITY-DISCLOSED: parse_never_panics -> witness parse_validity_ok_path_witnessed
     /// **VACUITY FINDING (2026-07-21): this cover is UNSATISFIABLE at `[u8; 16]`.** Kani reports
     /// `VERIFICATION: SUCCESSFUL` (0 panics) but `0 of 1 cover properties satisfied` — the
     /// harness's 16-octet buffer can never reach `parse_validity`'s `Ok` tail. This is

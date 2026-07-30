@@ -5,6 +5,12 @@ set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo "== hygiene gate (doc links; pure stdlib) =="
 python3 "$ROOT/gates/check_links.py"
+echo "== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) =="
+# The manifest is the crate's honest proof envelope, and its numbers are DERIVED, never typed:
+# this fails closed if a harness, bound, stub, cover or `pub fn` changed without the manifest
+# following, or if a count-claim in README/docs drifted. Regenerate with
+# `python3 gates/gen_proof_manifest.py --write`.
+python3 "$ROOT/gates/gen_proof_manifest.py" --check
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
 echo "== cargo kani :: der-verified (L3 proof floor) =="

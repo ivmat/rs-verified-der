@@ -390,6 +390,7 @@ mod proofs {
         let _ = result;
     }
 
+    // VACUITY-DISCLOSED: validate_extensions_never_panics -> witness validate_extensions_ok_path_witnessed
     /// **VACUITY FINDING (re-measured on the dedicated 32 GB Linux box, 2026-07-21):** the cover
     /// above is **UNSATISFIABLE at `[u8; 13]`** — not merely "undetermined" (as it was when this
     /// harness OOM'd on the shared box before reaching any verdict; see

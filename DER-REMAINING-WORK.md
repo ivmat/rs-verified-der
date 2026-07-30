@@ -223,3 +223,51 @@ past their harnesses' buffers.
 - **Vacuity:** closed (tbs, validity, and now extensions); `x509_certificate` checked directly —
   not vacuous (`1 of 1` cover already satisfied). Total: exactly 3 findings ever existed, all now
   closed.
+
+---
+
+## UPDATE 2026-07-30 — proof-manifest pass (docs + gate only; no proofs run)
+
+The FV slot on this machine was held by another repo's grind, so **no Kani or Lean run happened in
+this pass.** Everything below is derived from source or from committed records. Three corrections and
+three new items:
+
+**Corrections to this file's body (left unedited above, per the append-only rule):**
+
+1. **§1's cover-coverage figure is wrong.** It says "23 of 25 source modules with `#[kani::proof]`
+   now also carry `kani::cover` (the 2 without — `boolean`, `null`)". Derived from source at
+   `bd318e2`: it is **22 of 25**, and there are **three** modules without a cover — `boolean` and
+   `null` as described, plus **`enumerated`**, whose single `assume`-narrowed harness
+   (`decode_delegates_to_integer`) is the residual §1 itself flags further down. The prose and the
+   count contradicted each other; the count was the wrong one.
+2. **The `#[test]` total is 309, not 310.** A naive `grep -rE '#\[test\]'` counts the `#[test]`
+   *mentioned inside* `lib.rs`'s crate-doc prose. `cargo test` runs 309 unit tests + 1 doc-test.
+   `DOCS-SYNC.md` now warns about this class of miscount, and the gate derives it correctly.
+3. **The unwind histogram circulated in the 2026-07-21 methods analysis was inflated** by the same
+   mechanism — 12 `#[kani::unwind(N)]` mentions in comments were counted as attributes (157 vs the
+   real 145). The real distribution is in `PROOF_MANIFEST.md` §8.1, script-derived.
+
+**New:**
+
+4. **`PROOF_MANIFEST.md` is now generated and gated.** `gates/gen_proof_manifest.py` derives every
+   number in it from source; `--check` runs in `check.sh` and `check_fast.sh` and fails on drift,
+   including drift in count-claims made in `README.md`/`docs/`. Negative-tested five ways (added
+   harness, new `pub fn` before and after the proof modules, drifted doc count, deleted region
+   marker) — all fail closed.
+5. **The three cover-vacuity findings now carry machine-countable registry lines**
+   (`// VACUITY-DISCLOSED: <harness> -> witness <harness>`, comment-only). Kani does not fail a
+   harness for an unsatisfied cover, so before this the gaps were prose-only and invisible to every
+   gate.
+6. **A run-provenance gap is now stated in the manifest (§3.4) rather than glossed.** The last
+   recorded full-suite run is the 2026-07-21/22 164/164; `der-verified/src/tag.rs` changed after it
+   (`0c2948a`, behaviour-preserving, with that commit recording a targeted `tag` re-run), the
+   additive `profile` module landed, and **no full-suite re-run at HEAD has been recorded.** There is
+   also **no committed raw proof-run log anywhere in the repo** — every verdict in the docs is a
+   prose transcription. Two open items follow from that, both cheap:
+   - re-run `./check.sh` at HEAD on a ≥24 GB box (needs ~21 GiB for the two heavy harnesses) and
+     **commit the raw log under `evidence/`** — the generator already reads that directory and will
+     report the verdict in the manifest automatically;
+   - close the `enumerated::decode_delegates_to_integer` cover residual (item 1 above).
+
+**Still open, unchanged:** the `enumerated` cover; a 4th-and-beyond L4 lid on an X.509 structural
+module; `profile`'s Kani/Lean coverage (it is `#[test]`-only by design so far).

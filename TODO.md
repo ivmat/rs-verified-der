@@ -17,6 +17,33 @@ scope boundary referenced below.
       [`docs/verification-cost.md`](docs/verification-cost.md) (cost tiers, the heavy `set_of` §11.6
       family, the two harnesses that need a >16 GB box, and a measured solver-selection note).
 
+## Open, and surfaced by the 2026-07-30 proof-manifest pass
+
+- [x] **`PROOF_MANIFEST.md` is generated from source and gated** —
+      [`gates/gen_proof_manifest.py`](gates/gen_proof_manifest.py) derives every number in it, and
+      `--check` runs in `check.sh`/`check_fast.sh` (negative-tested five ways). Restructured around
+      the publication checklist's five headings; now states which entry points no harness names, what
+      is not proven per module, the non-vacuity audit, and the provenance of the L3 verdict.
+- [ ] **Re-run `./check.sh` at HEAD and commit the raw log under `evidence/`.** The last recorded
+      full-suite Kani run is 2026-07-21/22 (164/164); `tag.rs` changed after it (behaviour-preserving,
+      with the `tag` harnesses re-run per commit `0c2948a`) and the additive `profile` module landed,
+      so no full-suite run exists at the current commit. There is also **no committed raw proof-run
+      log anywhere in this repo** — every verdict in the docs is a prose transcription. The generator
+      already reads `evidence/` and will report the verdict in the manifest automatically. Needs a
+      ≥24 GB box (~21 GiB peak).
+- [ ] **Close the `enumerated::decode_delegates_to_integer` cover residual** — the crate's one
+      `assume`-narrowed harness whose non-vacuity rests on a sibling module's proofs rather than its
+      own witness (`PROOF_MANIFEST.md` §8.2). Cheap: one small harness, sub-second historically.
+- [ ] **Make the evidence reproducible on a laptop.** `./check.sh` needs ~24 GB RAM for the full Kani
+      floor, which is a real adoption barrier: the re-runnable evidence *is* the product, and a
+      prospective user who cannot run it gets a much weaker offer. Consider a documented
+      `check_tractable.sh` (or a `--tier` flag) running the CI-sized share — the same ~136 harnesses
+      CI already shards — so a stranger can reproduce most of the floor on ordinary hardware, with the
+      two heavy harnesses clearly marked as a large-box milestone.
+- [ ] **`profile` has no Kani harness and no Lean lid.** It is `#[test]`-only by design so far and the
+      manifest says so plainly (§7), but it is now the largest single unproven public entry point in
+      the crate. Decide whether it stays test-only or gets a harness.
+
 ## Verification breadth
 
 - [x] **A 4th L4 (Aeneas→Lean) lid — landed on `tlv` (DECISIONS.md D27).** The first L4 lid on the

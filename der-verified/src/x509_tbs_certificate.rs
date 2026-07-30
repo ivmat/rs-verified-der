@@ -521,6 +521,7 @@ mod proofs {
     /// through its opaque `Result` that ALL of that real glue ran to completion, not just that some
     /// early field rejected the input.
     ///
+    // VACUITY-DISCLOSED: parse_tbs_certificate_never_panics -> witness parse_tbs_certificate_ok_path_witnessed
     /// **VACUITY FINDING (2026-07-21): this cover is UNSATISFIABLE at `[u8; 10]`.** Kani reports
     /// `VERIFICATION: SUCCESSFUL` (0 panics) but `0 of 1 cover properties satisfied` — i.e. the
     /// harness's own claimed 10-octet buffer can never actually reach `parse_tbs_certificate`'s

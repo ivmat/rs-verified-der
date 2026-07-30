@@ -75,7 +75,15 @@ postcondition (`2 ≤ used ≤ input.len()`) — so the outer proof reasons only
 runs in ~0.5 GB. Without that split the monolithic harness exceeds ~100 GB. The same technique makes
 `x509_tbs_certificate` and `x509_certificate` tractable. This is why `cargo kani` needs `-Z stubbing`.
 
-## Cover-retrofit follow-ups (2026-07-21)
+## Cover-retrofit follow-ups (2026-07-21; registry added 2026-07-30)
+
+> **Since 2026-07-30 each of the three findings below carries a machine-countable registry line** in
+> its module — `// VACUITY-DISCLOSED: <harness> -> witness <harness>` — which
+> `gates/gen_proof_manifest.py` counts and `PROOF_MANIFEST.md` §8.2 reports. This matters because
+> **Kani does not fail a harness whose `kani::cover` is unsatisfiable**: it reports
+> `VERIFICATION: SUCCESSFUL` with `0 of 1 cover properties satisfied`, so `check.sh` stays green and
+> the gap was previously visible only in prose. Cover satisfaction is *disclosed*, not *enforced*.
+
 
 The 2026-07-21 cover-retrofit pass (`METHODS-APPLICATION-ANALYSIS-2026-07-21.md`) added
 `kani::cover`s to the crate's symbolic `never_panics` harnesses to check the manifest's "exercises

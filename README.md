@@ -102,7 +102,7 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 309 tests
+cargo test                                    # 309 tests + 1 doc-test
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
@@ -113,13 +113,24 @@ cargo kani -Z stubbing                          # 164 proof harnesses
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
 
 ```sh
-./check.sh          # full gate (Kani + Lean run here; minutes)
-./check_fast.sh     # fast subset: doc gate + cargo test
+./check.sh          # full gate (Kani + Lean run here; minutes; needs ~24 GB RAM — see below)
+./check_fast.sh     # fast subset: doc-link gate + proof-manifest gate + cargo test
 ```
 
-`-Z stubbing` is required: three X.509 harnesses are **modular** proofs that stub an
-independently-proven sub-parser (disclosed in `PROOF_MANIFEST.md`). Harnesses without a stub are
-unaffected by the flag.
+Both start with two stdlib-only hygiene gates: doc-link resolution, and a **proof-manifest gate**
+(`gates/gen_proof_manifest.py --check`) that re-derives every count in `PROOF_MANIFEST.md` from the
+source tree and fails if the document — or a count-claim in this README or in `docs/` — has drifted
+from it. Regenerate with `--write`.
+
+**`./check.sh` needs a large machine for the full Kani floor.** Two harnesses peak around 20.5 GiB
+and 17.1 GiB, so below roughly 24 GB of available RAM they will not converge and the gate will fail
+on memory rather than on any defect. CI runs the memory-tractable share; see
+`docs/verification-cost.md` and `PROOF_MANIFEST.md` §3.4.
+
+`-Z stubbing` is required: four X.509 harnesses are **modular** proofs that stub an
+independently-proven sub-parser — three never-panics harnesses plus one positive-construction
+witness (disclosed, with each stub's discharging harness, in `PROOF_MANIFEST.md` §8.3). Harnesses
+without a stub are unaffected by the flag.
 
 ### 2. The L4/L5 Lean lids (optional; unbounded proofs on 6 codecs)
 

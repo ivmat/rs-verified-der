@@ -9,6 +9,8 @@ set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo "== hygiene gate (doc links; pure stdlib) =="
 python3 "$ROOT/gates/check_links.py"
+echo "== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) =="
+python3 "$ROOT/gates/gen_proof_manifest.py" --check
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
 echo "== check_fast.sh: PASS (Kani + Lean NOT run here — run check.sh at milestones) =="

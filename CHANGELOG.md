@@ -6,6 +6,30 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+### Documentation / assurance process
+- **`PROOF_MANIFEST.md` is now generated from source and gated.** New
+  `gates/gen_proof_manifest.py` derives every number in the manifest — harness counts, `pub fn`
+  entry points and which of them no harness names, symbolic buffer widths, unwind depths,
+  `kani::assume` split into harness preconditions vs stub postconditions, `kani::cover` counts, stub
+  applications, the cover-vacuity registry, Lean lid theorem/axiom counts, and the toolchain pins.
+  `--check` runs in `check.sh` and `check_fast.sh` and fails on drift, including drift in
+  count-claims made in `README.md` and `docs/`. The manifest was restructured around the five
+  headings of the publication checklist, and now states explicitly: which entry points **no** harness
+  names (11, classified), what is **not** proven per module, the non-vacuity audit and its three
+  disclosed known-unsatisfiable covers, and the provenance of the L3 verdict.
+- **Corrected counts** (all previously derived by hand-grep, all off by the same class of error —
+  prose mentions inside comments counted as code): `#[test]` total is **309**, not 310;
+  the `#[kani::unwind]` distribution totals **145** attributes, not 157; **22 of 25** harnessed
+  modules carry a `kani::cover`, not 23. No proof or property changed — only the counts describing
+  them. `DOCS-SYNC.md` documents the trap and now points at the script as the single source of truth.
+- **Cover-vacuity findings are machine-countable.** Each of the three carries a
+  `// VACUITY-DISCLOSED: <harness> -> witness <harness>` line (comment-only, no proof semantics
+  touched). Kani does not fail a harness for an unsatisfied cover, so these gaps were previously
+  visible in prose only.
+- **Newly disclosed, not newly true:** `./check.sh` needs ~24 GB RAM for the full Kani floor; the
+  Lean layer silently no-ops when the Aeneas/Charon/Lean stack is absent; and there is no committed
+  raw proof-run log in the repository — every verdict in the docs is a prose transcription.
+
 ### Verification
 - **L3 (Kani / CBMC):** Kani harness count is now **164** (was 161 at 0.1.0) — cover-retrofit added
   `kani::cover` properties across most proof modules (a T6-style non-vacuity check, not new
