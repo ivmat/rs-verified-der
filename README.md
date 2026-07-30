@@ -164,7 +164,9 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 
 ## Continuous integration
 
-[GitHub Actions](.github/workflows/ci.yml) runs three jobs on every push and PR: `cargo test`,
+[GitHub Actions](.github/workflows/ci.yml) runs, on every push and PR: the two **hygiene gates**
+(`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 18-test
+self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
 ≈136 of the 164 harnesses (the shard filters are by module, not a pinned count; see
 `.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
