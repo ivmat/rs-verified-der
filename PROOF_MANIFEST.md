@@ -52,7 +52,7 @@ deviations. Read the two differently.
 ## 1. Inventory
 
 <!-- BEGIN GENERATED:inventory (gates/gen_proof_manifest.py) -->
-| Inventory (static, derived from source at `e918541`) | Count |
+| Inventory (static, derived from `der-verified/src` + `lean/`) | Count |
 |---|---:|
 | source modules (excl. `lib.rs`) | 26 |
 | …of which carry at least one `#[kani::proof]` | 25 |

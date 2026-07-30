@@ -543,7 +543,10 @@ def r_pins(f):
 def r_inventory(f):
     t = f['totals']
     return [
-        '| Inventory (static, derived from source at `%s`) | Count |' % f['head'],
+        # NOT the commit hash: putting it here makes the region stale the instant a commit lands,
+        # so `--check` could never be green on a clean tree (found by running the gate right after
+        # committing). The manifest is regenerated from whatever is checked out; `git log` says when.
+        '| Inventory (static, derived from `der-verified/src` + `lean/`) | Count |',
         '|---|---:|',
         '| source modules (excl. `lib.rs`) | %d |' % t['modules'],
         '| …of which carry at least one `#[kani::proof]` | %d |' % t['modules_with_kani'],
