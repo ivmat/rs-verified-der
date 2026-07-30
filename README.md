@@ -8,7 +8,7 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 164 proof harnesses over 25 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 171 proof harnesses over 26 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
 - **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
@@ -33,14 +33,16 @@ the canonical content codecs: `BOOLEAN`, `INTEGER` (`i64` and arbitrary-magnitud
 algorithm/key/signature/certificate semantics — a demonstration that the verified core is usable
 downstream, inside the same fence.
 
-**Typed profile-validation layer (tested, not Kani/Lean-proven):** the [`profile`] module is a first
+**Typed profile-validation layer (Kani-proven, no Lean lid):** the [`profile`] module is a first
 slice of a layer built *on top of* the structural parsers above, checking cross-field RFC 5280 rules
 those parsers deliberately leave to the caller. It currently enforces three rules: §4.1.1.2's
 `signatureAlgorithm == tbsCertificate.signature` equality, §4.1.2.1/§4.1.2.9's "extensions is
 v3-only" rule, and §4.1.2.5's UTCTime-through-2049/GeneralizedTime-from-2050 encoding-choice rule.
-**This layer has `#[test]` coverage only — no Kani harness, no Lean lid** — see
-[`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the honest framing. Not yet covered: name constraints,
-key usage, basic constraints, path validation, and any other RFC 5280 cross-field rule.
+Each of the three is proven as a **biconditional** — the rule fires *exactly* when it should — and the
+documented precedence between them is proven too, over symbolic field values rather than symbolic DER
+bytes (which is why the module is the cheapest in the crate to verify: ~0.5 s, ~205 MB). No Lean lid.
+Not yet covered: name constraints, key usage, basic constraints, path validation, and any other
+RFC 5280 cross-field rule — see [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the honest framing.
 
 **Out of scope (not implemented, not proven):** signature/crypto verification; certificate-path or
 trust validation; full X.509/RFC 5280 profile semantics beyond the three `profile`-module rules above
@@ -107,7 +109,7 @@ cargo test                                    # 309 tests + 1 doc-test
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
 cargo kani setup
-cargo kani -Z stubbing                          # 164 proof harnesses
+cargo kani -Z stubbing                          # 171 proof harnesses
 ```
 
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
@@ -168,16 +170,17 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 (`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 18-test
 self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
-≈136 of the 164 harnesses (the shard filters are by module, not a pinned count; see
+**143** of the 171 harnesses (the shard filters are by module, not a pinned count, so this total is
+re-derived from the per-module counts rather than maintained by hand; see
 `.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
-parallel runners. The remaining ≈28 (`set_of`, `sequence`, `x509_certificate`,
+parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
 `x509_tbs_certificate`, `x509_extension`, `x509_name`) peak above a standard 7 GB runner, so — like
 the L4 Lean lids — they are a **local-milestone check** via `./check.sh` (or the `kani-heavy` job
 stub in the workflow, on a large-memory runner).
 
 ### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
 
-**All 164 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
+**All 171 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
 harness counts below were re-derived from the current module counts by static count, not a fresh
 timing run — treat the *times themselves* as the prior measurement's indicative, possibly-stale
 numbers, and the counts as current):

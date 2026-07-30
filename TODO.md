@@ -11,7 +11,7 @@ scope boundary referenced below.
       over symbolic content). Split into `validate_rdn_never_panics` (the heavy SET-OF/ATV layer at
       one-RDN scale, ~17 GB) + `validate_never_panics` stubbing `validate_rdn` with its proven
       postcondition (~510 MB). Same theorem, now compositional; `./check.sh` completes end-to-end
-      (161/161 Kani at the time — now 164/164 — + the L4 lids). The same review also fixed a
+      (161/161 Kani at the time — now 171/171 — + the L4 lids). The same review also fixed a
       pre-existing fixed-vs-symbolic input length gap across all modular harnesses.
 - [x] Record, per harness, the wall-clock/solver cost so the intractable ones are visible up front —
       [`docs/verification-cost.md`](docs/verification-cost.md) (cost tiers, the heavy `set_of` §11.6
@@ -40,26 +40,40 @@ scope boundary referenced below.
       (`x509_extension`) had never previously reached a verdict at all. This closes the old
       "164/164 is not a single run at HEAD" caveat: the run covers `tag.rs` and `profile` as they
       stand. Every verdict in the docs was a prose transcription before this.
-- [x] **Closed the `enumerated::decode_delegates_to_integer` cover residual** — the harness's own
-      property is an *agreement* between `decode_enumerated` and `decode_integer`, which would hold
-      even if both sides only ever rejected, so five covers now witness the delegation being exercised:
-      accept at `n == 1`, accept at an intermediate `2 ≤ n ≤ 7`, accept at full width `n == 8`, an `Ok`
-      carrying a negative two's-complement value, and the exact `Err(NonMinimal)`. They are
-      *reachability* witnesses — the equality itself is proven for every `n` in `1..=8`.
-      `5 of 5` satisfied, 0 of 138 checks failed, 0.229 s. `Empty`/`TooLarge` are
-      deliberately not covered (unreachable at this bound — a cover for either would be
-      known-unsatisfiable, which Kani reports as `SUCCESSFUL`). `x509_name::validate_rdn_never_panics`
-      is now the crate's only harness whose non-vacuity argument points elsewhere (`PROOF_MANIFEST.md`
-      §8.2).
+- [x] **Closed the `enumerated` cover residual, then widened the harness domain after review.** The
+      harness proves an *agreement* between `decode_enumerated` and `decode_integer`, which would hold
+      even if both sides only ever rejected — so it needed its own witnesses. Final shape: a 9-octet
+      buffer with symbolic length `0..=9` (the wrapper's WHOLE reachable input space, not `integer`'s
+      `1..=8`) and **7 of 7** covers satisfied, including `Err(Empty)` and `Err(TooLarge)` reached
+      *through the delegation* — an intermediate version excluded those two lengths and explained them
+      away by pointing at `integer`'s harnesses, which a second-model review correctly called stopping
+      one byte short. `encode_delegates_to_integer` gained 3 covers of its own for the same reason, so
+      `x509_name::validate_rdn_never_panics` is now genuinely the crate's only harness whose
+      non-vacuity argument points elsewhere (`PROOF_MANIFEST.md` §8.2). Three overclaims in the first
+      version's prose were retracted in the same pass — see the manifest.
 - [ ] **Make the evidence reproducible on a laptop.** `./check.sh` needs ~24 GB RAM for the full Kani
       floor, which is a real adoption barrier: the re-runnable evidence *is* the product, and a
       prospective user who cannot run it gets a much weaker offer. Consider a documented
-      `check_tractable.sh` (or a `--tier` flag) running the CI-sized share — the same ~136 harnesses
+      `check_tractable.sh` (or a `--tier` flag) running the CI-sized share — the same 143 harnesses
       CI already shards — so a stranger can reproduce most of the floor on ordinary hardware, with the
       two heavy harnesses clearly marked as a large-box milestone.
-- [ ] **`profile` has no Kani harness and no Lean lid.** It is `#[test]`-only by design so far and the
-      manifest says so plainly (§7), but it is now the largest single unproven public entry point in
-      the crate. Decide whether it stays test-only or gets a harness.
+- [x] **`profile` is now Kani-proven** (six harnesses; still no Lean lid, which is the remaining gap).
+      It was the largest single unproven public entry point in the crate; `validate_profile` is now
+      named by a harness, so the manifest's unharnessed-entry-point count drops 12 → 11. Each of the
+      three RFC 5280 cross-field rules is proven as a **biconditional** (the rule fires exactly when it
+      should — rule 2 over all 256 `version` values, not just 0/1/2), plus the documented precedence
+      with all four violations independently symbolic, plus totality. Cheapest module in the crate:
+      ~0.52 s solve, ~205 MB peak, because the harnesses take a symbolic *value* rather than a symbolic
+      DER buffer — so it went into CI's `codecs-b` shard, not the heavy tier.
+      Two things fell out of it: `utc_time::decode_postcondition_fields_in_range` now proves the
+      decoder postcondition (`year2 <= 99`) that `profile`'s "a `Time::Utc` can never denote 2050 or
+      later, by construction" was silently resting on (`UtcTime`'s fields are `pub`, and a
+      hand-written `year2: 200` maps to 2100); and a missing `#[kani::unwind]` was found to mimic an
+      intractable harness exactly — see `docs/verification-cost.md`.
+- [ ] **A Lean lid for `profile`** — the remaining evidence gap for that module. Its harnesses are
+      bounded proofs over field *values*; there is no ∀-length statement. Lower value than the codec
+      lids (the module decodes nothing, so "any length" is not the axis its correctness turns on), but
+      it is what keeps `profile` below the L4/L5 grade.
 
 ## Verification breadth
 
@@ -114,15 +128,23 @@ scope boundary referenced below.
 
 `0.0.0` is published (name reservation). For the first *real* release:
 
-- [ ] Bump `version` to `0.1.0` in `der-verified/Cargo.toml`.
-- [ ] **Fix rustdoc intra-doc links** — `cargo doc` (with `-D warnings`) currently errors on broken /
-      private-item links, incl. `validate_name` → private `validate_rdn`/`validate_atv` (from the D26
-      modular-proof docs), plus `minimality_is_local`, `decode_extn_id_tlv`, `decode_time_tlv`. These
-      render broken on docs.rs.
-- [ ] `#![deny(missing_docs)]` + a top-level crate-doc example (parse a cert end-to-end) so docs.rs
-      reads well and the public API is fully documented.
+> **Reconciled 2026-07-31 against the actual tree — most of this list was already done.**
+> `der-verified/Cargo.toml` already declares `version = "0.1.0"` and `rust-version = "1.70"`, and
+> `lib.rs` already carries `#![deny(missing_docs)]`; 0.1.0 was published to crates.io on 2026-07-13.
+> The rustdoc item listed five broken intra-doc links; four had already been fixed and the fifth
+> (`profile` → the private `check_time_encoding_year`) was fixed in the profile-proofs pass, so
+> `cargo doc` is now warning-free. Items are checked off accordingly rather than left implying work
+> that no longer exists.
+
+- [x] Bump `version` to `0.1.0` in `der-verified/Cargo.toml`.
+- [x] **Fixed rustdoc intra-doc links** — `cargo doc --no-deps` is warning-free as of 2026-07-31.
+      The last one was `profile`'s module doc linking to the private `check_time_encoding_year`.
+- [x] `#![deny(missing_docs)]` is in `lib.rs`, and the crate doc carries a runnable example
+      (`lib.rs`'s doctest passes in `cargo test`).
 - [ ] Add `CHANGELOG.md` (Keep-a-Changelog) with the 0.1.0 entry.
-- [ ] Declare an MSRV (`rust-version` in Cargo.toml) and CI-check it.
+- [x] MSRV declared: `rust-version = "1.70"` in `der-verified/Cargo.toml`. **Not** CI-checked
+      against that exact toolchain — CI builds on the pinned channel, so the MSRV is a declaration,
+      not a verified claim. That check is still open.
 - [ ] Confirm CI is green on the public repo and that docs.rs builds cleanly.
 - [ ] Final public-API review (0.1.0 is the API you're committing to; breaking changes still allowed
       pre-1.0 but keep it coherent).

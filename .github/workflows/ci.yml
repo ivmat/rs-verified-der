@@ -41,8 +41,8 @@ jobs:
   #     that on the heaviest harnesses (see the heavy tier below), so it OOM-kills the job.
   #  2. Sharding also parallelises the multi-minute proof floor.
   # Each shard selects harnesses by fully-qualified-name substring (`--harness <module>::`).
-  # This matrix covers the 135 harnesses whose peak memory fits a 7 GB runner. The remaining
-  # 25 (the heavy tier) are verified locally via ./check.sh — see `kani-heavy` below and README.
+  # This matrix covers the 143 harnesses whose peak memory fits a 7 GB runner. The remaining
+  # 28 (the heavy tier) are verified locally via ./check.sh — see `kani-heavy` below and README.
   kani:
     name: kani (${{ matrix.shard }})
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
               --harness tlv:: --harness oid:: --harness enumerated::
               --harness boolean:: --harness null:: --harness context_tag::
               --harness x509_algorithm_identifier:: --harness x509_spki::
-              --harness x509_validity::
+              --harness x509_validity:: --harness profile::
           - shard: utf8
             filters: "--harness utf8_string::"
     steps:

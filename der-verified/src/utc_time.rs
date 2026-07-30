@@ -382,8 +382,41 @@ mod proofs {
         assert!(decode_utc_time(&c) == Err(UtcTimeError::SecondRange));
     }
 
+    /// **Decoder postcondition:** every [`UtcTime`] `decode_utc_time` returns has all six fields in
+    /// their canonical ranges — in particular `year2 <= 99`.
+    ///
+    /// Why this is not redundant with `accepted_iff_canonical_oracle`, which already pins the
+    /// accepted *byte* set: `UtcTime`'s fields are `pub`, so a struct literal can hold
+    /// `year2: 200`, and [`full_year_rfc5280`] would map that to `2100`. Claims elsewhere in this
+    /// crate — most visibly `crate::profile`'s "a `Time::Utc` value can never denote a year >= 2050,
+    /// by construction" — hold for values *this decoder produced*, and nothing stated that as a
+    /// proved property. `full_year_pivot_is_correct` below *assumes* `y <= 99`; this harness is what
+    /// discharges that assumption for decoded values, over symbolic content, so the two compose into
+    /// an unconditional statement about decoder output.
+    #[kani::proof]
+    #[kani::unwind(14)]
+    fn decode_postcondition_fields_in_range() {
+        let buf: [u8; 14] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 14);
+        if let Ok(t) = decode_utc_time(&buf[..n]) {
+            assert!(fields_in_range(&t));
+        }
+        // The assert above is discharged CONDITIONALLY (inside `if let Ok`), so on its own it would
+        // also hold if the decoder never accepted anything. These two witness that both sides of
+        // the century pivot are reachable from real symbolic content, which is what makes the
+        // postcondition -- and `profile`'s use of it -- non-vacuous.
+        if let Ok(t) = decode_utc_time(&buf[..n]) {
+            kani::cover(t.year2 < 50, "a decoded UTCTime on the 20YY side of the pivot is reachable");
+            kani::cover(t.year2 >= 50, "a decoded UTCTime on the 19YY side of the pivot is reachable");
+        }
+    }
+
     /// The RFC 5280 century-pivot profile helper is total and correct over every two-digit year:
     /// `< 50 ⇒ 20YY` (`2000..=2049`), `≥ 50 ⇒ 19YY` (`1950..=1999`). Never panics.
+    ///
+    /// The `y <= 99` premise is discharged for decoder output by
+    /// `decode_postcondition_fields_in_range` above.
     #[kani::proof]
     fn full_year_pivot_is_correct() {
         let y: u8 = kani::any();

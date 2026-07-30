@@ -24,10 +24,20 @@ been going for minutes — is that normal?"*
 
 ## Cost tiers
 
-**The large majority of the 164 harnesses are fast** — sub-second to a few seconds. Typical per-module
+**The large majority of the 171 harnesses are fast** — sub-second to a few seconds. Typical per-module
 worst case: `length` 0.4 s, `integer` 0.5 s, `oid` 0.04 s, `boolean` 0.03 s, `bit_string` 0.4 s,
 `tag` 0.5 s, `utc_time` 1.0 s, `big_integer` 0.7 s. Whole modules like `oid`, `boolean`, `null`,
 `enumerated`, `tag` finish in well under a second total.
+
+**`profile` is the cheapest module in the crate, and the reason generalises.** Its six harnesses
+verify in **~0.52 s of solve time total** (0.015–0.12 s each), peak RSS **~205 MB**, 1.4 s wall
+including Kani's own driver overhead — measured 2026-07-31 on the 16-core/29 GB Linux box with
+`/usr/bin/time -v`. `profile` performs no DER decoding, so its harnesses take a symbolic *value* (an
+`AlgorithmIdentifier` pair, a `version` byte, an `Option` of extension bytes, two `Time` arms) rather
+than a symbolic *buffer* plus a parse. Symbolic bytes plus a parser is what makes the `x509_*` and
+`set_of` families expensive; a validation layer that only compares already-materialised fields escapes
+that entirely. Worth remembering when adding the next profile rule: keep the harness at value level and
+it stays in the sub-second tier.
 
 **Moderate (single-digit to tens of seconds):**
 
@@ -65,6 +75,28 @@ genuinely expensive symbolic computation. If you are iterating on `set_of`, `seq
 | `x509_extension::validate_extensions_never_panics` | did not finish within a 5-minute per-harness budget on the 16 GB Mac; a `SEQUENCE OF` walk around an inlined per-element parser (see `DECISIONS.md`, the buffer-reduced `[u8; 13]` harness). **Re-measured on the 32 GB Linux desktop, 2026-07-21: a genuine RAM wall, not a Mac-budget artifact.** Symex completes (~126 s, 33149→22672 VCCs after `--slice-formula`, already default-on), but the SAT-solving phase itself climbs past 19 GB RSS (cadical, default) and past 16 GB (kissat, `#[kani::solver]`/`--solver` probe — CBMC's own verdict: "CBMC appears to have run out of memory", both solvers OOM at the same post-slicing stage). Both the default solver and the T7 kissat lever were tried and measured; neither converges under ~12 GB. Classified RAM-bound (not TIME-bound — the Mac's "didn't finish in 5 min" undersold it; on Linux it's an outright OOM once given enough RAM to climb). No further local lever attempted (T8 `--slice-formula` is already Kani's default and did not help; a smaller bound would narrow proof scope, which the module's own doc already treats as a deliberate, documented reduction floor — see `src/x509_extension.rs`). Needs either a larger-RAM box or is left as a known, honestly-logged residual. |
 | `x509_name::validate_rdn_never_panics` | peak memory ~17 GB — exceeds 16 GB physical (swaps). This is the heavy SET-OF/RDN lemma; `validate_name` itself is proven cheaply (~0.5 GB) by *stubbing* this lemma's proven postcondition — see the modular-proof note in `src/x509_name.rs` and `DECISIONS.md`. |
 | `x509_tbs_certificate::parse_tbs_certificate_ok_path_witnessed` | ~11.3 GB peak RSS, ~206 s wall (symex ~106 s dominates; SAT solve itself is only ~3.4 s) — see `src/x509_tbs_certificate.rs`'s doc comment for the full investigation. Fits under the ~12 GB local budget, but not by a wide margin: it is the positive-construction companion to `parse_tbs_certificate_never_panics` (closes that harness's cover-vacuity finding — see below), and even fully-concrete-input + 3-way modular stubbing (`validate_name`, `validate_extensions`, `parse_validity`) does not make it cheap; the remaining real composition (`parse_algorithm_identifier` + `parse_subject_public_key_info` + the TBS glue itself) is the residual cost driver. |
+
+## A missing `#[kani::unwind]` looks exactly like an intractable harness
+
+Worth knowing before you conclude that a new harness is too hard for CBMC.
+
+`profile::rule1_mismatch_iff_algorithms_differ` compares two `AlgorithmIdentifier`s, whose
+`parameters` field is an `Option<&[u8]>`. Written **without** `#[kani::unwind]` and with the presence
+of that `Option` left symbolic, it sent CBMC into `memcmp` unwinding that did not converge — observed
+past **18,000 iterations** before the run was OOM-killed inside its 14 GB cgroup scope, exit 143. The
+symptom (a long run, climbing memory, a kill) is indistinguishable from a genuinely heavy harness like
+the `set_of` family, and invites exactly the wrong response: reducing the bound, or shelving the
+harness as intractable.
+
+Adding `#[kani::unwind(4)]` made the same harness verify in **0.119 s**. Crucially, CBMC's own
+*unwinding assertion* — which it inserts for a bounded loop and which is a checked property, not an
+assumption — **passes** at that bound, so 4 iterations provably suffice and the bound costs no
+generality. The three sibling harnesses that happened to pass unbounded did so only because their
+`Option` presence was concrete; all six now carry an explicit bound, both for determinism and so the
+next person does not re-discover this.
+
+Rule of thumb: when a *value-level* harness (no symbolic buffer, no parser) blows up, suspect a
+missing loop bound before suspecting the solver.
 
 ## Why the two heaviest are structured the way they are
 

@@ -402,3 +402,54 @@ disclosed vacuities would have been worse than committing nothing. Caught by cro
 distilled counts against the raw log, which is now a step the distiller performs and prints on every
 run. The second version then broke the same count a different way: its explanatory header quoted the
 literal string the counter greps for, inflating 164 to 165. Header text is data to the next grep.
+
+## UPDATE 2026-07-31 — `profile` is Kani-proven; the last cheap unproven entry point is closed
+
+`TODO.md`'s "`profile` has no Kani harness and no Lean lid" item is closed on the Kani half. Six
+harnesses, and what matters is the *form* of the statements rather than the count:
+
+| Harness | Statement |
+|---|---|
+| `rule1_mismatch_iff_algorithms_differ` | §4.1.1.2 as a **biconditional**, over symbolic OID bytes and symbolic present/absent `parameters` on both sides |
+| `rule2_requires_v3_iff_extensions_present_and_not_v3` | §4.1.2.1/§4.1.2.9 as a biconditional over **all 256** `version` values |
+| `rule3_generalized_too_early_iff_year_le_2049` | §4.1.2.5.2 per field, plus `notBefore`-wins-when-both-are-bad |
+| `error_precedence_follows_declaration_order` | the documented rule order, with all four violations independently symbolic |
+| `validate_profile_never_panics` | totality over every profile-relevant field combination |
+| `utc_time_can_never_denote_2050_or_later` | the §4.1.2.5.1 `1950..=2049` window rule 3's structural half rests on |
+
+Biconditionals matter here because the one-directional alternative ("a malformed certificate is
+rejected") is satisfied by an implementation that rejects too much, and a profile layer that rejects
+conforming certificates is a real defect, not a safe one.
+
+**Cost, and the generalisable reason for it:** ~0.52 s of solve time for all six, ~205 MB peak RSS,
+1.4 s wall — the cheapest module in the crate. `profile` decodes nothing, so a harness takes a symbolic
+*value* (an `AlgorithmIdentifier` pair, a `version` byte, an `Option` of extension bytes, two `Time`
+arms) rather than a symbolic *buffer* plus a parse. Symbolic bytes plus a parser is what makes the
+`x509_*` and `set_of` families cost 10–20 GB. Consequence: `profile` went into CI's `codecs-b` shard
+(CI now covers 143 of 171 harnesses), not the heavy local-milestone tier.
+
+**A silent assumption found and discharged.** `profile`'s rule 3 leans on "a `Time::Utc` value can
+never denote a year >= 2050, **by construction**" — which is true of `full_year_rfc5280`'s codomain
+only when `year2 <= 99`. `full_year_pivot_is_correct` *assumes* that; nothing proved it. And
+`UtcTime`'s fields are `pub`, so `UtcTime { year2: 200, .. }` maps to `2100` — the "by construction"
+claim held for decoder output, not for all values of the type, and said so nowhere.
+`utc_time::decode_postcondition_fields_in_range` now proves the decoder postcondition over symbolic
+content, so the two compose into an unconditional statement about decoder output; the hand-constructed
+case is disclosed in `PROOF_MANIFEST.md` §7 instead of left implicit. This is the kind of gap that
+survives a test suite indefinitely: the existing `#[test]` looped `year2` over `0..=99` and so could
+never have exposed it.
+
+**A trap for the methods notes: a missing `#[kani::unwind]` mimics an intractable harness exactly.**
+`rule1` compares two `AlgorithmIdentifier`s whose `parameters` is an `Option<&[u8]>`. Unbounded, with
+that `Option`'s presence symbolic, CBMC unwound `memcmp` past **18,000 iterations** and the run was
+OOM-killed inside its 14 GB cgroup scope (exit 143). That symptom — long run, climbing memory, a kill —
+is what a genuinely heavy harness looks like, and it invites the wrong fix (shrink the bound, shelve the
+harness). `#[kani::unwind(4)]`: **0.119 s**, and CBMC's unwinding assertion — a *checked* property, not
+an assumption — passes at 4, so the bound costs no generality. Three sibling harnesses passed unbounded
+only because their `Option` presence happened to be concrete; all six now carry explicit bounds.
+Heuristic: when a *value-level* harness (no symbolic buffer, no parser) blows up, suspect a missing loop
+bound before suspecting the solver.
+
+**Still open for `profile`:** no Lean lid. Its harnesses are bounded proofs over field values, so there
+is no ∀-length statement. Lower value than the codec lids — the module decodes nothing, so "any length"
+is not the axis its correctness turns on — but it is what keeps `profile` below the L4/L5 grade.

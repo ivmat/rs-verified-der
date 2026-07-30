@@ -66,6 +66,46 @@ All notable changes to `der-verified` are documented here. The format is based o
   preceding commit.
 
 ### Verification
+- **`profile` is now Kani-proven — six harnesses, and the shape of the statements is the point.** The
+  typed RFC 5280 profile layer was `#[test]`-only and was the largest single unproven public entry
+  point in the crate. Each of its three cross-field rules is now proven as a **biconditional** (the
+  rule fires *exactly* when the RFC says it should, so neither a missing check nor an over-eager one
+  passes), with rule 2 ranging over all 256 `version` values rather than 0/1/2. A fourth harness pins
+  the documented **precedence** between the rules with all four violations independently symbolic; a
+  fifth proves totality; a sixth proves the §4.1.2.5.1 `1950..=2049` window that rule 3's
+  impossible-by-construction half rests on. `validate_profile` is now named by a harness, so the
+  manifest's unharnessed-entry-point count drops 12 → 11. Still **no Lean lid** — these are bounded
+  proofs over field values, not ∀-length statements, and `PROOF_MANIFEST.md` §7 keeps that boundary
+  explicit. Harness total 164 → **171**, covers 52 → **75**, modules with harnesses 25 → **26**.
+- **Cheapest module in the crate, by design:** ~0.52 s total solve time, ~205 MB peak RSS. `profile`
+  decodes nothing, so its harnesses take a symbolic *value* rather than a symbolic DER buffer plus a
+  parse — which is why it joins CI's `codecs-b` shard (CI coverage 135 → **143** of 171 harnesses)
+  instead of the heavy local-milestone tier.
+- **Closed an assumption that was holding up a "by construction" claim.**
+  `utc_time::decode_postcondition_fields_in_range` proves, over symbolic content, that every `UtcTime`
+  the decoder returns has all six fields in canonical range — in particular `year2 <= 99`.
+  `full_year_pivot_is_correct` *assumes* that bound, and `profile` relies on the consequence ("a
+  `Time::Utc` can never denote a year >= 2050"); since `UtcTime`'s fields are `pub`, a hand-written
+  `UtcTime { year2: 200, .. }` maps to `2100`, so the claim was sound only for decoder-produced values
+  and nothing stated that as a proved property. It now composes into an unconditional statement about
+  decoder output, with the hand-constructed case disclosed rather than implicit.
+- **Hardened the `enumerated` delegation harness after a second review, and retracted three
+  overclaims.** The harness domain widened from `1..=8` to the wrapper's whole reachable input space
+  (a 9-octet buffer, symbolic length `0..=9`), so `Err(Empty)` and `Err(TooLarge)` are now **witnessed
+  through the delegation** instead of excluded and explained away by pointing at `integer`'s
+  harnesses: **7 of 7** covers satisfied. `encode_delegates_to_integer` gained 3 covers of its own,
+  which makes the manifest's "only harness whose non-vacuity points elsewhere" claim true rather than
+  refutable from the same diff. Retracted: that each cover individually refutes a do-nothing body (a
+  constant `Ok(0)` satisfies the positive-width ones — it is the *set* plus the assert that does the
+  work); that the `n == 8` cover shows the accumulator loop runs eight times (it shows an 8-octet
+  slice was accepted); and that a negative value was witnessed at full width (its cheapest witness was
+  `[0x80]` at `n == 1`, hence an added `&& n == 8`).
+- **A tractability trap worth knowing: a missing `#[kani::unwind]` is indistinguishable from an
+  intractable harness.** `profile::rule1` compares two `Option<&[u8]>` fields; unbounded, it sent CBMC
+  into `memcmp` unwinding past 18,000 iterations until the run was OOM-killed — the same symptom as a
+  genuinely heavy harness. With `#[kani::unwind(4)]` it verifies in 0.119 s, and CBMC's own unwinding
+  assertion (a checked property) confirms 4 suffices, so the bound costs no generality. Documented in
+  `docs/verification-cost.md`.
 - **The full proof floor is now a committed artifact rather than a prose transcription.**
   `./check.sh` ran end-to-end at commit `b355f76` (2026-07-30) and the log is in the repository under
   `evidence/`: **164 `VERIFICATION: SUCCESSFUL`, 0 `FAILED`** over all 164 harnesses run

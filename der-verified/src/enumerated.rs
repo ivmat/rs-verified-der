@@ -28,57 +28,78 @@ mod proofs {
 
     /// Delegation contract: `decode_enumerated` returns literally the same result as
     /// `crate::integer::decode_integer` for any content. Pins the delegation so a future refactor
-    /// cannot accidentally diverge the two (`integer.rs`'s own buffer/unwind choices: an 8-octet
-    /// buffer, symbolic length `1..=8`).
+    /// cannot accidentally diverge the two.
+    ///
+    /// **The domain is the wrapper's WHOLE reachable input space**, not `integer`'s: a 9-octet
+    /// buffer with symbolic length `0..=9` reaches the empty slice and an over-long slice as well as
+    /// every accepted width, so all three of `decode_integer`'s outcome classes are exercised
+    /// *through the delegation*. An earlier version of this harness assumed `1 <= n <= 8` — mirroring
+    /// `integer.rs`'s own buffer choices — and then explained the two excluded error paths away by
+    /// pointing at `integer`'s harnesses. That left the delegation unproven at exactly the two
+    /// lengths the wrapper can still be handed, which sits badly with the point of the harness.
     #[kani::proof]
     #[kani::unwind(12)]
     fn decode_delegates_to_integer() {
-        let buf: [u8; 8] = kani::any();
+        let buf: [u8; 9] = kani::any();
         let n: usize = kani::any();
-        kani::assume(n >= 1 && n <= 8);
+        kani::assume(n <= 9);
         let r = decode_enumerated(&buf[..n]);
         assert!(r == crate::integer::decode_integer(&buf[..n]));
-        // The equality above is an AGREEMENT property: it would hold just as well if both sides
-        // only ever rejected, or if the assumed length range only ever explored one width. These
-        // five witness that the delegation is genuinely exercised — each names a post-state effect
-        // and none would be satisfiable if `decode_enumerated`'s body did nothing.
+        // The assert is an AGREEMENT property, and agreement is the shape that survives vacuity: it
+        // would hold just as well if both sides only ever rejected, or if only one width were ever
+        // explored. The covers below name one reachable behaviour of the delegation each.
         //
-        // Read them as REACHABILITY witnesses, not as the property: the equality itself is proven
-        // symbolically for EVERY `n` in `1..=8`, so no width is left unproven by the shape of this
-        // list. What the list rules out is the vacuous reading — an agreement that holds only
-        // because one width, or only the reject path, was ever explored.
+        // Read them as a SET, and read the claim precisely: no single constant body satisfies all
+        // seven (a constant `Ok(0)` fires the positive-width witnesses but neither the negative one
+        // nor any rejection; a constant `Err` fires at most one rejection witness). Individually, a
+        // cover here is weaker than that — `r.is_ok() && n == 1` alone is satisfiable under a body
+        // that always returns `Ok(0)`. What rules out every constant body is the assert, which pins
+        // `r` to `decode_integer`'s real behaviour at every length on any green run.
         kani::cover(r.is_ok() && n == 1, "a 1-octet ENUMERATED is accepted through the delegation");
         kani::cover(
             r.is_ok() && n >= 2 && n <= 7,
             "an INTERMEDIATE-width ENUMERATED is accepted through the delegation (not just the two \
-             ends of the assumed range)",
+             ends of the range)",
         );
+        kani::cover(r.is_ok() && n == 8, "a full-width 8-octet ENUMERATED is accepted through the delegation");
+        // Sign extension is only genuinely exercised at full width: a negative value is cheapest to
+        // witness at `n == 1` (`0x80` alone decodes to -128), which would leave the eight-shift
+        // accumulator path unwitnessed here. Hence the `n == 8` conjunct.
         kani::cover(
-            r.is_ok() && n == 8,
-            "a full-width 8-octet ENUMERATED is accepted through the delegation (the accumulator \
-             loop runs to the i64 fence)",
-        );
-        kani::cover(
-            matches!(r, Ok(v) if v < 0),
-            "a negative two's-complement value survives the re-tag",
+            matches!(r, Ok(v) if v < 0) && n == 8,
+            "a negative two's-complement value survives the re-tag at full width",
         );
         kani::cover(
             r == Err(crate::integer::IntError::NonMinimal),
             "the NonMinimal rejection path is reached through the delegation",
         );
-        // The other two `IntError` variants are deliberately NOT witnessed here, because they are
-        // UNREACHABLE at this bound and a witness for them would be a known-unsatisfiable one (which
-        // Kani reports as SUCCESSFUL — `0 of 1 satisfied` — and no gate would catch): `Empty` needs
-        // `n == 0`, excluded by the assumption, and `TooLarge` needs `n > 8`, excluded by the buffer
-        // width. `integer`'s own harnesses classify both over their own domains.
+        kani::cover(
+            r == Err(crate::integer::IntError::Empty),
+            "the Empty rejection path is reached through the delegation (n == 0)",
+        );
+        kani::cover(
+            r == Err(crate::integer::IntError::TooLarge),
+            "the TooLarge rejection path is reached through the delegation (n == 9)",
+        );
     }
 
     /// Delegation contract: `encode_enumerated` returns literally the same result as
-    /// `crate::integer::encode_integer` for any `i64`.
+    /// `crate::integer::encode_integer` for any `i64`. Total — no `kani::assume`.
     #[kani::proof]
     fn encode_delegates_to_integer() {
         let v: i64 = kani::any();
-        assert!(encode_enumerated(v) == crate::integer::encode_integer(v));
+        let (out, n) = encode_enumerated(v);
+        assert!((out, n) == crate::integer::encode_integer(v));
+        // Same reasoning as `decode_delegates_to_integer`: an agreement assert is not by itself a
+        // witness that the delegation produced anything in particular. These pin the returned
+        // *length* (a post-state effect — a no-op body returning `([0; 8], 0)` satisfies none of
+        // them) at both ends of the minimal-encoding range, plus the sign octet at full width.
+        kani::cover(n == 1, "a small value encodes to a single octet through the delegation");
+        kani::cover(n == 8, "a full-width value encodes to all eight octets through the delegation");
+        kani::cover(
+            n == 8 && out[0] & 0x80 != 0,
+            "a negative full-width value keeps its sign octet through the re-tag",
+        );
     }
 
     /// Round-trip: every `i64` encodes to minimal ENUMERATED content that decodes back to it.

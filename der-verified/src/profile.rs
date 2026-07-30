@@ -33,9 +33,10 @@
 //!    that half of the rule holds **structurally, by construction**, not by a check that could ever
 //!    fire. The only direction a runtime check can (and must) catch is a `Time::Generalized` value
 //!    whose year is `<= 2049`, which §4.1.2.5.2 forbids (GeneralizedTime is reserved for
-//!    2050-and-later). See [`check_time_encoding_year`]'s doc comment for the same point stated at
-//!    the call site, and `tests::full_year_rfc5280_never_reaches_2050` for the machine-checked proof
-//!    of the structural half this module relies on.
+//!    2050-and-later). See `check_time_encoding_year`'s doc comment (private) for the same point at
+//!    the call site, and `proofs::utc_time_can_never_denote_2050_or_later` for the machine-checked
+//!    proof of the structural half this module relies on (whose own premise, `year2 <= 99`, is
+//!    discharged for decoder output by `crate::utc_time`'s `decode_postcondition_fields_in_range`).
 //!
 //! **Scope.** Both `Certificate` and `TbsCertificate` are already fully structurally parsed by the
 //! time [`validate_profile`] runs — this module inspects already-materialized fields
@@ -84,8 +85,9 @@ pub enum ProfileError {
 ///
 /// `on_generalized_too_early` lets the caller report which of `notBefore` / `notAfter` was the
 /// offending field, via its own dedicated [`ProfileError`] variant. See
-/// `tests::full_year_rfc5280_never_reaches_2050` for the machine-checked proof of the structural
-/// half described above.
+/// `proofs::utc_time_can_never_denote_2050_or_later` for the machine-checked proof of the structural
+/// half described above, and `crate::utc_time`'s `decode_postcondition_fields_in_range` for the
+/// decoder postcondition (`year2 <= 99`) that proof's premise needs.
 fn check_time_encoding_year(
     time: &Time<'_>,
     on_generalized_too_early: ProfileError,
@@ -130,6 +132,301 @@ pub fn validate_profile(cert: &Certificate<'_>) -> Result<(), ProfileError> {
     check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;
 
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Kani proof harnesses (the L3 floor).
+// ---------------------------------------------------------------------------
+#[cfg(kani)]
+mod proofs {
+    use super::*;
+    use crate::bit_string::BitString;
+    use crate::generalized_time::GeneralizedTime;
+    use crate::utc_time::{full_year_rfc5280, UtcTime};
+    use crate::x509_algorithm_identifier::AlgorithmIdentifier;
+    use crate::x509_spki::SubjectPublicKeyInfo;
+    use crate::x509_tbs_certificate::TbsCertificate;
+    use crate::x509_validity::Validity;
+
+    /// Build a `Certificate` whose *profile-relevant* fields are symbolic and whose
+    /// profile-irrelevant fields are fixed.
+    ///
+    /// This is the whole reason `profile` is cheap to verify where the `x509_*` modules are not: this
+    /// module performs **no byte-level decoding** (its own module docs say so), so a harness does not
+    /// need a symbolic DER buffer and a parse — it needs a symbolic *value*. The opaque byte-span
+    /// fields (`serial_number`, `issuer`, `subject`, key material) are never read by
+    /// `validate_profile`, so fixing them to an empty slice loses no generality; what stays symbolic
+    /// is exactly what the three rules inspect.
+    fn symbolic_cert<'a>(
+        sig_alg: AlgorithmIdentifier<'a>,
+        tbs_sig: AlgorithmIdentifier<'a>,
+        version: u8,
+        extensions: Option<&'a [u8]>,
+        validity: Validity<'a>,
+    ) -> Certificate<'a> {
+        const EMPTY: &[u8] = &[];
+        Certificate {
+            tbs_certificate: TbsCertificate {
+                version,
+                serial_number: EMPTY,
+                signature: tbs_sig,
+                issuer: EMPTY,
+                validity,
+                subject: EMPTY,
+                subject_public_key_info: SubjectPublicKeyInfo {
+                    algorithm_oid: EMPTY,
+                    parameters: None,
+                    subject_public_key: BitString { data: EMPTY, unused: 0 },
+                },
+                extensions,
+            },
+            signature_algorithm: sig_alg,
+            signature_value: BitString { data: EMPTY, unused: 0 },
+        }
+    }
+
+    /// A symbolic `AlgorithmIdentifier` over a caller-owned 2-octet OID buffer and an optional
+    /// 1-octet parameters buffer. Both are what rule 1's `PartialEq` actually compares.
+    fn symbolic_alg<'a>(oid: &'a [u8; 2], params: &'a [u8; 1], has_params: bool) -> AlgorithmIdentifier<'a> {
+        AlgorithmIdentifier {
+            algorithm_oid: oid,
+            parameters: if has_params { Some(params) } else { None },
+        }
+    }
+
+    /// A symbolic `Time`: either arm, with a symbolic year on each.
+    fn symbolic_time<'a>(is_generalized: bool, gen_year: u16, year2: u8, frac: &'a [u8; 1], has_frac: bool) -> Time<'a> {
+        if is_generalized {
+            Time::Generalized(GeneralizedTime {
+                year: gen_year,
+                month: 1,
+                day: 1,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                fraction: if has_frac { frac } else { &[] },
+            })
+        } else {
+            Time::Utc(UtcTime { year2, month: 1, day: 1, hour: 0, minute: 0, second: 0 })
+        }
+    }
+
+    // ---- P2: the structural half `profile` leans on ----
+
+    /// RFC 5280 §4.1.2.5.1's window, as a proof rather than a loop-over-100-cases test: for every
+    /// two-digit year a decoder can produce, the profile year is in `1950..=2049` — so a `Time::Utc`
+    /// **can never denote 2050 or later** and the missing "UTCTime used past 2049" check is
+    /// impossible-by-construction rather than merely absent.
+    ///
+    /// The `y <= 99` premise is not an assumption about the world: it is
+    /// `utc_time::decode_postcondition_fields_in_range`'s conclusion, proven over symbolic content.
+    /// The one case it does NOT cover is a hand-written `UtcTime { year2: 100.. }` struct literal
+    /// (the fields are `pub`), which `full_year_rfc5280` maps above 2049 — see the disclosure in this
+    /// module's docs.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn utc_time_can_never_denote_2050_or_later() {
+        let year2: u8 = kani::any();
+        kani::assume(year2 <= 99);
+        let full = full_year_rfc5280(&UtcTime { year2, month: 1, day: 1, hour: 0, minute: 0, second: 0 });
+        assert!(full >= 1950 && full <= 2049);
+        assert!(full < 2050);
+        kani::cover(full == 2049, "the upper edge of the UTCTime window is reachable");
+        kani::cover(full == 1950, "the lower edge of the UTCTime window is reachable");
+    }
+
+    // ---- P3: rule 1, as a biconditional ----
+
+    /// Rule 1 (§4.1.1.2), **exactly**: `validate_profile` rejects with `SignatureAlgorithmMismatch`
+    /// if and only if the outer `signatureAlgorithm` differs from `tbsCertificate.signature` — over
+    /// symbolic OID bytes and a symbolic present/absent `parameters` on both sides. A biconditional,
+    /// so neither an over-eager nor a missing check can pass.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn rule1_mismatch_iff_algorithms_differ() {
+        let oid_a: [u8; 2] = kani::any();
+        let oid_b: [u8; 2] = kani::any();
+        let par_a: [u8; 1] = kani::any();
+        let par_b: [u8; 1] = kani::any();
+        let has_a: bool = kani::any();
+        let has_b: bool = kani::any();
+        let a = symbolic_alg(&oid_a, &par_a, has_a);
+        let b = symbolic_alg(&oid_b, &par_b, has_b);
+        // Hold rules 2 and 3 satisfied so the result isolates rule 1: v3 with extensions present,
+        // and both Times a UTCTime (never a rule-3 violation, by P2).
+        let t = Time::Utc(UtcTime { year2: 24, month: 1, day: 1, hour: 0, minute: 0, second: 0 });
+        const EXT: &[u8] = &[0x30, 0x00];
+        let cert = symbolic_cert(a, b, 2, Some(EXT), Validity { not_before: t, not_after: t });
+        let r = validate_profile(&cert);
+        assert!((r == Err(ProfileError::SignatureAlgorithmMismatch)) == (a != b));
+        kani::cover(r.is_ok(), "an equal algorithm pair reaches validate_profile's Ok tail");
+        kani::cover(
+            r == Err(ProfileError::SignatureAlgorithmMismatch) && oid_a == oid_b,
+            "a mismatch is detected on `parameters` alone, not only on the OID",
+        );
+    }
+
+    // ---- P4: rule 2, as a biconditional ----
+
+    /// Rule 2 (§4.1.2.1 / §4.1.2.9), **exactly**: with rule 1 satisfied, `validate_profile` rejects
+    /// with `ExtensionsRequireV3` iff `extensions` is present and `version != 2` — over a fully
+    /// symbolic `version: u8` (all 256 values, not just 0/1/2) and a symbolic present/absent
+    /// `extensions`.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn rule2_requires_v3_iff_extensions_present_and_not_v3() {
+        let version: u8 = kani::any();
+        let has_ext: bool = kani::any();
+        let oid: [u8; 2] = kani::any();
+        let alg = symbolic_alg(&oid, &[0], false);
+        let t = Time::Utc(UtcTime { year2: 24, month: 1, day: 1, hour: 0, minute: 0, second: 0 });
+        const EXT: &[u8] = &[0x30, 0x00];
+        let cert = symbolic_cert(alg, alg, version, if has_ext { Some(EXT) } else { None },
+                                 Validity { not_before: t, not_after: t });
+        let r = validate_profile(&cert);
+        assert!((r == Err(ProfileError::ExtensionsRequireV3)) == (has_ext && version != 2));
+        kani::cover(r.is_ok() && has_ext, "a v3 certificate WITH extensions is accepted");
+        kani::cover(r.is_ok() && !has_ext, "a certificate without extensions is accepted at any version");
+        kani::cover(
+            r == Err(ProfileError::ExtensionsRequireV3) && version > 2,
+            "the rule fires for a version ABOVE v3, not just below it",
+        );
+    }
+
+    // ---- P5: rule 3, as a biconditional, per field ----
+
+    /// Rule 3 (§4.1.2.5.2), **exactly**, and with the two fields' precedence pinned: with rules 1–2
+    /// satisfied, `validate_profile` rejects iff at least one of `notBefore` / `notAfter` is a
+    /// GeneralizedTime with year `<= 2049`, and it reports `notBefore`'s variant when both are bad —
+    /// the order `validate_profile`'s doc comment promises.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn rule3_generalized_too_early_iff_year_le_2049() {
+        let nb_gen: bool = kani::any();
+        let na_gen: bool = kani::any();
+        let nb_year: u16 = kani::any();
+        let na_year: u16 = kani::any();
+        let nb_y2: u8 = kani::any();
+        let na_y2: u8 = kani::any();
+        kani::assume(nb_y2 <= 99 && na_y2 <= 99); // the decoder postcondition, see P2
+        let frac: [u8; 1] = kani::any();
+        let nb = symbolic_time(nb_gen, nb_year, nb_y2, &frac, false);
+        let na = symbolic_time(na_gen, na_year, na_y2, &frac, false);
+        let oid: [u8; 2] = kani::any();
+        let alg = symbolic_alg(&oid, &[0], false);
+        let cert = symbolic_cert(alg, alg, 2, None, Validity { not_before: nb, not_after: na });
+        let r = validate_profile(&cert);
+
+        let nb_bad = nb_gen && nb_year <= 2049;
+        let na_bad = na_gen && na_year <= 2049;
+        if nb_bad {
+            assert!(r == Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly));
+        } else if na_bad {
+            assert!(r == Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly));
+        } else {
+            assert!(r == Ok(()));
+        }
+        kani::cover(nb_bad && na_bad, "both fields bad -- notBefore's variant is the one reported");
+        kani::cover(r.is_ok() && nb_gen && na_gen, "two GeneralizedTimes from 2050 on are accepted");
+        kani::cover(r.is_ok() && !nb_gen && !na_gen, "two UTCTimes are accepted");
+        kani::cover(
+            r == Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly),
+            "notAfter's own variant is reachable (notBefore good, notAfter bad)",
+        );
+    }
+
+    // ---- P6: precedence across all three rules ----
+
+    /// The declared rule ORDER is part of the contract (`validate_profile`'s doc comment states it):
+    /// signature-algorithm, then extensions/version, then `notBefore`, then `notAfter`. With every
+    /// rule independently violable, the reported error is always the first violated one.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn error_precedence_follows_declaration_order() {
+        let oid_a: [u8; 2] = kani::any();
+        let oid_b: [u8; 2] = kani::any();
+        let version: u8 = kani::any();
+        let has_ext: bool = kani::any();
+        let nb_gen: bool = kani::any();
+        let na_gen: bool = kani::any();
+        let nb_year: u16 = kani::any();
+        let na_year: u16 = kani::any();
+        let a = symbolic_alg(&oid_a, &[0], false);
+        let b = symbolic_alg(&oid_b, &[0], false);
+        let frac: [u8; 1] = [0];
+        let nb = symbolic_time(nb_gen, nb_year, 24, &frac, false);
+        let na = symbolic_time(na_gen, na_year, 24, &frac, false);
+        const EXT: &[u8] = &[0x30, 0x00];
+        let cert = symbolic_cert(a, b, version, if has_ext { Some(EXT) } else { None },
+                                 Validity { not_before: nb, not_after: na });
+        let r = validate_profile(&cert);
+
+        let bad1 = a != b;
+        let bad2 = has_ext && version != 2;
+        let bad3 = nb_gen && nb_year <= 2049;
+        let bad4 = na_gen && na_year <= 2049;
+        let expected = if bad1 {
+            Err(ProfileError::SignatureAlgorithmMismatch)
+        } else if bad2 {
+            Err(ProfileError::ExtensionsRequireV3)
+        } else if bad3 {
+            Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)
+        } else if bad4 {
+            Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)
+        } else {
+            Ok(())
+        };
+        assert!(r == expected);
+        kani::cover(bad1 && bad2 && bad3 && bad4, "all four violations at once -- rule 1 still wins");
+        kani::cover(!bad1 && bad2 && bad3, "rule 2 wins over rule 3");
+        kani::cover(r.is_ok(), "a fully conforming certificate is accepted");
+    }
+
+    // ---- P7: totality ----
+
+    /// `validate_profile` is total on symbolic profile-relevant fields: no panic, no arithmetic
+    /// overflow, for any combination of the fields the three rules inspect.
+    ///
+    /// **Every harness in this module carries an explicit `#[kani::unwind]`, and that is load-bearing
+    /// rather than stylistic.** Rule 1 compares two `AlgorithmIdentifier`s, whose `parameters` field
+    /// is an `Option<&[u8]>`; with the presence of that `Option` left symbolic, an unbounded harness
+    /// sends CBMC into `memcmp` unwinding that does not converge — observed at ~18,000 iterations
+    /// before the run was OOM-killed inside its 14 GB cgroup. The bound of 4 makes it converge in
+    /// under a minute, and CBMC's own unwinding assertion (checked, not assumed) confirms 4
+    /// iterations suffice, so the bound costs no generality. Read an OOM on one of these as a
+    /// missing bound before reading it as an intractable harness.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn validate_profile_never_panics() {
+        let oid_a: [u8; 2] = kani::any();
+        let oid_b: [u8; 2] = kani::any();
+        let par: [u8; 1] = kani::any();
+        let has_a: bool = kani::any();
+        let has_b: bool = kani::any();
+        let version: u8 = kani::any();
+        let has_ext: bool = kani::any();
+        let nb_gen: bool = kani::any();
+        let na_gen: bool = kani::any();
+        let nb_year: u16 = kani::any();
+        let na_year: u16 = kani::any();
+        let y2: u8 = kani::any();
+        let frac: [u8; 1] = kani::any();
+        let has_frac: bool = kani::any();
+        let a = symbolic_alg(&oid_a, &par, has_a);
+        let b = symbolic_alg(&oid_b, &par, has_b);
+        let nb = symbolic_time(nb_gen, nb_year, y2, &frac, has_frac);
+        let na = symbolic_time(na_gen, na_year, y2, &frac, has_frac);
+        const EXT: &[u8] = &[0x30, 0x00];
+        let cert = symbolic_cert(a, b, version, if has_ext { Some(EXT) } else { None },
+                                 Validity { not_before: nb, not_after: na });
+        let r = validate_profile(&cert);
+        // A totality harness has no functional `assert!` by construction, so without these it would
+        // be the crate's only harness whose sole checks are Kani's implicit panic/overflow/memory
+        // ones -- the row PROOF_MANIFEST section 8.2 keeps at 0 and treats as load-bearing. Both are
+        // post-state effects of the widest symbolic instance in this module.
+        kani::cover(r.is_ok(), "a conforming certificate is accepted at the fully-symbolic bound");
+        kani::cover(r.is_err(), "a violating certificate is rejected at the fully-symbolic bound");
+    }
 }
 
 // ---------------------------------------------------------------------------

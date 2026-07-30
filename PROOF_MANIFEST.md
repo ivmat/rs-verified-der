@@ -2,12 +2,12 @@
 
 This is the **honest proof envelope** for this crate: what is machine-checked, over what domain,
 under what assumptions and stubs — and, given equal weight, **what is not**. It exists so that a
-reader who is not going to read 164 proof harnesses and 6 Lean developments can still know what
+reader who is not going to read 171 proof harnesses and 6 Lean developments can still know what
 they are being offered, and where the guarantee stops.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "164 Kani harnesses, 6 Lean lids, 309 tests" describes how
+> **Counts are inventory, not coverage.** "171 Kani harnesses, 6 Lean lids, 309 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -63,14 +63,14 @@ deviations. Read the two differently.
 | Inventory (static, derived from `der-verified/src` + `lean/`) | Count |
 |---|---:|
 | source modules (excl. `lib.rs`) | 26 |
-| …of which carry at least one `#[kani::proof]` | 25 |
+| …of which carry at least one `#[kani::proof]` | 26 |
 | public entry points (free `pub fn`s + public `impl` methods) | 68 |
-| …named by at least one Kani harness | 56 |
-| …named by **no** Kani harness | **12** |
-| `#[kani::proof]` harnesses | 164 |
-| `kani::assume` harness preconditions (narrow the proved domain) | 133 |
+| …named by at least one Kani harness | 57 |
+| …named by **no** Kani harness | **11** |
+| `#[kani::proof]` harnesses | 171 |
+| `kani::assume` harness preconditions (narrow the proved domain) | 136 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and is not established at HEAD — §3.4) | 52 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and is not established at HEAD — §3.4) | 75 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 7 / 4 |
 | `#[test]` unit + regression tests | 309 |
@@ -265,7 +265,7 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — about 136 of the 164 harnesses (the shard filters are by module, not a
+  the memory-tractable share — about 136 of the 171 harnesses (the shard filters are by module, not a
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
@@ -308,20 +308,20 @@ carry that.
 | `bit_string` | 3 | 3 | 8 | 3..6 | 6..8 | 9 | 2 | 0 |  |
 | `boolean` | 2 | 2 | 3 | — | — | 0 | 0 | 0 |  |
 | `context_tag` | 1 | 1 | 1 | 16 | 20 | 0 | 2 | 0 |  |
-| `enumerated` | 2 | 2 | 3 | 8 | 12 | 1 | 5 | 0 |  |
+| `enumerated` | 2 | 2 | 3 | 9 | 12 | 1 | 10 | 0 |  |
 | `generalized_time` | 3 | 2 | 16 | 3..19 | 16..20 | 20 | 3 | 0 |  |
 | `integer` | 2 | 2 | 7 | 8..10 | 12 | 4 | 2 | 0 |  |
 | `length` | 2 | 2 | 9 | 8 | 10 | 7 | 1 | 0 | ✅ |
 | `null` | 1 | 1 | 1 | — | — | 0 | 0 | 0 |  |
 | `octet_string` | 2 | 2 | 6 | 3..16 | 16 | 4 | 2 | 0 |  |
 | `oid` | 1 | 1 | 5 | 4..6 | 8 | 5 | 2 | 0 | ✅ |
-| `profile` | 1 | 0 | 0 | — | — | 0 | 0 | 0 |  |
+| `profile` | 1 | 1 | 6 | 1..2 | 4 | 2 | 16 | 0 |  |
 | `restricted_string` | 14 | 5 | 26 | 3..16 | 6..16 | 30 | 4 | 0 |  |
 | `sequence` | 6 | 6 | 7 | 8..16 | 16 | 0 | 2 | 0 | ✅ |
 | `set_of` | 5 | 5 | 13 | 3..16 | 16 | 2 | 2 | 0 |  |
 | `tag` | 2 | 2 | 7 | 7 | 12 | 5 | 2 | 0 | ✅ |
 | `tlv` | 3 | 3 | 5 | 3..16 | 16 | 0 | 3 | 0 | ✅ |
-| `utc_time` | 3 | 3 | 13 | 14..17 | 14..18 | 14 | 1 | 0 |  |
+| `utc_time` | 3 | 3 | 14 | 14..17 | 14..18 | 15 | 3 | 0 |  |
 | `utf8_string` | 4 | 3 | 9 | 4..16 | 6..16 | 12 | 2 | 0 |  |
 | `x509_algorithm_identifier` | 1 | 1 | 1 | 16 | 20 | 0 | 3 | 0 |  |
 | `x509_certificate` | 1 | 1 | 1 | 12 | 12 | 1 | 1 | 1 |  |
@@ -336,7 +336,6 @@ carry that.
 
 <!-- BEGIN GENERATED:unharnessed-entry-points (gates/gen_proof_manifest.py) -->
 - **`generalized_time`** — `require_no_fraction`
-- **`profile`** — `validate_profile`
 - **`restricted_string`** — `Charset::tag_number`, `decode_printable_string`, `decode_ia5_string`, `decode_numeric_string`, `decode_visible_string`, `encode_printable_string_into`, `encode_ia5_string_into`, `encode_numeric_string_into`, `encode_visible_string_into`
 - **`utf8_string`** — `decode_utf8_str`
 <!-- END GENERATED:unharnessed-entry-points -->
@@ -375,7 +374,7 @@ Honest classification of that list — four kinds, only one of which is a real g
    no Kani harness and no Lean lid; see §7.
 
 **No entry point in this crate is claimed to be proven where it is not.** If you need a
-machine-checked guarantee on one of the twelve above: for the nine delegating wrappers and
+machine-checked guarantee on one of the eleven above: for the nine delegating wrappers and
 accessors, call the harnessed delegate directly; for `profile::validate_profile` there is no delegate
 to fall back to, so the only options are to ask for a harness or to treat it as tested-only.
 
@@ -396,13 +395,13 @@ exact statement, including its `assume` preconditions.
 - **`null`** (1): `only_empty_is_valid`
 - **`octet_string`** (6): `roundtrip_small`, `decode_never_panics`, `accepted_content_is_the_tlv_value`, `constructed_form_is_rejected`, `non_octet_string_tag_is_wrong_tag`, `accepted_identifier_is_canonical_0x04`
 - **`oid`** (5): `validate_never_panics`, `empty_is_classified`, `leading_0x80_is_non_minimal`, `later_0x80_is_non_minimal`, `unterminated_is_truncated`
-- **`profile`** — no `#[kani::proof]` harness.
+- **`profile`** (6): `utc_time_can_never_denote_2050_or_later`, `rule1_mismatch_iff_algorithms_differ`, `rule2_requires_v3_iff_extensions_present_and_not_v3`, `rule3_generalized_too_early_iff_year_le_2049`, `error_precedence_follows_declaration_order`, `validate_profile_never_panics`
 - **`restricted_string`** (26): `charset_exactly_matches_oracle_printable`, `charset_exactly_matches_oracle_ia5`, `charset_exactly_matches_oracle_numeric`, `charset_exactly_matches_oracle_visible`, `validate_iff_all_in_charset_printable`, `validate_iff_all_in_charset_ia5`, `validate_iff_all_in_charset_numeric`, `validate_iff_all_in_charset_visible`, `roundtrip_printable`, `roundtrip_ia5`, `roundtrip_numeric`, `roundtrip_visible`, `decode_never_panics`, `constructed_form_is_rejected_printable`, `constructed_form_is_rejected_ia5`, `constructed_form_is_rejected_numeric`, `constructed_form_is_rejected_visible`, `accepted_identifier_is_canonical_printable`, `accepted_identifier_is_canonical_ia5`, `accepted_identifier_is_canonical_numeric`, `accepted_identifier_is_canonical_visible`, `out_of_charset_reports_position`, `wrong_tag_is_classified_printable`, `wrong_tag_is_classified_ia5`, `wrong_tag_is_classified_numeric`, `wrong_tag_is_classified_visible`
 - **`sequence`** (7): `iterate_never_panics`, `no_over_read`, `ok_implies_exact_tiling`, `roundtrip_two_children`, `tag_correctness`, `accepted_identifier_is_canonical_0x30`, `strict_rejects_trailing`
 - **`set_of`** (13): `iterate_never_panics`, `no_over_read`, `ok_implies_exact_tiling`, `ordering_iff_oracle`, `cmp_padded_matches_oracle`, `unsorted_children_are_rejected`, `unsorted_reports_first_violation_index`, `unsorted_reports_first_violation_index_depth_four`, `duplicate_adjacent_encodings_are_accepted`, `tag_correctness`, `accepted_identifier_is_canonical_0x31`, `strict_rejects_trailing`, `roundtrip_two_sorted_children`
 - **`tag`** (7): `roundtrip_all_tags`, `decode_tag_never_panics`, `decode_tag_accepts_only_canonical`, `high_tag_of_small_number_is_non_minimal`, `leading_zero_high_tag_is_non_minimal`, `truncated_high_tag_is_classified`, `too_large_tag_is_classified`
 - **`tlv`** (5): `decode_tlv_never_panics`, `decode_tlv_structure`, `tlv_roundtrip_small`, `tlv_truncated_value_is_classified`, `strict_rejects_trailing`
-- **`utc_time`** (13): `roundtrip_all_fields`, `decode_never_panics`, `decode_accepts_only_canonical`, `accepted_iff_canonical_oracle`, `wrong_length_is_bad_length`, `non_digit_is_classified`, `not_zulu_is_classified`, `month_range_is_classified`, `day_range_is_classified`, `hour_range_is_classified`, `minute_range_is_classified`, `second_range_is_classified`, `full_year_pivot_is_correct`
+- **`utc_time`** (14): `roundtrip_all_fields`, `decode_never_panics`, `decode_accepts_only_canonical`, `accepted_iff_canonical_oracle`, `wrong_length_is_bad_length`, `non_digit_is_classified`, `not_zulu_is_classified`, `month_range_is_classified`, `day_range_is_classified`, `hour_range_is_classified`, `minute_range_is_classified`, `second_range_is_classified`, `decode_postcondition_fields_in_range`, `full_year_pivot_is_correct`
 - **`utf8_string`** (9): `validate_iff_oracle`, `validate_iff_oracle_multi`, `validate_iff_std`, `roundtrip`, `decode_never_panics`, `constructed_form_is_rejected`, `accepted_identifier_is_canonical`, `wrong_tag_is_classified`, `ill_formed_reports_position`
 - **`x509_algorithm_identifier`** (1): `parse_algorithm_identifier_never_panics`
 - **`x509_certificate`** (1): `parse_certificate_never_panics`
@@ -462,9 +461,9 @@ This is the list that decides whether the rest of the document is worth anything
 | `x509_extension` | bounded, structural only: extension *contents* are never interpreted, and `critical` is peeked, not acted on. `validate_extensions` is proven at a reduced `[u8; 13]`; its cover is **known-unsatisfiable at that bound** and disclosed (§8.2) |
 | `x509_tbs_certificate` | bounded, structural only, and **modular** (two stubs; three in the witness harness — §8.4). Its `never_panics` cover is **known-unsatisfiable at `[u8; 10]`** and disclosed (§8.2). No cross-field RFC 5280 rule is checked here — that is `profile`'s job |
 | `x509_certificate` | bounded, structural only, and **modular** (`parse_tbs_certificate` stubbed — §8.4). No signature check, no path building |
-| `profile` | **nothing is proven.** No Kani harness, no Lean lid — `#[test]` coverage only (§7) |
+| `profile` | bounded, and over symbolic *field values* rather than symbolic DER bytes — it decodes nothing (§7). Each of the three RFC 5280 cross-field rules is proven as a biconditional, plus their precedence and totality. No Lean lid, so no ∀-length statement |
 
-## 7. `profile` — tested, not proven
+## 7. `profile` — proven, at value level and without a Lean lid
 
 `profile` is a first slice of a typed layer built strictly *on top of* the structural `x509_*`
 parsers, checking cross-field RFC 5280 rules the parsers deliberately leave to the caller. It
@@ -479,15 +478,41 @@ returning the first violation:
 3. **§4.1.2.5** — `notBefore`/`notAfter` must each use the RFC-mandated encoding for their calendar
    year (UTCTime through 2049, GeneralizedTime from 2050). Only the GeneralizedTime-too-early
    direction needs a runtime check; the UTCTime-too-late direction is impossible by construction
-   (`utc_time::full_year_rfc5280`'s codomain is exactly `1950..=2049`, argued by an exhaustive-over-
-   `u8` test, `full_year_rfc5280_never_reaches_2050`).
+   (`utc_time::full_year_rfc5280`'s codomain is exactly `1950..=2049`).
 
-**This layer is not the same grade of evidence as the codecs.** It carries 14 `#[test]` cases
-covering the accept path and each reject path, and **no `#[kani::proof]` and no Lean lid**. Its
-correctness claim is "tested against those cases", not "proven" in the sense the rest of this
-document uses the word. Not covered at all: name constraints, key usage, basic constraints,
-validity-against-clock, path validation, and every other RFC 5280 cross-field rule beyond the three
-above. Roadmap: `DER-REMAINING-WORK.md`, `TODO.md`.
+**What is now proven, and in what form.** Six Kani harnesses cover this module, and the shape of the
+statements matters more than the count: each of the three rules is a **biconditional** — the rule
+fires *exactly* when the RFC says it should — rather than a one-directional "bad input is rejected"
+check that a too-eager implementation would also satisfy. Rule 2's harness ranges over all 256
+`version` values, not just `0`/`1`/`2`. A fourth harness pins the **precedence** this section
+documents, with all four violations independently symbolic, so the "first violation wins" ordering is
+a proved property rather than a comment. A fifth proves totality over every profile-relevant field
+combination, and a sixth proves the §4.1.2.5.1 window (`1950..=2049`) that rule 3's
+impossible-by-construction half rests on.
+
+**Why this module is cheap where the `x509_*` modules are not.** It decodes nothing, so its harnesses
+take a symbolic *value* — an `AlgorithmIdentifier` pair, a `version`, an `Option` of extension bytes,
+two `Time` arms and their years — instead of a symbolic DER buffer plus a parse. All six verify in
+~0.5 s at ~205 MB peak, the cheapest module in the crate, and they run in CI's `codecs-b` shard rather
+than the heavy local-milestone tier.
+
+**Two boundaries this section will not blur.** First, **no Lean lid**: these are bounded proofs over
+field values, not ∀-length statements over bytes, so `profile` does not carry the L4/L5 grade the six
+lidded codecs do. Second, the proofs are about the *rules as this crate states them* — that
+`validate_profile` implements RFC 5280 §4.1.1.2, §4.1.2.1/§4.1.2.9 and §4.1.2.5 **faithfully** is a
+reading of the RFC by a human, exactly as §8.3 says of every oracle in this crate.
+
+The structural half of rule 3 also stopped resting on a test in this pass. `full_year_rfc5280`'s
+codomain claim needs `year2 <= 99`, and `UtcTime`'s fields are `pub` — a hand-written
+`UtcTime { year2: 200, .. }` maps to `2100`, so "a `Time::Utc` can never denote 2050 or later" was
+sound only for decoder-produced values, with nothing stating that as a proved property.
+`utc_time::decode_postcondition_fields_in_range` now proves the decoder's postcondition over symbolic
+content, which discharges the premise `full_year_pivot_is_correct` assumes. The hand-constructed case
+remains outside it, by design and now in writing.
+
+Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path
+validation, and every other RFC 5280 cross-field rule beyond the three above. Roadmap:
+`DER-REMAINING-WORK.md`, `TODO.md`.
 
 ## 8. Bounds, oracles, stubs, assumptions
 
@@ -500,17 +525,18 @@ buffer widths and unwind ranges are in §4's table; the crate-wide distribution:
 | `#[kani::unwind(N)]` | harnesses |
 |---:|---:|
 | 1 | 6 |
+| 4 | 6 |
 | 6 | 10 |
 | 8 | 9 |
 | 10 | 10 |
 | 12 | 19 |
-| 14 | 11 |
+| 14 | 12 |
 | 16 | 61 |
 | 18 | 5 |
 | 20 | 12 |
 | 21 | 1 |
 | 22 | 1 |
-| **total bounded** | **145** |
+| **total bounded** | **152** |
 
 19 harnesses declare no `#[kani::unwind]`, so no unwind bound is imposed on them and CBMC must unroll to completion every loop they reach. For those harnesses the loop depth is therefore *not* a limit on the claim: a loop CBMC could not fully unroll would fail an unwinding assertion rather than pass quietly. Their input domains are still bounded by buffer width like every other harness. Listed so a reader can check each one: `big_integer::empty_is_empty`, `big_integer::redundant_positive_padding_is_non_minimal`, `big_integer::redundant_negative_padding_is_non_minimal`, `bit_string::empty_is_classified`, `bit_string::empty_nonzero_unused_is_classified`, `boolean::one_octet_is_canonical`, `boolean::roundtrip`, `boolean::wrong_length_is_bad_length`, `enumerated::encode_delegates_to_integer`, `integer::empty_is_classified`, `integer::redundant_positive_padding_is_non_minimal`, `integer::redundant_negative_padding_is_non_minimal`, `null::only_empty_is_valid`, `oid::empty_is_classified`, `restricted_string::charset_exactly_matches_oracle_printable`, `restricted_string::charset_exactly_matches_oracle_ia5`, `restricted_string::charset_exactly_matches_oracle_numeric`, `restricted_string::charset_exactly_matches_oracle_visible`, `utc_time::full_year_pivot_is_correct`.
 <!-- END GENERATED:bounds -->
@@ -536,8 +562,8 @@ input space. This crate treats that as the default suspicion, and the check is m
 <!-- BEGIN GENERATED:non-vacuity (gates/gen_proof_manifest.py) -->
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
-| harnesses | 164 |
-| `kani::cover` witnesses | 52, in 23 of the 25 modules that have harnesses |
+| harnesses | 171 |
+| `kani::cover` witnesses | 75, in 24 of the 26 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **0** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 82 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
@@ -546,7 +572,7 @@ input space. This crate treats that as the default suspicion, and the check is m
 
 What the remaining 82 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
-**What the 133 harness assumptions actually restrict.** 89 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
+**What the 136 harness assumptions actually restrict.** 92 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
 Two things to hold in mind reading it. First, the classifier is deliberately conservative: anything it cannot show is a pure size/range bound is listed, so some entries below *are* range constraints in a shape it does not recognise (a negated range such as `!(mo >= 1 && mo <= 12)`, for instance). It errs toward disclosing. Second, content narrowing is usually the **point** of the harness rather than a weakness in it: a rejection-classification harness exists precisely to pin a malformed shape and assert the exact error it must produce, and it must narrow to that shape to do so. What the list gives you is the ability to check that judgement yourself, harness by harness, instead of taking a count on trust.
 
@@ -608,34 +634,43 @@ co-occurs with acceptance.
 `null` have no `kani::assume` at all and characterise a 1-octet input space exhaustively via
 `assert!` biconditionals, so a cover would be redundant.
 
-**The `enumerated` residual this document previously flagged here is now closed.**
-`decode_delegates_to_integer` narrows a symbolic length with `assume(n >= 1 && n <= 8)` and used to
-carry no cover confirming that a spread of `n` — or both outcomes — is reachable through the
-delegation; its non-vacuity therefore rested on `integer`'s proofs rather than on its own witness. It
-now carries five: an accept at `n == 1`, an accept at some *intermediate* width `2 ≤ n ≤ 7`, an accept
-at the full width `n == 8`, an `Ok` carrying a **negative** two's-complement value, and the exact
-`Err(NonMinimal)` rejection. Why that set: the harness's own property is an *agreement* between two
-functions, which would hold just as well if both sides only ever rejected, or if only one width were
-ever explored.
+**The `enumerated` module's covers, and why the harness domain was widened.**
+`decode_delegates_to_integer` proves an *agreement* — that `decode_enumerated` returns literally what
+`crate::integer::decode_integer` returns — and an agreement is the shape that most easily hides
+vacuity: it holds just as well if both sides only ever reject, or if only one input width is ever
+explored. The harness previously carried no cover at all, so its non-vacuity rested on `integer`'s
+proofs rather than on its own witness; that is the residual this section used to flag as open.
 
-**These are reachability witnesses, not the property.** The equality is proven symbolically for every
-`n` in `1..=8`; no width is left unproven by the shape of the cover list. A second-model review read
-the endpoint-only version of this list as leaving intermediate lengths unchecked — it does not, but the
-intermediate cover was added because "a spread" should mean more than two endpoints.
+It now carries **seven**, and the domain is the wrapper's *whole* reachable input space rather than
+`integer`'s: a 9-octet buffer with symbolic length `0..=9`. That widening is the substantive part. An
+intermediate version assumed `1 <= n <= 8` — mirroring `integer.rs`'s own buffer choices — and then
+explained the two excluded error paths away by pointing at `integer`'s harnesses, which left the
+delegation unproven at exactly the two lengths the wrapper can still be handed. A second-model review
+called that "stopping one byte short", and it was right. At `0..=9` both `Empty` (needs `n == 0`) and
+`TooLarge` (needs `n > 8`) are **reachable and witnessed through the delegation** instead of argued
+away in a comment. The seven: accepts at `n == 1`, at an intermediate `2 <= n <= 7`, and at the full
+width `n == 8`; a **negative** two's-complement value at `n == 8`; and the exact `Err(NonMinimal)`,
+`Err(Empty)` and `Err(TooLarge)` rejections.
 
-Reported **satisfied** — `5 of 5`, 0 of 138 checks failed — and that is no longer a transcription:
-the committed full-suite log records this harness's `5 of 5` directly
-(`evidence/check-b355f76.log`, §3.4).
+`encode_delegates_to_integer` gained three of its own for the same reason — it is the same agreement
+shape, un-narrowed — pinning the returned length at both ends of the minimal-encoding range and the
+sign octet at full width.
 
-The remaining two `IntError` variants are deliberately **not** covered, and the harness says so
-in-line: `Empty` needs `n == 0` and `TooLarge` needs `n > 8`, both excluded here, so a cover for either
-would be a known-unsatisfiable one — which Kani reports as `SUCCESSFUL` and no gate would catch.
-`integer`'s own harnesses classify both over their own domains.
+**Read all of them as reachability witnesses, and read the claim precisely.** The agreement itself is
+proven symbolically for every length in the domain; nothing is left unproven by the shape of the cover
+list. And the covers do *not* individually refute a do-nothing body: a constant `Ok(0)` satisfies the
+positive-width witnesses, a constant `Err` satisfies one rejection witness. What no single constant
+body satisfies is the *set*; what pins the function to real behaviour at every length is the assert.
+The earlier wording here claimed each cover individually met that bar, which was false, and a
+second-model review caught it. Two other claims went the same way and are gone: that the `n == 8`
+cover shows the accumulator loop runs eight times (it shows an 8-octet slice was *accepted* — trip
+count is `integer`'s property, not this harness's), and that a negative value was witnessed at full
+width when `[0x80]` at `n == 1` was its cheapest witness — hence the added `&& n == 8` conjunct.
 
-**One such residual remains**, and it is the larger one: `x509_name::validate_rdn_never_panics` has
-no cover, and its conditional postcondition is not self-witnessed either — see the correction at the
-end of this section. It is now the crate's only harness whose non-vacuity argument points somewhere
-other than at itself.
+**One residual of this kind remains**, and it is the larger one: `x509_name::validate_rdn_never_panics`
+has no cover, and its conditional postcondition is not self-witnessed either — see the correction at
+the end of this section. With `encode_delegates_to_integer` now covered, it is the crate's only
+harness whose non-vacuity argument points somewhere other than at itself.
 
 **Disclosed non-vacuity gaps.** Three harnesses have a cover that is **known-unsatisfiable at their
 bound**. They are left in place rather than deleted, because a cover reporting `0 of 1 satisfied`
@@ -700,6 +735,7 @@ The full hand-written helper surface inside `mod proofs`, so a reader can go aud
 | `big_integer` | `is_minimal_oracle` | `validate_iff_minimal_oracle` |
 | `bit_string` | — | `octet_aligned_iff_unused_zero` |
 | `generalized_time` | `is_canonical_der_generalizedtime` | `accepted_iff_canonical_oracle` |
+| `profile` | — | `rule1_mismatch_iff_algorithms_differ`, `rule2_requires_v3_iff_extensions_present_and_not_v3`, `rule3_generalized_too_early_iff_year_le_2049` |
 | `restricted_string` | `oracle_ia5`, `oracle_numeric`, `oracle_printable`, `oracle_visible` | `charset_exactly_matches_oracle_ia5`, `charset_exactly_matches_oracle_numeric`, `charset_exactly_matches_oracle_printable`, `charset_exactly_matches_oracle_visible`, `validate_iff_all_in_charset_ia5`, `validate_iff_all_in_charset_numeric`, `validate_iff_all_in_charset_printable`, `validate_iff_all_in_charset_visible` |
 | `set_of` | `cmp_padded_oracle` | `cmp_padded_matches_oracle`, `ordering_iff_oracle` |
 | `tag` | `any_class` | — |
