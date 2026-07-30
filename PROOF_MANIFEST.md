@@ -218,31 +218,49 @@ module (§7) they are the *only* evidence that exists.
 ### 3.4 Run evidence — what has actually been executed, and when
 
 <!-- BEGIN GENERATED:evidence (gates/gen_proof_manifest.py) -->
-**No raw proof-run log is committed in this repository.** Every full-suite verdict quoted here and in `DER-REMAINING-WORK.md` is a prose transcription of a run on the maintainer's machine. That is the weakest form of evidence in this document, and committing raw logs under `evidence/` — which this script then reads and reports in this table — is an open item (`TODO.md`).
-
-It does not follow that no third-party-inspectable evidence exists: the repository's public CI runs `cargo test`, clippy and the memory-tractable share of the Kani floor on every push, and those logs are machine-readable and public. What CI covers, and what it does not, is stated below — the point of this note is only that nothing is committed *in-tree*.
+| Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an unsatisfied cover |
+|---|---|---:|---:|---:|
+| `evidence/check-b355f76.log` | `b355f76` | 164 | 0 | 3 |
 <!-- END GENERATED:evidence -->
 
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
 in this document a reader cannot check from the source alone:
 
-- The last recorded **full-suite** run — `cargo kani -Z stubbing` over all 164 harnesses,
-  sequentially, on a dedicated 32 GB Linux box under a 28 GB cgroup cap — reported **164/164
-  `VERIFICATION: SUCCESSFUL`, 0 failures**, on **2026-07-21/22**. It is transcribed in
-  `DER-REMAINING-WORK.md`.
-- **`der-verified/src/` has changed since that run**, in three ways: `tag.rs` received the
-  behaviour-preserving high-tag-loop refactor (commit `0c2948a`, whose message records the `tag`
-  harnesses independently re-run green afterwards); the additive `profile` module landed (commits
-  `d65e7f0`, `6bcb8be`), contributing no harnesses and altering no verified codec; and this pass
-  added three comment-only `VACUITY-DISCLOSED:` registry lines.
-- **Therefore: the 164/164 figure is not a single run at the current HEAD.** It is the
-  2026-07-21/22 full-suite run, plus a targeted re-run of the only verified module changed since.
-  No full-suite re-run at HEAD has been recorded. Nothing known suggests a regression, but the
-  argument for that is a human one: the `tag.rs` change is a refactor argued behaviour-preserving by
-  inspection and re-verified against the same bounded harness suite, and `profile` adds no harness.
-  No proof of equivalence between the old and new `decode_tag` exists — the old body extracted as a
-  bodyless axiom, so there was never an ∀-length statement about it to equate against. "Nothing
-  suggests" is not "was checked", and this manifest will not blur the two.
+- **The verdict is now read off a committed artifact, not transcribed.** `./check.sh` was run
+  end-to-end on **2026-07-30** at commit `b355f76` — `cargo kani -Z stubbing` over all 164 harnesses
+  **sequentially** (no `-j`; parallel harnesses multiply peak RSS), inside a `MemoryMax=22G`
+  cgroup scope, 52 minutes wall — and the log is in this repository. It reports **164
+  `VERIFICATION: SUCCESSFUL`, 0 `FAILED`**, and the `cargo test` and **L4 Lean** stages green in the
+  same run (`lean lid: PASS (sorry-free)`, 1704 `lake` jobs). Every number in the table above is
+  derived from that file by this manifest's generator, not typed.
+- **Three harnesses reported `0 of 1 cover properties satisfied`, and they are exactly the three
+  §8.2 discloses** (`x509_extension::validate_extensions_never_panics`,
+  `x509_tbs_certificate::parse_tbs_certificate_never_panics`, `x509_validity::parse_never_panics`).
+  That is the useful part of committing a log: the disclosed-vacuity table is no longer a promise
+  about what a re-run would show. Nothing undisclosed appeared, and no disclosed gap had quietly
+  become satisfiable. One of the three had previously never been *determined* at all — that harness
+  had only ever OOM-ed past the slicing stage, so its cover's SAT/UNSAT status was unknown (see
+  `docs/verification-cost.md`); it is now determined, and UNSATISFIED.
+- **`evidence/` holds two files per run, deliberately.** `evidence/check-b355f76.log` is a
+  distillation — per-harness verdicts, cover satisfaction, timings, stage banners — and
+  `evidence/raw/check-b355f76.log.gz` is the *complete* 28 MB raw log, so the distillation is
+  checkable rather than trusted. The distilled file's own header states the exact `grep` that
+  produced it, the raw log's byte count and its sha256.
+- **HEAD is two commits past `b355f76`, and neither touches verified source.** They are `4a55a69`
+  (proof-manifest gate fix) and `4fee951` (run that gate in CI) — gates, CI and docs only. A reader
+  does not have to take that on trust: `git diff b355f76..HEAD -- der-verified/src lean` is empty,
+  which is the precise condition under which this run's L3 and L4 verdicts still concern HEAD's
+  bytes. Re-run that command; if it ever prints anything, this bullet is stale and the run needs
+  repeating.
+- **What this supersedes.** The previous entry here cited a 2026-07-21/22 run transcribed in
+  `DER-REMAINING-WORK.md`, and had to disclose that `der-verified/src/` had changed after it —
+  `tag.rs`'s behaviour-preserving high-tag-loop refactor (`0c2948a`) and the additive `profile`
+  module (`d65e7f0`, `6bcb8be`) — so that the 164/164 figure was "not a single run at the current
+  HEAD" but a full-suite run plus a targeted re-run of the one changed module. That caveat is
+  **closed**: the committed run covers `tag.rs` and `profile` as they now stand, in one pass. The
+  older, narrower point remains true and worth keeping: no proof of equivalence between the old and
+  new `decode_tag` exists — the old body extracted as a bodyless axiom, so there was never an
+  ∀-length statement about it to equate against.
 - **Reproducing the full L3 floor needs a large machine.** Two harnesses dominate:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
@@ -605,9 +623,9 @@ ever explored.
 the endpoint-only version of this list as leaving intermediate lengths unchecked — it does not, but the
 intermediate cover was added because "a spread" should mean more than two endpoints.
 
-Reported **satisfied** — `5 of 5`, 0 of 138 checks failed, 0.229 s — by a single-harness run on
-2026-07-30 (Kani 0.67.0, `-Z stubbing`, CBMC's default solver). Per §3.4, read that as a
-*transcription* until a run log lands under `evidence/`.
+Reported **satisfied** — `5 of 5`, 0 of 138 checks failed — and that is no longer a transcription:
+the committed full-suite log records this harness's `5 of 5` directly
+(`evidence/check-b355f76.log`, §3.4).
 
 The remaining two `IntError` variants are deliberately **not** covered, and the harness says so
 in-line: `Empty` needs `n == 0` and `TooLarge` needs `n > 8`, both excluded here, so a cover for either
@@ -621,9 +639,10 @@ other than at itself.
 
 **Disclosed non-vacuity gaps.** Three harnesses have a cover that is **known-unsatisfiable at their
 bound**. They are left in place rather than deleted, because a cover reporting `0 of 1 satisfied`
-is, at each run, the machine-checked *signal* of the gap — no log is committed (§3.4), so the signal
-is observed by re-running, not read off an artifact. Each is paired with a companion
-positive-construction harness on a concrete input:
+is, at each run, the machine-checked *signal* of the gap. As of the committed 2026-07-30 run that
+signal **is** read off an artifact rather than only reproduced on demand: all three appear in
+`evidence/check-b355f76.log` as `0 of 1 cover properties satisfied`, and no fourth harness does
+(§3.4). Each is paired with a companion positive-construction harness on a concrete input:
 
 <!-- BEGIN GENERATED:disclosed-vacuities (gates/gen_proof_manifest.py) -->
 | Harness whose `cover` is UNSATISFIABLE at its bound | Companion witness harness | Does the witness itself use `#[kani::stub]`? |

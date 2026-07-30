@@ -29,13 +29,17 @@ scope boundary referenced below.
       in that file as gated. Restructured around
       the publication checklist's five headings; now states which entry points no harness names, what
       is not proven per module, the non-vacuity audit, and the provenance of the L3 verdict.
-- [ ] **Re-run `./check.sh` at HEAD and commit the raw log under `evidence/`.** The last recorded
-      full-suite Kani run is 2026-07-21/22 (164/164); `tag.rs` changed after it (behaviour-preserving,
-      with the `tag` harnesses re-run per commit `0c2948a`) and the additive `profile` module landed,
-      so no full-suite run exists at the current commit. There is also **no committed raw proof-run
-      log anywhere in this repo** — every verdict in the docs is a prose transcription. The generator
-      already reads `evidence/` and will report the verdict in the manifest automatically. Needs a
-      ≥24 GB box (~21 GiB peak).
+- [x] **Ran `./check.sh` end-to-end and committed the log under `evidence/`** (2026-07-30, at commit
+      `b355f76`): **164 `VERIFICATION: SUCCESSFUL`, 0 `FAILED`**, `cargo test` 309 green and the L4
+      Lean gate `PASS (sorry-free)` (1704 `lake` jobs) in the same run — 52 min wall, sequential
+      harnesses, `MemoryMax=22G` cgroup scope. Two artifacts per run: a distilled per-harness verdict
+      log (what the generator parses) plus the complete 28 MB raw log gzipped under `evidence/raw/`,
+      with the distilling `grep` and the raw log's sha256 stated in the distilled file's header, so
+      the projection is checkable rather than trusted. **Exactly three harnesses reported an
+      unsatisfied cover, and they are exactly the three §8.2 discloses** — one of which
+      (`x509_extension`) had never previously reached a verdict at all. This closes the old
+      "164/164 is not a single run at HEAD" caveat: the run covers `tag.rs` and `profile` as they
+      stand. Every verdict in the docs was a prose transcription before this.
 - [x] **Closed the `enumerated::decode_delegates_to_integer` cover residual** — the harness's own
       property is an *agreement* between `decode_enumerated` and `decode_integer`, which would hold
       even if both sides only ever rejected, so five covers now witness the delegation being exercised:

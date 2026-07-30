@@ -104,12 +104,18 @@ closed here:
   (three stubs, chosen because they're the two independently-proven "validate, don't materialize"
   callees plus `parse_validity`, whose materialized value the TBS glue never branches on).
 - **`x509_extension::validate_extensions_never_panics`'s cover** (`result.is_ok() &&
-  second_child_at_nonzero_offset`, added in the same pass) was re-measured on the 32 GB Linux desktop
-  per the heavy-harness table above: it is a genuine >12 GB RAM wall (both `cadical` and `kissat`
-  OOM past the slicing/SSA stage), so the cover's SAT/UNSAT status was **not determined** — the run
-  never reached a verdict. This is left as an open, honestly-logged item (not claimed SATISFIED),
-  pending either a larger-RAM box or a scope-narrowing change to the harness (out of scope for a
-  same-day pass; see the heavy-harness table entry above).
+  second_child_at_nonzero_offset`, added in the same pass) was for a long time the one cover in the
+  crate whose status was **not determined** rather than known: it is a genuine >12 GB RAM wall (both
+  `cadical` and `kissat` OOM past the slicing/SSA stage), and the run never reached a verdict, so it
+  was logged as open rather than claimed either way.
+
+  **Resolved 2026-07-30: the status is UNSATISFIED.** The full-suite run committed at
+  `evidence/check-b355f76.log` reached a verdict for this harness — `VERIFICATION: SUCCESSFUL` with
+  `0 of 1 cover properties satisfied` — under a `MemoryMax=22G` cgroup scope with the box otherwise
+  idle. So it joins the other two as a *disclosed known-unsatisfiable* cover (`PROOF_MANIFEST.md`
+  §8.2) rather than an unknown, and the reduced `[u8; 13]` buffer is the reason: two minimal
+  `Extension`s inside an `Extensions` wrapper need 16 octets, not 13. Its positive-construction
+  companion `validate_extensions_ok_path_witnessed` is what witnesses the accept path.
 - **`x509_validity::parse_never_panics`'s `Ok`-tail cover is UNSATISFIABLE at `[u8; 16]`** —
   `decode_utc_time` requires exactly-13-octet content (minimal `Time` TLV = 15 octets), and a
   `Validity` needs an outer SEQUENCE header plus TWO such `Time` fields — an arithmetic floor of 32

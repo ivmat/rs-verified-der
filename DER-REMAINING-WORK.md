@@ -356,3 +356,49 @@ Crate-wide effect on the §8.2 audit: `kani::cover` statements 47 → **52**; mo
 all and characterise a 1-octet space exhaustively by biconditional); `assume`-narrowed-without-a-cover
 harnesses 83 → **82**. `x509_name::validate_rdn_never_panics` is now the crate's **only** harness whose
 non-vacuity argument points somewhere other than at itself.
+
+## UPDATE 2026-07-30 (evening) — the first COMMITTED full-gate run: `evidence/check-b355f76.log`
+
+Everything above this line that quotes a full-suite verdict is a **prose transcription** of a run on
+the maintainer's box. As of this entry that is no longer the best evidence available: `./check.sh` ran
+end-to-end at commit `b355f76` and the log is in the repository.
+
+| | |
+|---|---|
+| Kani | **164 `VERIFICATION: SUCCESSFUL`, 0 `FAILED`** (all 164 harnesses, sequential, no `-j`) |
+| `cargo test` | 309 passed + 1 doctest |
+| L4 Lean | `lean lid: PASS (sorry-free)`, 1704 `lake` jobs — same run |
+| Unsatisfied covers | **3**, and exactly the three `PROOF_MANIFEST.md` §8.2 discloses |
+| Wall / cap | 52 min under `MemoryMax=22G MemorySwapMax=0`, box otherwise idle |
+| Artifacts | `evidence/check-b355f76.log` (distilled) + `evidence/raw/check-b355f76.log.gz` (complete, 28 MB raw, sha256 in the distilled header) |
+
+**Three things this run settles that prose could not:**
+
+1. **The disclosed-vacuity table is now checked, not promised.** Three harnesses reported
+   `0 of 1 cover properties satisfied` and no fourth did. Nothing undisclosed appeared; no disclosed
+   gap had quietly become satisfiable.
+2. **`x509_extension::validate_extensions_never_panics`'s cover status is DETERMINED — UNSATISFIED.**
+   It had only ever OOM-ed past the slicing/SSA stage (both `cadical` and `kissat`), so
+   `docs/verification-cost.md` logged it as *not determined* rather than claiming either way. It
+   reached a verdict this time. That doc is updated.
+3. **§2's "no full-suite run exists at the current commit" caveat is closed.** The run covers
+   `tag.rs` post-`0c2948a` and the additive `profile` module in one pass, so the 164/164 figure is a
+   single run rather than a full-suite run plus a targeted re-run of the one module that had changed.
+   The narrower point survives and is worth keeping: no proof of equivalence between the old and new
+   `decode_tag` exists — the old body extracted as a bodyless axiom, so there was never an ∀-length
+   statement to equate against.
+
+**What it does NOT settle.** The log is at `b355f76`, and HEAD has since moved to `4fee951` (the
+proof-manifest gate fix + running that gate in CI). Neither commit touches verified source:
+`git diff b355f76..HEAD -- der-verified/src lean` is empty, which is the precise condition under which
+this run's verdicts still concern HEAD's bytes. Re-run that command rather than trusting this
+sentence — if it prints anything, the run needs repeating.
+
+**A trap worth banking, found while building the distillation.** Kani INDENTS its per-harness summary
+lines (` ** 0 of 1 cover properties satisfied`). The first version of the distilling filter was
+anchored at column 0, so it silently dropped **every** unsatisfied-cover line — the distilled log
+claimed 0 where the raw log had 3. A committed evidence file that understates the crate's own
+disclosed vacuities would have been worse than committing nothing. Caught by cross-checking the
+distilled counts against the raw log, which is now a step the distiller performs and prints on every
+run. The second version then broke the same count a different way: its explanatory header quoted the
+literal string the counter greps for, inflating 164 to 165. Header text is data to the next grep.

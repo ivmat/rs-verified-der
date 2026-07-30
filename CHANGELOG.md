@@ -66,6 +66,24 @@ All notable changes to `der-verified` are documented here. The format is based o
   preceding commit.
 
 ### Verification
+- **The full proof floor is now a committed artifact rather than a prose transcription.**
+  `./check.sh` ran end-to-end at commit `b355f76` (2026-07-30) and the log is in the repository under
+  `evidence/`: **164 `VERIFICATION: SUCCESSFUL`, 0 `FAILED`** over all 164 harnesses run
+  sequentially, plus `cargo test` (309 + 1 doctest) and the L4 Lean gate `PASS (sorry-free)`
+  (1704 `lake` jobs) in the same pass — 52 min wall under a `MemoryMax=22G` cgroup scope. Each run
+  commits two files: a distilled per-harness verdict log, which `gates/gen_proof_manifest.py` reads
+  to populate the manifest's run-evidence table, and the complete 28 MB raw log gzipped under
+  `evidence/raw/`, so the distillation is checkable instead of trusted (the distilling `grep` and the
+  raw log's sha256 are stated in the distilled file's header). Before this, every full-suite verdict
+  in the docs was transcribed by hand.
+- **The disclosed-vacuity table is now machine-confirmed.** Exactly three harnesses reported
+  `0 of 1 cover properties satisfied`, and they are exactly the three `PROOF_MANIFEST.md` §8.2
+  discloses — nothing undisclosed appeared, and no disclosed gap had quietly become satisfiable.
+- **`x509_extension::validate_extensions_never_panics`'s cover status is resolved: UNSATISFIED.** It
+  was previously the one cover in the crate whose status was *not determined* — the harness had only
+  ever OOM-ed past the slicing/SSA stage under both `cadical` and `kissat`, so
+  `docs/verification-cost.md` logged it as unknown rather than claiming either way. It reached a
+  verdict in this run and joins the other two disclosed known-unsatisfiable covers.
 - **Closed the last cheap non-vacuity residual.** `enumerated::decode_delegates_to_integer` proves an
   *agreement* between `decode_enumerated` and `crate::integer::decode_integer` — a property that would
   hold even if both sides only ever rejected — and carried no `kani::cover`, so its non-vacuity rested
