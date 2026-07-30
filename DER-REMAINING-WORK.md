@@ -271,3 +271,46 @@ three new items:
 
 **Still open, unchanged:** the `enumerated` cover; a 4th-and-beyond L4 lid on an X.509 structural
 module; `profile`'s Kani/Lean coverage (it is `#[test]`-only by design so far).
+
+### UPDATE 2026-07-30 (later) — second-model review round 2
+
+A cross-family adversarial pass (kimi-k3, brief: "find every sentence that claims more than the
+evidence supports") returned 1 BLOCKER, 10 MAJOR, 20 MINOR, 8 NIT against the manifest. All were
+accepted; the substantive ones are recorded here because several are *verification* facts, not prose
+facts:
+
+7. **The stub-semantics slide (BLOCKER).** A `kani::cover` satisfied inside a stub-bearing harness
+   witnesses that the caller's glue is reachable *given a fabricated `Ok` from the stubbed
+   sub-parser* — not that the real sub-parser ever accepts. Two consequences that were previously
+   described in vocabulary a reader would over-read:
+   - `x509_tbs_certificate::parse_tbs_certificate_ok_path_witnessed` stubs THREE callees, so unlike
+     the `x509_validity` and `x509_extension` witnesses (unstubbed) its "gap closed" is narrower.
+     The manifest now derives and prints a "does the witness itself use `#[kani::stub]`?" column.
+   - `x509_name::validate_never_panics`'s `1 of 1` cover does **not** witness `validate_rdn`: it
+     stubs it. `validate_rdn`'s panic-freedom is proved unconditionally, but its postcondition
+     (`2 ≤ used ≤ len`) is asserted under `if let Ok(..)`, and **no Kani artifact witnesses that the
+     real `validate_rdn` ever returns `Ok`.** Sound (the stub over-approximates), but the accept path
+     of the name/TBS/certificate composition is `#[test]`-evidenced only.
+8. **Oracle/specification trust was never disclosed.** 9 hand-written reference predicates
+   (`is_minimal_oracle`, `cmp_padded_oracle`, `oracle_wellformed_utf8`, the 4 charset oracles, the 2
+   time canonicality oracles) are the specification side of the crate's strongest properties. A wrong
+   oracle yields a machine-checked proof of the wrong thing, and nothing gates oracle fidelity.
+   New manifest §8.3 inventories the full helper surface (derived by exclusion, not by naming
+   convention) and states what de-tautologisation does and does not mitigate.
+9. **A second small gap inside the wrapper gap:** nothing machine-checks that each
+   `restricted_string` per-charset wrapper passes its *own* `Charset`. A transposed constant would
+   satisfy every proof cited for them, because each proof is about the delegate *given* a charset.
+   `#[test]`-covered only.
+10. **Entry-point detection was undercounting a third time:** trait-impl methods carry no `pub`
+    keyword, so `Iterator::next` on `Elements` was invisible. 67 → 68 entry points. The three
+    undercounts found so far were all in the same direction (understating the gap).
+11. **Under-claimed, now claimed.** The L4 verdict recorded at `0c2948a` still concerns HEAD's bytes
+    (no extracted source file changed since; the shims `#[path]`-include modules rather than
+    importing the crate). And public CI — `cargo test` + clippy + ~136 harnesses — was **success at
+    `bd318e2`**; those logs are machine-readable and third-party-inspectable, which the manifest had
+    wrongly disclaimed. CI does not run the L4 lids, does not run the two heavy harnesses, and passes
+    a harness with an unsatisfied cover exactly as a local run does.
+12. **Still unrecorded, cheap to fix next run:** the Kani version and exact flags of the 2026-07-21/22
+    full-suite run, and whether per-harness *cover satisfaction* was captured rather than just
+    `SUCCESSFUL`. Under Kani's semantics those are different facts and only the coarse one was
+    written down.

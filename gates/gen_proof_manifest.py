@@ -96,42 +96,59 @@ def split_regions(lines):
     return lines[:end_top], proofs, tests, (pi, ti)
 
 
-def entry_points_of(path, lines, bounds):
-    """Public entry points: free `pub fn`s AND public inherent-impl methods.
+IMPL_RE = re.compile(r'impl(?:<[^>]*>)?\s+(?:(?P<trait>[A-Za-z0-9_:]+)(?:<[^>]*>)?\s+for\s+)?'
+                     r'(?P<ty>[A-Za-z0-9_]+)')
 
-    Free functions sit at column 0; methods are indented inside an `impl Type` block. The first
-    version of this scanned column 0 only, which silently missed four public methods
-    (`Charset::{tag_number,identifier,contains}`, `Elements::new`) — an undercount of the
-    unharnessed-entry-point gap, i.e. an overclaim by omission. The cross-family review flagged the
-    column-0 assumption as a latent bug; adding the check found it was already an active one.
+
+def entry_points_of(path, lines, bounds):
+    """Public entry points: free `pub fn`s, public inherent-impl methods, AND trait-impl methods.
+
+    Three passes' worth of corrections live in this function, each found by review rather than by
+    intent, and each in the same direction — undercounting the API surface, which understates the
+    "no harness names this entry point" gap and so overclaims by omission:
+
+      1. Column-0 `pub fn` only  ->  missed the four public methods on `Charset` and `Elements`.
+      2. Only the region above `mod proofs`  ->  missed a `pub fn` declared after the test module.
+      3. `pub fn` only  ->  missed trait-impl methods, which carry no `pub` keyword but ARE public
+         API when both trait and type are public (`Iterator::next` on `Elements`).
 
     Anything indented that is neither in `mod proofs`/`mod tests` nor inside an `impl` block would be
-    a nested module, which this scheme cannot attribute — so that case fails the gate loudly rather
-    than quietly miscounting.
+    a nested module, which this scheme cannot attribute — that case fails the gate loudly rather than
+    quietly miscounting.
     """
     pi, ti = bounds
     end = min(x for x in (pi, ti, len(lines)) if x is not None)
-    out, impl, depth_in_impl = [], None, False
+    out, trait_methods, impl_ty, in_trait_impl, in_impl = [], [], None, False, False
     for i, l in enumerate(lines[:end]):
-        m = re.match(r'impl(?:<[^>]*>)?\s+([A-Za-z0-9_]+)', l)
+        m = IMPL_RE.match(l)
         if m:
-            impl, depth_in_impl = m.group(1), True
+            impl_ty, in_impl = m.group('ty'), True
+            in_trait_impl = bool(m.group('trait'))
         elif re.match(r'\}\s*$', l):
-            depth_in_impl = False
+            in_impl = in_trait_impl = False
         m = re.match(r'pub (?:const |unsafe )?fn ([A-Za-z0-9_]+)', l)
         if m:
             out.append(m.group(1))
             continue
-        m = re.match(r'\s+pub (?:const |unsafe )?fn ([A-Za-z0-9_]+)', l)
+        m = re.match(r'\s+(?:pub )?(?:const |unsafe )?fn ([A-Za-z0-9_]+)', l)
         if m:
-            if not depth_in_impl:
-                raise SystemExit(
-                    'gen_proof_manifest: %s:%d has an indented `pub fn` that is not inside an '
-                    '`impl` block:\n  %s\nEntry-point detection cannot attribute it (a nested '
-                    'module?). Teach the script about it rather than letting the count drift.'
-                    % (path, i + 1, l.rstrip()))
-            out.append('%s::%s' % (impl or '?', m.group(1)))
-    return out
+            if not in_impl:
+                # A non-pub indented fn outside an impl is a private helper — ignore it. A `pub` one
+                # would be a nested module's API, which cannot be attributed: fail.
+                if l.lstrip().startswith('pub '):
+                    raise SystemExit(
+                        'gen_proof_manifest: %s:%d has an indented `pub fn` that is not inside an '
+                        '`impl` block:\n  %s\nEntry-point detection cannot attribute it (a nested '
+                        'module?). Teach the script about it rather than letting the count drift.'
+                        % (path, i + 1, l.rstrip()))
+                continue
+            if not in_trait_impl and not l.lstrip().startswith('pub '):
+                continue                      # private inherent method
+            name = '%s::%s' % (impl_ty or '?', m.group(1))
+            out.append(name)
+            if in_trait_impl:
+                trait_methods.append(name)
+    return out, trait_methods
 
 
 def balanced_args(lines, call):
@@ -196,6 +213,7 @@ def parse_harnesses(proofs, consts):
     """
     fns = [i for i, l in enumerate(proofs) if re.match(r'\s*fn ([A-Za-z0-9_]+)', l)]
     blocks = []
+    helper_assumes = []
     for n, fi in enumerate(fns):
         top = fi
         while top > 0 and re.match(r'\s*(#\[|///|//)', proofs[top - 1]):
@@ -210,9 +228,12 @@ def parse_harnesses(proofs, consts):
 
     out = []
     for name, attrs, body in blocks:
-        if not any(re.match(r'\s*#\[kani::proof(_for_contract)?', a) for a in attrs):
-            continue
         code = strip_comments(body)
+        if not any(re.match(r'\s*#\[kani::proof(_for_contract)?', a) for a in attrs):
+            ha = balanced_args(code, 'kani::assume(')
+            if ha:
+                helper_assumes.append((name, ha))
+            continue
         out.append({
             'name': name,
             'unwind': [int(m.group(1)) for l in attrs
@@ -231,20 +252,20 @@ def parse_harnesses(proofs, consts):
                                for m in re.finditer(r'\[\s*u8\s*;\s*([A-Za-z0-9_]+)\s*\]', l)
                                if m.group(1).isdigit() or m.group(1) in consts}),
         })
-    return out
+    return out, helper_assumes
 
 
 def module_facts(path):
     lines = open(path, encoding='utf-8').read().split('\n')
     _top, proofs, tests, bounds = split_regions(lines)
-    entry_points = entry_points_of(path, lines, bounds)
+    entry_points, trait_methods = entry_points_of(path, lines, bounds)
     # A `pub fn` declared AFTER the proof/test modules is still a public entry point; scanning only
     # the region above `mod proofs` made it invisible (negative-tested). Picked up here.
     pi, ti = bounds
     tail = lines[ti:] if ti is not None else (lines[pi:] if pi is not None else [])
     entry_points += [m.group(1) for l in tail
                      for m in [re.match(r'pub (?:const |unsafe )?fn ([A-Za-z0-9_]+)', l)] if m]
-    harnesses = parse_harnesses(proofs, const_widths(lines))
+    harnesses, helper_assumes = parse_harnesses(proofs, const_widths(lines))
     proof_code = strip_comments(proofs)
     proof_text = '\n'.join(proof_code)
     # Match on the short name: an entry point recorded as `Charset::contains` is called as
@@ -259,6 +280,7 @@ def module_facts(path):
     return {
         'module': os.path.basename(path)[:-3],
         'entry_points': entry_points,
+        'trait_impl_methods': trait_methods,
         'harnessed_entry_points': harnessed,
         'unharnessed_entry_points': [e for e in entry_points if e not in harnessed],
         'harnesses': harnesses,
@@ -289,6 +311,27 @@ def module_facts(path):
                             if not is_range_bound(e)],
         'stubs': [(h['name'], h['stubs']) for h in harnesses if h['stubs']],
         'disclosed_vacuities': [m.groups() for l in lines for m in [VACUITY_RE.search(l)] if m],
+        # Which harnesses use a stub matters for how a *witness* should be read: a cover satisfied
+        # inside a stub-bearing harness witnesses the caller's glue given a FABRICATED sub-parser
+        # `Ok`, not that the real sub-parser ever accepts. Recorded so the manifest can label the
+        # difference instead of presenting all witnesses uniformly.
+        'stub_harness_names': [h['name'] for h in harnesses if h['stubs']],
+        # Assumptions outside a harness body, attributed to the helper that contains them. Two very
+        # different kinds share this position and must not be reported together: one inside a
+        # `stub_*` body constrains what the STUB IS ALLOWED TO RETURN (and so must be discharged by a
+        # separate harness, or it is an unsound hole); one inside an input generator merely narrows a
+        # nondeterministic selector, which is ordinary harness setup.
+        'helper_assumes': [(name, e) for name, exprs in helper_assumes for e in exprs],
+        # Every non-harness function declared in `mod proofs`: the hand-written helper surface the
+        # harnesses are written against — reference predicates ("oracles") and stub bodies. A wrong
+        # oracle yields a machine-checked proof of the WRONG property, so this surface is part of the
+        # trust base. Derived by exclusion (all fns minus the harnesses) rather than by a naming
+        # convention, so a helper cannot hide by being named something else.
+        'proof_helpers': sorted({m.group(1) for l in proofs
+                                 for m in [re.match(r'\s+fn ([a-z0-9_]+)\(', l)] if m}
+                                - {h['name'] for h in harnesses}),
+        'oracle_harnesses': sorted({h['name'] for h in harnesses
+                                    if 'oracle' in h['name'] or '_iff_' in h['name']}),
         # strip_comments first: `//!   Tested (`#[test]`) only so far` is prose, not a test.
         # Counting it inflated the total by one against what `cargo test` actually runs.
         'n_tests': sum(l.count('#[test]') for l in strip_comments(tests)),
@@ -511,9 +554,10 @@ def r_inventory(f):
         '| `kani::assume` harness preconditions (narrow the proved domain) | %d |' % t['assumes'],
         '| `kani::assume` inside stub bodies (constrain a stub\'s *return*, not an input) | %d |'
         % t['stub_assumes'],
-        '| `kani::cover` non-vacuity witnesses | %d |' % t['covers'],
-        '| …harnesses whose cover is **known-unsatisfiable and disclosed** | **%d** |'
-        % t['disclosed_vacuities'],
+        '| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, '
+        'and is not established at HEAD — §3.4) | %d |' % t['covers'],
+        '| …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known '
+        '*non*-witnesses | **%d** |' % t['disclosed_vacuities'],
         '| `#[kani::stub]` applications / harnesses using them | %d / %d |'
         % (t['stubs'], t['stub_harnesses']),
         '| `#[test]` unit + regression tests | %d |' % t['tests'],
@@ -577,6 +621,19 @@ def r_stubs(f):
         for name, stubs in m['stubs']:
             L.append('| `%s::%s` | %s |' % (m['module'], name,
                                             ', '.join('`%s`' % s for s in stubs)))
+    stub_side = [(m['module'], fn, e) for m in f['modules'] for fn, e in m['helper_assumes']
+                 if fn.startswith('stub_')]
+    gen_side = [(m['module'], fn, e) for m in f['modules'] for fn, e in m['helper_assumes']
+                if not fn.startswith('stub_')]
+    L += ['', 'Every `kani::assume` inside a **stub body** — each constrains what the stub is allowed '
+          'to *return*, so each must be discharged by a separate harness or it is an unsound hole:', '']
+    L += ['- `%s::%s` — `assume(%s)`' % r for r in stub_side] or ['- none: no stub constrains its '
+                                                                 'return value.']
+    if gen_side:
+        L += ['', 'For contrast, the other `kani::assume`s outside harness bodies live in input '
+              'generators and narrow a nondeterministic selector — ordinary harness setup, nothing '
+              'to discharge:', '']
+        L += ['- `%s::%s` — `assume(%s)`' % r for r in gen_side]
     return L
 
 
@@ -604,9 +661,11 @@ def r_nonvacuity(f):
               'alone. That much is a static fact this script re-derives on every run, not a claim.'
               % t['implicit_only']]
     L += ['', 'What the remaining %d `assume`-narrowed-without-a-`cover` harnesses give you is a '
-          '*different* kind of witness, not automatically a better one. Each asserts a functional '
-          'outcome — a biconditional, a round-trip, or an exact `Err` variant — which can only hold '
-          'if the code produced a specific correct result, so the harness cannot be silently empty. '
+          '*different* kind of witness, not automatically a better one. The static, derived fact is '
+          'that each of them contains an `assert!`. The judgement — that these particular assertions '
+          'are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose '
+          'passing requires the code to have produced a specific correct result — is per-harness and '
+          'human; this script cannot grade an assertion\'s strength. '
           'But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be '
           'satisfied by a shallow rejection path while a deeper one is never reached, whereas a '
           'cover can pin a specific deep effect. Neither subsumes the other, and this manifest does '
@@ -637,15 +696,29 @@ def r_nonvacuity(f):
 
 
 def r_vacuities(f):
-    L = ['| Harness whose `cover` is UNSATISFIABLE at its bound | Positive-construction witness '
-         'that closes the gap |', '|---|---|']
-    n = 0
+    L = ['| Harness whose `cover` is UNSATISFIABLE at its bound | Companion witness harness | Does '
+         'the witness itself use `#[kani::stub]`? |', '|---|---|---|']
+    n, stubbed = 0, []
     for m in f['modules']:
         for harness, witness in m['disclosed_vacuities']:
-            L.append('| `%s::%s` | `%s::%s` |' % (m['module'], harness, m['module'], witness))
+            uses = witness in m['stub_harness_names']
+            if uses:
+                stubbed.append('%s::%s' % (m['module'], witness))
+            L.append('| `%s::%s` | `%s::%s` | %s |'
+                     % (m['module'], harness, m['module'], witness,
+                        '**yes — read it as glue-reachability only**' if uses else 'no'))
             n += 1
     if not n:
         return ['- none disclosed.']
+    L += ['', '**The third column is the one that changes what a witness means.** A cover satisfied '
+          'inside a stub-bearing harness shows that the caller\'s glue is reachable *given a '
+          'fabricated `Ok` from the stubbed sub-parser*. It is not evidence that the real '
+          'sub-parser ever returns `Ok`, and therefore not evidence that the real composition '
+          'accepts anything.']
+    if stubbed:
+        L += ['So for %s the "gap closed" claim is narrower than for the unstubbed rows: what is '
+              'witnessed is the glue, under stub semantics.'
+              % ', '.join('`%s`' % s for s in stubbed)]
     return L
 
 
@@ -666,11 +739,37 @@ def r_l4(f):
     for l in f['lids']:
         L.append('| `%s` | `%s` | %d | %d |' % (
             l['file'], l['codec'], l['theorems'], len(l['declared_axioms'])))
-    L += ['', 'Every lid discloses its full non-standard axiom set via `#print axioms` (%d such '
-          'disclosures across the lids). The `axiom` column counts only the *assumed Aeneas-Std '
-          'specs declared in the lid file itself* — the honest trust surface a reader should '
-          'audit; it excludes Lean\'s own `propext`/`Classical.choice`/`Quot.sound` and '
-          '`bv_decide`\'s certificate axiom.' % sum(l['print_axioms'] for l in f['lids'])]
+    L += ['', 'The `axiom` column counts the *assumed Aeneas-Std specs declared in the lid file '
+          'itself* — the trust surface a reader can audit by opening the file. It excludes Lean\'s '
+          'own `propext`/`Classical.choice`/`Quot.sound` and `bv_decide`\'s certificate axiom. '
+          'Separately, the lids carry %d `#print axioms` commands: that is a count of *audit '
+          'commands* (roughly one per theorem whose dependency set is disclosed at build time), '
+          '**not** a count of axioms — do not compare it with the column.'
+          % sum(l['print_axioms'] for l in f['lids']),
+          '',
+          'One limitation to name explicitly: a declared `axiom` characterising an Aeneas-Std '
+          'primitive and a bespoke assumption about this crate\'s own code are syntactically '
+          'identical, and the latter would be an unsound hole. Nothing in this repository '
+          'mechanically distinguishes them — the argument that each is an upstream-primitive spec '
+          'is made in the lid docstrings and rests on review, not on a gate.']
+    return L
+
+
+def r_oracles(f):
+    rows = [(m['module'], m['proof_helpers'], m['oracle_harnesses'])
+            for m in f['modules'] if m['proof_helpers'] or m['oracle_harnesses']]
+    if not rows:
+        return ['- none: `mod proofs` declares no helper functions anywhere in the crate.']
+    L = ['| Module | Hand-written helpers in `mod proofs` (oracles + stub bodies) | Harnesses that '
+         'assert an equivalence against one |', '|---|---|---|']
+    nh = 0
+    for mod, helpers, harnesses in rows:
+        nh += len(helpers)
+        L.append('| `%s` | %s | %s |' % (mod, ', '.join('`%s`' % o for o in helpers) or '—',
+                                        ', '.join('`%s`' % h for h in harnesses) or '—'))
+    L += ['', '%d hand-written helper functions in total. Derived by exclusion — every `fn` in a '
+          '`mod proofs` block that is not itself a harness — so a helper cannot escape this list by '
+          'being named something unexpected.' % nh]
     return L
 
 
@@ -678,12 +777,17 @@ def r_evidence(f):
     ev = f['evidence']
     if not ev:
         return [
-            '**There is no committed raw proof-run log in this repository.** The verdicts quoted '
-            'in this manifest and in `DER-REMAINING-WORK.md` are prose transcriptions of runs made '
-            'on the maintainer\'s machine, not machine-readable artifacts a third party can '
-            'inspect. Treat them accordingly: the *re-runnable gate* (`./check.sh`) is the real '
-            'evidence offer, and a reader who wants the verdict should run it. Committing raw logs '
-            'under `evidence/` (which this script then reads and reports here) is an open item.',
+            '**No raw proof-run log is committed in this repository.** Every full-suite verdict '
+            'quoted here and in `DER-REMAINING-WORK.md` is a prose transcription of a run on the '
+            'maintainer\'s machine. That is the weakest form of evidence in this document, and '
+            'committing raw logs under `evidence/` — which this script then reads and reports in '
+            'this table — is an open item (`TODO.md`).',
+            '',
+            'It does not follow that no third-party-inspectable evidence exists: the repository\'s '
+            'public CI runs `cargo test`, clippy and the memory-tractable share of the Kani floor '
+            'on every push, and those logs are machine-readable and public. What CI covers, and '
+            'what it does not, is stated below — the point of this note is only that nothing is '
+            'committed *in-tree*.',
         ]
     L = ['| Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an '
          'unsatisfied cover |', '|---|---|---:|---:|---:|']
@@ -700,6 +804,7 @@ REGIONS = {
     'unharnessed-entry-points': r_unharnessed,
     'bounds': r_bounds,
     'stubs': r_stubs,
+    'oracles': r_oracles,
     'non-vacuity': r_nonvacuity,
     'disclosed-vacuities': r_vacuities,
     'properties': r_properties,
