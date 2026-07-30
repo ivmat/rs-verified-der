@@ -7,6 +7,25 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [Unreleased]
 
 ### Documentation / assurance process
+- **A second full-gate run is committed, at HEAD: `evidence/check-28e1429.log`** — 171
+  `VERIFICATION: SUCCESSFUL`, 0 `FAILED`, `cargo test` green, L4 Lean `PASS (sorry-free)` in the same
+  pass, 91 min wall under a `MemoryMax=22G` cgroup scope. The three unsatisfied covers are again
+  exactly the three §8.2 discloses — the second independent confirmation of that table.
+- **"Does a committed run still speak for HEAD?" is now derived instead of written down.** It was a
+  hand-written sentence naming specific commits, which had to be rewritten at the next run and rots
+  toward *over*-claiming. It is now computed as `git diff <run-commit>..HEAD -- der-verified/src lean`
+  being empty, and rendered in a new **advisory** region: a docs, gate or CI commit after a run no
+  longer invalidates it, and a source commit does, with no prose to remember. Advisory rather than
+  gate-enforced because it needs git history that a tarball or shallow clone may lack — the same test
+  `pins-observed` meets, and keeping it out of the enforced set is what stops `./check.sh` depending
+  on the reader's environment again. Every count in the evidence table stays enforced, since those are
+  read out of the committed log itself. Gated by 7 new tests (27 total), including that the region
+  stays advisory, that a run with `FAILED` verdicts never counts as speaking for HEAD, and that an
+  unanswerable git query reports "unknown" rather than defaulting to yes.
+- **Fixed an order-dependence bug in the gate's own test suite.** Two mutation tests restored
+  `ADVISORY` to a *hardcoded* literal instead of the value they captured, so any legitimate change to
+  that set silently reverted mid-run and failed a later test — the failure appearing in the wrong
+  place entirely. Both now capture and restore.
 - **The proof-manifest gate no longer fails for third parties, and now has its own test set.**
   `gates/gen_proof_manifest.py --check` byte-compared the manifest's "Observed on the machine that
   last regenerated this section" line, which reports the ambient rustc/Kani/Aeneas/Charon — none of

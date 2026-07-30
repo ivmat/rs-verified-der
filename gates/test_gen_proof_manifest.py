@@ -101,7 +101,9 @@ class StillEnforced(unittest.TestCase):
 
     def test_advisory_set_stays_narrow(self):
         # A one-line tripwire: widening ADVISORY is how this gate would quietly stop enforcing.
-        self.assertEqual(gen.ADVISORY, {'pins-observed'})
+        # Widened once, deliberately: `evidence-coverage` needs git history, which is an
+        # environment probe exactly like `pins-observed`. Anything tree-derived stays enforced.
+        self.assertEqual(gen.ADVISORY, {'pins-observed', 'evidence-coverage'})
 
 
 class CommentStripping(unittest.TestCase):
@@ -243,8 +245,9 @@ class MutationKill(unittest.TestCase):
         # happens to match the recorded one — on the machine that last ran `--write`, the buggy
         # gate is green. That is precisely why the bug reached a third party in the first place,
         # and why the required kills below are tests that inject a foreign toolchain themselves.
+        original = set(gen.ADVISORY)   # capture, never hardcode -- see the note below
         killed = self._kills(lambda: setattr(gen, 'ADVISORY', set()),
-                             lambda: setattr(gen, 'ADVISORY', {'pins-observed'}))
+                             lambda: setattr(gen, 'ADVISORY', original))
         self.assertLessEqual({'test_different_rustc_does_not_fail_check',
                               'test_absent_kani_and_aeneas_do_not_fail_check',
                               'test_manifest_recorded_on_another_machine_does_not_fail_check',
@@ -260,15 +263,76 @@ class MutationKill(unittest.TestCase):
                              killed)
 
     def test_widening_the_advisory_set_is_caught(self):
+        # Restore the value that was ACTUALLY there, not a hardcoded literal: a hardcoded restore
+        # silently reverts a legitimate change to ADVISORY and corrupts every test that runs after
+        # this one, which is order-dependent and exactly the kind of failure a test suite should not
+        # have. (It did: adding `evidence-coverage` made a later test fail here, not in the code.)
+        original = set(gen.ADVISORY)
         killed = self._kills(
             lambda: setattr(gen, 'ADVISORY', {'pins-observed', 'pins', 'inventory'}),
-            lambda: setattr(gen, 'ADVISORY', {'pins-observed'}))
+            lambda: setattr(gen, 'ADVISORY', original))
         self.assertLessEqual({'test_drifted_harness_count_still_fails_check',
                               'test_drifted_declared_toolchain_pin_still_fails_check'}, killed)
 
 
 MutationKill.SUBJECTS = (ThirdPartyEnvironment, StillEnforced, RegionPlumbing, GateExitCode)
 
+
+
+class HeadCoverageFact(unittest.TestCase):
+    """Whether a committed run still speaks for HEAD is DERIVED from git, and rendered in its own
+    ADVISORY region so a git-less clone can still pass `--check`. Both directions matter: it must not
+    under-claim once a run log at HEAD exists, and it must stop claiming the moment verified source
+    moves. Neither is checkable by eye, so gate both -- including that the region stays advisory,
+    which is the regression that motivated the split."""
+
+    def test_verified_paths_are_the_proof_bearing_ones(self):
+        # If this list ever silently widened to include docs, a docs commit would invalidate a run
+        # log and the manifest would start disclaiming for no reason.
+        self.assertEqual(sorted(gen.VERIFIED_PATHS), ['der-verified/src', 'lean'])
+
+    def test_unchanged_since_head_is_true(self):
+        # HEAD vs HEAD: nothing can have changed.
+        head = gen.head_commit()
+        self.assertTrue(gen.verified_source_unchanged_since(head))
+
+    def test_unrecorded_commit_is_unknown_not_true(self):
+        # Fail-open would silently upgrade an unverifiable log to "covers HEAD".
+        self.assertIsNone(gen.verified_source_unchanged_since('unrecorded'))
+        self.assertIsNone(gen.verified_source_unchanged_since(''))
+
+    def test_coverage_region_claims_head_when_a_live_log_exists(self):
+        f = {'evidence': [{'file': 'evidence/x.log', 'commit': 'abc1234',
+                           'covers_head_source': True, 'failed': 0}]}
+        self.assertIn('still speaks for HEAD', '\n'.join(gen.r_evidence_coverage(f)))
+
+    def test_coverage_region_disclaims_when_the_log_predates_a_source_change(self):
+        f = {'evidence': [{'file': 'evidence/x.log', 'commit': 'abc1234',
+                           'covers_head_source': False, 'failed': 0}]}
+        out = '\n'.join(gen.r_evidence_coverage(f))
+        self.assertIn('No committed run currently speaks for HEAD', out)
+        self.assertIn('superseded', out)
+
+    def test_coverage_region_ignores_a_log_that_recorded_failures(self):
+        # A run with FAILED verdicts must never be read as establishing anything.
+        f = {'evidence': [{'file': 'evidence/x.log', 'commit': 'abc1234',
+                           'covers_head_source': True, 'failed': 2}]}
+        self.assertIn('No committed run currently speaks for HEAD',
+                      '\n'.join(gen.r_evidence_coverage(f)))
+
+    def test_coverage_region_reports_unknown_rather_than_defaulting_to_yes(self):
+        f = {'evidence': [{'file': 'evidence/x.log', 'commit': 'abc1234',
+                           'covers_head_source': None, 'failed': 0}]}
+        out = '\n'.join(gen.r_evidence_coverage(f))
+        self.assertIn('could not answer', out)
+        self.assertNotIn('still speaks for HEAD', out)
+
+    def test_no_evidence_says_so(self):
+        self.assertIn('No committed run log', '\n'.join(gen.r_evidence_coverage({'evidence': []})))
+
+    def test_coverage_region_is_advisory_so_a_git_less_clone_still_passes(self):
+        # The regression this whole split exists to prevent.
+        self.assertIn('evidence-coverage', gen.ADVISORY)
 
 if __name__ == '__main__':
     # Default warning filters on purpose: nothing is suppressed, so a future DeprecationWarning in

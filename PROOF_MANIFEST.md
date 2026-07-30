@@ -70,7 +70,7 @@ deviations. Read the two differently.
 | `#[kani::proof]` harnesses | 171 |
 | `kani::assume` harness preconditions (narrow the proved domain) | 136 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and is not established at HEAD — §3.4) | 75 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 75 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 7 / 4 |
 | `#[test]` unit + regression tests | 309 |
@@ -220,13 +220,25 @@ module (§7) they are the *only* evidence that exists.
 <!-- BEGIN GENERATED:evidence (gates/gen_proof_manifest.py) -->
 | Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an unsatisfied cover |
 |---|---|---:|---:|---:|
+| `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
 | `evidence/check-b355f76.log` | `b355f76` | 164 | 0 | 3 |
+
+Every column here is read out of the committed log itself, so this table is reproducible from the tree alone and is gate-enforced. Whether a given run still speaks for HEAD needs `git`, which a tarball or shallow clone may not have — that question is answered separately just below, and is advisory for exactly that reason.
 <!-- END GENERATED:evidence -->
+
+<!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
+**`evidence/check-28e1429.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff 28e1429..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
+- `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+<!-- END GENERATED:evidence-coverage -->
 
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
 in this document a reader cannot check from the source alone:
 
-- **The verdict is now read off a committed artifact, not transcribed.** `./check.sh` was run
+- **The verdict is now read off a committed artifact, not transcribed.** The current run is
+  **2026-07-31 at commit `28e1429`** — `171 VERIFICATION: SUCCESSFUL, 0 FAILED`, `cargo test` green,
+  and the L4 Lean gate `PASS (sorry-free)` (1704 `lake` jobs) in the same pass, 91 minutes wall. The
+  three unsatisfied covers are again exactly the three §8.2 discloses. The first such run, described
+  below, was `./check.sh`
   end-to-end on **2026-07-30** at commit `b355f76` — `cargo kani -Z stubbing` over all 164 harnesses
   **sequentially** (no `-j`; parallel harnesses multiply peak RSS), inside a `MemoryMax=22G`
   cgroup scope, 52 minutes wall — and the log is in this repository. It reports **164
@@ -246,12 +258,16 @@ in this document a reader cannot check from the source alone:
   `evidence/raw/check-b355f76.log.gz` is the *complete* 28 MB raw log, so the distillation is
   checkable rather than trusted. The distilled file's own header states the exact `grep` that
   produced it, the raw log's byte count and its sha256.
-- **HEAD is two commits past `b355f76`, and neither touches verified source.** They are `4a55a69`
-  (proof-manifest gate fix) and `4fee951` (run that gate in CI) — gates, CI and docs only. A reader
-  does not have to take that on trust: `git diff b355f76..HEAD -- der-verified/src lean` is empty,
-  which is the precise condition under which this run's L3 and L4 verdicts still concern HEAD's
-  bytes. Re-run that command; if it ever prints anything, this bullet is stale and the run needs
-  repeating.
+- **Which run currently speaks for HEAD is derived, not asserted in prose.** It is stated in the
+  advisory region just above §3.4's table, computed as `git diff <run-commit>..HEAD --
+  der-verified/src lean` being empty. That is deliberately *advisory*: it needs git history, which a
+  tarball or a shallow clone may not have, and making `./check.sh` depend on the reader's environment
+  is the exact defect the `pins-observed` split fixed. Every count in the evidence table itself is
+  read out of the committed log and stays gate-enforced.
+- **Why derived rather than written down:** a sentence saying "the run at X still covers HEAD" rots
+  the moment a source commit lands, and it rots toward over-claiming. The earlier version of this
+  bullet named two specific commits and had to be rewritten by hand at the next run; this one cannot
+  go stale, because nothing states it.
 - **What this supersedes.** The previous entry here cited a 2026-07-21/22 run transcribed in
   `DER-REMAINING-WORK.md`, and had to disclose that `der-verified/src/` had changed after it —
   `tag.rs`'s behaviour-preserving high-tag-loop refactor (`0c2948a`) and the additive `profile`

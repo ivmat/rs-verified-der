@@ -47,6 +47,9 @@ SRC = os.path.join(ROOT, 'der-verified', 'src')
 LEAN = os.path.join(ROOT, 'lean')
 MANIFEST = os.path.join(ROOT, 'PROOF_MANIFEST.md')
 EVIDENCE = os.path.join(ROOT, 'evidence')
+# The paths a committed run's verdicts actually speak for. A change OUTSIDE these (docs, gates, CI)
+# cannot invalidate a proof run; a change INSIDE them can, and does so silently unless derived.
+VERIFIED_PATHS = ['der-verified/src', 'lean']
 
 BEGIN = '<!-- BEGIN GENERATED:%s (gates/gen_proof_manifest.py) -->'
 END = '<!-- END GENERATED:%s -->'
@@ -438,15 +441,36 @@ def evidence_facts():
             if not os.path.isfile(p):
                 continue
             text = read_text(p, errors='replace')
+            commit = (re.search(r'^#\s*commit:\s*([0-9a-f]{7,40})', text, re.M) or
+                      [None, 'unrecorded'])[1]
             out.append({
                 'file': 'evidence/' + f,
-                'commit': (re.search(r'^#\s*commit:\s*([0-9a-f]{7,40})', text, re.M) or
-                           [None, 'unrecorded'])[1],
+                'commit': commit,
+                # Whether this run still speaks for HEAD is a DERIVED fact, not a judgement: it does
+                # exactly when no path the run verified has changed since. Docs/gates/CI commits
+                # landing after a run therefore do not invalidate it, and a source commit does --
+                # automatically, with no prose to update. `unknown` when git cannot answer (a
+                # tarball, a shallow clone, an unrecorded commit).
+                'covers_head_source': verified_source_unchanged_since(commit),
                 'successful': len(re.findall(r'VERIFICATION:- ?SUCCESSFUL|VERIFICATION: SUCCESSFUL', text)),
                 'failed': len(re.findall(r'VERIFICATION:- ?FAILED|VERIFICATION: FAILED', text)),
                 'covers_unsatisfied': len(re.findall(r'0 of \d+ cover propert', text)),
             })
     return out
+
+
+def verified_source_unchanged_since(commit):
+    """True/False if git can answer whether VERIFIED_PATHS changed since `commit`; else None."""
+    if not commit or commit == 'unrecorded':
+        return None
+    try:
+        out = subprocess.run(['git', '-C', ROOT, 'diff', '--name-only', commit + '..HEAD', '--']
+                             + VERIFIED_PATHS, capture_output=True, text=True, timeout=30)
+        if out.returncode != 0:
+            return None
+        return out.stdout.strip() == ''
+    except Exception:
+        return None
 
 
 def head_commit():
@@ -584,7 +608,7 @@ def r_inventory(f):
         '| `kani::assume` inside stub bodies (constrain a stub\'s *return*, not an input) | %d |'
         % t['stub_assumes'],
         '| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, '
-        'and is not established at HEAD — §3.4) | %d |' % t['covers'],
+        'and its currency versus HEAD is derived in §3.4, not asserted here) | %d |' % t['covers'],
         '| …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known '
         '*non*-witnesses | **%d** |' % t['disclosed_vacuities'],
         '| `#[kani::stub]` applications / harnesses using them | %d / %d |'
@@ -823,6 +847,47 @@ def r_evidence(f):
     for e in ev:
         L.append('| `%s` | `%s` | %d | %d | %d |' % (e['file'], e['commit'], e['successful'],
                                                      e['failed'], e['covers_unsatisfied']))
+    L += ['',
+          'Every column here is read out of the committed log itself, so this table is reproducible '
+          'from the tree alone and is gate-enforced. Whether a given run still speaks for HEAD needs '
+          '`git`, which a tarball or shallow clone may not have — that question is answered '
+          'separately just below, and is advisory for exactly that reason.']
+    return L
+
+
+def r_evidence_coverage(f):
+    """ADVISORY region: does a committed run still speak for HEAD's verified source?
+
+    Derived with `git`, therefore NOT byte-compared. This distinction is the same one `pins` versus
+    `pins-observed` draws, and for the same reason: a reader with no git history legitimately cannot
+    reproduce it, and making `./check.sh` depend on that is how the gate previously became
+    unrunnable by third parties. Keeping it OUT of the enforced set is deliberate.
+
+    It exists because the alternative -- hand-written prose saying "the run at X still covers HEAD"
+    -- silently rots the moment a source commit lands, and rots in the direction of over-claiming.
+    """
+    ev = f['evidence']
+    if not ev:
+        return ['No committed run log, so nothing to date against HEAD.']
+    live = [e for e in ev if e['covers_head_source'] and not e['failed']]
+    stale = [e for e in ev if e['covers_head_source'] is False]
+    unknown = [e for e in ev if e['covers_head_source'] is None]
+    L = []
+    if live:
+        L.append('**`%s` still speaks for HEAD.** No path it verified has changed since its commit: '
+                 '`git diff %s..HEAD -- %s` is empty. Run that command rather than trusting this '
+                 'sentence.' % (live[0]['file'], live[0]['commit'], ' '.join(VERIFIED_PATHS)))
+    else:
+        L.append('**No committed run currently speaks for HEAD\'s verified source.** Re-run '
+                 '`./check.sh` and commit the log, or treat every full-suite verdict in this '
+                 'document as a transcription again.')
+    for e in stale:
+        L.append('- `%s` (at `%s`) is superseded: verified source changed after it. It is kept as a '
+                 'dated record, not as a current claim.' % (e['file'], e['commit']))
+    for e in unknown:
+        L.append('- `%s` (at `%s`): `git` could not answer, so no currency claim is made either '
+                 'way. Absence of an answer is reported rather than defaulted to yes.'
+                 % (e['file'], e['commit']))
     return L
 
 
@@ -840,6 +905,7 @@ REGIONS = {
     'properties': r_properties,
     'l4': r_l4,
     'evidence': r_evidence,
+    'evidence-coverage': r_evidence_coverage,
 }
 
 # Regions `--write` regenerates but `--check` does NOT byte-compare. The bar for membership is
@@ -847,7 +913,10 @@ REGIONS = {
 # generator*, so it cannot be reproduced by a reader checking out the same source. Everything
 # derived from the tree — every count, and every declared pin — stays enforced. Marker presence
 # is still enforced for these, so an advisory region cannot silently vanish from the manifest.
-ADVISORY = {'pins-observed'}
+# `evidence-coverage` joins on the SAME test as `pins-observed`: its content is a probe of the
+# environment (it needs git history), not a fact readable from the tree. Everything derived from the
+# tree -- including every count in the `evidence` table -- stays enforced.
+ADVISORY = {'pins-observed', 'evidence-coverage'}
 
 
 # --------------------------------------------------------------------------------------
