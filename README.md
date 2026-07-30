@@ -114,13 +114,16 @@ Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lid
 
 ```sh
 ./check.sh          # full gate (Kani + Lean run here; minutes; needs ~24 GB RAM — see below)
-./check_fast.sh     # fast subset: doc-link gate + proof-manifest gate + cargo test
+./check_fast.sh     # fast subset: doc-link gate + proof-manifest gate (+ its self-test) + cargo test
 ```
 
 Both start with two stdlib-only hygiene gates: doc-link resolution, and a **proof-manifest gate**
 (`gates/gen_proof_manifest.py --check`) that re-derives every count in `PROOF_MANIFEST.md` from the
 source tree and fails if the document — or a count-claim in this README or in `docs/` — has drifted
-from it. Regenerate with `--write`.
+from it. Regenerate with `--write`. The gate compares facts derived from the *source tree*, so it
+passes on any machine: your rustc version and whether you have Kani or Aeneas installed are recorded
+in the manifest as provenance, never gate-enforced (`gates/test_gen_proof_manifest.py` holds that
+line, and holds the opposite one too — a drifted count or a drifted declared pin still fails).
 
 **`./check.sh` needs a large machine for the full Kani floor.** Two harnesses peak around 20.5 GiB
 and 17.1 GiB, so below roughly 24 GB of available RAM they will not converge and the gate will fail

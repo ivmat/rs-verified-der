@@ -31,7 +31,7 @@ It also guards the count-claims in `README.md`, `der-verified/README.md`, `docs/
 **this file's own prose** — a stale count in a secondary document is the same overclaim in a quieter
 place, and the manifest's own repeated counts are the most-read of all.
 
-Three limits on that guarantee, because the sentence above is the reason you would trust any number
+Four limits on that guarantee, because the sentence above is the reason you would trust any number
 here:
 
 - **Numbers in hand-written prose are not derived.** Measured figures (peak RAM, wall-clock, the
@@ -45,6 +45,14 @@ here:
   did not get weaker.
 - **The script runs no proofs.** It cannot tell you the proofs pass; §3.4 states separately what run
   evidence exists.
+- **One region is advisory, and labels itself as such.** The `pins-observed` region in §2 records
+  what the *machine that last ran `--write`* had installed. `--write` regenerates it; `--check`
+  deliberately does **not** byte-compare it, because your rustc version — and whether you have Kani
+  or Aeneas installed at all — is a property of your run, not of this crate. Comparing it meant
+  `./check.sh` failed for every third party whose toolchain differed from ours, before a single
+  proof ran. The *declared* pins in the §2 table are read from in-tree files and stay fully
+  enforced. `gates/test_gen_proof_manifest.py` gates both halves of that split: an unfamiliar
+  toolchain must not fail `--check`, and a drifted count or declared pin must still fail it.
 
 Everything outside a generated region is hand-written judgement — the claims, the scope fence, the
 deviations. Read the two differently.
@@ -96,10 +104,12 @@ correctness (§8.3) all remain.
 | Charon | `40ee060a8df43f4e7e0842d3f05387b0a4426aaf` | `lean/check_lean.sh` fails closed on drift |
 | extract shims | `nightly-2026-06-01` (Charon's nightly; `lean/extract*/rust-toolchain.toml`) — drives extraction only, never the shipped build | pinned in-tree |
 
-Observed on the machine that last regenerated this section: rustc `rustc 1.97.0 (2d8144b78 2026-07-07)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
-
 Because the rustc pin is a floating channel, **the rustc version is a property of the run, not of the crate**: a reader reproducing these results on a different stable will be checking the same source with a different compiler. The Kani harnesses are insulated from this (Kani ships its own toolchain); `cargo test` is not.
 <!-- END GENERATED:pins -->
+
+<!-- BEGIN GENERATED:pins-observed (gates/gen_proof_manifest.py) -->
+Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.97.0 (2d8144b78 2026-07-07)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
+<!-- END GENERATED:pins-observed -->
 
 Toolchain identity is part of every claim in this document. Two honest qualifications:
 

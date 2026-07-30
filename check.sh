@@ -5,6 +5,10 @@ set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo "== hygiene gate (doc links; pure stdlib) =="
 python3 "$ROOT/gates/check_links.py"
+echo "== proof-manifest gate: self-test (the gate's own gate; pure stdlib) =="
+# Runs BEFORE the gate it tests. Both directions are covered: the gate must not fail an honest
+# third party whose toolchain differs from ours, and must still fail on a drifted count or pin.
+python3 "$ROOT/gates/test_gen_proof_manifest.py"
 echo "== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) =="
 # The manifest is the crate's honest proof envelope, and its numbers are DERIVED, never typed:
 # this fails closed if a harness, bound, stub, cover or `pub fn` changed without the manifest

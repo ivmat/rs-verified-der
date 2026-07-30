@@ -34,6 +34,7 @@ edit a count.
 python3 gates/gen_proof_manifest.py --json     # all derived facts, per module and crate-wide
 python3 gates/gen_proof_manifest.py --write     # regenerate PROOF_MANIFEST.md's generated regions
 python3 gates/gen_proof_manifest.py --check     # the gate (runs in check.sh + check_fast.sh)
+python3 gates/test_gen_proof_manifest.py        # the gate's own tests (same two scripts)
 ```
 
 It derives, from source: harness counts (total and per module), `pub fn` entry points and which of
@@ -51,9 +52,19 @@ that are invisible until someone checks:
   mentions), and the attribute may sit either above or below `#[kani::proof]`.
 - `grep 'kani::cover'` counts prose mentions too (2 of them).
 
-The script strips comment lines before counting, and every one of these cases is covered by its
-negative tests. If you need a number it does not derive, **add it to the script** rather than
-grepping by hand — that is the point.
+The script strips comment lines before counting, and that stripping is pinned by a committed test
+(`gates/test_gen_proof_manifest.py`, run by `check.sh`/`check_fast.sh`). If you need a number it does
+not derive, **add it to the script** rather than grepping by hand — that is the point. And when you
+change the script, add the case to its test file: an ad-hoc check you ran once is not a gate.
+
+**One region of the manifest is deliberately NOT gate-enforced.** `pins-observed` records the rustc,
+Kani, Aeneas and Charon that the *regenerating machine* had installed. `--write` rewrites it;
+`--check` skips it, because a reader's toolchain is a property of their run, not of the crate —
+byte-comparing it made `./check.sh` fail for every third party before a proof ran. Consequences for
+a docs-sync pass: (a) a `--write` diff that touches **only** that line is environmental noise, not a
+content change — do not build a claim on it; (b) never widen `ADVISORY` in the script to quiet a
+failing gate, since everything else in it is derived from the tree and must stay enforced (there is
+a test asserting the set stays exactly `{'pins-observed'}`).
 
 Never accept a stale doc's own number as ground truth for a new doc's number. If a count can't be
 derived cheaply (exact wall-clock/RAM figures need a real proof run), leave the old measurement in

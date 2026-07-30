@@ -34,6 +34,7 @@ Pure stdlib, no network, no cargo invocation (so it is safe to run inside any ga
 """
 
 import argparse
+import difflib
 import json
 import os
 import re
@@ -49,6 +50,10 @@ EVIDENCE = os.path.join(ROOT, 'evidence')
 
 BEGIN = '<!-- BEGIN GENERATED:%s (gates/gen_proof_manifest.py) -->'
 END = '<!-- END GENERATED:%s -->'
+
+# Per-region cap on the diff `--check` prints. A truncated diff is announced, never silent:
+# "the gate showed me everything" is exactly the wrong thing for a reader to assume here.
+DIFF_LINES = 20
 
 # A DISCLOSED non-vacuity gap: a harness whose `kani::cover` is known-UNSATISFIABLE at its
 # bound, left in place (rather than deleted) because a cover reporting "0 of 1 satisfied" IS
@@ -68,6 +73,12 @@ COMMENT_RE = re.compile(r'^\s*(///|//!|//|\*|/\*)')
 # --------------------------------------------------------------------------------------
 # source-derived facts
 # --------------------------------------------------------------------------------------
+
+def read_text(path, errors='strict'):
+    """Read a whole file and close it. (A leaked handle is a ResourceWarning under `unittest`.)"""
+    with open(path, encoding='utf-8', errors=errors) as fh:
+        return fh.read()
+
 
 def strip_comments(lines):
     """Drop comment lines. Prose that *mentions* `kani::cover` must never be counted as one."""
@@ -256,7 +267,7 @@ def parse_harnesses(proofs, consts):
 
 
 def module_facts(path):
-    lines = open(path, encoding='utf-8').read().split('\n')
+    lines = read_text(path).split('\n')
     _top, proofs, tests, bounds = split_regions(lines)
     entry_points, trait_methods = entry_points_of(path, lines, bounds)
     # A `pub fn` declared AFTER the proof/test modules is still a public entry point; scanning only
@@ -343,7 +354,7 @@ def lean_facts():
     for f in sorted(os.listdir(LEAN)):
         if not f.endswith('Proofs.lean'):
             continue
-        text = open(os.path.join(LEAN, f), encoding='utf-8').read()
+        text = read_text(os.path.join(LEAN, f))
         lines = text.split('\n')
         thms = [m.group(2) for l in lines
                 for m in [re.match(r'(theorem|lemma) ([A-Za-z0-9_.\']+)', l)] if m]
@@ -370,7 +381,7 @@ LID_TO_MODULE = {'length': 'length', 'bigint': 'big_integer', 'oid': 'oid',
 def toolchain_facts():
     def read(p):
         try:
-            return open(os.path.join(ROOT, p), encoding='utf-8').read()
+            return read_text(os.path.join(ROOT, p))
         except OSError:
             return ''
 
@@ -426,7 +437,7 @@ def evidence_facts():
             p = os.path.join(EVIDENCE, f)
             if not os.path.isfile(p):
                 continue
-            text = open(p, encoding='utf-8', errors='replace').read()
+            text = read_text(p, errors='replace')
             out.append({
                 'file': 'evidence/' + f,
                 'commit': (re.search(r'^#\s*commit:\s*([0-9a-f]{7,40})', text, re.M) or
@@ -452,7 +463,7 @@ def collect():
     for f in sorted(os.listdir(SRC)):
         if f.endswith('.rs') and f != 'lib.rs':
             mods.append(module_facts(os.path.join(SRC, f)))
-    lib = open(os.path.join(SRC, 'lib.rs'), encoding='utf-8').read()
+    lib = read_text(os.path.join(SRC, 'lib.rs'))
     lib_lines = lib.split('\n')
 
     lids = lean_facts()
@@ -504,7 +515,7 @@ def collect():
             'unsafe_blocks': sum(len(re.findall(r'\bunsafe\s*\{', l))
                                  for f in sorted(os.listdir(SRC)) if f.endswith('.rs')
                                  for l in strip_comments(
-                                     open(os.path.join(SRC, f), encoding='utf-8').read().split('\n'))),
+                                     read_text(os.path.join(SRC, f)).split('\n'))),
         },
     }
 
@@ -514,7 +525,9 @@ def collect():
 # --------------------------------------------------------------------------------------
 
 def r_pins(f):
-    d, o = f['toolchain']['declared'], f['toolchain']['observed']
+    # Declared pins only — every value here is read from an in-tree file, so it is a property of
+    # the crate and stays gate-enforced. What the local machine *observes* moved to r_pins_observed.
+    d = f['toolchain']['declared']
     L = ['| Tool | Pin (declared, and where the pin lives) | Enforced by |',
          '|---|---|---|',
          '| rustc | `%s` channel — `rust-toolchain.toml` pins the *channel*, not a version: it '
@@ -529,15 +542,28 @@ def r_pins(f):
          '| extract shims | `%s` (Charon\'s nightly; `lean/extract*/rust-toolchain.toml`) — drives '
          'extraction only, never the shipped build | pinned in-tree |' % d['extract_nightly'],
          '',
-         'Observed on the machine that last regenerated this section: rustc `%s`, Kani `%s`, '
-         'Aeneas `%s`, Charon `%s`.'
-         % (o['rustc'], o['kani'], o['aeneas_rev'][:40], o['charon_rev'][:40]),
-         '',
          'Because the rustc pin is a floating channel, **the rustc version is a property of the '
          'run, not of the crate**: a reader reproducing these results on a different stable will '
          'be checking the same source with a different compiler. The Kani harnesses are insulated '
          'from this (Kani ships its own toolchain); `cargo test` is not.']
     return L
+
+
+def r_pins_observed(f):
+    """ADVISORY region (see ADVISORY): what the *regenerating machine* had installed.
+
+    Every value here is a probe of the ambient environment, not a property of the crate: a
+    reader with a different stable rustc, or with no Kani/Aeneas checkout at all, legitimately
+    observes different values while checking out byte-identical source. Byte-comparing this in
+    `--check` made `./check.sh` fail for any third party before a single proof ran, and pointed
+    them at `--write`, which would have rewritten the recorded pins and produced a spurious diff.
+    The *declared* pins above stay gate-enforced — those are read from in-tree files.
+    """
+    o = f['toolchain']['observed']
+    return ['Observed on the machine that last regenerated this section — a provenance note, '
+            '**not** a gate-enforced pin (your values will differ, and that is fine): rustc `%s`, '
+            'Kani `%s`, Aeneas `%s`, Charon `%s`.'
+            % (o['rustc'], o['kani'], o['aeneas_rev'][:40], o['charon_rev'][:40])]
 
 
 def r_inventory(f):
@@ -802,6 +828,7 @@ def r_evidence(f):
 
 REGIONS = {
     'pins': r_pins,
+    'pins-observed': r_pins_observed,
     'inventory': r_inventory,
     'per-module': r_per_module,
     'unharnessed-entry-points': r_unharnessed,
@@ -814,6 +841,13 @@ REGIONS = {
     'l4': r_l4,
     'evidence': r_evidence,
 }
+
+# Regions `--write` regenerates but `--check` does NOT byte-compare. The bar for membership is
+# narrow and should stay narrow: the region's content is a fact about the *machine that ran the
+# generator*, so it cannot be reproduced by a reader checking out the same source. Everything
+# derived from the tree — every count, and every declared pin — stays enforced. Marker presence
+# is still enforced for these, so an advisory region cannot silently vanish from the manifest.
+ADVISORY = {'pins-observed'}
 
 
 # --------------------------------------------------------------------------------------
@@ -863,7 +897,7 @@ def guard_violations(f):
         p = os.path.join(ROOT, doc)
         if not os.path.exists(p):
             continue
-        for lineno, line in enumerate(open(p, encoding='utf-8').read().split('\n'), 1):
+        for lineno, line in enumerate(read_text(p).split('\n'), 1):
             for key, pat in GUARDS:
                 for m in re.finditer(pat, line):
                     raw = m.group(1)
@@ -882,17 +916,50 @@ def render(f, name):
     return '\n'.join(REGIONS[name](f))
 
 
+def split_region(text, name):
+    """(prefix, committed body incl. its surrounding newlines, suffix), or None if unmarked."""
+    b, e = BEGIN % name, END % name
+    if b not in text or e not in text:
+        return None
+    pre, rest = text.split(b, 1)
+    body, post = rest.split(e, 1)
+    return pre, body, post
+
+
 def rewrite(text, f):
     missing = []
     for name in REGIONS:
-        b, e = BEGIN % name, END % name
-        if b not in text or e not in text:
+        parts = split_region(text, name)
+        if parts is None:
             missing.append(name)
             continue
-        pre, rest = text.split(b, 1)
-        _, post = rest.split(e, 1)
-        text = pre + b + '\n' + render(f, name) + '\n' + e + post
+        pre, _, post = parts
+        text = pre + (BEGIN % name) + '\n' + render(f, name) + '\n' + (END % name) + post
     return text, missing
+
+
+def region_diffs(text, f):
+    """Enforced regions whose committed body disagrees with what the source now generates.
+
+    ADVISORY regions are skipped: they record the regenerating machine's environment, which a
+    reader cannot reproduce and is not being asked to. Skipping them here (rather than comparing
+    the whole file) is what keeps `./check.sh` runnable by a stranger with a different rustc.
+    """
+    out = []
+    for name in REGIONS:
+        if name in ADVISORY:
+            continue
+        parts = split_region(text, name)
+        if parts is None:
+            continue  # reported as a missing marker instead
+        committed, generated = parts[1], '\n' + render(f, name) + '\n'
+        if committed != generated:
+            # Split, never strip: the newlines bracketing a region body are part of the enforced
+            # format, so stripping them would report a difference and then print an EMPTY diff
+            # whenever that difference is only in those newlines — a gate that fails without
+            # saying why is worse than the blanket message this replaced.
+            out.append((name, committed.split('\n'), generated.split('\n')))
+    return out
 
 
 def main():
@@ -908,7 +975,7 @@ def main():
         print(json.dumps(f, indent=2, sort_keys=True))
         return 0
 
-    text = open(MANIFEST, encoding='utf-8').read()
+    text = read_text(MANIFEST)
     new, missing = rewrite(text, f)
 
     if args.write:
@@ -916,7 +983,8 @@ def main():
             print('gen_proof_manifest: WARNING missing region markers: %s' % ', '.join(missing),
                   file=sys.stderr)
         if new != text:
-            open(MANIFEST, 'w', encoding='utf-8').write(new)
+            with open(MANIFEST, 'w', encoding='utf-8') as fh:
+                fh.write(new)
             print('gen_proof_manifest: PROOF_MANIFEST.md regenerated')
         else:
             print('gen_proof_manifest: PROOF_MANIFEST.md already current')
@@ -932,10 +1000,24 @@ def main():
             print('!! proof-manifest gate: FAIL - missing generated region marker(s): %s'
                   % ', '.join(missing), file=sys.stderr)
             fail = True
-        if new != text:
-            print('!! proof-manifest gate: FAIL - PROOF_MANIFEST.md\'s generated regions are stale '
-                  '(source and manifest disagree).', file=sys.stderr)
-            print('   Fix: python3 gates/gen_proof_manifest.py --write', file=sys.stderr)
+        diffs = region_diffs(text, f)
+        if diffs:
+            print('!! proof-manifest gate: FAIL - %d generated region(s) of PROOF_MANIFEST.md '
+                  'disagree with the source tree: %s'
+                  % (len(diffs), ', '.join(n for n, _, _ in diffs)), file=sys.stderr)
+            for name, committed, generated in diffs:
+                d = list(difflib.unified_diff(
+                    committed, generated, lineterm='', n=1,
+                    fromfile='PROOF_MANIFEST.md region %r (committed)' % name,
+                    tofile='generated from source now'))
+                for line in d[:DIFF_LINES]:
+                    print('   %s' % line, file=sys.stderr)
+                if len(d) > DIFF_LINES:
+                    print('   … and %d further diff line(s) in region %r, not shown'
+                          % (len(d) - DIFF_LINES, name), file=sys.stderr)
+            print('   Fix: python3 gates/gen_proof_manifest.py --write — the manifest follows the '
+                  'source, never the reverse. If you did not change the source, do NOT run '
+                  '--write; read the diff above and report it as a gate bug.', file=sys.stderr)
             fail = True
         for doc, lineno, key, got, want, snippet in guard_violations(f):
             print('!! proof-manifest gate: FAIL - %s:%d claims %s=%d, source says %d (%r)'

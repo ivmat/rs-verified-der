@@ -21,7 +21,12 @@ scope boundary referenced below.
 
 - [x] **`PROOF_MANIFEST.md` is generated from source and gated** —
       [`gates/gen_proof_manifest.py`](gates/gen_proof_manifest.py) derives every number in it, and
-      `--check` runs in `check.sh`/`check_fast.sh` (negative-tested five ways). Restructured around
+      `--check` runs in `check.sh`/`check_fast.sh`, and is itself tested by
+      [`gates/test_gen_proof_manifest.py`](gates/test_gen_proof_manifest.py) — 18 committed tests
+      covering both failure directions (over-strict: an unfamiliar toolchain must pass;
+      over-lenient: a drifted count or declared pin must still fail). The five negative checks this
+      line used to cite were run by hand during the pass and never committed; treat only the tests
+      in that file as gated. Restructured around
       the publication checklist's five headings; now states which entry points no harness names, what
       is not proven per module, the non-vacuity audit, and the provenance of the L3 verdict.
 - [ ] **Re-run `./check.sh` at HEAD and commit the raw log under `evidence/`.** The last recorded
