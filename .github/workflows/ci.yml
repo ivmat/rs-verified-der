@@ -36,6 +36,33 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
 
+  # `rust-version` was a declaration masquerading as a checked claim: it said 1.70 for the whole
+  # life of the crate while the committed Cargo.lock (version 4) cannot even be PARSED by Cargo
+  # 1.70. A published MSRV that is wrong is worse than none -- downstream users select on it.
+  # This job builds and tests on exactly the declared version, so the manifest and reality cannot
+  # drift apart again. Read the version out of the manifest rather than hardcoding it here, so
+  # there is one source of truth: hardcoding would just create a second thing to drift.
+  msrv:
+    name: MSRV (builds + tests on the declared rust-version)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read declared MSRV from the manifest
+        id: msrv
+        run: |
+          V=$(grep -m1 '^rust-version' der-verified/Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+          test -n "$V" || { echo "no rust-version in der-verified/Cargo.toml"; exit 1; }
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "declared MSRV: $V"
+      # rust-toolchain.toml would otherwise override the choice, so install and select explicitly.
+      - name: Install the declared toolchain
+        run: |
+          rustup toolchain install "${{ steps.msrv.outputs.version }}" --profile minimal
+      - name: Build on the declared MSRV
+        run: cargo "+${{ steps.msrv.outputs.version }}" build --verbose
+      - name: Test on the declared MSRV
+        run: cargo "+${{ steps.msrv.outputs.version }}" test --verbose
+
   # The Kani proof floor is SHARDED across runners by module. Two reasons:
   #  1. GitHub's standard runner has ~7 GB RAM. A single `cargo kani` run peaks well above
   #     that on the heaviest harnesses (see the heavy tier below), so it OOM-kills the job.

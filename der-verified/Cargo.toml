@@ -2,7 +2,17 @@
 name = "der-verified"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.70"
+# MEASURED, not declared. Was "1.70", which was false in two independent ways and had never
+# been checked by anything: the committed `Cargo.lock` is version 4 (Cargo 1.70 refuses to parse
+# it outright), and the `[lints]` table below is an unused manifest key before 1.74. Measured
+# 2026-07-31 across installed toolchains:
+#   1.70  -- FAILS: "lock file version 4 was found, but this version of Cargo does not understand"
+#   1.78  -- builds, but `lints.rust.unexpected_cfgs.check-cfg` is an unused manifest key, so the
+#            `cfg(kani)` registration is silently ignored and ordinary builds warn
+#   1.80  -- clean: no warnings, 309 tests + 1 doc-test pass
+# 1.80 is therefore the lowest version where the manifest is fully honoured. The CI `msrv` job
+# gates this value, so it can no longer drift back into being an unchecked declaration.
+rust-version = "1.80"
 authors = ["Ivo Matijašević"]
 readme = "README.md"
 description = "Formally verified DER (X.690) encoding/decoding — encoding layer only."
