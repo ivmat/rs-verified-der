@@ -1,0 +1,42 @@
+# Tractability tiers for der-verified's Kani proof floor.
+#
+# SINGLE SOURCE OF TRUTH. `check_tractable.sh` builds its --harness filters from this file, and
+# `gates/check_tier_parity.py` gates that (a) CI's shard filters cover exactly the LIGHT set and
+# (b) LIGHT + HEAVY together cover every harnessed module in the crate -- so a newly added module
+# cannot land in neither tier and go silently unverified.
+#
+# LIGHT  = peak CBMC memory fits a ~7 GB runner. Run by GitHub CI (sharded) and by
+#          ./check_tractable.sh on any ordinary machine.
+# HEAVY  = peak exceeds 7 GB (up to ~20 GB; x509_name's validate_rdn lemma ~17 GB). Verified
+#          locally by ./check.sh on a >=24 GB box. NOT run by CI -- see the commented `kani-heavy`
+#          job in .github/workflows/ci.yml.
+#
+# Format: one `<tier> <module>` per line. Tier is LIGHT or HEAVY.
+
+LIGHT restricted_string
+LIGHT generalized_time
+LIGHT utc_time
+LIGHT big_integer
+LIGHT integer
+LIGHT length
+LIGHT bit_string
+LIGHT tag
+LIGHT octet_string
+LIGHT tlv
+LIGHT oid
+LIGHT enumerated
+LIGHT boolean
+LIGHT null
+LIGHT context_tag
+LIGHT x509_algorithm_identifier
+LIGHT x509_spki
+LIGHT x509_validity
+LIGHT profile
+LIGHT utf8_string
+
+HEAVY set_of
+HEAVY sequence
+HEAVY x509_name
+HEAVY x509_tbs_certificate
+HEAVY x509_certificate
+HEAVY x509_extension

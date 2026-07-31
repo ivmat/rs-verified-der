@@ -29,6 +29,13 @@ jobs:
         run: |
           python3 gates/test_gen_proof_manifest.py
           python3 gates/gen_proof_manifest.py --check
+      # The tractability split is data (gates/tiers.txt) and CI's own shard filters are one of
+      # the two things it keeps honest, so CI must run it: a shard filter edited here without the
+      # tier file following is precisely the drift this catches.
+      - name: Tier-parity gate (+ its self-test)
+        run: |
+          python3 gates/check_tier_parity.py --selftest
+          python3 gates/check_tier_parity.py
       - name: Build
         run: cargo build --verbose
       - name: Test

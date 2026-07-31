@@ -17,6 +17,10 @@ echo "== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) =="
 python3 "$ROOT/gates/gen_proof_manifest.py" --check
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
+echo "== tier-parity gate (+ its self-test): the LIGHT/HEAVY split is data, so gate it =="
+python3 "$ROOT/gates/check_tier_parity.py" --selftest
+python3 "$ROOT/gates/check_tier_parity.py"
+
 echo "== cargo kani :: der-verified (L3 proof floor) =="
 # -Z stubbing: three never-panics harnesses are MODULAR proofs — x509_name (stubs validate_rdn),
 # x509_tbs_certificate (stubs validate_name, validate_extensions), and x509_certificate (stubs
