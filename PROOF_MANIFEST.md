@@ -221,6 +221,7 @@ module (§7) they are the *only* evidence that exists.
 | Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an unsatisfied cover |
 |---|---|---:|---:|---:|
 | `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
+| `evidence/check-461f751.log` | `461f751` | 171 | 0 | 3 |
 | `evidence/check-b355f76.log` | `b355f76` | 164 | 0 | 3 |
 
 Every column here is read out of the committed log itself, so this table is reproducible from the tree alone and is gate-enforced. Whether a given run still speaks for HEAD needs `git`, which a tarball or shallow clone may not have — that question is answered separately just below, and is advisory for exactly that reason.
