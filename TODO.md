@@ -148,7 +148,15 @@ scope boundary referenced below.
 - [ ] Confirm CI is green on the public repo and that docs.rs builds cleanly.
 - [ ] Final public-API review (0.1.0 is the API you're committing to; breaking changes still allowed
       pre-1.0 but keep it coherent).
-- [ ] `cargo publish` the 0.1.0.
+- [x] `cargo publish` the 0.1.0. **DONE — measured 2026-08-02, not inferred.** This box's egress
+      blocks the crates.io JSON API (`curl .../api/v1/crates/der-verified` → HTTP **000**), but the
+      **sparse index** is reachable, and `cargo search der-verified` returns
+      `der-verified = "0.1.0"`. Controlled three ways before believing it: `cargo search serde`
+      returns a live current version (positive), a nonsense crate name returns **nothing**
+      (negative, so it discriminates), and `--offline` **errors** with *"attempting to make an HTTP
+      request"* (so it is a live query, not a cache). This item was the outlier — the `## Publishing`
+      section below and line 133 both already recorded the 2026-07-13 publication, so `TODO.md`
+      contradicted itself rather than contradicting the README.
 
 ## Publishing
 
