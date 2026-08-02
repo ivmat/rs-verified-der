@@ -51,12 +51,21 @@ scope boundary referenced below.
       `x509_name::validate_rdn_never_panics` is now genuinely the crate's only harness whose
       non-vacuity argument points elsewhere (`PROOF_MANIFEST.md` §8.2). Three overclaims in the first
       version's prose were retracted in the same pass — see the manifest.
-- [ ] **Make the evidence reproducible on a laptop.** `./check.sh` needs ~24 GB RAM for the full Kani
-      floor, which is a real adoption barrier: the re-runnable evidence *is* the product, and a
-      prospective user who cannot run it gets a much weaker offer. Consider a documented
-      `check_tractable.sh` (or a `--tier` flag) running the CI-sized share — the same 143 harnesses
-      CI already shards — so a stranger can reproduce most of the floor on ordinary hardware, with the
-      two heavy harnesses clearly marked as a large-box milestone.
+- [x] **Make the evidence reproducible on a laptop.** `check_tractable.sh` closes this, and the claim
+      is now **measured rather than asserted** (2026-08-02). The test run was deliberately *not* "record
+      the peak on a 30 GB box" — that answers the wrong question. It was run under a cap set to a
+      modest laptop, because what a stranger needs to know is whether it *completes* on their machine:
+      ```
+      systemd-run --user --scope -p MemoryMax=8G -p MemoryHigh=7G -p MemorySwapMax=0 -- sh ./check_tractable.sh
+      Complete - 143 successfully verified harnesses, 0 failures, 143 total.
+      Elapsed (wall clock): 6:15.29     Maximum resident set size: 2,838,608 KB (2.71 GB)     rc=0
+      ```
+      **2.71 GB peak, 6m15s, 143/143** — comfortably inside the 8 GB cap and well under the script's own
+      "~7 GB" estimate, so the header comment is conservative rather than optimistic. The one disclosed
+      unsatisfied cover appeared exactly once, as `PROOF_MANIFEST.md` §8.2 predicts; more would have been
+      a new finding. ⚠ Still the LIGHT tier only — a green run here is the CI-sized share, **not** the
+      full floor, which remains a large-box milestone (`gates/tiers.txt`, gated by
+      `gates/check_tier_parity.py`).
 - [x] **`profile` is now Kani-proven** (six harnesses; still no Lean lid, which is the remaining gap).
       It was the largest single unproven public entry point in the crate; `validate_profile` is now
       named by a harness, so the manifest's unharnessed-entry-point count drops 12 → 11. Each of the
