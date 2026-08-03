@@ -1,0 +1,37 @@
+# gates/map_declared.txt — DECLARED (non-derivable) verification-map tiers.
+#
+# `gates/gen_verification_map.py` renders `README.md`'s GENERATED:map region. Two of its five
+# colours are DERIVED straight from source (green = an Aeneas->Lean lid; blue = every other
+# harnessed module in `gates/tiers.txt`) and can never drift, because they are re-computed on
+# every run. The other three colours are not properties of the source tree at all -- they are
+# a human's read of the project's own prose about what it intends -- so they cannot be derived,
+# and live here instead, one row per node.
+#
+# FORMAT: one row per node, TAB-separated, exactly 5 fields:
+#
+#     <color>\t<id>\t<layer>\t<label>\t<source>
+#
+#   color  — one of: yellow (planned, whether or not started), red (a wall we hit — a known
+#            hard tool/expressiveness blocker), gray (deliberately not planned — a recorded
+#            scope decision). NEVER green or blue: those are gate-derived, not declared.
+#   id     — a mermaid-safe identifier (`^[a-z][a-z0-9_]*$`). MUST NOT collide with a module
+#            name in `gates/tiers.txt` — `gen_verification_map.py`'s parity check fails closed
+#            on that, because a same-named declared node would silently shadow a real one.
+#   layer  — which subgraph of the diagram this node is drawn in: crypto, profile, structural,
+#            codecs, framing (see `gen_verification_map.py`'s LAYERS).
+#   label  — the human-readable text drawn in the node box.
+#   source — REQUIRED. A file (and section/line/heading) a reader can open to check this
+#            judgement themselves. A row with no source is a row nobody can audit, so the
+#            script refuses to load a row missing one — leave a row out entirely rather than
+#            add one you cannot cite.
+#
+# Comment lines (leading `#`) and blank lines are ignored. Column order is fixed; do not reorder.
+
+yellow	name_constraints	profile	Name constraints (RFC 5280 §4.2.1.10)	PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")
+yellow	key_usage	profile	Key usage (RFC 5280 §4.2.1.3)	PROOF_MANIFEST.md:538
+yellow	basic_constraints	profile	Basic constraints (RFC 5280 §4.2.1.9)	PROOF_MANIFEST.md:538
+yellow	validity_against_clock	profile	Validity-against-clock (RFC 5280 §4.1.2.5)	PROOF_MANIFEST.md:538
+yellow	x509_structural_lid	structural	X.509 structural-module Lean lid (L4)	DER-REMAINING-WORK.md:157-165 ("All X.509 structural modules (x509_*) are Kani-only — no L4 lid... still the crate's one open breadth item")
+gray	crypto_verification	crypto	Signature / crypto verification	README.md:47-48 ("Out of scope (not implemented, not proven): signature/crypto verification...")
+gray	path_validation	crypto	Certificate-path / trust validation	README.md:47-48 ("...certificate-path or trust validation...")
+gray	general_set	codecs	General SET (X.690 §10.3)	README.md:49-50 ("general SET (§10.3)"); DECISIONS.md:463 (D13 — "general SET (§10.3) stays out of scope")

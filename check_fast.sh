@@ -13,6 +13,10 @@ echo "== proof-manifest gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_gen_proof_manifest.py"
 echo "== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) =="
 python3 "$ROOT/gates/gen_proof_manifest.py" --check
+echo "== verification-map gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_gen_verification_map.py"
+echo "== verification-map gate (README.md's mermaid map vs source; pure stdlib) =="
+python3 "$ROOT/gates/gen_verification_map.py" --check
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
 echo "== check_fast.sh: PASS (Kani + Lean NOT run here — run check.sh at milestones) =="

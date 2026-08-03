@@ -502,6 +502,21 @@ def head_commit():
         return 'unknown'
 
 
+def l4_module_set():
+    """Modules carrying an Aeneas->Lean lid (L4/L5), derived from `lean/*Proofs.lean` + LID_TO_MODULE.
+
+    Pulled out of `collect()` so `gates/gen_verification_map.py` can import this exact derivation
+    for the verification map's green set, rather than re-deriving (and risking a second, silently
+    diverging, definition of "which modules are L4").
+    """
+    lids = lean_facts()
+    unmapped = [l['codec'] for l in lids if l['codec'] not in LID_TO_MODULE]
+    if unmapped:
+        raise SystemExit('gen_proof_manifest: lid(s) %s have no LID_TO_MODULE entry — add them.'
+                         % ', '.join(unmapped))
+    return {LID_TO_MODULE[l['codec']] for l in lids}
+
+
 def collect():
     mods = []
     for f in sorted(os.listdir(SRC)):
@@ -511,11 +526,7 @@ def collect():
     lib_lines = lib.split('\n')
 
     lids = lean_facts()
-    unmapped = [l['codec'] for l in lids if l['codec'] not in LID_TO_MODULE]
-    if unmapped:
-        raise SystemExit('gen_proof_manifest: lid(s) %s have no LID_TO_MODULE entry — add them.'
-                         % ', '.join(unmapped))
-    l4_modules = {LID_TO_MODULE[l['codec']] for l in lids}
+    l4_modules = l4_module_set()
     for m in mods:
         m['l4'] = m['module'] in l4_modules
 

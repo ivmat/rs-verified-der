@@ -15,6 +15,13 @@ echo "== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) =="
 # following, or if a count-claim in README/docs drifted. Regenerate with
 # `python3 gates/gen_proof_manifest.py --write`.
 python3 "$ROOT/gates/gen_proof_manifest.py" --check
+echo "== verification-map gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_gen_verification_map.py"
+echo "== verification-map gate (README.md's mermaid map vs source; pure stdlib) =="
+# The map's green/blue are DERIVED (the Lean lid set + gates/tiers.txt) and its yellow/red/gray are
+# DECLARED human judgements (gates/map_declared.txt); this fails closed if either drifts from what's
+# committed in README.md. Regenerate with `python3 gates/gen_verification_map.py --write`.
+python3 "$ROOT/gates/gen_verification_map.py" --check
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
 echo "== tier-parity gate (+ its self-test): the LIGHT/HEAVY split is data, so gate it =="
