@@ -1,0 +1,37 @@
+# docs.rs status.json probe - exhibiting the FAILING direction (doc_status:false)
+# run: 2026-08-03, linux dev PC. Egress blocks crates.io + api.github.com; docs.rs is reachable.
+# candidate source: https://docs.rs/releases/failures (HTTP 200, 22879 bytes) - docs.rs's own
+# list of recent FAILED builds, so these are build-failed, NOT nonexistent.
+
+url        https://docs.rs/crate/core-nightly/2015.1.7/status.json
+http_code  200
+body       {"doc_status":false,"version":"2015.1.7"}
+
+url        https://docs.rs/crate/deno/2.9.4/status.json
+http_code  200
+body       {"doc_status":false,"version":"2.9.4"}
+
+url        https://docs.rs/crate/bevy_wgpu/0.5.0/status.json
+http_code  200
+body       {"doc_status":false,"version":"0.5.0"}
+
+url        https://docs.rs/crate/polars-lazy/0.54.4/status.json
+http_code  200
+body       {"doc_status":false,"version":"0.54.4"}
+
+url        https://docs.rs/crate/der-verified/0.1.0/status.json
+http_code  200
+body       {"doc_status":true,"version":"0.1.0"}
+
+url        https://docs.rs/crate/der-verified/0.0.0/status.json
+http_code  200
+body       {"doc_status":true,"version":"0.0.0"}
+
+url        https://docs.rs/crate/der-verified/9.9.9/status.json
+http_code  000
+body       <empty>
+
+url        https://docs.rs/crate/no-such-crate-xyzzy-42/1.0.0/status.json
+http_code  000
+body       <empty>
+

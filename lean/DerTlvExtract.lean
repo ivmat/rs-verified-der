@@ -74,7 +74,7 @@ def Slice.Insts.CoreCmpPartialEqSlice {T : Type} {U : Type} (cmpPartialEqInst :
 axiom core.slice.Slice.first {T : Type} : Slice T → Result (Option T)
 
 /-- [der_tlv_extract::length::LengthError]
-    Source: 'src/../../../der-verified/src/length.rs', lines 13:0-26:1
+    Source: 'src/../../../der-verified/src/length.rs', lines 27:0-40:1
     Visibility: public -/
 @[discriminant isize]
 inductive length.LengthError where
@@ -85,7 +85,7 @@ inductive length.LengthError where
 | TooLarge : length.LengthError
 
 /-- [der_tlv_extract::length::{impl core::fmt::Debug for der_tlv_extract::length::LengthError}::fmt]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:9-12:14
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:9-26:14
     Visibility: public -/
 def length.LengthError.Insts.CoreFmtDebug.fmt
   (self : length.LengthError) (f : core.fmt.Formatter) :
@@ -104,7 +104,7 @@ def length.LengthError.Insts.CoreFmtDebug.fmt
     core.fmt.Formatter.write_str f (toStr "TooLarge")
 
 /-- Trait implementation: [der_tlv_extract::length::{impl core::fmt::Debug for der_tlv_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:9-12:14 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:9-26:14 -/
 @[reducible]
 def length.LengthError.Insts.CoreFmtDebug : core.fmt.Debug length.LengthError
   := {
@@ -112,14 +112,14 @@ def length.LengthError.Insts.CoreFmtDebug : core.fmt.Debug length.LengthError
 }
 
 /-- Trait implementation: [der_tlv_extract::length::{impl core::marker::StructuralPartialEq for der_tlv_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:16-12:25 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:16-26:25 -/
 @[reducible]
 def length.LengthError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq length.LengthError := {
 }
 
 /-- [der_tlv_extract::length::{impl core::cmp::PartialEq<der_tlv_extract::length::LengthError> for der_tlv_extract::length::LengthError}::eq]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:16-12:25
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:16-26:25
     Visibility: public -/
 def length.LengthError.Insts.CoreCmpPartialEqLengthError.eq
   (self : length.LengthError) (other : length.LengthError) : Result Bool := do
@@ -128,7 +128,7 @@ def length.LengthError.Insts.CoreCmpPartialEqLengthError.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_tlv_extract::length::{impl core::cmp::PartialEq<der_tlv_extract::length::LengthError> for der_tlv_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:16-12:25 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:16-26:25 -/
 @[reducible]
 def length.LengthError.Insts.CoreCmpPartialEqLengthError : core.cmp.PartialEq
   length.LengthError length.LengthError := {
@@ -136,14 +136,14 @@ def length.LengthError.Insts.CoreCmpPartialEqLengthError : core.cmp.PartialEq
 }
 
 /-- [der_tlv_extract::length::{impl core::cmp::Eq for der_tlv_extract::length::LengthError}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:27-12:29
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:27-26:29
     Visibility: public -/
 def length.LengthError.Insts.CoreCmpEq.assert_fields_are_eq
   (self : length.LengthError) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tlv_extract::length::{impl core::cmp::Eq for der_tlv_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:27-12:29 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:27-26:29 -/
 @[reducible]
 def length.LengthError.Insts.CoreCmpEq : core.cmp.Eq length.LengthError := {
   partialEqInst := length.LengthError.Insts.CoreCmpPartialEqLengthError
@@ -152,14 +152,14 @@ def length.LengthError.Insts.CoreCmpEq : core.cmp.Eq length.LengthError := {
 }
 
 /-- [der_tlv_extract::length::{impl core::clone::Clone for der_tlv_extract::length::LengthError}::clone]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:31-12:36
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:31-26:36
     Visibility: public -/
 def length.LengthError.Insts.CoreCloneClone.clone
   (self : length.LengthError) : Result length.LengthError := do
   ok self
 
 /-- Trait implementation: [der_tlv_extract::length::{impl core::clone::Clone for der_tlv_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:31-12:36 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:31-26:36 -/
 @[reducible]
 def length.LengthError.Insts.CoreCloneClone : core.clone.Clone
   length.LengthError := {
@@ -167,7 +167,7 @@ def length.LengthError.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [der_tlv_extract::length::{impl core::marker::Copy for der_tlv_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:38-12:42 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:38-26:42 -/
 @[reducible]
 def length.LengthError.Insts.CoreMarkerCopy : core.marker.Copy
   length.LengthError := {
@@ -175,7 +175,7 @@ def length.LengthError.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- [der_tlv_extract::length::encode_length]: loop body 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 43:4-45:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 57:4-59:5
     Visibility: public -/
 @[rust_loop_body]
 def length.encode_length_loop0.body
@@ -192,7 +192,7 @@ def length.encode_length_loop0.body
   else ok (done lead)
 
 /-- [der_tlv_extract::length::encode_length]: loop 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 43:4-45:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 57:4-59:5
     Visibility: public -/
 @[rust_loop]
 def length.encode_length_loop0
@@ -202,7 +202,7 @@ def length.encode_length_loop0
     lead
 
 /-- [der_tlv_extract::length::encode_length]: loop body 1:
-    Source: 'src/../../../der-verified/src/length.rs', lines 49:4-52:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 63:4-66:5
     Visibility: public -/
 @[rust_loop_body]
 def length.encode_length_loop1.body
@@ -222,7 +222,7 @@ def length.encode_length_loop1.body
   else ok (done out)
 
 /-- [der_tlv_extract::length::encode_length]: loop 1:
-    Source: 'src/../../../der-verified/src/length.rs', lines 49:4-52:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 63:4-66:5
     Visibility: public -/
 @[rust_loop]
 def length.encode_length_loop1
@@ -235,7 +235,7 @@ def length.encode_length_loop1
     (out, i)
 
 /-- [der_tlv_extract::length::encode_length]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 33:0-54:1
+    Source: 'src/../../../der-verified/src/length.rs', lines 47:0-68:1
     Visibility: public -/
 def length.encode_length
   (len : Std.U32) : Result ((Array Std.U8 5#usize) × Std.Usize) := do
@@ -257,7 +257,7 @@ def length.encode_length
     ok (out1, i2)
 
 /-- [der_tlv_extract::length::decode_length]: loop body 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 87:4-90:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 101:4-104:5
     Visibility: public -/
 @[rust_loop_body]
 def length.decode_length_loop.body
@@ -275,7 +275,7 @@ def length.decode_length_loop.body
   else ok (done val)
 
 /-- [der_tlv_extract::length::decode_length]: loop 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 87:4-90:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 101:4-104:5
     Visibility: public -/
 @[rust_loop]
 def length.decode_length_loop
@@ -287,7 +287,7 @@ def length.decode_length_loop
     (val, i)
 
 /-- [der_tlv_extract::length::decode_length]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 60:0-95:1
+    Source: 'src/../../../der-verified/src/length.rs', lines 74:0-109:1
     Visibility: public -/
 def length.decode_length
   (input : Slice Std.U8) :
@@ -334,7 +334,7 @@ def length.decode_length
                   ok (core.result.Result.Ok (val, i4))
 
 /-- [der_tlv_extract::tag::Class]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 15:0-24:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 27:0-36:1
     Visibility: public -/
 @[discriminant isize]
 inductive tag.Class where
@@ -344,7 +344,7 @@ inductive tag.Class where
 | Private : tag.Class
 
 /-- [der_tlv_extract::tag::{impl core::fmt::Debug for der_tlv_extract::tag::Class}::fmt]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:9-14:14
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:9-26:14
     Visibility: public -/
 def tag.Class.Insts.CoreFmtDebug.fmt
   (self : tag.Class) (f : core.fmt.Formatter) :
@@ -359,21 +359,21 @@ def tag.Class.Insts.CoreFmtDebug.fmt
   | tag.Class.Private => core.fmt.Formatter.write_str f (toStr "Private")
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::fmt::Debug for der_tlv_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:9-14:14 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:9-26:14 -/
 @[reducible]
 def tag.Class.Insts.CoreFmtDebug : core.fmt.Debug tag.Class := {
   fmt := tag.Class.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::marker::StructuralPartialEq for der_tlv_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:16-14:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:16-26:25 -/
 @[reducible]
 def tag.Class.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tag.Class := {
 }
 
 /-- [der_tlv_extract::tag::{impl core::cmp::PartialEq<der_tlv_extract::tag::Class> for der_tlv_extract::tag::Class}::eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:16-14:25
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:16-26:25
     Visibility: public -/
 def tag.Class.Insts.CoreCmpPartialEqClass.eq
   (self : tag.Class) (other : tag.Class) : Result Bool := do
@@ -382,7 +382,7 @@ def tag.Class.Insts.CoreCmpPartialEqClass.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::cmp::PartialEq<der_tlv_extract::tag::Class> for der_tlv_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:16-14:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:16-26:25 -/
 @[reducible]
 def tag.Class.Insts.CoreCmpPartialEqClass : core.cmp.PartialEq tag.Class
   tag.Class := {
@@ -390,14 +390,14 @@ def tag.Class.Insts.CoreCmpPartialEqClass : core.cmp.PartialEq tag.Class
 }
 
 /-- [der_tlv_extract::tag::{impl core::cmp::Eq for der_tlv_extract::tag::Class}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:27-14:29
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:27-26:29
     Visibility: public -/
 def tag.Class.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tag.Class) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::cmp::Eq for der_tlv_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:27-14:29 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:27-26:29 -/
 @[reducible]
 def tag.Class.Insts.CoreCmpEq : core.cmp.Eq tag.Class := {
   partialEqInst := tag.Class.Insts.CoreCmpPartialEqClass
@@ -405,28 +405,28 @@ def tag.Class.Insts.CoreCmpEq : core.cmp.Eq tag.Class := {
 }
 
 /-- [der_tlv_extract::tag::{impl core::clone::Clone for der_tlv_extract::tag::Class}::clone]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:31-14:36
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:31-26:36
     Visibility: public -/
 def tag.Class.Insts.CoreCloneClone.clone
   (self : tag.Class) : Result tag.Class := do
   ok self
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::clone::Clone for der_tlv_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:31-14:36 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:31-26:36 -/
 @[reducible]
 def tag.Class.Insts.CoreCloneClone : core.clone.Clone tag.Class := {
   clone := tag.Class.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::marker::Copy for der_tlv_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:38-14:42 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:38-26:42 -/
 @[reducible]
 def tag.Class.Insts.CoreMarkerCopy : core.marker.Copy tag.Class := {
   cloneInst := tag.Class.Insts.CoreCloneClone
 }
 
 /-- [der_tlv_extract::tag::Tag]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 28:0-35:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 40:0-47:1
     Visibility: public -/
 structure tag.Tag where
   «class» : tag.Class
@@ -434,7 +434,7 @@ structure tag.Tag where
   number : Std.U32
 
 /-- [der_tlv_extract::tag::{impl core::fmt::Debug for der_tlv_extract::tag::Tag}::fmt]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:9-27:14
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:9-39:14
     Visibility: public -/
 def tag.Tag.Insts.CoreFmtDebug.fmt
   (self : tag.Tag) (f : core.fmt.Formatter) :
@@ -447,21 +447,21 @@ def tag.Tag.Insts.CoreFmtDebug.fmt
     dyn (toStr "constructed") dyn1 (toStr "number") dyn2
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::fmt::Debug for der_tlv_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:9-27:14 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:9-39:14 -/
 @[reducible]
 def tag.Tag.Insts.CoreFmtDebug : core.fmt.Debug tag.Tag := {
   fmt := tag.Tag.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::marker::StructuralPartialEq for der_tlv_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:16-27:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:16-39:25 -/
 @[reducible]
 def tag.Tag.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tag.Tag := {
 }
 
 /-- [der_tlv_extract::tag::{impl core::cmp::PartialEq<der_tlv_extract::tag::Tag> for der_tlv_extract::tag::Tag}::eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:16-27:25
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:16-39:25
     Visibility: public -/
 def tag.Tag.Insts.CoreCmpPartialEqTag.eq
   (self : tag.Tag) (other : tag.Tag) : Result Bool := do
@@ -474,21 +474,21 @@ def tag.Tag.Insts.CoreCmpPartialEqTag.eq
   else ok false
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::cmp::PartialEq<der_tlv_extract::tag::Tag> for der_tlv_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:16-27:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:16-39:25 -/
 @[reducible]
 def tag.Tag.Insts.CoreCmpPartialEqTag : core.cmp.PartialEq tag.Tag tag.Tag := {
   eq := tag.Tag.Insts.CoreCmpPartialEqTag.eq
 }
 
 /-- [der_tlv_extract::tag::{impl core::cmp::Eq for der_tlv_extract::tag::Tag}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:27-27:29
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:27-39:29
     Visibility: public -/
 def tag.Tag.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tag.Tag) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::cmp::Eq for der_tlv_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:27-27:29 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:27-39:29 -/
 @[reducible]
 def tag.Tag.Insts.CoreCmpEq : core.cmp.Eq tag.Tag := {
   partialEqInst := tag.Tag.Insts.CoreCmpPartialEqTag
@@ -496,27 +496,27 @@ def tag.Tag.Insts.CoreCmpEq : core.cmp.Eq tag.Tag := {
 }
 
 /-- [der_tlv_extract::tag::{impl core::clone::Clone for der_tlv_extract::tag::Tag}::clone]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:31-27:36
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:31-39:36
     Visibility: public -/
 def tag.Tag.Insts.CoreCloneClone.clone (self : tag.Tag) : Result tag.Tag := do
   ok self
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::clone::Clone for der_tlv_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:31-27:36 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:31-39:36 -/
 @[reducible]
 def tag.Tag.Insts.CoreCloneClone : core.clone.Clone tag.Tag := {
   clone := tag.Tag.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::marker::Copy for der_tlv_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:38-27:42 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:38-39:42 -/
 @[reducible]
 def tag.Tag.Insts.CoreMarkerCopy : core.marker.Copy tag.Tag := {
   cloneInst := tag.Tag.Insts.CoreCloneClone
 }
 
 /-- [der_tlv_extract::tag::TagError]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 39:0-48:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 51:0-60:1
     Visibility: public -/
 @[discriminant isize]
 inductive tag.TagError where
@@ -525,7 +525,7 @@ inductive tag.TagError where
 | TooLarge : tag.TagError
 
 /-- [der_tlv_extract::tag::{impl core::fmt::Debug for der_tlv_extract::tag::TagError}::fmt]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:9-38:14
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:9-50:14
     Visibility: public -/
 def tag.TagError.Insts.CoreFmtDebug.fmt
   (self : tag.TagError) (f : core.fmt.Formatter) :
@@ -539,21 +539,21 @@ def tag.TagError.Insts.CoreFmtDebug.fmt
   | tag.TagError.TooLarge => core.fmt.Formatter.write_str f (toStr "TooLarge")
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::fmt::Debug for der_tlv_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:9-38:14 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:9-50:14 -/
 @[reducible]
 def tag.TagError.Insts.CoreFmtDebug : core.fmt.Debug tag.TagError := {
   fmt := tag.TagError.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::marker::StructuralPartialEq for der_tlv_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:16-38:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:16-50:25 -/
 @[reducible]
 def tag.TagError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tag.TagError := {
 }
 
 /-- [der_tlv_extract::tag::{impl core::cmp::PartialEq<der_tlv_extract::tag::TagError> for der_tlv_extract::tag::TagError}::eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:16-38:25
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:16-50:25
     Visibility: public -/
 def tag.TagError.Insts.CoreCmpPartialEqTagError.eq
   (self : tag.TagError) (other : tag.TagError) : Result Bool := do
@@ -562,7 +562,7 @@ def tag.TagError.Insts.CoreCmpPartialEqTagError.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::cmp::PartialEq<der_tlv_extract::tag::TagError> for der_tlv_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:16-38:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:16-50:25 -/
 @[reducible]
 def tag.TagError.Insts.CoreCmpPartialEqTagError : core.cmp.PartialEq
   tag.TagError tag.TagError := {
@@ -570,14 +570,14 @@ def tag.TagError.Insts.CoreCmpPartialEqTagError : core.cmp.PartialEq
 }
 
 /-- [der_tlv_extract::tag::{impl core::cmp::Eq for der_tlv_extract::tag::TagError}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:27-38:29
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:27-50:29
     Visibility: public -/
 def tag.TagError.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tag.TagError) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::cmp::Eq for der_tlv_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:27-38:29 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:27-50:29 -/
 @[reducible]
 def tag.TagError.Insts.CoreCmpEq : core.cmp.Eq tag.TagError := {
   partialEqInst := tag.TagError.Insts.CoreCmpPartialEqTagError
@@ -585,28 +585,28 @@ def tag.TagError.Insts.CoreCmpEq : core.cmp.Eq tag.TagError := {
 }
 
 /-- [der_tlv_extract::tag::{impl core::clone::Clone for der_tlv_extract::tag::TagError}::clone]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:31-38:36
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:31-50:36
     Visibility: public -/
 def tag.TagError.Insts.CoreCloneClone.clone
   (self : tag.TagError) : Result tag.TagError := do
   ok self
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::clone::Clone for der_tlv_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:31-38:36 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:31-50:36 -/
 @[reducible]
 def tag.TagError.Insts.CoreCloneClone : core.clone.Clone tag.TagError := {
   clone := tag.TagError.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tlv_extract::tag::{impl core::marker::Copy for der_tlv_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:38-38:42 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:38-50:42 -/
 @[reducible]
 def tag.TagError.Insts.CoreMarkerCopy : core.marker.Copy tag.TagError := {
   cloneInst := tag.TagError.Insts.CoreCloneClone
 }
 
 /-- [der_tlv_extract::tag::class_bits]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 50:0-57:1 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 62:0-69:1 -/
 def tag.class_bits (c : tag.Class) : Result Std.U8 := do
   match c with
   | tag.Class.Universal => ok 0#u8
@@ -615,12 +615,12 @@ def tag.class_bits (c : tag.Class) : Result Std.U8 := do
   | tag.Class.Private => ok 3#u8
 
 /-- [der_tlv_extract::tag::encode_tag]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 62:0-88:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 74:0-100:1
     Visibility: public -/
 axiom tag.encode_tag : tag.Tag → Result ((Array Std.U8 6#usize) × Std.Usize)
 
 /-- [der_tlv_extract::tag::decode_tag]: loop body 0:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 125:48-142:5
+    Source: 'src/../../../der-verified/src/tag.rs', lines 137:48-154:5
     Visibility: public -/
 @[rust_loop_body]
 def tag.decode_tag_loop.body
@@ -670,7 +670,7 @@ def tag.decode_tag_loop.body
         else ok (cont (i5, number1, count1))
 
 /-- [der_tlv_extract::tag::decode_tag]: loop 0:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 125:48-142:5
+    Source: 'src/../../../der-verified/src/tag.rs', lines 137:48-154:5
     Visibility: public -/
 @[rust_loop]
 def tag.decode_tag_loop
@@ -684,7 +684,7 @@ def tag.decode_tag_loop
     (i, number, count)
 
 /-- [der_tlv_extract::tag::decode_tag]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 94:0-148:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 106:0-160:1
     Visibility: public -/
 def tag.decode_tag
   (input : Slice Std.U8) :
@@ -726,14 +726,14 @@ def tag.decode_tag
           (tag.Tag × Std.Usize) (core.convert.FromSame tag.TagError) residual
 
 /-- [der_tlv_extract::tlv::Tlv]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 15:0-20:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 26:0-31:1
     Visibility: public -/
 structure tlv.Tlv where
   tag : tag.Tag
   value : Slice Std.U8
 
 /-- [der_tlv_extract::tlv::{impl core::fmt::Debug for der_tlv_extract::tlv::Tlv<'a>}::fmt]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:9-14:14
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:9-25:14
     Visibility: public -/
 def tlv.Tlv.Insts.CoreFmtDebug.fmt
   (self : tlv.Tlv) (f : core.fmt.Formatter) :
@@ -747,21 +747,21 @@ def tlv.Tlv.Insts.CoreFmtDebug.fmt
     dyn (toStr "value") dyn1
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::fmt::Debug for der_tlv_extract::tlv::Tlv<'a>}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:9-14:14 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:9-25:14 -/
 @[reducible]
 def tlv.Tlv.Insts.CoreFmtDebug : core.fmt.Debug tlv.Tlv := {
   fmt := tlv.Tlv.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::marker::StructuralPartialEq for der_tlv_extract::tlv::Tlv<'a>}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:16-14:25 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:16-25:25 -/
 @[reducible]
 def tlv.Tlv.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tlv.Tlv := {
 }
 
 /-- [der_tlv_extract::tlv::{impl core::cmp::PartialEq<der_tlv_extract::tlv::Tlv<'a>> for der_tlv_extract::tlv::Tlv<'a>}::eq]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:16-14:25
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:16-25:25
     Visibility: public -/
 def tlv.Tlv.Insts.CoreCmpPartialEqTlv.eq
   (self : tlv.Tlv) (other : tlv.Tlv) : Result Bool := do
@@ -773,21 +773,21 @@ def tlv.Tlv.Insts.CoreCmpPartialEqTlv.eq
   else ok false
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::cmp::PartialEq<der_tlv_extract::tlv::Tlv<'a>> for der_tlv_extract::tlv::Tlv<'a>}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:16-14:25 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:16-25:25 -/
 @[reducible]
 def tlv.Tlv.Insts.CoreCmpPartialEqTlv : core.cmp.PartialEq tlv.Tlv tlv.Tlv := {
   eq := tlv.Tlv.Insts.CoreCmpPartialEqTlv.eq
 }
 
 /-- [der_tlv_extract::tlv::{impl core::cmp::Eq for der_tlv_extract::tlv::Tlv<'a>}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:27-14:29
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:27-25:29
     Visibility: public -/
 def tlv.Tlv.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tlv.Tlv) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::cmp::Eq for der_tlv_extract::tlv::Tlv<'a>}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:27-14:29 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:27-25:29 -/
 @[reducible]
 def tlv.Tlv.Insts.CoreCmpEq : core.cmp.Eq tlv.Tlv := {
   partialEqInst := tlv.Tlv.Insts.CoreCmpPartialEqTlv
@@ -795,27 +795,27 @@ def tlv.Tlv.Insts.CoreCmpEq : core.cmp.Eq tlv.Tlv := {
 }
 
 /-- [der_tlv_extract::tlv::{impl core::clone::Clone for der_tlv_extract::tlv::Tlv<'a>}::clone]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:31-14:36
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:31-25:36
     Visibility: public -/
 def tlv.Tlv.Insts.CoreCloneClone.clone (self : tlv.Tlv) : Result tlv.Tlv := do
   ok self
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::clone::Clone for der_tlv_extract::tlv::Tlv<'a>}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:31-14:36 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:31-25:36 -/
 @[reducible]
 def tlv.Tlv.Insts.CoreCloneClone : core.clone.Clone tlv.Tlv := {
   clone := tlv.Tlv.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::marker::Copy for der_tlv_extract::tlv::Tlv<'a>}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 14:38-14:42 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 25:38-25:42 -/
 @[reducible]
 def tlv.Tlv.Insts.CoreMarkerCopy : core.marker.Copy tlv.Tlv := {
   cloneInst := tlv.Tlv.Insts.CoreCloneClone
 }
 
 /-- [der_tlv_extract::tlv::TlvError]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 24:0-37:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 35:0-48:1
     Visibility: public -/
 @[discriminant isize]
 inductive tlv.TlvError where
@@ -826,7 +826,7 @@ inductive tlv.TlvError where
 | TrailingData : tlv.TlvError
 
 /-- [der_tlv_extract::tlv::{impl core::fmt::Debug for der_tlv_extract::tlv::TlvError}::fmt]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:9-23:14
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:9-34:14
     Visibility: public -/
 def tlv.TlvError.Insts.CoreFmtDebug.fmt
   (self : tlv.TlvError) (f : core.fmt.Formatter) :
@@ -850,21 +850,21 @@ def tlv.TlvError.Insts.CoreFmtDebug.fmt
     core.fmt.Formatter.write_str f (toStr "TrailingData")
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::fmt::Debug for der_tlv_extract::tlv::TlvError}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:9-23:14 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:9-34:14 -/
 @[reducible]
 def tlv.TlvError.Insts.CoreFmtDebug : core.fmt.Debug tlv.TlvError := {
   fmt := tlv.TlvError.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::marker::StructuralPartialEq for der_tlv_extract::tlv::TlvError}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:16-23:25 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:16-34:25 -/
 @[reducible]
 def tlv.TlvError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tlv.TlvError := {
 }
 
 /-- [der_tlv_extract::tlv::{impl core::cmp::PartialEq<der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::TlvError}::eq]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:16-23:25
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:16-34:25
     Visibility: public -/
 def tlv.TlvError.Insts.CoreCmpPartialEqTlvError.eq
   (self : tlv.TlvError) (other : tlv.TlvError) : Result Bool := do
@@ -896,7 +896,7 @@ def tlv.TlvError.Insts.CoreCmpPartialEqTlvError.eq
   else ok false
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::cmp::PartialEq<der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::TlvError}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:16-23:25 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:16-34:25 -/
 @[reducible]
 def tlv.TlvError.Insts.CoreCmpPartialEqTlvError : core.cmp.PartialEq
   tlv.TlvError tlv.TlvError := {
@@ -904,14 +904,14 @@ def tlv.TlvError.Insts.CoreCmpPartialEqTlvError : core.cmp.PartialEq
 }
 
 /-- [der_tlv_extract::tlv::{impl core::cmp::Eq for der_tlv_extract::tlv::TlvError}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:27-23:29
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:27-34:29
     Visibility: public -/
 def tlv.TlvError.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tlv.TlvError) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::cmp::Eq for der_tlv_extract::tlv::TlvError}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:27-23:29 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:27-34:29 -/
 @[reducible]
 def tlv.TlvError.Insts.CoreCmpEq : core.cmp.Eq tlv.TlvError := {
   partialEqInst := tlv.TlvError.Insts.CoreCmpPartialEqTlvError
@@ -919,33 +919,33 @@ def tlv.TlvError.Insts.CoreCmpEq : core.cmp.Eq tlv.TlvError := {
 }
 
 /-- [der_tlv_extract::tlv::{impl core::clone::Clone for der_tlv_extract::tlv::TlvError}::clone]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:31-23:36
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:31-34:36
     Visibility: public -/
 def tlv.TlvError.Insts.CoreCloneClone.clone
   (self : tlv.TlvError) : Result tlv.TlvError := do
   ok self
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::clone::Clone for der_tlv_extract::tlv::TlvError}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:31-23:36 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:31-34:36 -/
 @[reducible]
 def tlv.TlvError.Insts.CoreCloneClone : core.clone.Clone tlv.TlvError := {
   clone := tlv.TlvError.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tlv_extract::tlv::{impl core::marker::Copy for der_tlv_extract::tlv::TlvError}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 23:38-23:42 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 34:38-34:42 -/
 @[reducible]
 def tlv.TlvError.Insts.CoreMarkerCopy : core.marker.Copy tlv.TlvError := {
   cloneInst := tlv.TlvError.Insts.CoreCloneClone
 }
 
 /-- [der_tlv_extract::tlv::decode_tlv::closure#1]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 62:68-62:91 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 73:68-73:91 -/
 @[reducible]
 def tlv.decode_tlv.closure_1 := Unit
 
 /-- [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::length::LengthError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure#1}::call_once]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 62:68-62:91 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 73:68-73:91 -/
 def
   tlv.decode_tlv.closure_1.Insts.CoreOpsFunctionFnOnceTupleLengthErrorTlvError.call_once
   (c : tlv.decode_tlv.closure_1) (tupled_args : length.LengthError) :
@@ -954,7 +954,7 @@ def
   ok (tlv.TlvError.Length tupled_args)
 
 /-- Trait implementation: [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::length::LengthError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure#1}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 62:68-62:91 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 73:68-73:91 -/
 @[reducible]
 def
   tlv.decode_tlv.closure_1.Insts.CoreOpsFunctionFnOnceTupleLengthErrorTlvError
@@ -965,12 +965,12 @@ def
 }
 
 /-- [der_tlv_extract::tlv::decode_tlv::closure]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 60:50-60:70 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 71:50-71:70 -/
 @[reducible]
 def tlv.decode_tlv.closure := Unit
 
 /-- [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::tag::TagError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure}::call_once]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 60:50-60:70 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 71:50-71:70 -/
 def
   tlv.decode_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTagErrorTlvError.call_once
   (c : tlv.decode_tlv.closure) (tupled_args : tag.TagError) :
@@ -979,7 +979,7 @@ def
   ok (tlv.TlvError.Tag tupled_args)
 
 /-- Trait implementation: [der_tlv_extract::tlv::decode_tlv::{impl core::ops::function::FnOnce<(der_tlv_extract::tag::TagError,), der_tlv_extract::tlv::TlvError> for der_tlv_extract::tlv::decode_tlv::closure}]
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 60:50-60:70 -/
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 71:50-71:70 -/
 @[reducible]
 def tlv.decode_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTagErrorTlvError :
   core.ops.function.FnOnce tlv.decode_tlv.closure tag.TagError tlv.TlvError
@@ -989,7 +989,7 @@ def tlv.decode_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTagErrorTlvError :
 }
 
 /-- [der_tlv_extract::tlv::decode_tlv]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 48:0-79:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 59:0-90:1
     Visibility: public -/
 def tlv.decode_tlv
   (input : Slice Std.U8) :
@@ -1045,7 +1045,7 @@ def tlv.decode_tlv
       (tlv.Tlv × Std.Usize) (core.convert.FromSame tlv.TlvError) residual
 
 /-- [der_tlv_extract::tlv::decode_tlv_strict]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 86:0-92:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 97:0-103:1
     Visibility: public -/
 def tlv.decode_tlv_strict
   (input : Slice Std.U8) :
@@ -1065,7 +1065,7 @@ def tlv.decode_tlv_strict
       tlv.Tlv (core.convert.FromSame tlv.TlvError) residual
 
 /-- [der_tlv_extract::tlv::encode_tlv_into]:
-    Source: 'src/../../../der-verified/src/tlv.rs', lines 98:0-112:1
+    Source: 'src/../../../der-verified/src/tlv.rs', lines 109:0-123:1
     Visibility: public -/
 axiom tlv.encode_tlv_into
   :

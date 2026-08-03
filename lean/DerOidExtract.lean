@@ -15,12 +15,12 @@ set_option maxRecDepth 2048
 namespace der_oid_extract
 
 /-- [der_oid_extract::oid::TAG]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 21:0-21:23
+    Source: 'src/../../../der-verified/src/oid.rs', lines 33:0-33:23
     Visibility: public -/
 @[global_simps, irreducible] def oid.TAG : Std.U32 := 6#u32
 
 /-- [der_oid_extract::oid::OidError]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 25:0-32:1
+    Source: 'src/../../../der-verified/src/oid.rs', lines 37:0-44:1
     Visibility: public -/
 @[discriminant isize]
 inductive oid.OidError where
@@ -29,7 +29,7 @@ inductive oid.OidError where
 | Truncated : oid.OidError
 
 /-- [der_oid_extract::oid::{impl core::fmt::Debug for der_oid_extract::oid::OidError}::fmt]:
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:9-24:14
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:9-36:14
     Visibility: public -/
 def oid.OidError.Insts.CoreFmtDebug.fmt
   (self : oid.OidError) (f : core.fmt.Formatter) :
@@ -43,21 +43,21 @@ def oid.OidError.Insts.CoreFmtDebug.fmt
     core.fmt.Formatter.write_str f (toStr "Truncated")
 
 /-- Trait implementation: [der_oid_extract::oid::{impl core::fmt::Debug for der_oid_extract::oid::OidError}]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:9-24:14 -/
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:9-36:14 -/
 @[reducible]
 def oid.OidError.Insts.CoreFmtDebug : core.fmt.Debug oid.OidError := {
   fmt := oid.OidError.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_oid_extract::oid::{impl core::marker::StructuralPartialEq for der_oid_extract::oid::OidError}]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:16-24:25 -/
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:16-36:25 -/
 @[reducible]
 def oid.OidError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq oid.OidError := {
 }
 
 /-- [der_oid_extract::oid::{impl core::cmp::PartialEq<der_oid_extract::oid::OidError> for der_oid_extract::oid::OidError}::eq]:
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:16-24:25
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:16-36:25
     Visibility: public -/
 def oid.OidError.Insts.CoreCmpPartialEqOidError.eq
   (self : oid.OidError) (other : oid.OidError) : Result Bool := do
@@ -66,7 +66,7 @@ def oid.OidError.Insts.CoreCmpPartialEqOidError.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_oid_extract::oid::{impl core::cmp::PartialEq<der_oid_extract::oid::OidError> for der_oid_extract::oid::OidError}]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:16-24:25 -/
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:16-36:25 -/
 @[reducible]
 def oid.OidError.Insts.CoreCmpPartialEqOidError : core.cmp.PartialEq
   oid.OidError oid.OidError := {
@@ -74,14 +74,14 @@ def oid.OidError.Insts.CoreCmpPartialEqOidError : core.cmp.PartialEq
 }
 
 /-- [der_oid_extract::oid::{impl core::cmp::Eq for der_oid_extract::oid::OidError}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:27-24:29
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:27-36:29
     Visibility: public -/
 def oid.OidError.Insts.CoreCmpEq.assert_fields_are_eq
   (self : oid.OidError) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_oid_extract::oid::{impl core::cmp::Eq for der_oid_extract::oid::OidError}]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:27-24:29 -/
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:27-36:29 -/
 @[reducible]
 def oid.OidError.Insts.CoreCmpEq : core.cmp.Eq oid.OidError := {
   partialEqInst := oid.OidError.Insts.CoreCmpPartialEqOidError
@@ -89,28 +89,28 @@ def oid.OidError.Insts.CoreCmpEq : core.cmp.Eq oid.OidError := {
 }
 
 /-- [der_oid_extract::oid::{impl core::clone::Clone for der_oid_extract::oid::OidError}::clone]:
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:31-24:36
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:31-36:36
     Visibility: public -/
 def oid.OidError.Insts.CoreCloneClone.clone
   (self : oid.OidError) : Result oid.OidError := do
   ok self
 
 /-- Trait implementation: [der_oid_extract::oid::{impl core::clone::Clone for der_oid_extract::oid::OidError}]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:31-24:36 -/
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:31-36:36 -/
 @[reducible]
 def oid.OidError.Insts.CoreCloneClone : core.clone.Clone oid.OidError := {
   clone := oid.OidError.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_oid_extract::oid::{impl core::marker::Copy for der_oid_extract::oid::OidError}]
-    Source: 'src/../../../der-verified/src/oid.rs', lines 24:38-24:42 -/
+    Source: 'src/../../../der-verified/src/oid.rs', lines 36:38-36:42 -/
 @[reducible]
 def oid.OidError.Insts.CoreMarkerCopy : core.marker.Copy oid.OidError := {
   cloneInst := oid.OidError.Insts.CoreCloneClone
 }
 
 /-- [der_oid_extract::oid::validate_oid]: loop body 0:
-    Source: 'src/../../../der-verified/src/oid.rs', lines 49:4-65:1
+    Source: 'src/../../../der-verified/src/oid.rs', lines 61:4-77:1
     Visibility: public -/
 @[rust_loop_body]
 def oid.validate_oid_loop.body
@@ -140,7 +140,7 @@ def oid.validate_oid_loop.body
     else ok (done (core.result.Result.Err oid.OidError.Truncated))
 
 /-- [der_oid_extract::oid::validate_oid]: loop 0:
-    Source: 'src/../../../der-verified/src/oid.rs', lines 49:4-65:1
+    Source: 'src/../../../der-verified/src/oid.rs', lines 61:4-77:1
     Visibility: public -/
 @[rust_loop]
 def oid.validate_oid_loop
@@ -153,7 +153,7 @@ def oid.validate_oid_loop
     (at_subid_start, i)
 
 /-- [der_oid_extract::oid::validate_oid]:
-    Source: 'src/../../../der-verified/src/oid.rs', lines 38:0-65:1
+    Source: 'src/../../../der-verified/src/oid.rs', lines 50:0-77:1
     Visibility: public -/
 def oid.validate_oid
   (content : Slice Std.U8) :

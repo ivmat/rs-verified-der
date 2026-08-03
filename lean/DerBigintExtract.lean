@@ -43,12 +43,12 @@ axiom core.option.Option.is_some_and
 axiom core.slice.Slice.first {T : Type} : Slice T → Result (Option T)
 
 /-- [der_bigint_extract::big_integer::TAG]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 31:0-31:23
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 43:0-43:23
     Visibility: public -/
 @[global_simps, irreducible] def big_integer.TAG : Std.U32 := 2#u32
 
 /-- [der_bigint_extract::big_integer::BigIntError]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 35:0-40:1
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 47:0-52:1
     Visibility: public -/
 @[discriminant isize]
 inductive big_integer.BigIntError where
@@ -56,7 +56,7 @@ inductive big_integer.BigIntError where
 | NonMinimal : big_integer.BigIntError
 
 /-- [der_bigint_extract::big_integer::{impl core::fmt::Debug for der_bigint_extract::big_integer::BigIntError}::fmt]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:9-34:14
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:9-46:14
     Visibility: public -/
 def big_integer.BigIntError.Insts.CoreFmtDebug.fmt
   (self : big_integer.BigIntError) (f : core.fmt.Formatter) :
@@ -69,7 +69,7 @@ def big_integer.BigIntError.Insts.CoreFmtDebug.fmt
     core.fmt.Formatter.write_str f (toStr "NonMinimal")
 
 /-- Trait implementation: [der_bigint_extract::big_integer::{impl core::fmt::Debug for der_bigint_extract::big_integer::BigIntError}]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:9-34:14 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:9-46:14 -/
 @[reducible]
 def big_integer.BigIntError.Insts.CoreFmtDebug : core.fmt.Debug
   big_integer.BigIntError := {
@@ -77,14 +77,14 @@ def big_integer.BigIntError.Insts.CoreFmtDebug : core.fmt.Debug
 }
 
 /-- Trait implementation: [der_bigint_extract::big_integer::{impl core::marker::StructuralPartialEq for der_bigint_extract::big_integer::BigIntError}]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:16-34:25 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:16-46:25 -/
 @[reducible]
 def big_integer.BigIntError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq big_integer.BigIntError := {
 }
 
 /-- [der_bigint_extract::big_integer::{impl core::cmp::PartialEq<der_bigint_extract::big_integer::BigIntError> for der_bigint_extract::big_integer::BigIntError}::eq]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:16-34:25
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:16-46:25
     Visibility: public -/
 def big_integer.BigIntError.Insts.CoreCmpPartialEqBigIntError.eq
   (self : big_integer.BigIntError) (other : big_integer.BigIntError) :
@@ -95,7 +95,7 @@ def big_integer.BigIntError.Insts.CoreCmpPartialEqBigIntError.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_bigint_extract::big_integer::{impl core::cmp::PartialEq<der_bigint_extract::big_integer::BigIntError> for der_bigint_extract::big_integer::BigIntError}]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:16-34:25 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:16-46:25 -/
 @[reducible]
 def big_integer.BigIntError.Insts.CoreCmpPartialEqBigIntError :
   core.cmp.PartialEq big_integer.BigIntError big_integer.BigIntError := {
@@ -103,14 +103,14 @@ def big_integer.BigIntError.Insts.CoreCmpPartialEqBigIntError :
 }
 
 /-- [der_bigint_extract::big_integer::{impl core::cmp::Eq for der_bigint_extract::big_integer::BigIntError}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:27-34:29
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:27-46:29
     Visibility: public -/
 def big_integer.BigIntError.Insts.CoreCmpEq.assert_fields_are_eq
   (self : big_integer.BigIntError) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_bigint_extract::big_integer::{impl core::cmp::Eq for der_bigint_extract::big_integer::BigIntError}]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:27-34:29 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:27-46:29 -/
 @[reducible]
 def big_integer.BigIntError.Insts.CoreCmpEq : core.cmp.Eq
   big_integer.BigIntError := {
@@ -120,14 +120,14 @@ def big_integer.BigIntError.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [der_bigint_extract::big_integer::{impl core::clone::Clone for der_bigint_extract::big_integer::BigIntError}::clone]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:31-34:36
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:31-46:36
     Visibility: public -/
 def big_integer.BigIntError.Insts.CoreCloneClone.clone
   (self : big_integer.BigIntError) : Result big_integer.BigIntError := do
   ok self
 
 /-- Trait implementation: [der_bigint_extract::big_integer::{impl core::clone::Clone for der_bigint_extract::big_integer::BigIntError}]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:31-34:36 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:31-46:36 -/
 @[reducible]
 def big_integer.BigIntError.Insts.CoreCloneClone : core.clone.Clone
   big_integer.BigIntError := {
@@ -135,7 +135,7 @@ def big_integer.BigIntError.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [der_bigint_extract::big_integer::{impl core::marker::Copy for der_bigint_extract::big_integer::BigIntError}]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 34:38-34:42 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 46:38-46:42 -/
 @[reducible]
 def big_integer.BigIntError.Insts.CoreMarkerCopy : core.marker.Copy
   big_integer.BigIntError := {
@@ -143,7 +143,7 @@ def big_integer.BigIntError.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- [der_bigint_extract::big_integer::validate_integer_content]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 48:0-60:1
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 60:0-72:1
     Visibility: public -/
 def big_integer.validate_integer_content
   (content : Slice Std.U8) :
@@ -182,12 +182,12 @@ def big_integer.validate_integer_content
     else ok (core.result.Result.Ok ())
 
 /-- [der_bigint_extract::big_integer::is_negative::closure]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 66:32-66:49 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 78:32-78:49 -/
 @[reducible]
 def big_integer.is_negative.closure := Unit
 
 /-- [der_bigint_extract::big_integer::is_negative::{impl core::ops::function::FnOnce<(&'_ u8,), bool> for der_bigint_extract::big_integer::is_negative::closure}::call_once]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 66:32-66:49 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 78:32-78:49 -/
 def
   big_integer.is_negative.closure.Insts.CoreOpsFunctionFnOnceTupleSharedU8Bool.call_once
   (c : big_integer.is_negative.closure) (tupled_args : Std.U8) :
@@ -197,7 +197,7 @@ def
   ok (i != 0#u8)
 
 /-- Trait implementation: [der_bigint_extract::big_integer::is_negative::{impl core::ops::function::FnOnce<(&'_ u8,), bool> for der_bigint_extract::big_integer::is_negative::closure}]
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 66:32-66:49 -/
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 78:32-78:49 -/
 @[reducible]
 def
   big_integer.is_negative.closure.Insts.CoreOpsFunctionFnOnceTupleSharedU8Bool
@@ -207,7 +207,7 @@ def
 }
 
 /-- [der_bigint_extract::big_integer::is_negative]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 65:0-67:1
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 77:0-79:1
     Visibility: public -/
 def big_integer.is_negative (content : Slice Std.U8) : Result Bool := do
   let o ← core.slice.Slice.first content
@@ -216,7 +216,7 @@ def big_integer.is_negative (content : Slice Std.U8) : Result Bool := do
     o ()
 
 /-- [der_bigint_extract::big_integer::encode_minimal_integer_into]: loop body 0:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 97:4-105:5
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 109:4-117:5
     Visibility: public -/
 @[rust_loop_body]
 def big_integer.encode_minimal_integer_into_loop.body
@@ -255,7 +255,7 @@ def big_integer.encode_minimal_integer_into_loop.body
   else ok (done start)
 
 /-- [der_bigint_extract::big_integer::encode_minimal_integer_into]: loop 0:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 97:4-105:5
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 109:4-117:5
     Visibility: public -/
 @[rust_loop]
 def big_integer.encode_minimal_integer_into_loop
@@ -266,7 +266,7 @@ def big_integer.encode_minimal_integer_into_loop
     start
 
 /-- [der_bigint_extract::big_integer::encode_minimal_integer_into]:
-    Source: 'src/../../../der-verified/src/big_integer.rs', lines 89:0-112:1
+    Source: 'src/../../../der-verified/src/big_integer.rs', lines 101:0-124:1
     Visibility: public -/
 def big_integer.encode_minimal_integer_into
   (content : Slice Std.U8) (out : Slice Std.U8) :

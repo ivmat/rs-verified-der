@@ -25,7 +25,7 @@ namespace der_tag_extract
 axiom core.slice.Slice.first {T : Type} : Slice T → Result (Option T)
 
 /-- [der_tag_extract::tag::Class]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 15:0-24:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 27:0-36:1
     Visibility: public -/
 @[discriminant isize]
 inductive tag.Class where
@@ -35,7 +35,7 @@ inductive tag.Class where
 | Private : tag.Class
 
 /-- [der_tag_extract::tag::{impl core::fmt::Debug for der_tag_extract::tag::Class}::fmt]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:9-14:14
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:9-26:14
     Visibility: public -/
 def tag.Class.Insts.CoreFmtDebug.fmt
   (self : tag.Class) (f : core.fmt.Formatter) :
@@ -50,21 +50,21 @@ def tag.Class.Insts.CoreFmtDebug.fmt
   | tag.Class.Private => core.fmt.Formatter.write_str f (toStr "Private")
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::fmt::Debug for der_tag_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:9-14:14 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:9-26:14 -/
 @[reducible]
 def tag.Class.Insts.CoreFmtDebug : core.fmt.Debug tag.Class := {
   fmt := tag.Class.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::marker::StructuralPartialEq for der_tag_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:16-14:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:16-26:25 -/
 @[reducible]
 def tag.Class.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tag.Class := {
 }
 
 /-- [der_tag_extract::tag::{impl core::cmp::PartialEq<der_tag_extract::tag::Class> for der_tag_extract::tag::Class}::eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:16-14:25
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:16-26:25
     Visibility: public -/
 def tag.Class.Insts.CoreCmpPartialEqClass.eq
   (self : tag.Class) (other : tag.Class) : Result Bool := do
@@ -73,7 +73,7 @@ def tag.Class.Insts.CoreCmpPartialEqClass.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::cmp::PartialEq<der_tag_extract::tag::Class> for der_tag_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:16-14:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:16-26:25 -/
 @[reducible]
 def tag.Class.Insts.CoreCmpPartialEqClass : core.cmp.PartialEq tag.Class
   tag.Class := {
@@ -81,14 +81,14 @@ def tag.Class.Insts.CoreCmpPartialEqClass : core.cmp.PartialEq tag.Class
 }
 
 /-- [der_tag_extract::tag::{impl core::cmp::Eq for der_tag_extract::tag::Class}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:27-14:29
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:27-26:29
     Visibility: public -/
 def tag.Class.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tag.Class) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::cmp::Eq for der_tag_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:27-14:29 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:27-26:29 -/
 @[reducible]
 def tag.Class.Insts.CoreCmpEq : core.cmp.Eq tag.Class := {
   partialEqInst := tag.Class.Insts.CoreCmpPartialEqClass
@@ -96,28 +96,28 @@ def tag.Class.Insts.CoreCmpEq : core.cmp.Eq tag.Class := {
 }
 
 /-- [der_tag_extract::tag::{impl core::clone::Clone for der_tag_extract::tag::Class}::clone]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:31-14:36
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:31-26:36
     Visibility: public -/
 def tag.Class.Insts.CoreCloneClone.clone
   (self : tag.Class) : Result tag.Class := do
   ok self
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::clone::Clone for der_tag_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:31-14:36 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:31-26:36 -/
 @[reducible]
 def tag.Class.Insts.CoreCloneClone : core.clone.Clone tag.Class := {
   clone := tag.Class.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::marker::Copy for der_tag_extract::tag::Class}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 14:38-14:42 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 26:38-26:42 -/
 @[reducible]
 def tag.Class.Insts.CoreMarkerCopy : core.marker.Copy tag.Class := {
   cloneInst := tag.Class.Insts.CoreCloneClone
 }
 
 /-- [der_tag_extract::tag::Tag]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 28:0-35:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 40:0-47:1
     Visibility: public -/
 structure tag.Tag where
   «class» : tag.Class
@@ -125,7 +125,7 @@ structure tag.Tag where
   number : Std.U32
 
 /-- [der_tag_extract::tag::{impl core::fmt::Debug for der_tag_extract::tag::Tag}::fmt]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:9-27:14
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:9-39:14
     Visibility: public -/
 def tag.Tag.Insts.CoreFmtDebug.fmt
   (self : tag.Tag) (f : core.fmt.Formatter) :
@@ -138,21 +138,21 @@ def tag.Tag.Insts.CoreFmtDebug.fmt
     dyn (toStr "constructed") dyn1 (toStr "number") dyn2
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::fmt::Debug for der_tag_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:9-27:14 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:9-39:14 -/
 @[reducible]
 def tag.Tag.Insts.CoreFmtDebug : core.fmt.Debug tag.Tag := {
   fmt := tag.Tag.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::marker::StructuralPartialEq for der_tag_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:16-27:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:16-39:25 -/
 @[reducible]
 def tag.Tag.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tag.Tag := {
 }
 
 /-- [der_tag_extract::tag::{impl core::cmp::PartialEq<der_tag_extract::tag::Tag> for der_tag_extract::tag::Tag}::eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:16-27:25
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:16-39:25
     Visibility: public -/
 def tag.Tag.Insts.CoreCmpPartialEqTag.eq
   (self : tag.Tag) (other : tag.Tag) : Result Bool := do
@@ -165,21 +165,21 @@ def tag.Tag.Insts.CoreCmpPartialEqTag.eq
   else ok false
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::cmp::PartialEq<der_tag_extract::tag::Tag> for der_tag_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:16-27:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:16-39:25 -/
 @[reducible]
 def tag.Tag.Insts.CoreCmpPartialEqTag : core.cmp.PartialEq tag.Tag tag.Tag := {
   eq := tag.Tag.Insts.CoreCmpPartialEqTag.eq
 }
 
 /-- [der_tag_extract::tag::{impl core::cmp::Eq for der_tag_extract::tag::Tag}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:27-27:29
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:27-39:29
     Visibility: public -/
 def tag.Tag.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tag.Tag) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::cmp::Eq for der_tag_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:27-27:29 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:27-39:29 -/
 @[reducible]
 def tag.Tag.Insts.CoreCmpEq : core.cmp.Eq tag.Tag := {
   partialEqInst := tag.Tag.Insts.CoreCmpPartialEqTag
@@ -187,27 +187,27 @@ def tag.Tag.Insts.CoreCmpEq : core.cmp.Eq tag.Tag := {
 }
 
 /-- [der_tag_extract::tag::{impl core::clone::Clone for der_tag_extract::tag::Tag}::clone]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:31-27:36
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:31-39:36
     Visibility: public -/
 def tag.Tag.Insts.CoreCloneClone.clone (self : tag.Tag) : Result tag.Tag := do
   ok self
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::clone::Clone for der_tag_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:31-27:36 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:31-39:36 -/
 @[reducible]
 def tag.Tag.Insts.CoreCloneClone : core.clone.Clone tag.Tag := {
   clone := tag.Tag.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::marker::Copy for der_tag_extract::tag::Tag}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 27:38-27:42 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 39:38-39:42 -/
 @[reducible]
 def tag.Tag.Insts.CoreMarkerCopy : core.marker.Copy tag.Tag := {
   cloneInst := tag.Tag.Insts.CoreCloneClone
 }
 
 /-- [der_tag_extract::tag::TagError]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 39:0-48:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 51:0-60:1
     Visibility: public -/
 @[discriminant isize]
 inductive tag.TagError where
@@ -216,7 +216,7 @@ inductive tag.TagError where
 | TooLarge : tag.TagError
 
 /-- [der_tag_extract::tag::{impl core::fmt::Debug for der_tag_extract::tag::TagError}::fmt]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:9-38:14
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:9-50:14
     Visibility: public -/
 def tag.TagError.Insts.CoreFmtDebug.fmt
   (self : tag.TagError) (f : core.fmt.Formatter) :
@@ -230,21 +230,21 @@ def tag.TagError.Insts.CoreFmtDebug.fmt
   | tag.TagError.TooLarge => core.fmt.Formatter.write_str f (toStr "TooLarge")
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::fmt::Debug for der_tag_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:9-38:14 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:9-50:14 -/
 @[reducible]
 def tag.TagError.Insts.CoreFmtDebug : core.fmt.Debug tag.TagError := {
   fmt := tag.TagError.Insts.CoreFmtDebug.fmt
 }
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::marker::StructuralPartialEq for der_tag_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:16-38:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:16-50:25 -/
 @[reducible]
 def tag.TagError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq tag.TagError := {
 }
 
 /-- [der_tag_extract::tag::{impl core::cmp::PartialEq<der_tag_extract::tag::TagError> for der_tag_extract::tag::TagError}::eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:16-38:25
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:16-50:25
     Visibility: public -/
 def tag.TagError.Insts.CoreCmpPartialEqTagError.eq
   (self : tag.TagError) (other : tag.TagError) : Result Bool := do
@@ -253,7 +253,7 @@ def tag.TagError.Insts.CoreCmpPartialEqTagError.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::cmp::PartialEq<der_tag_extract::tag::TagError> for der_tag_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:16-38:25 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:16-50:25 -/
 @[reducible]
 def tag.TagError.Insts.CoreCmpPartialEqTagError : core.cmp.PartialEq
   tag.TagError tag.TagError := {
@@ -261,14 +261,14 @@ def tag.TagError.Insts.CoreCmpPartialEqTagError : core.cmp.PartialEq
 }
 
 /-- [der_tag_extract::tag::{impl core::cmp::Eq for der_tag_extract::tag::TagError}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:27-38:29
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:27-50:29
     Visibility: public -/
 def tag.TagError.Insts.CoreCmpEq.assert_fields_are_eq
   (self : tag.TagError) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::cmp::Eq for der_tag_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:27-38:29 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:27-50:29 -/
 @[reducible]
 def tag.TagError.Insts.CoreCmpEq : core.cmp.Eq tag.TagError := {
   partialEqInst := tag.TagError.Insts.CoreCmpPartialEqTagError
@@ -276,28 +276,28 @@ def tag.TagError.Insts.CoreCmpEq : core.cmp.Eq tag.TagError := {
 }
 
 /-- [der_tag_extract::tag::{impl core::clone::Clone for der_tag_extract::tag::TagError}::clone]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:31-38:36
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:31-50:36
     Visibility: public -/
 def tag.TagError.Insts.CoreCloneClone.clone
   (self : tag.TagError) : Result tag.TagError := do
   ok self
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::clone::Clone for der_tag_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:31-38:36 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:31-50:36 -/
 @[reducible]
 def tag.TagError.Insts.CoreCloneClone : core.clone.Clone tag.TagError := {
   clone := tag.TagError.Insts.CoreCloneClone.clone
 }
 
 /-- Trait implementation: [der_tag_extract::tag::{impl core::marker::Copy for der_tag_extract::tag::TagError}]
-    Source: 'src/../../../der-verified/src/tag.rs', lines 38:38-38:42 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 50:38-50:42 -/
 @[reducible]
 def tag.TagError.Insts.CoreMarkerCopy : core.marker.Copy tag.TagError := {
   cloneInst := tag.TagError.Insts.CoreCloneClone
 }
 
 /-- [der_tag_extract::tag::class_bits]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 50:0-57:1 -/
+    Source: 'src/../../../der-verified/src/tag.rs', lines 62:0-69:1 -/
 def tag.class_bits (c : tag.Class) : Result Std.U8 := do
   match c with
   | tag.Class.Universal => ok 0#u8
@@ -306,12 +306,12 @@ def tag.class_bits (c : tag.Class) : Result Std.U8 := do
   | tag.Class.Private => ok 3#u8
 
 /-- [der_tag_extract::tag::encode_tag]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 62:0-88:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 74:0-100:1
     Visibility: public -/
 axiom tag.encode_tag : tag.Tag → Result ((Array Std.U8 6#usize) × Std.Usize)
 
 /-- [der_tag_extract::tag::decode_tag]: loop body 0:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 125:48-142:5
+    Source: 'src/../../../der-verified/src/tag.rs', lines 137:48-154:5
     Visibility: public -/
 @[rust_loop_body]
 def tag.decode_tag_loop.body
@@ -361,7 +361,7 @@ def tag.decode_tag_loop.body
         else ok (cont (i5, number1, count1))
 
 /-- [der_tag_extract::tag::decode_tag]: loop 0:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 125:48-142:5
+    Source: 'src/../../../der-verified/src/tag.rs', lines 137:48-154:5
     Visibility: public -/
 @[rust_loop]
 def tag.decode_tag_loop
@@ -375,7 +375,7 @@ def tag.decode_tag_loop
     (i, number, count)
 
 /-- [der_tag_extract::tag::decode_tag]:
-    Source: 'src/../../../der-verified/src/tag.rs', lines 94:0-148:1
+    Source: 'src/../../../der-verified/src/tag.rs', lines 106:0-160:1
     Visibility: public -/
 def tag.decode_tag
   (input : Slice Std.U8) :

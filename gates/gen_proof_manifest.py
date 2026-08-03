@@ -440,6 +440,16 @@ def evidence_facts():
             p = os.path.join(EVIDENCE, f)
             if not os.path.isfile(p):
                 continue
+            # Only a Kani run log, by the `check*.log` naming this directory has always used.
+            # This filter is not tidiness. Every column below is a REGEX COUNT over the file's
+            # text, and the table it feeds is gate-enforced -- so a prose note dropped in here
+            # that merely *quotes* `0 of 1 cover properties satisfied`, or that mentions
+            # `VERIFICATION: SUCCESSFUL` while explaining what one means, is counted as if it
+            # were a run and silently moves a published number. That happened on 2026-08-03:
+            # a written record of a floor run reported "1 unsatisfied cover" from its own prose.
+            # A run log earns a row; writing *about* runs does not.
+            if not (f.startswith('check') and f.endswith('.log')):
+                continue
             text = read_text(p, errors='replace')
             commit = (re.search(r'^#\s*commit:\s*([0-9a-f]{7,40})', text, re.M) or
                       [None, 'unrecorded'])[1]

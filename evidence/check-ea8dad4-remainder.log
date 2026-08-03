@@ -1,0 +1,72 @@
+# der-verified: the remainder of the ea8dad4 full-gate run
+# commit: ea8dad4
+# dirty-tracked-paths-at-launch: 0
+# MemAvailable at launch: 23107 MB
+# cgroup cap: MemoryMax=20G MemoryHigh=18G MemorySwapMax=0 (COMPUTED)
+# rustc: rustc 1.97.0 (2d8144b78 2026-07-07) | cargo: cargo 1.97.0 (c980f4866 2026-06-30) | kani: cargo-kani 0.67.0
+# cbmc (kani-bundled): 6.8.0 (cbmc-6.8.0)
+# started: 2026-08-03T13:38:32+02:00
+#
+# ---- THIS FILE IS A DISTILLATION, NOT THE RAW LOG ----
+# raw: evidence/raw/check-ea8dad4-remainder.log.gz (4729046 bytes, 30335 lines,
+#      sha256 2bcb90fa100390870b5814f493b016d12d096d82fcd103748915e77de2873700)
+#      filter: grep -E "^(Checking harness|VERIFICATION:|Verification Time:|Manual Harness Summary|Complete - |== |SUMMARY:|error)|^ +\*\* [0-9]+ of [0-9]+ (failed|cover propert)"
+#
+== BATCH 1: the 8 harnesses that never started ==
+Checking harness x509_extension::proofs::parse_extension_never_panics...
+SUMMARY:
+ ** 0 of 218 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 10.873307s
+Checking harness x509_name::proofs::validate_never_panics...
+SUMMARY:
+ ** 0 of 138 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 5.6909556s
+Checking harness x509_name::proofs::validate_rdn_never_panics...
+SUMMARY:
+ ** 0 of 299 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 548.01624s
+Checking harness x509_spki::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 240 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 18.060537s
+Checking harness x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 411 failed (14 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 206.1147s
+Checking harness x509_tbs_certificate::proofs::parse_tbs_certificate_never_panics...
+SUMMARY:
+ ** 0 of 550 failed (41 unreachable)
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 101.74711s
+Checking harness x509_validity::proofs::parse_validity_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 265 failed (29 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 5.972823s
+Checking harness x509_validity::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 265 failed (28 unreachable)
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 8.169857s
+Manual Harness Summary:
+Complete - 8 successfully verified harnesses, 0 failures, 8 total.
+== BATCH 1 exit: 0 (wall 910s) ==
+== BATCH 2: the harness the full run was OOM-killed on, alone ==
+Checking harness x509_extension::proofs::validate_extensions_never_panics...
+== BATCH 2 exit: 137 (wall 228s) ==
+== LEAN LID (L4/L5, unbounded) ==
+== lean lid: re-extract (charon -> aeneas) + drift check ==
+== LEAN exit: 1 (wall 1s) ==
+== remainder run finished: 2026-08-03T13:57:31+02:00 ==

@@ -132,6 +132,26 @@ scope boundary referenced below.
       decode paths, and near-`core`-only (one `std::` use). Making it `#![no_std]` (gated on a `std`
       feature) would make a zero-dep, formally-verified DER core usable in embedded / bootloader /
       kernel contexts. Low priority; a strong differentiator when done.
+      ⊕ **SCOPED 2026-08-03, deliberately NOT landed.** "Later" is not a size, so it was measured:
+      * **Exactly one `std::` path in all of `der-verified/src`** — `utf8_string.rs:507`, inside a
+        `#[test]` assertion *message*, not library code.
+      * **All 25 `Vec`/`String`/`vec!`/`Box` occurrences are inside `#[cfg(test)]` modules** (test
+        builders like `der_length`, `wrap`, `build_certificate`). None is reachable from a non-test
+        build. Zero dependencies; no `std::error`, no `std::io`.
+      * **26 `#[cfg(test)]` modules and 26 `#[cfg(kani)]` proof modules, and they are disjoint** — so
+        `#![cfg_attr(not(test), no_std)]` would put the Kani floor on the *shipped* configuration,
+        not on a std one.
+      * **The claim would be checkable, which it was not before today:** `thumbv7em-none-eabi` is now
+        installed here, so `cargo build --target thumbv7em-none-eabi` is a gate that fails the moment
+        anything pulls `std` back in — the same shape of fix the MSRV declaration got.
+      ⛔ **Why not landed:** it is a source change, and the L3 floor **cannot currently be run to
+      completion on this box** (`evidence/FLOOR-2026-08-03.md`: OOM-killed at the computed 20 GiB cap,
+      below this crate's own documented ~22 GiB requirement). Landing source now would leave the crate
+      with *weaker* proof evidence than it has, to buy a capability nothing is waiting on.
+      ⚠ Unsettled, and the reason the change must carry its own guard: **whether `cargo kani` sets
+      `cfg(test)`**. If it ever did, `#![cfg_attr(not(test), no_std)]` would silently verify the std
+      configuration. Ship it with `#[cfg(all(kani, test))] compile_error!(...)` rather than resting on
+      the assumption.
 
 ## 0.1.0 release checklist
 
@@ -164,11 +184,19 @@ scope boundary referenced below.
       most recent runs are all `success`. docs.rs: `https://docs.rs/crate/der-verified/0.1.0/status.json`
       returns `{"doc_status":true,"version":"0.1.0"}` (HTTP 200), and `0.0.0` likewise. Locally
       `cargo doc --no-deps` is warning-free.
-      ⚠ **What the docs.rs probe does NOT establish.** It discriminates existing from non-existing —
-      a nonexistent version (`9.9.9`) and a nonsense crate name both return no response at all
-      (HTTP 000, this box's egress) rather than a false `true`. But no `doc_status:false` case was
-      exhibited, so the probe is *unexercised* on the built-clean-versus-build-failed distinction. It
-      says the docs built; it has not been watched to say otherwise.
+      ⊕ **CLOSED 2026-08-03 (later) — the failing direction IS now exhibited.** The warning this
+      line used to carry was right: the probe had only ever been seen say `true`. Fixed by
+      measurement, not by relabelling. docs.rs publishes its own list of recent FAILED builds at
+      `https://docs.rs/releases/failures`; `status.json` for four crates taken from it returns
+      **HTTP 200 with `"doc_status":false`** — `core-nightly/2015.1.7`, `deno/2.9.4`,
+      `bevy_wgpu/0.5.0`, `polars-lazy/0.54.4`. So the probe discriminates **three** states, not two:
+      built-clean (`200` + `true`), built-and-FAILED (`200` + `false`), and nonexistent (no response
+      at all). `der-verified` 0.1.0 and 0.0.0 both return `200` + `true` against that control.
+      Evidence: `evidence/docsrs-probe-2026-08-03.log`.
+      ⚠ Two residuals, stated rather than glossed: the `false` cases are *other people's* crates, so
+      what has been watched to fail is the **probe**, not this crate's docs build; and the HTTP `000`
+      on a nonexistent version is **this box's egress behaviour**, not a documented docs.rs response
+      — on a box with unrestricted egress that case is likely a 404, and that path is untested here.
 - [ ] Final public-API review (0.1.0 is the API you're committing to; breaking changes still allowed
       pre-1.0 but keep it coherent).
 - [x] `cargo publish` the 0.1.0. **DONE — measured 2026-08-02, not inferred.** This box's egress

@@ -25,7 +25,7 @@ namespace der_length_extract
 axiom core.slice.Slice.first {T : Type} : Slice T → Result (Option T)
 
 /-- [der_length_extract::length::LengthError]
-    Source: 'src/../../../der-verified/src/length.rs', lines 13:0-26:1
+    Source: 'src/../../../der-verified/src/length.rs', lines 27:0-40:1
     Visibility: public -/
 @[discriminant isize]
 inductive length.LengthError where
@@ -36,7 +36,7 @@ inductive length.LengthError where
 | TooLarge : length.LengthError
 
 /-- [der_length_extract::length::{impl core::fmt::Debug for der_length_extract::length::LengthError}::fmt]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:9-12:14
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:9-26:14
     Visibility: public -/
 def length.LengthError.Insts.CoreFmtDebug.fmt
   (self : length.LengthError) (f : core.fmt.Formatter) :
@@ -55,7 +55,7 @@ def length.LengthError.Insts.CoreFmtDebug.fmt
     core.fmt.Formatter.write_str f (toStr "TooLarge")
 
 /-- Trait implementation: [der_length_extract::length::{impl core::fmt::Debug for der_length_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:9-12:14 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:9-26:14 -/
 @[reducible]
 def length.LengthError.Insts.CoreFmtDebug : core.fmt.Debug length.LengthError
   := {
@@ -63,14 +63,14 @@ def length.LengthError.Insts.CoreFmtDebug : core.fmt.Debug length.LengthError
 }
 
 /-- Trait implementation: [der_length_extract::length::{impl core::marker::StructuralPartialEq for der_length_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:16-12:25 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:16-26:25 -/
 @[reducible]
 def length.LengthError.Insts.CoreMarkerStructuralPartialEq :
   core.marker.StructuralPartialEq length.LengthError := {
 }
 
 /-- [der_length_extract::length::{impl core::cmp::PartialEq<der_length_extract::length::LengthError> for der_length_extract::length::LengthError}::eq]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:16-12:25
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:16-26:25
     Visibility: public -/
 def length.LengthError.Insts.CoreCmpPartialEqLengthError.eq
   (self : length.LengthError) (other : length.LengthError) : Result Bool := do
@@ -79,7 +79,7 @@ def length.LengthError.Insts.CoreCmpPartialEqLengthError.eq
   ok (self1 = other1)
 
 /-- Trait implementation: [der_length_extract::length::{impl core::cmp::PartialEq<der_length_extract::length::LengthError> for der_length_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:16-12:25 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:16-26:25 -/
 @[reducible]
 def length.LengthError.Insts.CoreCmpPartialEqLengthError : core.cmp.PartialEq
   length.LengthError length.LengthError := {
@@ -87,14 +87,14 @@ def length.LengthError.Insts.CoreCmpPartialEqLengthError : core.cmp.PartialEq
 }
 
 /-- [der_length_extract::length::{impl core::cmp::Eq for der_length_extract::length::LengthError}::assert_fields_are_eq]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:27-12:29
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:27-26:29
     Visibility: public -/
 def length.LengthError.Insts.CoreCmpEq.assert_fields_are_eq
   (self : length.LengthError) : Result Unit := do
   ok ()
 
 /-- Trait implementation: [der_length_extract::length::{impl core::cmp::Eq for der_length_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:27-12:29 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:27-26:29 -/
 @[reducible]
 def length.LengthError.Insts.CoreCmpEq : core.cmp.Eq length.LengthError := {
   partialEqInst := length.LengthError.Insts.CoreCmpPartialEqLengthError
@@ -103,14 +103,14 @@ def length.LengthError.Insts.CoreCmpEq : core.cmp.Eq length.LengthError := {
 }
 
 /-- [der_length_extract::length::{impl core::clone::Clone for der_length_extract::length::LengthError}::clone]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:31-12:36
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:31-26:36
     Visibility: public -/
 def length.LengthError.Insts.CoreCloneClone.clone
   (self : length.LengthError) : Result length.LengthError := do
   ok self
 
 /-- Trait implementation: [der_length_extract::length::{impl core::clone::Clone for der_length_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:31-12:36 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:31-26:36 -/
 @[reducible]
 def length.LengthError.Insts.CoreCloneClone : core.clone.Clone
   length.LengthError := {
@@ -118,7 +118,7 @@ def length.LengthError.Insts.CoreCloneClone : core.clone.Clone
 }
 
 /-- Trait implementation: [der_length_extract::length::{impl core::marker::Copy for der_length_extract::length::LengthError}]
-    Source: 'src/../../../der-verified/src/length.rs', lines 12:38-12:42 -/
+    Source: 'src/../../../der-verified/src/length.rs', lines 26:38-26:42 -/
 @[reducible]
 def length.LengthError.Insts.CoreMarkerCopy : core.marker.Copy
   length.LengthError := {
@@ -126,7 +126,7 @@ def length.LengthError.Insts.CoreMarkerCopy : core.marker.Copy
 }
 
 /-- [der_length_extract::length::encode_length]: loop body 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 43:4-45:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 57:4-59:5
     Visibility: public -/
 @[rust_loop_body]
 def length.encode_length_loop0.body
@@ -143,7 +143,7 @@ def length.encode_length_loop0.body
   else ok (done lead)
 
 /-- [der_length_extract::length::encode_length]: loop 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 43:4-45:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 57:4-59:5
     Visibility: public -/
 @[rust_loop]
 def length.encode_length_loop0
@@ -153,7 +153,7 @@ def length.encode_length_loop0
     lead
 
 /-- [der_length_extract::length::encode_length]: loop body 1:
-    Source: 'src/../../../der-verified/src/length.rs', lines 49:4-52:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 63:4-66:5
     Visibility: public -/
 @[rust_loop_body]
 def length.encode_length_loop1.body
@@ -173,7 +173,7 @@ def length.encode_length_loop1.body
   else ok (done out)
 
 /-- [der_length_extract::length::encode_length]: loop 1:
-    Source: 'src/../../../der-verified/src/length.rs', lines 49:4-52:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 63:4-66:5
     Visibility: public -/
 @[rust_loop]
 def length.encode_length_loop1
@@ -186,7 +186,7 @@ def length.encode_length_loop1
     (out, i)
 
 /-- [der_length_extract::length::encode_length]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 33:0-54:1
+    Source: 'src/../../../der-verified/src/length.rs', lines 47:0-68:1
     Visibility: public -/
 def length.encode_length
   (len : Std.U32) : Result ((Array Std.U8 5#usize) × Std.Usize) := do
@@ -208,7 +208,7 @@ def length.encode_length
     ok (out1, i2)
 
 /-- [der_length_extract::length::decode_length]: loop body 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 87:4-90:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 101:4-104:5
     Visibility: public -/
 @[rust_loop_body]
 def length.decode_length_loop.body
@@ -226,7 +226,7 @@ def length.decode_length_loop.body
   else ok (done val)
 
 /-- [der_length_extract::length::decode_length]: loop 0:
-    Source: 'src/../../../der-verified/src/length.rs', lines 87:4-90:5
+    Source: 'src/../../../der-verified/src/length.rs', lines 101:4-104:5
     Visibility: public -/
 @[rust_loop]
 def length.decode_length_loop
@@ -238,7 +238,7 @@ def length.decode_length_loop
     (val, i)
 
 /-- [der_length_extract::length::decode_length]:
-    Source: 'src/../../../der-verified/src/length.rs', lines 60:0-95:1
+    Source: 'src/../../../der-verified/src/length.rs', lines 74:0-109:1
     Visibility: public -/
 def length.decode_length
   (input : Slice Std.U8) :
