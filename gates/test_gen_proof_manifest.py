@@ -306,12 +306,29 @@ class HeadCoverageFact(unittest.TestCase):
         That is not hypothetical. 31b0994 changed the semantics without changing this test, and the
         pair went unnoticed because no commit touched a VERIFIED_PATH in between. The next one that
         did was blocked by its own gate, with a self-test failure that pointed at nothing real.
+
+        "Disposable" has to mean disposable from the AMBIENT GIT STATE too, or this trades one
+        red-for-unrelated-reasons for another: a contributor with `commit.gpgsign` on and no usable
+        key, or a `core.hooksPath` pointing at a global hook, would have the seed commit fail and the
+        suite redden for something that is not this gate's business. Signing and hooks are therefore
+        overridden per-invocation, `GIT_*` is scrubbed from the child environment, and `init` is given
+        an empty template so a global one cannot install hooks or an `info/exclude` that would leave
+        `seed.txt` unstageable. None of these were set on the machine this was written on, which is
+        exactly why they need pinning rather than assuming.
         """
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory() as box:
+            tmp = os.path.join(box, 'repo')
+            template = os.path.join(box, 'empty-template')
+            os.makedirs(tmp)
+            os.makedirs(template)
+            env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+
             def run(*args):
-                return subprocess.run(['git', '-C', tmp, *args],
-                                      capture_output=True, text=True, check=True).stdout.strip()
-            run('init', '-q')
+                return subprocess.run(
+                    ['git', '-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null',
+                     '-C', tmp, *args],
+                    capture_output=True, text=True, check=True, env=env).stdout.strip()
+            run('init', '-q', '--template=' + template)
             run('config', 'user.email', 'test@example.invalid')
             run('config', 'user.name', 'test')
             for rel in gen.VERIFIED_PATHS:
@@ -342,6 +359,26 @@ class HeadCoverageFact(unittest.TestCase):
                       encoding='utf-8') as fh:
                 fh.write('an uncommitted edit\n')
             self.assertFalse(gen.verified_source_unchanged_since(head))
+
+    def test_commit_predating_a_committed_source_change_reads_as_changed(self):
+        # The third direction, and the one the pair above cannot see. Both tests move the WORKING
+        # TREE and leave the recorded commit at HEAD, so an implementation that ignored its own
+        # argument and merely asked "is the verified tree dirty?" -- `git diff HEAD -- paths` --
+        # satisfied both while answering a different question entirely. Measured: that mutant passed
+        # the whole suite, rc=0, 28/28. The predicate's actual job is "does the run recorded AT THIS
+        # COMMIT still speak for what is here now", so it must go False for an OLD commit on a
+        # perfectly CLEAN tree, which is the ordinary state of a repo whose proofs have gone stale.
+        with self._throwaway_repo() as (tmp, run):
+            before = run('rev-parse', 'HEAD')
+            with open(os.path.join(tmp, gen.VERIFIED_PATHS[0], 'seed.txt'), 'a',
+                      encoding='utf-8') as fh:
+                fh.write('a committed change to verified source\n')
+            run('add', '-A')
+            run('commit', '-qm', 'move verified source')
+            self.assertEqual(run('status', '--porcelain'), '', 'fixture tree must be clean here')
+            self.assertFalse(gen.verified_source_unchanged_since(before))
+            # …and the new commit does speak for it, so this is not just "always False".
+            self.assertTrue(gen.verified_source_unchanged_since(run('rev-parse', 'HEAD')))
 
     def test_unrecorded_commit_is_unknown_not_true(self):
         # Fail-open would silently upgrade an unverifiable log to "covers HEAD".
