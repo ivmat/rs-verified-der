@@ -117,6 +117,18 @@ scope boundary referenced below.
       lids now cover `length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence` — six total.
 - [ ] Add the L4/L5 Lean job to CI if a hosted runner can provision the pinned Aeneas/Charon/Lean
       stack (currently a local-milestone check — see the README).
+      ⊕ **SCOPED 2026-08-03. The `if` is the whole item, and it now has numbers.** Installed footprint
+      on the reference box: **1.8 GB** for Aeneas+Charon and **2.7 GB** for the Lean toolchain under
+      `elan` — ~4.5 GB, which fits a standard hosted runner's disk. Size is not the obstacle. The
+      obstacle is that both pins are built *from source* (Charon in Rust, Aeneas in OCaml), so without
+      a warm cache every run pays that build before it proves anything.
+      ⚠ **And the honest blocker is not cost, it is verifiability.** A CI workflow cannot be exercised
+      on this box, and pushing to the public repo is owner-gated — so writing the job would produce a
+      gate whose failing direction has never been seen, on a repo whose whole claim is that its checks
+      are re-runnable. This crate has already been bitten twice by exactly that (`check_kb`-style
+      vacuity, and the L4 lid sitting UNRUN for four commits — see `evidence/FLOOR-2026-08-03.md` §3).
+      **A green that has never been watched to go red is not the deliverable here.** Land it in a
+      session that can push and watch a real run fail.
 
 ## API / scope
 
@@ -128,6 +140,14 @@ scope boundary referenced below.
       Kani harness or Lean lid yet.** Still open, not yet covered by this layer: name constraints,
       key usage, basic constraints, path validation.
 - [ ] `oid`: optionally materialize arcs (allocation-aware) — currently validate-only.
+      ⊕ **SCOPED 2026-08-03 — this is a DESIGN decision, not a task, and it collides with two others.**
+      Materializing arcs needs `alloc`. The crate's own module docs already rule that out in terms:
+      `x509_name.rs` says an owned tree *"would need `alloc` … which this heap-free crate forbids"*,
+      and `big_integer` is deliberately built on the same "validate, don't materialize" stance. So
+      this item cannot be implemented without either breaking that invariant or introducing an
+      `alloc` feature gate — and an `alloc` gate interacts directly with the `no_std` item below and
+      with what "allocation-free decode paths" means in the README's offer. **Owner's call on the
+      crate's shape, not something to land quietly under a checkbox.**
 - [ ] **`no_std` support (later).** The crate is already `#![forbid(unsafe_code)]`, allocation-free on
       decode paths, and near-`core`-only (one `std::` use). Making it `#![no_std]` (gated on a `std`
       feature) would make a zero-dep, formally-verified DER core usable in embedded / bootloader /
@@ -199,6 +219,10 @@ scope boundary referenced below.
       — on a box with unrestricted egress that case is likely a 404, and that path is untested here.
 - [ ] Final public-API review (0.1.0 is the API you're committing to; breaking changes still allowed
       pre-1.0 but keep it coherent).
+      ⊕ **Confirmed 2026-08-03 as owner-gated, not worked.** It is a judgement about what the crate
+      commits to, and it is the one remaining item that is *supposed* to sit with a person. Flagged
+      because it now has a deadline shape it did not have: the stated next application target is
+      Open Internet Stack with this crate as the exhibit.
 - [x] `cargo publish` the 0.1.0. **DONE — measured 2026-08-02, not inferred.** This box's egress
       blocks the crates.io JSON API (`curl .../api/v1/crates/der-verified` → HTTP **000**), but the
       **sparse index** is reachable, and `cargo search der-verified` returns
