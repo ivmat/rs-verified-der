@@ -621,4 +621,31 @@ mod tests {
         use crate::tlv::TlvError;
         assert_eq!(decode_utf8_string(&[0x0C, 0x05, b'H', b'i']), Err(Utf8Error::Tlv(TlvError::Truncated)));
     }
+
+    // --- non-canonical framing (a lax/BER-tolerant reader would accept these; DER must not) ---
+
+    #[test]
+    fn rejects_high_tag_form_of_tag_12() {
+        // 1F 0C = the high-tag (multi-octet) encoding of tag number 12 (X.690 §8.1.2.4.2). DER
+        // requires the low-tag single-octet form 0x0C for numbers <= 30, so the tag codec rejects
+        // this as non-minimal: a non-canonical UTF8String identifier is never accepted.
+        use crate::tag::TagError;
+        use crate::tlv::TlvError;
+        assert_eq!(
+            decode_utf8_string(&[0x1F, 0x0C, 0x01, b'A']),
+            Err(Utf8Error::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+    }
+
+    #[test]
+    fn rejects_non_minimal_length() {
+        // 0C 81 01 41 = length 1 in the long form (X.690 §8.1.3); DER requires the short form
+        // (0C 01 41). A lax parser tolerates the redundant long-form length; DER must not.
+        use crate::length::LengthError;
+        use crate::tlv::TlvError;
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x81, 0x01, b'A']),
+            Err(Utf8Error::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+    }
 }

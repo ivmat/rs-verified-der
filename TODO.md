@@ -195,7 +195,25 @@ scope boundary referenced below.
 
 ## Good first issues
 
-- [ ] More reject-differential test vectors (non-canonical encodings a lax parser would accept).
+- [x] More reject-differential test vectors (non-canonical encodings a lax parser would accept).
+      **Done 2026-08-03 — 309 → 320 tests.** ⚠ **The headline result is how little was missing.** A
+      module-by-module sweep of the obvious BER-versus-DER divergences — non-minimal long-form
+      lengths, indefinite length, non-minimal INTEGER/ENUMERATED, BOOLEAN content outside
+      `0x00`/`0xFF`, BIT STRING unused-bit rules, non-minimal or unterminated OID arcs, SET OF
+      ordering and duplicates, UTCTime/GeneralizedTime fractional seconds and non-`Z` zones,
+      non-shortest UTF-8, trailing bytes — found **every one already covered**, usually by a concrete
+      vector *and* an independent Kani oracle.
+      The real gap was narrower and structural: `octet_string` alone had *concrete* specimens for a
+      **non-minimal high-tag identifier** (§8.1.2.4.2) and a **non-minimal long-form length**
+      (§8.1.3) reaching it through its own public entry point. Both properties are proven generically
+      for all TLVs by `tag`/`length` harnesses, but no sibling TLV-composing module exercised them at
+      its own door. The 11 new vectors close that for `utf8_string`, `restricted_string`, `sequence`,
+      `set_of`, `context_tag`, `x509_extension` and `x509_algorithm_identifier`.
+      Each asserts the **exact** error variant, never `.is_err()`. Controlled by feeding
+      `set_of::rejects_non_minimal_length` the *canonical* `31 00` instead of the non-minimal
+      `31 81 00`: it fails with `left: Ok(([], 2))`, so the test discriminates non-minimal from
+      minimal rather than rejecting everything. **No crate defect found** — nothing accepted anything
+      DER forbids.
 - [x] Rustdoc usage examples per module (they double as doctests). **Done 2026-08-03 — 1 doctest →
       27.** Every one of the 26 modules outside `lib.rs` gained a `# Examples` block in its `//!`
       documentation. The byte specimens are lifted from each module's own passing `#[cfg(test)]`

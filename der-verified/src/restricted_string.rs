@@ -826,4 +826,31 @@ mod tests {
             Err(StringError::Tlv(TlvError::Truncated))
         );
     }
+
+    // --- non-canonical framing (a lax/BER-tolerant reader would accept these; DER must not) ---
+
+    #[test]
+    fn rejects_high_tag_form_of_own_tag() {
+        // 1F 13 = the high-tag (multi-octet) encoding of PrintableString's tag number 19 (X.690
+        // §8.1.2.4.2). DER requires the low-tag single-octet form 0x13 for numbers <= 30, so the
+        // tag codec rejects this as non-minimal.
+        use crate::tag::TagError;
+        use crate::tlv::TlvError;
+        assert_eq!(
+            decode_restricted_string(&[0x1F, 0x13, 0x01, b'A'], Charset::Printable),
+            Err(StringError::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+    }
+
+    #[test]
+    fn rejects_non_minimal_length() {
+        // 13 81 01 41 = length 1 in the long form (X.690 §8.1.3); DER requires the short form
+        // (13 01 41). A lax parser tolerates the redundant long-form length; DER must not.
+        use crate::length::LengthError;
+        use crate::tlv::TlvError;
+        assert_eq!(
+            decode_restricted_string(&[0x13, 0x81, 0x01, b'A'], Charset::Printable),
+            Err(StringError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+    }
 }

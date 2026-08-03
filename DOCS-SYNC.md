@@ -82,6 +82,30 @@ a historical count is correct *as history*.
 
 If you add a new prose phrasing for a count, add its pattern to `GUARDS` in the script.
 
+#### ⚠ The guard is a phrase list, so its PASS is not coverage (measured 2026-08-03)
+
+That last sentence used to read as housekeeping. It is the whole exposure, and it has now been paid
+for once: adding 11 tests took the total to 320 and **three current-state count-claims stayed at 309
+while `--check` reported PASS**.
+
+| line | why the guard could not see it |
+|---|---|
+| `README.md:17` | `- **309** unit and regression tests` — the emphasis markers sit between the number and the space, so `NUM + r'\s+unit and regression tests'` never matched |
+| `der-verified/README.md:12` | same shape, in the README **published to crates.io** |
+| `docs/why-verified.md:44` | says *"concrete and regression tests"*; the guard only knew *"unit and regression tests"* |
+
+Both causes are fixed — `NUM` now consumes a trailing `**`/`*`/`` ` ``, and the *concrete* variant is
+a guard of its own. Each of the three was re-staled individually afterwards and the gate went **rc=1**
+on each, then rc=0 with all three correct; the crates.io README was found *by* the widened guard, not
+by hand.
+
+**What is not fixed, and cannot be by this mechanism.** The guard still only knows the phrasings
+someone thought to list. Its PASS line counts the **documents scanned**, not the claims covered, so
+"6 guarded count-claims current" says nothing about how many claims exist in those 6 files. Prefer
+citing a number **once**, in `PROOF_MANIFEST.md`, and linking to it — a count that appears in one
+place cannot go stale in another. Where a document must restate one, use an already-guarded phrasing
+verbatim rather than a fresh wording.
+
 ### Disclosing a cover-vacuity finding
 
 A harness whose `kani::cover` is known-unsatisfiable at its bound must carry, next to the narrative,

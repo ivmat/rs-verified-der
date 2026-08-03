@@ -194,6 +194,19 @@ mod tests {
     }
 
     #[test]
+    fn rejects_high_tag_form_of_context_number_0() {
+        // BF 00 = the high-tag (multi-octet) encoding of context-specific number 0 (X.690
+        // §8.1.2.4.2), constructed bit set. DER requires the low-tag single-octet form 0xA0 for
+        // numbers <= 30, so the tag codec rejects this as non-minimal -- a lax BER reader might
+        // still accept the redundant high-tag spelling of a small context number.
+        use crate::tag::TagError;
+        assert_eq!(
+            decode_explicit_context(0, &[0xBF, 0x00]),
+            Err(ContextTagError::BadTlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+    }
+
+    #[test]
     fn rejects_non_canonical_wrapper_length() {
         // The wrapper length re-encoded in the long form (0x81 0x03) where the short form (0x03)
         // is required -- non-minimal, forbidden by DER.

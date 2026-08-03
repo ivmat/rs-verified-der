@@ -14,7 +14,7 @@ evidence is **re-runnable from a fresh clone**: the proofs are the product, not 
 - **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
   ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free.
-- **309** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
+- **320** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
 > proof envelope: exactly what is proven, under what bounds and assumptions, what is stubbed, and
@@ -104,7 +104,7 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 309 tests + 1 doc-test
+cargo test                                    # 320 tests + 27 doc-tests
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain

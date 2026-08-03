@@ -622,6 +622,31 @@ mod tests {
         assert_eq!(decode_set_of(&content), Err(SetOfError::Element(TlvError::Truncated)));
     }
 
+    // --- non-canonical framing (a lax/BER-tolerant reader would accept these; DER must not) ---
+
+    #[test]
+    fn rejects_high_tag_form_of_tag_17() {
+        // 3F 11 = the high-tag (multi-octet) encoding of SET OF's tag number 17 (X.690
+        // §8.1.2.4.2), constructed bit set. DER requires the low-tag single-octet form 0x31 for
+        // numbers <= 30, so the tag codec rejects this as non-minimal.
+        use crate::tag::TagError;
+        assert_eq!(
+            decode_set_of_tlv(&[0x3F, 0x11]),
+            Err(SetOfError::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+    }
+
+    #[test]
+    fn rejects_non_minimal_length() {
+        // 31 81 00 = length 0 in the long form (X.690 §8.1.3); DER requires the short form
+        // (31 00). A lax parser tolerates the redundant long-form length; DER must not.
+        use crate::length::LengthError;
+        assert_eq!(
+            decode_set_of_tlv(&[0x31, 0x81, 0x00]),
+            Err(SetOfError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+    }
+
     #[test]
     fn strict_accepts_exact_and_rejects_trailing() {
         assert_eq!(decode_set_of_tlv_strict(&[0x31, 0x00]), Ok(&[] as &[u8]));

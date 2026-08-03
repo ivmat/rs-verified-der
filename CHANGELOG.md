@@ -7,6 +7,19 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [Unreleased]
 
 ### Documentation / assurance process
+- **The count-claim guard was passing over three stale counts, one of them in the crates.io README.**
+  Adding 11 tests (309 → 320) surfaced it: `--check` reported PASS while `README.md`,
+  `der-verified/README.md` and `docs/why-verified.md` all still said 309. Two independent causes, both
+  invisible from the gate's own output. A number written as `- **309** unit and regression tests` puts
+  markdown emphasis between the number and the space, so the guard's `\s+` could not match — that is
+  the crate's headline assurance figure, in its two most-read files. And `docs/why-verified.md` says
+  *"concrete and regression tests"* where the guard only knew *"unit and regression tests"* — a guard
+  is a fixed phrase list, so a synonym is simply invisible to it. `NUM` now consumes a trailing
+  emphasis marker and the wording variant is a guard of its own; the crates.io README was found *by*
+  the widened guard rather than by hand. Each of the three was then re-staled individually and the
+  gate went rc=1 on each. ⚠ **The general lesson is recorded in `DOCS-SYNC.md` and is not fixed:** the
+  gate's PASS line counts the *documents* it scanned, not the claims it covered, so it must never be
+  read as coverage of every number in those documents.
 - **Every module now carries a runnable usage example: 1 doctest → 27.** All 26 modules outside
   `lib.rs` gained a `# Examples` block in their module documentation. The byte specimens are lifted
   from each module's own passing `#[cfg(test)]` fixtures rather than invented, so an example cannot
@@ -93,6 +106,20 @@ All notable changes to `der-verified` are documented here. The format is based o
   preceding commit.
 
 ### Verification
+- **11 reject-differential vectors, and the finding is how few were missing.** A module-by-module
+  sweep of the BER-versus-DER divergences a lax parser would wave through — non-minimal long-form
+  lengths, indefinite length, non-minimal INTEGER/ENUMERATED, BOOLEAN content outside `0x00`/`0xFF`,
+  BIT STRING unused-bit rules, non-minimal or unterminated OID arcs, SET OF ordering and duplicates,
+  UTCTime/GeneralizedTime fractional seconds and non-`Z` zones, non-shortest UTF-8, trailing bytes —
+  found **every one already covered**, usually by a concrete vector *and* an independent Kani oracle.
+  The genuine gap was structural rather than a missing rule: only `octet_string` had *concrete*
+  specimens driving a **non-minimal high-tag identifier** (X.690 §8.1.2.4.2) and a **non-minimal
+  long-form length** (§8.1.3) through its own public entry point. Both hold generically for all TLVs
+  by the `tag`/`length` harnesses, but no sibling TLV-composing module exercised them at its own door,
+  so a composition regression would have been caught only one layer down. Now closed for
+  `utf8_string`, `restricted_string`, `sequence`, `set_of`, `context_tag`, `x509_extension` and
+  `x509_algorithm_identifier`. Each asserts the exact error variant, never `.is_err()`. Tests 309 →
+  **320**. **No crate defect found** — nothing accepted anything DER forbids.
 - **`profile` is now Kani-proven — six harnesses, and the shape of the statements is the point.** The
   typed RFC 5280 profile layer was `#[test]`-only and was the largest single unproven public entry
   point in the crate. Each of its three cross-field rules is now proven as a **biconditional** (the

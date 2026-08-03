@@ -501,6 +501,31 @@ mod tests {
         );
     }
 
+    // --- non-canonical framing (a lax/BER-tolerant reader would accept these; DER must not) ---
+
+    #[test]
+    fn rejects_high_tag_form_of_tag_16() {
+        // 3F 10 = the high-tag (multi-octet) encoding of SEQUENCE's tag number 16 (X.690
+        // §8.1.2.4.2), constructed bit set. DER requires the low-tag single-octet form 0x30 for
+        // numbers <= 30, so the tag codec rejects this as non-minimal.
+        use crate::tag::TagError;
+        assert_eq!(
+            decode_sequence_tlv(&[0x3F, 0x10]),
+            Err(SequenceError::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+    }
+
+    #[test]
+    fn rejects_non_minimal_length() {
+        // 30 81 00 = length 0 in the long form (X.690 §8.1.3); DER requires the short form
+        // (30 00). A lax parser tolerates the redundant long-form length; DER must not.
+        use crate::length::LengthError;
+        assert_eq!(
+            decode_sequence_tlv(&[0x30, 0x81, 0x00]),
+            Err(SequenceError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+    }
+
     #[test]
     fn unsorted_set_content_is_currently_accepted() {
         // SET-OF content in DESCENDING (non-DER) order: INTEGER 2 then INTEGER 1. DER §11.6 requires

@@ -649,6 +649,21 @@ mod tests {
     }
 
     #[test]
+    fn rejects_non_canonical_extension_length() {
+        // The Extension's own outer SEQUENCE length re-encoded in the long form (0x81 0x09) where
+        // the short form (0x09) is required -- non-minimal (X.690 §8.1.3), forbidden by DER.
+        use crate::length::LengthError;
+        let mut bytes = vec![0x30, 0x81, 0x09];
+        bytes.extend_from_slice(&EXT_BASIC_CONSTRAINTS_DEFAULT[2..]);
+        assert_eq!(
+            parse_extension(&bytes),
+            Err(ExtensionError::BadSeq(SequenceError::Tlv(TlvError::Length(
+                LengthError::NonMinimal
+            ))))
+        );
+    }
+
+    #[test]
     fn rejects_truncated_extension() {
         // Drop the last 4 bytes: the outer SEQUENCE declares more content than is present.
         let bytes = &EXT_BASIC_CONSTRAINTS_DEFAULT[..EXT_BASIC_CONSTRAINTS_DEFAULT.len() - 4];

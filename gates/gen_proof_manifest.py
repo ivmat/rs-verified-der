@@ -935,7 +935,13 @@ GUARDED_DOCS = ['PROOF_MANIFEST.md', 'README.md', 'der-verified/README.md',
 
 # A count, numeric or spelled. The lookbehind matters: without it, "X.509 harnesses" reads as
 # the number 509 and the guard fires on a phantom drift.
-NUM = r'(?<![\w.])(\d+|%s)' % '|'.join(WORDNUM)
+#
+# The trailing `(?:\*\*|\*|`)?` closes a MEASURED hole (2026-08-03). `README.md`'s headline line reads
+# `- **309** unit and regression tests`, and the emphasis markers sit between the number and the
+# whitespace, so `\s+` could not match and the guard never fired. That line went stale by 11 tests
+# while this gate reported PASS — in the repo's most-read file, on the count the crate's pitch leads
+# with. Verified by re-staling it deliberately: rc=0 before this change, rc=1 after.
+NUM = r'(?<![\w.])(\d+|%s)(?:\*\*|\*|`)?' % '|'.join(WORDNUM)
 
 GUARDS = [
     ('harnesses', NUM + r'\s+Kani harnesses'),
@@ -944,6 +950,11 @@ GUARDS = [
     ('harnesses', r'All\s+' + NUM + r'\s+harnesses'),
     ('harnesses', r'of the\s+' + NUM + r'\s+harnesses'),
     ('tests', NUM + r'\s+unit and regression tests'),
+    # `docs/why-verified.md` says "concrete and regression tests" for the same number. A guard is a
+    # fixed phrase list, so a synonym is invisible to it — that line was the second stale count this
+    # gate passed on 2026-08-03. Adding the variant is the narrow fix; the general lesson is that the
+    # PASS line below counts DOCUMENTS scanned, not claims covered, and must not be read as coverage.
+    ('tests', NUM + r'\s+concrete and regression tests'),
     ('tests', r'#\s*' + NUM + r'\s+tests'),
     ('tests', NUM + r'\s+tests\b'),
     ('assumes', r'\(' + NUM + r'\s+across the crate\)'),

@@ -306,6 +306,21 @@ mod tests {
     }
 
     #[test]
+    fn rejects_non_canonical_seq_length() {
+        // The SEQUENCE length re-encoded in the long form (0x81 0x05) where the short form (0x05)
+        // is required -- non-minimal (X.690 §8.1.3), forbidden by DER.
+        use crate::length::LengthError;
+        let mut bytes = vec![0x30, 0x81, 0x05];
+        bytes.extend_from_slice(&ED25519_ALGID[2..]);
+        assert_eq!(
+            parse_algorithm_identifier(&bytes),
+            Err(AlgIdError::BadSeq(SequenceError::Tlv(TlvError::Length(
+                LengthError::NonMinimal
+            ))))
+        );
+    }
+
+    #[test]
     fn rejects_truncated_seq_envelope() {
         // Declares 5 content bytes but only 3 are present.
         let bytes = [0x30, 0x05, 0x06, 0x03, 0x2b];
