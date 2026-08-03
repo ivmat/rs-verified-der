@@ -76,59 +76,35 @@ flowchart TB
     classDef gray fill:#6b6b6b,stroke:#333333,color:#ffffff
 
     subgraph crypto_layer["cryptographic layer — outside the fence, not verified"]
+        direction LR
         style crypto_layer stroke-dasharray: 6 4
-        crypto_verification["Signature / crypto verification"]:::gray
-        path_validation["Certificate-path / trust validation"]:::gray
+        crypto_gray["Certificate-path / trust validation · Signature / crypto verification"]:::gray
     end
     subgraph profile_layer["RFC 5280 profile rules"]
-        basic_constraints["Basic constraints (RFC 5280 §4.2.1.9)"]:::yellow
-        key_usage["Key usage (RFC 5280 §4.2.1.3)"]:::yellow
-        name_constraints["Name constraints (RFC 5280 §4.2.1.10)"]:::yellow
-        profile["profile"]:::blue
-        validity_against_clock["Validity-against-clock (RFC 5280 §4.1.2.5)"]:::yellow
+        direction LR
+        profile_blue["profile"]:::blue
+        profile_yellow["Basic constraints (RFC 5280 §4.2.1.9) · Key usage (RFC 5280 §4.2.1.3) · Name constraints (RFC 5280 §4.2.1.10) · Validity-against-clock (RFC 5280 §4.1.2.5)"]:::yellow
     end
     subgraph structural_layer["X.509 structural composition"]
-        x509_algorithm_identifier["x509_algorithm_identifier"]:::blue
-        x509_certificate["x509_certificate"]:::blue
-        x509_extension["x509_extension"]:::blue
-        x509_name["x509_name"]:::blue
-        x509_spki["x509_spki"]:::blue
-        x509_structural_lid["X.509 structural-module Lean lid (L4)"]:::yellow
-        x509_tbs_certificate["x509_tbs_certificate"]:::blue
-        x509_validity["x509_validity"]:::blue
+        direction LR
+        structural_blue["x509_algorithm_identifier · x509_certificate · x509_extension · x509_name<br/>x509_spki · x509_tbs_certificate · x509_validity"]:::blue
+        structural_yellow["X.509 structural-module Lean lid (L4)"]:::yellow
     end
     subgraph codecs_layer["DER content codecs"]
-        big_integer["big_integer"]:::green
-        bit_string["bit_string"]:::blue
-        boolean["boolean"]:::blue
-        context_tag["context_tag"]:::blue
-        enumerated["enumerated"]:::blue
-        general_set["General SET (X.690 §10.3)"]:::gray
-        generalized_time["generalized_time"]:::blue
-        integer["integer"]:::blue
-        null["null"]:::blue
-        octet_string["octet_string"]:::blue
-        oid["oid"]:::green
-        restricted_string["restricted_string"]:::blue
-        sequence["sequence"]:::green
-        set_of["set_of"]:::blue
-        utc_time["utc_time"]:::blue
-        utf8_string["utf8_string"]:::blue
+        direction LR
+        codecs_green["big_integer · oid · sequence"]:::green
+        codecs_blue["bit_string · boolean · context_tag · enumerated<br/>generalized_time · integer · null · octet_string<br/>restricted_string · set_of · utc_time · utf8_string"]:::blue
+        codecs_gray["General SET (X.690 §10.3)"]:::gray
     end
     subgraph framing_layer["tag / length / TLV framing base"]
-        length["length"]:::green
-        tag["tag"]:::green
-        tlv["tlv"]:::green
+        direction LR
+        framing_green["length · tag · tlv"]:::green
     end
 
     crypto_layer -.-> profile_layer --> structural_layer --> codecs_layer --> framing_layer
 
     subgraph legend["Legend"]
-        legend_green["green = L4/L5 (Aeneas → Lean lid), DERIVED"]:::green
-        legend_blue["blue = L3 (Kani-harnessed), DERIVED"]:::blue
-        legend_yellow["yellow = planned, DECLARED"]:::yellow
-        legend_red["red = a wall we hit, DECLARED"]:::red
-        legend_gray["gray = deliberately not planned, DECLARED"]:::gray
+        legend_all["green = L4/L5 (Aeneas → Lean lid), DERIVED<br/>blue = L3 (Kani-harnessed), DERIVED<br/>yellow = planned, DECLARED<br/>red = a wall we hit, DECLARED<br/>gray = deliberately not planned, DECLARED"]
     end
 ```
 <!-- END GENERATED:map -->

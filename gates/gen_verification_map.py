@@ -212,16 +212,36 @@ def _node_line(id_, label, color):
     return '        %s["%s"]:::%s' % (id_, safe_label, color)
 
 
+# Rendering order for the (layer, color) groups within a subgraph — matches the legend's own
+# order, so a reader scanning top-to-bottom sees the same colour progression everywhere.
+RENDER_COLORS = ['green', 'blue', 'yellow', 'red', 'gray']
+
+# How many member names share one <br/>-delimited line inside a group node before wrapping —
+# purely cosmetic (keeps a group box roughly square instead of one long strip), never drops a name.
+NAMES_PER_LINE = 4
+
+
+def _group_label(names):
+    """Every member NAME joined into a compact multi-line block: ' · ' within a chunk of
+    `NAMES_PER_LINE`, '<br/>' between chunks. Every name passed in still appears verbatim in the
+    output — this only controls line-wrapping, never which names are included."""
+    chunks = [names[i:i + NAMES_PER_LINE] for i in range(0, len(names), NAMES_PER_LINE)]
+    return '<br/>'.join(' · '.join(chunk) for chunk in chunks)
+
+
 def render_map():
     _roster, green, blue, declared = compute()
 
-    nodes_by_layer = {l: [] for l in LAYERS}
+    # (layer, color) -> [member display name, ...]. DERIVED members display as their module name
+    # (the roster name itself); DECLARED members display as their authored label (declared ids are
+    # not module names, so the label is the only human-meaningful "name" they have).
+    groups = {}
     for m in green:
-        nodes_by_layer[layer_of(m)].append((m, m, 'green'))
+        groups.setdefault((layer_of(m), 'green'), []).append(m)
     for m in blue:
-        nodes_by_layer[layer_of(m)].append((m, m, 'blue'))
+        groups.setdefault((layer_of(m), 'blue'), []).append(m)
     for d in declared:
-        nodes_by_layer[d['layer']].append((d['id'], d['label'], d['color']))
+        groups.setdefault((d['layer'], d['color']), []).append(d['label'])
 
     lines = [
         '```mermaid',
@@ -235,21 +255,27 @@ def render_map():
     ]
     for layer in LAYERS:
         lines.append('    subgraph %s_layer["%s"]' % (layer, LAYER_TITLES[layer]))
+        lines.append('        direction LR')
         if layer == 'crypto':
             lines.append('        style %s_layer stroke-dasharray: 6 4' % layer)
-        for id_, label, color in sorted(nodes_by_layer[layer]):
-            lines.append(_node_line(id_, label, color))
+        for color in RENDER_COLORS:
+            names = groups.get((layer, color))
+            if not names:
+                continue
+            names = sorted(names)
+            node_id = '%s_%s' % (layer, color)
+            lines.append(_node_line(node_id, _group_label(names), color))
         lines.append('    end')
     lines += [
         '',
         '    crypto_layer -.-> profile_layer --> structural_layer --> codecs_layer --> framing_layer',
         '',
         '    subgraph legend["Legend"]',
-        '        legend_green["green = L4/L5 (Aeneas → Lean lid), DERIVED"]:::green',
-        '        legend_blue["blue = L3 (Kani-harnessed), DERIVED"]:::blue',
-        '        legend_yellow["yellow = planned, DECLARED"]:::yellow',
-        '        legend_red["red = a wall we hit, DECLARED"]:::red',
-        '        legend_gray["gray = deliberately not planned, DECLARED"]:::gray',
+        '        legend_all["green = L4/L5 (Aeneas → Lean lid), DERIVED<br/>'
+        'blue = L3 (Kani-harnessed), DERIVED<br/>'
+        'yellow = planned, DECLARED<br/>'
+        'red = a wall we hit, DECLARED<br/>'
+        'gray = deliberately not planned, DECLARED"]',
         '    end',
         '```',
     ]

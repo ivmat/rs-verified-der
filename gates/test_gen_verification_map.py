@@ -242,13 +242,21 @@ class RegionPlumbing(unittest.TestCase):
         _, missing = gen.rewrite(text)
         self.assertTrue(missing)
 
-    def test_render_contains_every_roster_and_declared_id(self):
+    def test_render_contains_every_roster_module_as_a_substring(self):
+        # Nodes are now GROUPED (one per layer/colour, not one per module), so a module's own name
+        # is no longer a node id -- it only survives as text merged into a group label. That is
+        # exactly the new place a rendering bug could drop a module while `parity_errors` (which
+        # only ever looks at the SETS, never the rendered text) stays green. Every roster module
+        # must still appear, verbatim, somewhere in the rendered map.
         rendered = gen.render()
         roster = gen.roster_from_tiers()
         for m in roster:
-            self.assertIn(m + '[', rendered, '%s missing from rendered map' % m)
+            self.assertIn(m, rendered, '%s missing from rendered map' % m)
+
+    def test_render_contains_every_declared_label_as_a_substring(self):
+        rendered = gen.render()
         for d in gen.read_declared():
-            self.assertIn(d['id'] + '[', rendered, '%s missing from rendered map' % d['id'])
+            self.assertIn(d['label'], rendered, '%s missing from rendered map' % d['id'])
 
 
 class GateExitCode(unittest.TestCase):
