@@ -474,7 +474,17 @@ def verified_source_unchanged_since(commit):
     if not commit or commit == 'unrecorded':
         return None
     try:
-        out = subprocess.run(['git', '-C', ROOT, 'diff', '--name-only', commit + '..HEAD', '--']
+        # `commit` (no `..HEAD`), so the comparison is against the WORKING TREE, not the last
+        # commit. This region is written and `--check`ed by the pre-commit hook, i.e. while the
+        # change being made is still uncommitted -- so `commit..HEAD` answers about the tree as it
+        # was BEFORE the commit, and the sentence lands one commit stale. On 2026-08-03 that
+        # published a false claim: a commit that regenerated all six extracted Lean models (a
+        # VERIFIED_PATHS path) shipped a manifest still asserting "`evidence/check-ea8dad4-
+        # remainder.log` still speaks for HEAD", because at hook time HEAD did not yet contain
+        # them. Found by a second model. Diffing the working tree also fails in the safe
+        # direction: an uncommitted edit to verified source now reads as superseding a run,
+        # which it does. On a clean tree the two forms are identical, so CI is unaffected.
+        out = subprocess.run(['git', '-C', ROOT, 'diff', '--name-only', commit, '--']
                              + VERIFIED_PATHS, capture_output=True, text=True, timeout=30)
         if out.returncode != 0:
             return None

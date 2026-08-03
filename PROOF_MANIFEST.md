@@ -231,10 +231,12 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**`evidence/check-ea8dad4-remainder.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff ea8dad4..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
+**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-ea8dad4-remainder.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-ea8dad4.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check_tractable-67c1f80.log` (at `67c1f80`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 <!-- END GENERATED:evidence-coverage -->
 
