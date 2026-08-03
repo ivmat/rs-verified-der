@@ -28,6 +28,18 @@
 //! length-field minimality are exactly the properties [`crate::tag`] and [`crate::length`] already
 //! prove for every TLV, and this module reaches them only via [`crate::tlv::decode_tlv`] — it adds
 //! no framing logic of its own beyond the class/number/constructed classification below.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::context_tag::decode_explicit_context;
+//!
+//! // [0] EXPLICIT INTEGER 5: A0 03 02 01 05 -- wrapper, then the nested INTEGER TLV.
+//! let bytes = [0xA0, 0x03, 0x02, 0x01, 0x05];
+//! let (inner, used) = decode_explicit_context(0, &bytes).unwrap();
+//! assert_eq!(used, 5);
+//! assert_eq!(inner, &[0x02, 0x01, 0x05]);
+//! ```
 
 use crate::tag::Class;
 use crate::tlv::{decode_tlv, TlvError};

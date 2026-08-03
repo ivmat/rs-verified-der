@@ -16,6 +16,18 @@
 //! - *No first-subidentifier "semantic" rejection is needed.* Every canonical first subidentifier
 //!   value `Z` decodes to a valid arc pair via `X = min(Z/40, 2)`, `Y = Z − 40·X`, so `X ∈ {0,1,2}`
 //!   always — there is no impossible first subidentifier to reject (e.g. `Z=126 ⇒ {2.46}`, valid).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::oid::validate_oid;
+//!
+//! // 1.2.840.113549 (RSADSI): 2A 86 48 86 F7 0D
+//! assert_eq!(validate_oid(&[0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D]), Ok(()));
+//!
+//! // 0x80 0x01 encodes a subidentifier non-minimally (should be just 0x01).
+//! assert!(validate_oid(&[0x80, 0x01]).is_err());
+//! ```
 
 /// The universal tag number for OBJECT IDENTIFIER.
 pub const TAG: u32 = 6;

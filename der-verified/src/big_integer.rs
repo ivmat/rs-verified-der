@@ -24,6 +24,18 @@
 //! i64-materialization bound it to small integers. This module keeps the identical minimality rule
 //! and drops the cap: any content length is structurally valid. `minimality_is_local` machine-checks
 //! the locality claim directly (same leading two octets, arbitrary differing tail => same verdict).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::big_integer::validate_integer_content;
+//!
+//! // 0x00 0x80 = 128 is minimal (0x80 alone would decode as -128 elsewhere).
+//! assert_eq!(validate_integer_content(&[0x00, 0x80]), Ok(()));
+//!
+//! // 0x00 0x01 is a non-minimal encoding of 1 (should be just 0x01).
+//! assert!(validate_integer_content(&[0x00, 0x01]).is_err());
+//! ```
 
 /// The universal tag number for INTEGER (same UNIVERSAL 2 as [`crate::integer`]; this module is
 /// the arbitrary-magnitude complement to that module's `i64` materialization — same tag, different

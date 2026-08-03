@@ -3,6 +3,18 @@
 //! The content is exactly one octet. DER (unlike BER) is canonical: `FALSE` is `0x00` and `TRUE`
 //! is `0xFF` — no other octet is a valid TRUE. These functions operate on the *content* octets
 //! of a TLV whose tag is UNIVERSAL 1 (`0x01`); see [`crate::tlv`] for extracting that content.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::boolean::{decode_bool, encode_bool};
+//!
+//! assert_eq!(decode_bool(&[0xFF]), Ok(true));
+//! assert_eq!(encode_bool(true), 0xFF);
+//!
+//! // BER would accept 0x01 as TRUE; DER must not.
+//! assert!(decode_bool(&[0x01]).is_err());
+//! ```
 
 /// The universal tag number for BOOLEAN.
 pub const TAG: u32 = 1;

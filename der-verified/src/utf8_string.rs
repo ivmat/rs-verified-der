@@ -45,6 +45,20 @@
 //! sequence per code point (an overlong form is *invalid*, not merely a non-canonical alternate
 //! spelling of a valid one), so well-formedness *is* the canonicality property here — there is no
 //! separate "shortest form" check layered on top the way there is for, say, DER integers.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::utf8_string::decode_utf8_str;
+//!
+//! // 0C 01 41 = UTF8String { "A" }
+//! let (s, used) = decode_utf8_str(&[0x0C, 0x01, b'A']).unwrap();
+//! assert_eq!(used, 3);
+//! assert_eq!(s, "A");
+//!
+//! // A lone continuation byte (0x80) is not well-formed UTF-8.
+//! assert!(decode_utf8_str(&[0x0C, 0x01, 0x80]).is_err());
+//! ```
 
 use crate::tag::{Class, Tag};
 use crate::tlv::{decode_tlv, encode_tlv_into, TlvError};

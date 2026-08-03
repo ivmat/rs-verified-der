@@ -7,6 +7,14 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [Unreleased]
 
 ### Documentation / assurance process
+- **Every module now carries a runnable usage example: 1 doctest → 27.** All 26 modules outside
+  `lib.rs` gained a `# Examples` block in their module documentation. The byte specimens are lifted
+  from each module's own passing `#[cfg(test)]` fixtures rather than invented, so an example cannot
+  assert an encoding the crate's own tests do not already agree with — which matters more here than
+  in most crates, since a wrong "example" of a DER encoding is a wrong claim about X.690. Every
+  example is self-checking; flipping one expected value takes the suite to `26 passed; 1 failed`, so
+  the green is a check rather than a compile. Documentation-only: 414 inserted lines, all `//!`, zero
+  deletions, no proof or behaviour touched.
 - **A second full-gate run is committed, at HEAD: `evidence/check-28e1429.log`** — 171
   `VERIFICATION: SUCCESSFUL`, 0 `FAILED`, `cargo test` green, L4 Lean `PASS (sorry-free)` in the same
   pass, 91 min wall under a `MemoryMax=22G` cgroup scope. The three unsatisfied covers are again

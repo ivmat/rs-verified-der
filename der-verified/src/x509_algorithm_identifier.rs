@@ -33,6 +33,19 @@
 //!   non-strict, composable stance. A top-level caller checks the returned length against
 //!   `input.len()` itself, exactly as [`crate::x509_spki::parse_subject_public_key_info`] does for
 //!   its own outer SEQUENCE.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::x509_algorithm_identifier::parse_algorithm_identifier;
+//!
+//! // A real Ed25519 AlgorithmIdentifier (RFC 8410 §4): OID 1.3.101.112, no parameters.
+//! let algid_der = [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70];
+//! let (algid, used) = parse_algorithm_identifier(&algid_der).unwrap();
+//! assert_eq!(used, 7);
+//! assert_eq!(algid.algorithm_oid, &[0x2b, 0x65, 0x70]);
+//! assert_eq!(algid.parameters, None);
+//! ```
 
 use crate::oid::{validate_oid, OidError};
 use crate::oid::TAG as OID_TAG;

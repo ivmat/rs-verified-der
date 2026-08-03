@@ -60,6 +60,26 @@
 //!   exactly tile into its fields (`extnID`, the optional `critical`, `extnValue` — nothing more) —
 //!   the classic parser-differential vector this crate's other modules guard against
 //!   (`decode_tlv_strict` / `decode_sequence_tlv_strict`).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::x509_extension::parse_extension;
+//!
+//! // basicConstraints (2.5.29.19), critical absent (the DER-canonical way to say `false`).
+//! let ext_der = [
+//!     0x30, 0x09,
+//!         0x06, 0x03, 0x55, 0x1d, 0x13,
+//!         0x04, 0x02, 0x30, 0x00,
+//! ];
+//! let ext = parse_extension(&ext_der).unwrap();
+//! assert_eq!(ext.extn_id, &[0x55, 0x1d, 0x13]);
+//! assert_eq!(ext.critical, false);
+//!
+//! // A PRESENT-but-FALSE critical (01 01 00) violates §11.5's DEFAULT-omission rule.
+//! let bad = [0x30, 0x0c, 0x06, 0x03, 0x55, 0x1d, 0x13, 0x01, 0x01, 0x00, 0x04, 0x02, 0x30, 0x00];
+//! assert!(parse_extension(&bad).is_err());
+//! ```
 
 use crate::boolean::TAG as BOOL_TAG;
 use crate::boolean::{decode_bool, BoolError};

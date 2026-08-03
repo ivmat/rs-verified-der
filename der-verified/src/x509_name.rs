@@ -50,6 +50,21 @@
 //!   (1..MAX) OF AttributeTypeAndValue` — at least one `AttributeTypeAndValue`. This module adds
 //!   that check itself ([`NameError::EmptyRdn`]); `set_of` deliberately stays schema-free (it has
 //!   no `SIZE` concept) and is not the place for it.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::x509_name::validate_name;
+//!
+//! // A single-RDN Name: CN=Example CA (UTF8String).
+//! #[rustfmt::skip]
+//! let name_der: [u8; 23] = [
+//!     0x30, 0x15, 0x31, 0x13, 0x30, 0x11, 0x06, 0x03,
+//!     0x55, 0x04, 0x03, 0x0c, 0x0a, 0x45, 0x78, 0x61,
+//!     0x6d, 0x70, 0x6c, 0x65, 0x20, 0x43, 0x41,
+//! ];
+//! assert_eq!(validate_name(&name_der), Ok(()));
+//! ```
 
 use crate::oid::TAG as OID_TAG;
 use crate::oid::{validate_oid, OidError};

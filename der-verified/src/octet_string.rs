@@ -12,6 +12,18 @@
 //!
 //! The security-critical property is inherited from the TLV reader: an accepted OCTET STRING
 //! never exposes bytes beyond the input (**no over-read**).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::octet_string::{decode_octet_string, encode_octet_string_into};
+//!
+//! let mut out = [0u8; 16];
+//! let n = encode_octet_string_into(&[0xDE, 0xAD, 0xBE, 0xEF], &mut out).unwrap();
+//! let (content, used) = decode_octet_string(&out[..n]).unwrap();
+//! assert_eq!(used, n);
+//! assert_eq!(content, &[0xDE, 0xAD, 0xBE, 0xEF]);
+//! ```
 
 use crate::tag::{Class, Tag};
 use crate::tlv::{decode_tlv, encode_tlv_into, TlvError};

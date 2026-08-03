@@ -7,6 +7,20 @@
 //! DER*: a strictly-compliant parser would parse an arbitrarily large length and reject the
 //! object elsewhere. Rejecting the length field itself is a safe, documented trade-off for
 //! X.509, whose lengths are far under 4 GiB.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::length::{decode_length, encode_length};
+//!
+//! // A canonical DER short-form length: 0x05 encodes the value 5 in a single octet.
+//! let (value, consumed) = decode_length(&[0x05]).unwrap();
+//! assert_eq!((value, consumed), (5, 1));
+//!
+//! // Round-trip through the encoder: 0x1234 needs the long form (0x82, then 2 octets).
+//! let (buf, used) = encode_length(0x1234);
+//! assert_eq!(&buf[..used], &[0x82, 0x12, 0x34]);
+//! ```
 
 /// Why a DER length field was rejected. Every rejection is a distinct, testable reason.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

@@ -27,6 +27,16 @@
 //! - **The RFC 5280 century mapping** (`YY < 50 ⇒ 20YY`, `YY ≥ 50 ⇒ 19YY`) is a *profile* rule, not an
 //!   encoding rule; it is **not** applied here (`year2` is returned raw). A caller in an X.509 context
 //!   applies it — see [`full_year_rfc5280`].
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::utc_time::{decode_utc_time, UtcTime};
+//!
+//! // 991231235959Z = 1999-12-31 23:59:59 UTC (raw fields; no century mapping here).
+//! let t = decode_utc_time(b"991231235959Z").unwrap();
+//! assert_eq!(t, UtcTime { year2: 99, month: 12, day: 31, hour: 23, minute: 59, second: 59 });
+//! ```
 
 /// The universal tag number for UTCTime.
 pub const TAG: u32 = 23;

@@ -150,11 +150,25 @@ scope boundary referenced below.
       The last one was `profile`'s module doc linking to the private `check_time_encoding_year`.
 - [x] `#![deny(missing_docs)]` is in `lib.rs`, and the crate doc carries a runnable example
       (`lib.rs`'s doctest passes in `cargo test`).
-- [ ] Add `CHANGELOG.md` (Keep-a-Changelog) with the 0.1.0 entry.
+- [x] Add `CHANGELOG.md` (Keep-a-Changelog) with the 0.1.0 entry. **Was already done and this line
+      was stale** — `CHANGELOG.md` was added by the release commit `1b2dc54` ("release: der-verified
+      0.1.0") itself, carries the Keep-a-Changelog header and SemVer statement, and has `[0.1.0]`,
+      `[0.0.0]` and `[Unreleased]` sections with release-tag links. Closed by looking, 2026-08-03.
+      Second item in three days that was parked while being answerable in one command.
 - [x] MSRV declared: `rust-version = "1.70"` in `der-verified/Cargo.toml`. **Not** CI-checked
       against that exact toolchain — CI builds on the pinned channel, so the MSRV is a declaration,
       not a verified claim. That check is still open.
-- [ ] Confirm CI is green on the public repo and that docs.rs builds cleanly.
+- [x] Confirm CI is green on the public repo and that docs.rs builds cleanly. **Measured
+      2026-08-03.** Public CI: the `CI` workflow's most recent run is `conclusion: success` on
+      `f6bda7b`, which is HEAD — so the green is *at* HEAD, not merely somewhere in history; the five
+      most recent runs are all `success`. docs.rs: `https://docs.rs/crate/der-verified/0.1.0/status.json`
+      returns `{"doc_status":true,"version":"0.1.0"}` (HTTP 200), and `0.0.0` likewise. Locally
+      `cargo doc --no-deps` is warning-free.
+      ⚠ **What the docs.rs probe does NOT establish.** It discriminates existing from non-existing —
+      a nonexistent version (`9.9.9`) and a nonsense crate name both return no response at all
+      (HTTP 000, this box's egress) rather than a false `true`. But no `doc_status:false` case was
+      exhibited, so the probe is *unexercised* on the built-clean-versus-build-failed distinction. It
+      says the docs built; it has not been watched to say otherwise.
 - [ ] Final public-API review (0.1.0 is the API you're committing to; breaking changes still allowed
       pre-1.0 but keep it coherent).
 - [x] `cargo publish` the 0.1.0. **DONE — measured 2026-08-02, not inferred.** This box's egress
@@ -182,6 +196,17 @@ scope boundary referenced below.
 ## Good first issues
 
 - [ ] More reject-differential test vectors (non-canonical encodings a lax parser would accept).
-- [ ] Rustdoc usage examples per module (they double as doctests).
+- [x] Rustdoc usage examples per module (they double as doctests). **Done 2026-08-03 — 1 doctest →
+      27.** Every one of the 26 modules outside `lib.rs` gained a `# Examples` block in its `//!`
+      documentation. The byte specimens are lifted from each module's own passing `#[cfg(test)]`
+      fixtures rather than invented, so an example cannot assert a DER encoding the crate's own tests
+      do not already agree with.
+      **Watched to fail before being trusted:** every example is self-checking (each carries at least
+      one `assert`), and flipping a single expected value in `boolean`'s example takes the suite to
+      `26 passed; 1 failed`, rc=101 — so `27 passed` is a real check and not a compile-only pass.
+      Documentation-only: all **414** inserted lines are `//!` lines and there are zero deletions, so
+      no body, signature, test or `#[kani::…]` harness moved. `cargo doc --no-deps` stays
+      warning-free, `cargo clippy --all-targets -D warnings` is rc=0, and `check_fast.sh` (hygiene +
+      proof-manifest self-test + proof-manifest gate + workspace tests) is rc=0.
 - [x] A "why / threat-model" writeup covering what a verified decoder buys you —
       [`docs/why-verified.md`](docs/why-verified.md).

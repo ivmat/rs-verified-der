@@ -6,6 +6,16 @@
 //! `crate::integer`'s minimality/round-trip proofs (see `DECISIONS.md` D11's precedent against
 //! near-duplicate modules for the same content rule) — it only needs to confirm the delegation and
 //! tag number are wired correctly.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::enumerated::{decode_enumerated, encode_enumerated};
+//!
+//! let (buf, n) = encode_enumerated(2); // e.g. a CRL reason code
+//! assert_eq!(&buf[..n], &[0x02]);
+//! assert_eq!(decode_enumerated(&buf[..n]), Ok(2));
+//! ```
 
 /// The universal tag number for ENUMERATED.
 pub const TAG: u32 = 10;

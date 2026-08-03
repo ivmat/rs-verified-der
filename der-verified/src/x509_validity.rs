@@ -45,6 +45,24 @@
 //!   after the whole `Validity`); the two `Time` fields must exactly tile the outer content — the
 //!   classic parser-differential vector this crate's other modules guard against
 //!   (`decode_tlv_strict` / `decode_sequence_tlv_strict`).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::x509_validity::{parse_validity, Time};
+//!
+//! // notBefore = UTCTime 1999-01-01, notAfter = UTCTime 1999-12-31 23:59:59Z.
+//! #[rustfmt::skip]
+//! let validity_der: [u8; 32] = [
+//!     0x30, 0x1e,
+//!         0x17, 0x0d,
+//!             0x39, 0x39, 0x30, 0x31, 0x30, 0x31, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x5a,
+//!         0x17, 0x0d,
+//!             0x39, 0x39, 0x31, 0x32, 0x33, 0x31, 0x32, 0x33, 0x35, 0x39, 0x35, 0x39, 0x5a,
+//! ];
+//! let v = parse_validity(&validity_der).unwrap();
+//! assert!(matches!(v.not_before, Time::Utc(_)));
+//! ```
 
 use crate::generalized_time::TAG as GENERALIZED_TIME_TAG;
 use crate::generalized_time::{decode_generalized_time, GeneralizedTime, GeneralizedTimeError};

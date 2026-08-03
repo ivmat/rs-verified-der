@@ -27,6 +27,18 @@
 //!   anti-differential profile (X.680 permits `60`; real signers never emit it). Documented, contestable.
 //! - **Calendar validity is out of scope** — fields are range-checked independently; `day` is uniformly
 //!   `01..=31` (no Feb-29 / per-month-length check). Clock/timezone math is out of scope.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::generalized_time::decode_generalized_time;
+//!
+//! // 20230615120000.52Z — canonical fractional seconds (no trailing zero).
+//! let t = decode_generalized_time(b"20230615120000.52Z").unwrap();
+//! assert_eq!(t.year, 2023);
+//! assert_eq!(t.second, 0);
+//! assert_eq!(t.fraction, b"52");
+//! ```
 
 /// The universal tag number for GeneralizedTime.
 pub const TAG: u32 = 24;

@@ -9,6 +9,18 @@
 //! **Supported range & compliance boundary:** tag numbers up to `u32::MAX`; a high-tag form
 //! encoding a larger value is rejected as `Err(TooLarge)`, never a panic — the same
 //! deliberate deviation from full DER as the length codec (safe for X.509).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::tag::{decode_tag, encode_tag, Class, Tag};
+//!
+//! // Universal SEQUENCE (number 16, constructed) encodes to the single octet 0x30.
+//! let t = Tag { class: Class::Universal, constructed: true, number: 16 };
+//! let (buf, used) = encode_tag(t);
+//! assert_eq!(&buf[..used], &[0x30]);
+//! assert_eq!(decode_tag(&buf[..used]), Ok((t, 1)));
+//! ```
 
 /// The tag class (X.690 §8.1.2.2).
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

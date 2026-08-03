@@ -50,6 +50,20 @@
 //! minimal length, high-tag form, indefinite length are all rejected, inherited from
 //! [`crate::tag`]/[`crate::length`]); it does not additionally re-validate each child's own content
 //! canonicality (a canonical BOOLEAN, a minimal INTEGER, …) — same D5 boundary, extended.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::set_of::decode_set_of_tlv;
+//!
+//! // 31 09 { INTEGER 1, INTEGER 2, INTEGER 3 } — ascending encoding order (§11.6).
+//! let der = [0x31, 0x09, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01, 0x03];
+//! assert!(decode_set_of_tlv(&der).is_ok());
+//!
+//! // The same members in descending order violate §11.6 and are rejected.
+//! let unsorted = [0x31, 0x09, 0x02, 0x01, 0x03, 0x02, 0x01, 0x02, 0x02, 0x01, 0x01];
+//! assert!(decode_set_of_tlv(&unsorted).is_err());
+//! ```
 
 use crate::tag::{Class, Tag};
 use crate::tlv::{decode_tlv, encode_tlv_into, TlvError};

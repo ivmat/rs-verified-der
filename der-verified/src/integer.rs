@@ -9,6 +9,20 @@
 //! rejected as `TooLarge` — a documented deviation from full DER (arbitrary-precision), safe for
 //! the small integers in X.509 (versions, key sizes, small serials). Large serial numbers need a
 //! big-integer type (a later addition); this is the `i64` core.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::integer::{decode_integer, encode_integer};
+//!
+//! // 128 needs a leading 0x00 to stay positive (0x80 alone would decode as -128).
+//! let (buf, n) = encode_integer(128);
+//! assert_eq!(&buf[..n], &[0x00, 0x80]);
+//! assert_eq!(decode_integer(&buf[..n]), Ok(128));
+//!
+//! // Redundant padding is rejected: 0x00 0x01 is a non-minimal encoding of 1.
+//! assert!(decode_integer(&[0x00, 0x01]).is_err());
+//! ```
 
 /// The universal tag number for INTEGER.
 pub const TAG: u32 = 2;

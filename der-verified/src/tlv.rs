@@ -6,6 +6,17 @@
 //! for constructed types. DER's definite-length requirement is inherited from the length codec
 //! (indefinite `0x80` is already rejected there). The security-critical property proven here is
 //! **no over-read**: an accepted TLV never claims or exposes bytes beyond the input.
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::tlv::decode_tlv;
+//!
+//! // 02 01 07  =  INTEGER 7 (tag 0x02, length 1, value 0x07).
+//! let (tlv, used) = decode_tlv(&[0x02, 0x01, 0x07]).unwrap();
+//! assert_eq!(used, 3);
+//! assert_eq!(tlv.value, &[0x07]);
+//! ```
 
 use crate::length::{decode_length, encode_length, LengthError};
 use crate::tag::{decode_tag, encode_tag, Tag, TagError};

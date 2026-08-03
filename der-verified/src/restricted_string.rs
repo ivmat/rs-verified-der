@@ -32,6 +32,21 @@
 //! Out of scope, as a caller-applied X.509 profile layer (the same altitude split as the time types,
 //! D10): `SIZE` / length-limit constraints, and the `DirectoryString` CHOICE rules (which of these
 //! types — plus `TeletexString`/`UTF8String`/`BMPString` — an attribute is allowed to use).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::restricted_string::decode_printable_string;
+//!
+//! // 13 05 "Hello" = PrintableString { "Hello" }
+//! let (content, used) =
+//!     decode_printable_string(&[0x13, 0x05, b'H', b'e', b'l', b'l', b'o']).unwrap();
+//! assert_eq!(used, 7);
+//! assert_eq!(content, b"Hello");
+//!
+//! // PrintableString excludes '@' -- a classic charset-widening differential.
+//! assert!(decode_printable_string(&[0x13, 0x01, b'@']).is_err());
+//! ```
 
 use crate::tag::{Class, Tag};
 use crate::tlv::{decode_tlv, encode_tlv_into, TlvError};

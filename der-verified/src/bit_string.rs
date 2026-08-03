@@ -19,6 +19,17 @@
 //!   STRING, so it belongs to the schema layer — applying it here would reject valid values.
 //! - **Octet alignment** (e.g. `SubjectPublicKeyInfo.subjectPublicKey`, which wraps a DER blob):
 //!   callers needing a byte-aligned value must require `unused == 0` — see [`require_octet_aligned`].
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::bit_string::decode_bit_string;
+//!
+//! // 0x04 0xF0 = 4 bits used (top nibble); the low 4 padding bits are zero -> canonical.
+//! let bs = decode_bit_string(&[0x04, 0xF0]).unwrap();
+//! assert_eq!(bs.data, &[0xF0]);
+//! assert_eq!(bs.unused, 4);
+//! ```
 
 /// The universal tag number for BIT STRING.
 pub const TAG: u32 = 3;

@@ -2,6 +2,15 @@
 //!
 //! NULL carries no value: its content must be empty (the TLV is `05 00`). These functions operate
 //! on the content octets of a TLV whose tag is UNIVERSAL 5 (`0x05`).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::null::decode_null;
+//!
+//! assert_eq!(decode_null(&[]), Ok(()));
+//! assert!(decode_null(&[0x00]).is_err()); // NULL content must be empty
+//! ```
 
 /// The universal tag number for NULL.
 pub const TAG: u32 = 5;

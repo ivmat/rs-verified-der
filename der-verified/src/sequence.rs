@@ -32,6 +32,18 @@
 //! SEQUENCE never yields a child value beyond the content slice, and the walk never advances past
 //! `content.len()`. DER's definite-length requirement is inherited from the length codec (the BER
 //! indefinite form `0x80` is already rejected there, so a `0x30 0x80 …` SEQUENCE cannot decode).
+//!
+//! # Examples
+//!
+//! ```
+//! use der_verified::sequence::{decode_sequence, decode_sequence_tlv};
+//!
+//! // 30 06 02 01 07 01 01 FF  =  SEQUENCE { INTEGER 7, BOOLEAN TRUE }
+//! let der = [0x30, 0x06, 0x02, 0x01, 0x07, 0x01, 0x01, 0xFF];
+//! let (content, used) = decode_sequence_tlv(&der).unwrap();
+//! assert_eq!(used, 8);
+//! assert_eq!(decode_sequence(content), Ok(2)); // two well-framed children
+//! ```
 
 use crate::tag::{Class, Tag};
 use crate::tlv::{decode_tlv, encode_tlv_into, Tlv, TlvError};
