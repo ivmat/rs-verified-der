@@ -106,41 +106,75 @@ fi
 echo "== lean lid: re-extract (charon -> aeneas) + drift check =="
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-( cd "$HERE/extract" && "$CHARON_BIN" cargo --preset=aeneas --dest "$TMP" >/dev/null 2>&1 )
-"$AENEAS_BIN" -backend lean "$TMP/der_length_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-if ! diff -q "$TMP/DerLengthExtract.lean" "$HERE/DerLengthExtract.lean" >/dev/null; then
-  echo "!! lean lid: FAIL - regenerated model differs from committed DerLengthExtract.lean." >&2
-  echo "   length.rs changed; re-extract and re-prove before committing." >&2
+
+# ⚠ EXTRACTION FAILURE AND MODEL DRIFT ARE DIFFERENT FINDINGS, AND THIS GATE MUST NOT CONFLATE THEM.
+#
+# Until 2026-08-03 the length/bigint/oid/tag extractions sent charon and aeneas output to /dev/null
+# and went straight to `diff -q`. That made a TOOL failure indistinguishable from a SOURCE change in
+# two ways, both of which lie about the cause:
+#
+#   * aeneas exits 0 but writes no model -> `diff -q` fails on the missing file -> the lid announces
+#     "regenerated model differs ... length.rs changed", blaming a source file that never moved.
+#   * charon or aeneas exits non-zero -> `set -e` aborts the script mid-pipeline with its output
+#     already discarded, so `check.sh` fails with NO diagnostic at all.
+#
+# So each stage is now checked on its own terms: the tool's exit status, then the existence of the
+# artifact it was supposed to produce, and only then the diff. A failure of the first two says
+# EXTRACTION FAILURE and reprints the captured tool output; only the third says MODEL DRIFT and names
+# a source file. Both directions are exercised deliberately — see evidence/lid-drift-faults-*.log.
+extract_model() {
+  _dir="$1"; _llbc="$2"; _model="$3"; shift 3
+  _log="$TMP/extract-$_model.log"
+  if ! ( cd "$HERE/$_dir" && "$CHARON_BIN" cargo --preset=aeneas "$@" --dest "$TMP" ) >"$_log" 2>&1; then
+    _fail_extraction "$_model" "charon exited non-zero" "$_log"
+  fi
+  if [ ! -f "$TMP/$_llbc" ]; then
+    _fail_extraction "$_model" "charon exited 0 but produced no $_llbc" "$_log"
+  fi
+  if ! "$AENEAS_BIN" -backend lean "$TMP/$_llbc" -dest "$TMP" >"$_log" 2>&1; then
+    _fail_extraction "$_model" "aeneas exited non-zero" "$_log"
+  fi
+  if [ ! -f "$TMP/$_model.lean" ]; then
+    _fail_extraction "$_model" "aeneas exited 0 but produced no $_model.lean" "$_log"
+  fi
+}
+
+_fail_extraction() {
+  echo "!! lean lid: FAIL - EXTRACTION FAILURE for $1: $2." >&2
+  echo "   This is a TOOLCHAIN failure, NOT a source change. No claim is made about whether the" >&2
+  echo "   shipped source drifted -- the model could not be regenerated, so it was never compared." >&2
+  echo "   Captured tool output:" >&2
+  if [ -s "$3" ]; then sed 's/^/   | /' "$3" >&2; else echo "   | (tool produced no output)" >&2; fi
   exit 1
-fi
-( cd "$HERE/extract-bigint" && "$CHARON_BIN" cargo --preset=aeneas --dest "$TMP" >/dev/null 2>&1 )
-"$AENEAS_BIN" -backend lean "$TMP/der_bigint_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-if ! diff -q "$TMP/DerBigintExtract.lean" "$HERE/DerBigintExtract.lean" >/dev/null; then
-  echo "!! lean lid: FAIL - regenerated model differs from committed DerBigintExtract.lean." >&2
-  echo "   big_integer.rs changed; re-extract and re-prove before committing." >&2
-  exit 1
-fi
-( cd "$HERE/extract-oid" && "$CHARON_BIN" cargo --preset=aeneas --dest "$TMP" >/dev/null 2>&1 )
-"$AENEAS_BIN" -backend lean "$TMP/der_oid_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-if ! diff -q "$TMP/DerOidExtract.lean" "$HERE/DerOidExtract.lean" >/dev/null; then
-  echo "!! lean lid: FAIL - regenerated model differs from committed DerOidExtract.lean." >&2
-  echo "   oid.rs changed; re-extract and re-prove before committing." >&2
-  exit 1
-fi
+}
+
+# Only reached when extraction SUCCEEDED and a model file exists, so a difference here really is a
+# difference between the shipped source and the committed model.
+check_drift() {
+  _model="$1"; _srcs="$2"
+  if ! diff -q "$TMP/$_model.lean" "$HERE/$_model.lean" >/dev/null; then
+    echo "!! lean lid: FAIL - MODEL DRIFT: regenerated model differs from committed $_model.lean." >&2
+    echo "   Extraction succeeded, so this is a real difference: $_srcs changed;" >&2
+    echo "   re-extract and re-prove before committing." >&2
+    exit 1
+  fi
+}
+
+extract_model extract der_length_extract.llbc DerLengthExtract
+check_drift DerLengthExtract "length.rs"
+extract_model extract-bigint der_bigint_extract.llbc DerBigintExtract
+check_drift DerBigintExtract "big_integer.rs"
+extract_model extract-oid der_oid_extract.llbc DerOidExtract
+check_drift DerOidExtract "oid.rs"
 # tag: --opaque on tag::encode_tag — its Rust parameter named `tag` shadows the `tag` module in
 # Aeneas's Lean dot-notation resolution ("Invalid field" elaboration errors), the SAME
 # parameter-shadowing workaround the tlv/sequence lids below use; `decode_tag` (what this lid
 # proves) never calls `encode_tag`, so this loses nothing. `decode_tag` itself now extracts WITH
 # A BODY (the D25-style single-loop/depth-1-return refactor — see tag.rs's own doc comment on
 # `decode_tag`), so `aeneas` exits 0 here (no more disclosed bodyless-axiom "error").
-( cd "$HERE/extract-tag" && "$CHARON_BIN" cargo --preset=aeneas \
-    --opaque "der_tag_extract::tag::encode_tag" --dest "$TMP" >/dev/null 2>&1 )
-"$AENEAS_BIN" -backend lean "$TMP/der_tag_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-if ! diff -q "$TMP/DerTagExtract.lean" "$HERE/DerTagExtract.lean" >/dev/null; then
-  echo "!! lean lid: FAIL - regenerated model differs from committed DerTagExtract.lean." >&2
-  echo "   tag.rs changed; re-extract and re-prove before committing." >&2
-  exit 1
-fi
+extract_model extract-tag der_tag_extract.llbc DerTagExtract \
+    --opaque "der_tag_extract::tag::encode_tag"
+check_drift DerTagExtract "tag.rs"
 # tlv: --opaque on tag::encode_tag + tlv::encode_tlv_into — both have a Rust parameter named
 # `tag` shadowing the `tag` module in Aeneas's Lean dot-notation resolution ("Invalid field"
 # elaboration errors), a pre-existing Aeneas naming limitation independent of this lid's own
@@ -148,31 +182,15 @@ fi
 # proves, so marking them opaque (bodyless axioms) is honest and lossless for this lid's scope.
 # `tag.rs`'s `decode_tag` now extracts WITH A BODY (the D25-style refactor, see `extract-tag`'s
 # comment above), so `aeneas` exits 0 here too (no more disclosed bodyless-axiom "error").
-( cd "$HERE/extract-tlv" && "$CHARON_BIN" cargo --preset=aeneas \
+extract_model extract-tlv der_tlv_extract.llbc DerTlvExtract \
     --opaque "der_tlv_extract::tag::encode_tag" \
-    --opaque "der_tlv_extract::tlv::encode_tlv_into" \
-    --dest "$TMP" >/dev/null 2>&1 )
-"$AENEAS_BIN" -backend lean "$TMP/der_tlv_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-if [ ! -f "$TMP/DerTlvExtract.lean" ]; then
-  echo "!! lean lid: FAIL - tlv re-extraction produced no DerTlvExtract.lean at all." >&2
-  exit 1
-fi
-if ! diff -q "$TMP/DerTlvExtract.lean" "$HERE/DerTlvExtract.lean" >/dev/null; then
-  echo "!! lean lid: FAIL - regenerated model differs from committed DerTlvExtract.lean." >&2
-  echo "   tag.rs/length.rs/tlv.rs changed; re-extract and re-prove before committing." >&2
-  exit 1
-fi
+    --opaque "der_tlv_extract::tlv::encode_tlv_into"
+check_drift DerTlvExtract "tag.rs/length.rs/tlv.rs"
 # sequence: same --opaque carve-out as tlv (tag::encode_tag / tlv::encode_tlv_into, the
 # parameter-shadowing issue); `aeneas` exits 0 here too (decode_tag extracts with a body).
-( cd "$HERE/extract-sequence" && "$CHARON_BIN" cargo --preset=aeneas \
+extract_model extract-sequence der_sequence_extract.llbc DerSequenceExtract \
     --opaque "der_sequence_extract::tag::encode_tag" \
-    --opaque "der_sequence_extract::tlv::encode_tlv_into" \
-    --dest "$TMP" >/dev/null 2>&1 )
-"$AENEAS_BIN" -backend lean "$TMP/der_sequence_extract.llbc" -dest "$TMP" >/dev/null 2>&1
-if [ ! -f "$TMP/DerSequenceExtract.lean" ]; then
-  echo "!! lean lid: FAIL - sequence re-extraction produced no DerSequenceExtract.lean at all." >&2
-  exit 1
-fi
+    --opaque "der_sequence_extract::tlv::encode_tlv_into"
 # POST-EXTRACTION PATCH (not raw Aeneas output — see the committed DerSequenceExtract.lean's
 # own docstring on the patched `Elements` Iterator instance for the full justification): Aeneas
 # does not fill the `Iterator` trait's `step_by`/`enumerate`/`take` fields for a hand-written
@@ -215,14 +233,7 @@ content = content.replace(needle, replacement, 1)
 with open(path, "w") as f:
     f.write(content)
 PYEOF
-if [ $? -ne 0 ]; then
-  exit 1
-fi
-if ! diff -q "$TMP/DerSequenceExtract.lean" "$HERE/DerSequenceExtract.lean" >/dev/null; then
-  echo "!! lean lid: FAIL - regenerated (patched) model differs from committed DerSequenceExtract.lean." >&2
-  echo "   tag.rs/length.rs/tlv.rs/sequence.rs changed; re-extract and re-prove before committing." >&2
-  exit 1
-fi
+check_drift DerSequenceExtract "tag.rs/length.rs/tlv.rs/sequence.rs"
 
 # 2) Machine-check the unbounded proofs (reuses the prebuilt Aeneas+mathlib oleans).
 echo "== lean lid: lake build (checking unbounded any-length proofs) =="
@@ -248,9 +259,43 @@ fi
 #     axiom set. Fail closed on either marker. (None of the DISCLOSED axioms — propext,
 #     Classical.choice, Quot.sound, first_spec, core.slice.Slice.first, *.bv_decide.ax_* —
 #     contain the substring "sorry", so this match is specific to an actual sorry.)
-if printf '%s\n' "$BUILD_OUT" | grep -Eiq "sorryAx|declaration uses '?sorry'?|uses 'sorry'"; then
-  echo "!! lean lid: FAIL - a proof depends on 'sorry' (sorryAx in the axiom set or a" >&2
-  echo "   'declaration uses sorry' warning). The unbounded proofs must be sorry-free." >&2
+#
+# ⚠ THE WARNING ARM WAS DEAD FROM THE DAY IT WAS WRITTEN UNTIL 2026-08-03. It matched
+#   `declaration uses 'sorry'` with ASCII SINGLE QUOTES; Lean 4 emits BACKTICKS:
+#   ``declaration uses `sorry` ``. So the pattern matched nothing, ever, and the whole
+#   gate rested on the sorryAx arm alone. That arm only sees declarations carrying an
+#   explicit `#print axioms` line, and those cover a SUBSET (LengthProofs.lean: 17
+#   disclosures over 42 theorems). MEASURED hole, not a theoretical one: a `sorry` put
+#   into `decode_reserved` — a theorem with no `#print axioms` — produced
+#   `== lean lid: PASS (sorry-free) ==`, rc=0, while ``LengthProofs.lean:93:8:
+#   declaration uses `sorry` `` sat in the very same build output.
+#
+# The warning arm CANNOT simply be widened to every sorry warning: Aeneas's own Std
+# ships sorries we neither own nor can fix (Aeneas/Std/Slice.lean, Aeneas/Std/
+# StringIter.lean), and matching those would pin this lid permanently red. So it is
+# scoped to files OUTSIDE the dependency tree — exactly the set whose sorry-freedom
+# this lid claims. A dependency's sorries are reported for the record, not failed on.
+SORRY_WARNS="$(printf '%s\n' "$BUILD_OUT" | sed 's/^warning: //' \
+  | grep -E 'declaration uses .sorry.' || true)"
+FOREIGN_SORRIES="$(printf '%s\n' "$SORRY_WARNS" \
+  | grep -E '^(\.lake/|Aeneas/|Mathlib/|Batteries/|Init/|Std/)' || true)"
+OUR_SORRIES="$(printf '%s\n' "$SORRY_WARNS" | grep -E '\.lean:[0-9]+:[0-9]+' \
+  | grep -Ev '^(\.lake/|Aeneas/|Mathlib/|Batteries/|Init/|Std/)' || true)"
+if [ -n "$FOREIGN_SORRIES" ]; then
+  echo "-- lean lid: NOTE - $(printf '%s\n' "$FOREIGN_SORRIES" | grep -c .) sorry warning(s) in DEPENDENCY"
+  echo "   files (Aeneas/Mathlib Std). Not ours, not failed on, disclosed so the count is visible:"
+  printf '%s\n' "$FOREIGN_SORRIES" | sed 's/^/   | /'
+fi
+if [ -n "$OUR_SORRIES" ]; then
+  echo "!! lean lid: FAIL - a proof in a file THIS repo owns depends on 'sorry':" >&2
+  printf '%s\n' "$OUR_SORRIES" | sed 's/^/   | /' >&2
+  echo "   The unbounded proofs must be sorry-free." >&2
+  exit 1
+fi
+if printf '%s\n' "$BUILD_OUT" | grep -q "sorryAx"; then
+  echo "!! lean lid: FAIL - a proof depends on 'sorry' (sorryAx in a '#print axioms' axiom set)." >&2
+  printf '%s\n' "$BUILD_OUT" | grep -B4 "sorryAx" | sed 's/^/   | /' >&2
+  echo "   The unbounded proofs must be sorry-free." >&2
   exit 1
 fi
 echo "== lean lid: PASS (sorry-free) =="

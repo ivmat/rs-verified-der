@@ -1,0 +1,6 @@
+== lean lid: re-extract (charon -> aeneas) + drift check ==
+!! lean lid: FAIL - EXTRACTION FAILURE for DerLengthExtract: aeneas exited 0 but produced no DerLengthExtract.lean.
+   This is a TOOLCHAIN failure, NOT a source change. No claim is made about whether the
+   shipped source drifted -- the model could not be regenerated, so it was never compared.
+   Captured tool output:
+   | shim-aeneas: pretending to extract, writing nothing

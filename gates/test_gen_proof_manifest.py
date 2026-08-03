@@ -18,6 +18,7 @@ import copy
 import importlib.util
 import io
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -291,10 +292,56 @@ class HeadCoverageFact(unittest.TestCase):
         # log and the manifest would start disclaiming for no reason.
         self.assertEqual(sorted(gen.VERIFIED_PATHS), ['der-verified/src', 'lean'])
 
+    @contextlib.contextmanager
+    def _throwaway_repo(self):
+        """A disposable git repo carrying the VERIFIED_PATHS layout, with `gen.ROOT` pointed at it.
+
+        These two tests MUST NOT read the developer's own checkout. `verified_source_unchanged_since`
+        compares the commit against the WORKING TREE, not against HEAD (31b0994, so the manifest
+        stops claiming currency the moment verified source is edited rather than one commit later).
+        Against the real repo, "HEAD vs HEAD" is therefore false whenever anything under
+        `der-verified/src` or `lean/` is uncommitted -- which is true during *every* commit that
+        touches proof-bearing source, i.e. exactly when this gate runs from the pre-commit hook.
+
+        That is not hypothetical. 31b0994 changed the semantics without changing this test, and the
+        pair went unnoticed because no commit touched a VERIFIED_PATH in between. The next one that
+        did was blocked by its own gate, with a self-test failure that pointed at nothing real.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            def run(*args):
+                return subprocess.run(['git', '-C', tmp, *args],
+                                      capture_output=True, text=True, check=True).stdout.strip()
+            run('init', '-q')
+            run('config', 'user.email', 'test@example.invalid')
+            run('config', 'user.name', 'test')
+            for rel in gen.VERIFIED_PATHS:
+                os.makedirs(os.path.join(tmp, rel), exist_ok=True)
+                with open(os.path.join(tmp, rel, 'seed.txt'), 'w', encoding='utf-8') as fh:
+                    fh.write('seed\n')
+            run('add', '-A')
+            run('commit', '-qm', 'seed')
+            original_root = gen.ROOT
+            gen.ROOT = tmp
+            try:
+                yield tmp, run
+            finally:
+                gen.ROOT = original_root
+
     def test_unchanged_since_head_is_true(self):
-        # HEAD vs HEAD: nothing can have changed.
-        head = gen.head_commit()
-        self.assertTrue(gen.verified_source_unchanged_since(head))
+        # Clean tree, HEAD vs HEAD: nothing has changed.
+        with self._throwaway_repo() as (_tmp, run):
+            self.assertTrue(gen.verified_source_unchanged_since(run('rev-parse', 'HEAD')))
+
+    def test_uncommitted_edit_to_verified_source_reads_as_changed(self):
+        # The direction 31b0994 actually bought, and the one nothing covered: an UNCOMMITTED edit
+        # under a VERIFIED_PATH must already read as superseding a run, because the pre-commit hook
+        # writes this region while the change is still uncommitted.
+        with self._throwaway_repo() as (tmp, run):
+            head = run('rev-parse', 'HEAD')
+            with open(os.path.join(tmp, gen.VERIFIED_PATHS[-1], 'seed.txt'), 'a',
+                      encoding='utf-8') as fh:
+                fh.write('an uncommitted edit\n')
+            self.assertFalse(gen.verified_source_unchanged_since(head))
 
     def test_unrecorded_commit_is_unknown_not_true(self):
         # Fail-open would silently upgrade an unverifiable log to "covers HEAD".

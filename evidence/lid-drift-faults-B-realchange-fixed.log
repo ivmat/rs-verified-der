@@ -1,0 +1,4 @@
+== lean lid: re-extract (charon -> aeneas) + drift check ==
+!! lean lid: FAIL - MODEL DRIFT: regenerated model differs from committed DerLengthExtract.lean.
+   Extraction succeeded, so this is a real difference: length.rs changed;
+   re-extract and re-prove before committing.

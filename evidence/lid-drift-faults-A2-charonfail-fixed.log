@@ -1,0 +1,16 @@
+== lean lid: re-extract (charon -> aeneas) + drift check ==
+!! lean lid: FAIL - EXTRACTION FAILURE for DerLengthExtract: charon exited non-zero.
+   This is a TOOLCHAIN failure, NOT a source change. No claim is made about whether the
+   shipped source drifted -- the model could not be regenerated, so it was never compared.
+   Captured tool output:
+   | warning: `--dest` is deprecated, use `--dest-file` instead
+   | 
+   |    Compiling der-length-extract v0.0.0 (/home/ivo/repo/rs-verified-der/lean/extract)
+   | error: expected one of `!` or `::`, found `is`
+   |    --> src/../../../der-verified/src/length.rs:298:6
+   |     |
+   | 298 | this is not valid rust and charon must fail on it
+   |     |      ^^ expected one of `!` or `::`
+   | 
+   | ERROR Code failed to compile
+   | error: could not compile `der-length-extract` (lib) due to 1 previous error

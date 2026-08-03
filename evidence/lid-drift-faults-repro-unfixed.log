@@ -1,0 +1,4 @@
+== lean lid: re-extract (charon -> aeneas) + drift check ==
+diff: /tmp/tmp.KZoykq0oLx/DerLengthExtract.lean: No such file or directory
+!! lean lid: FAIL - regenerated model differs from committed DerLengthExtract.lean.
+   length.rs changed; re-extract and re-prove before committing.
