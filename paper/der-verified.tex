@@ -233,11 +233,15 @@ length (and, for \code{sequence}, any number of children), \code{sorry}-free
 codecs and composition points where an $\forall$-length guarantee is most
 valuable and the functional model is cleanest. The \code{tag} lid was added
 after (and specifically to reduce) the \code{tlv}/\code{sequence} lids'
-own trust surface: both had originally treated \code{decode\_tag} as an
-assumed Aeneas-Std spec (an axiom, not a body) because of the same
-depth-two-loop \code{return} shape \S\ref{sec:gotcha} describes for
-\code{oid}; refactoring \code{tag} the same way and proving its own lid
-discharged those four \code{tag\_decode\_*} axiom instances, shrinking each of
+own trust surface: both had originally treated \code{decode\_tag} as a
+bodyless axiom (\code{tag\_decode\_total}, \code{tag\_decode\_used\_bounds})
+because of the same depth-two-loop \code{return} shape \S\ref{sec:gotcha}
+describes for \code{oid} defeated Aeneas extraction of a body; these were
+crate-specific, hand-written characterizations of \code{decode\_tag}'s own
+totality and consumption bound---not specifications of any Aeneas standard-
+library primitive---asserted as axioms only because the extraction produced no
+body to prove them against. Refactoring \code{tag} the same way and proving
+its own lid discharged those four axiom instances, shrinking each of
 \code{tlv}'s and \code{sequence}'s disclosed assumed-spec counts from seven to
 six.
 
@@ -248,12 +252,12 @@ six.
 \toprule
 Codec & Unbounded property proven ($\forall$-length) \\
 \midrule
-\code{length} & every branch of \code{decode\_length}; round-trip canonicality (\code{decode\_accepts\_only\_canonical}) \\
-\code{big\_integer} & minimality biconditional, validate side (\code{validate\_iff\_minimal}); encode round-trip (\code{encode\_minimal\_integer\_into\_roundtrip}) \\
-\code{oid} & OID canonical-form biconditional, validate side (\code{validate\_iff\_canonical}) \\
-\code{tag} & \code{decode\_tag}'s totality and consumption bound (\code{tag\_decode\_total}, \code{tag\_decode\_used\_bounds}) \\
-\code{tlv} & \code{decode\_tlv}'s structural correctness and no-over-read (\code{decode\_tlv\_structure}) \\
-\code{sequence} & \code{decode\_sequence}'s structural correctness, $\forall$-length \emph{and} $\forall$-children (\code{decode\_sequence\_structure}) \\
+\code{length} & every branch of \code{decode\_length}; round-trip canonicality (\code{decode\allowbreak\_accepts\allowbreak\_only\allowbreak\_canonical}) \\
+\code{big\_integer} & minimality biconditional, validate side (\code{validate\allowbreak\_iff\allowbreak\_minimal}); encode round-trip (\code{encode\allowbreak\_minimal\allowbreak\_integer\allowbreak\_into\allowbreak\_roundtrip}) \\
+\code{oid} & OID canonical-form biconditional, validate side (\code{validate\allowbreak\_iff\allowbreak\_canonical}) \\
+\code{tag} & \code{decode\_tag}'s totality and consumption bound (\code{tag\allowbreak\_decode\allowbreak\_total}, \code{tag\allowbreak\_decode\allowbreak\_used\allowbreak\_bounds}) \\
+\code{tlv} & \code{decode\_tlv}'s structural correctness and no-over-read (\code{decode\allowbreak\_tlv\allowbreak\_structure}) \\
+\code{sequence} & \code{decode\_sequence}'s structural correctness, $\forall$-length \emph{and} $\forall$-children (\code{decode\allowbreak\_sequence\allowbreak\_structure}) \\
 \bottomrule
 \end{tabular}
 \caption{The six L4 Aeneas${\to}$Lean~4 lids. All \code{sorry}-free; the full
@@ -286,12 +290,17 @@ a silent axiom-degradation hole). The lid additionally fails closed on any
 \code{sorry} (checked mechanically for \code{sorryAx} / ``declaration uses
 \code{sorry}''). Because that re-extraction/diff step is a minutes-long
 milestone gate wired only into the full \code{check.sh}, a per-commit
-\emph{tripwire} closes the window between milestone runs: a committed
-content-hash state file over the six lidded source files, re-checked on every
-commit, fails closed if any of them changed without a corresponding full Lean
-re-verification (or is explicitly acknowledged as pending debt)---so a lid
-cannot silently go stale for several commits before the next full gate
-catches it.
+\emph{tripwire} narrows that window: a committed content-hash state file over
+the six lidded source files, checked by \code{check\_fast.sh}, fails closed if
+any of them changed without a corresponding full Lean re-verification (or is
+explicitly acknowledged as pending debt). This tripwire is only as reliable as
+its invocation, though: \code{check\_fast.sh} runs on every commit solely via
+the git \code{pre-commit} hook installed by \code{install\_hooks.sh}, which is
+opt-in, and CI does not run \code{check\_fast.sh} at all---so a contributor who
+has not installed the hook can still land drift on a branch or in CI. The
+backstop is \code{check.sh}'s own \code{--strict} invocation of the
+lid-staleness gate at the next full milestone run, which fails closed on any
+undischarged drift regardless of whether the per-commit tripwire ever fired.
 
 \paragraph{Trust base (both layers).}
 Neither layer is trust-free, and we enumerate both boundaries rather than hide
@@ -546,16 +555,20 @@ one is iterating on. Kani's supported backends are documented~\cite{kani};
 we simply supply one concrete comparative data point.
 
 \paragraph{Reproducibility.}
-CI runs the memory-tractable share of the floor (about 136 of the 171
-harnesses, filtered by module across parallel runners) on every push; the
-heaviest modules (\code{set\_of}, \code{sequence}, \code{x509\_extension},
-\code{x509\_certificate}, \code{x509\_tbs\_certificate}, \code{x509\_name})
-peak above a standard 7~GB hosted runner and are documented as local-milestone
-checks. The most recently committed full-suite run (16-core / 29~GB Linux
-reference box, sequential---no \code{-j}, since parallel harnesses multiply
-peak RSS---inside a 22~GB memory cgroup) verified all 171 harnesses
-\code{SUCCESSFUL}, 0 \code{FAILED}, in ${\sim}91$~min wall, alongside a green
-\code{cargo test} and a green L4 Lean pass in the same run.
+CI runs the LIGHT tier of \code{gates/tiers.txt}---the memory-tractable share
+of the floor, gated against CI's own shard filters by
+\code{gates/check\_tier\_parity.py} so the two cannot silently drift apart---on
+every push (143 of the 171 harnesses, filtered by module across parallel
+runners); the six HEAVY modules (\code{set\_of}, \code{sequence},
+\code{x509\_extension}, \code{x509\_certificate}, \code{x509\_tbs\_certificate},
+\code{x509\_name}) peak above a standard 7~GB hosted runner and are documented
+as local-milestone checks. The most recently committed full-suite run
+(\code{evidence/check-ba40709.log}, commit \code{ba40709}, 2026-08-07; 16-core
+/ 29~GB Linux reference box, sequential---no \code{-j}, since parallel
+harnesses multiply peak RSS---inside a 22~GB memory cgroup) verified all 171
+harnesses \code{SUCCESSFUL}, 0 \code{FAILED}, in 53m37s wall, alongside a green
+\code{cargo test} and a green L4 Lean pass (six lids, \code{sorry}-free) and
+the strict lid-staleness gate in the same run.
 
 \section{Scoping honestly}
 \label{sec:scope}
@@ -741,8 +754,15 @@ fixed-size symbolic buffers, under 136 disclosed \code{kani::assume}
 preconditions, up to stated unwind depths; inputs outside those domains are not
 claimed. Only six codecs have $\forall$-length L4 lids (and, for \code{sequence}
 alone, an additional $\forall$-children lift over the same lid); every other
-codec, and the rejection/canonicality classification of even the six lidded
-codecs, remains Kani-bounded. The correctness of the
+codec is Kani-bounded only. Even among the six, the lid's reach differs by
+codec (\S\ref{sec:envelope}, PROOF\_MANIFEST.md \S6.2): \code{length},
+\code{big\_integer} and \code{oid} carry unbounded canonicality/minimality
+theorems (\code{decode\_accepts\_only\_canonical}, \code{validate\_iff\_minimal},
+\code{validate\_iff\_canonical}), while \code{tag}, \code{tlv} and
+\code{sequence} lift only structural totality/correctness---their rejection
+classification (and, for \code{big\_integer}, the classification of specific
+malformed shapes beyond the minimality biconditional) remains Kani-bounded.
+The correctness of the
 harness \emph{assertions} and the stub \emph{contracts} is itself a manual
 modelling step; a wrong assertion proves the wrong thing. The modular proofs
 rest on the refinement obligation of \S\ref{sec:symlen} (bound dominance,

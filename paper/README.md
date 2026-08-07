@@ -25,3 +25,11 @@ available on the machine that made the edit). Recompile with two
 `pdflatex` passes (or `tectonic`) on a machine that has the toolchain — mac,
 typically — and check the resulting PDF's content against the `.tex` before
 any Zenodo upload or other publication.
+
+**Review-driven fix round, 2026-08-07 (no `pdflatex` here either).** The L4
+lid table's `p{4.4cm}` column carries long `\code{...}` theorem names
+(e.g. `decode_accepts_only_canonical`); `\allowbreak` was inserted at every
+`\_` boundary inside those names so LaTeX has break points instead of
+overfull hboxes in the two-column layout. This is the conservative fix chosen
+without a compiler to verify it against — eyeball the table's line-breaking
+at the next mac recompile and adjust if it still overfills.
