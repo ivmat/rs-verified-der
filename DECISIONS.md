@@ -1685,9 +1685,11 @@ commits pass before the next full `check.sh` run: exactly what happened in the r
 was empty by luck, not by any gate closing it.
 
 **Design.** A new committed state file, `lean/lid-source-state.txt`: one `<sha256>  <path>` line
-per lid source, refreshed ONLY by `lean/check_lean.sh` on a full green run (§3 of that script,
-reusing the exact path variables its own `check_drift` calls already use — never a second
-hand-maintained file list). The new per-commit gate, `gates/check_lid_staleness.py` (pure stdlib,
+per lid source, refreshed ONLY by `lean/check_lean.sh` on a full green run, and only when the
+freshly-computed hashes actually differ from what's already on disk (§3 of that script, reusing
+the exact path variables its own `check_drift` calls already use — never a second hand-maintained
+file list; idempotency fix same-day, see amendment below). The new per-commit gate,
+`gates/check_lid_staleness.py` (pure stdlib,
 wired into `check_fast.sh`), re-hashes the six files on every commit and fails closed on any
 mismatch, naming the file and printing both remedies: re-run `lean/check_lean.sh` (which
 re-verifies through Lean and refreshes the state), or acknowledge the drift with `--ack <path>`,
@@ -1713,6 +1715,24 @@ the working tree, not the index a `git commit` actually records. Degrades gracef
 the hash check still running) outside a git checkout. `check.sh` also now runs this gate's
 self-test explicitly (`gates/test_check_lid_staleness.py`), matching every other gate-with-a-
 self-test in that script — it was previously wired only into `check_fast.sh`.
+
+**Amendment (same day, live bug observed and fixed).** §3 of `lean/check_lean.sh` originally
+rewrote `lean/lid-source-state.txt` on EVERY green run, including a `# Regenerated: <timestamp>,
+at git commit <sha>...` header line that changed on every run even when all six hashes were
+identical. Consequence: `check.sh`'s sequence (`lean/check_lean.sh` then
+`gates/check_lid_staleness.py --strict`) could never pass end-to-end — the just-rewritten file was
+always unstaged, so the strict gate's own index/worktree divergence check (the amendment above)
+failed on exactly the file the previous step had just touched, even on an otherwise fully green,
+sorry-free, 171/171 run. Fixed by making §3 idempotent: it now computes the fresh hash lines,
+compares them (header excluded) against what's currently in the file, and leaves the file
+completely untouched if they match, printing `lid-source-state.txt unchanged (hashes identical)`.
+Only on an actual hash change does it rewrite (fresh header, no PENDING lines) and print a message
+telling the operator to `git add`/commit the refreshed file — the strict gate then correctly
+failing on that specific divergence until it's committed is expected, not a bug. The header
+wording changed accordingly, from "Regenerated: ... by this full green run" (implying every green
+run rewrites) to "State as of: ... (rewritten only when hashes change; a green run that changes
+nothing leaves this file untouched)". `gates/check_lid_staleness.py`'s own divergence message also
+gained one clarifying sentence for the now-expected post-refresh case.
 
 **Honest limit — stated, not discovered later.** This gate detects SOURCE drift only. It has no
 opinion on TOOLCHAIN drift (an Aeneas/Charon pin bump with unchanged source text but changed

@@ -306,12 +306,23 @@ echo "== lean lid: PASS (sorry-free) =="
 #    exactly the event that should clear PENDING markers and re-baseline the six hashes. Reuses the
 #    SAME six path variables named in the check_drift() calls above, not a second hand-kept list
 #    (lean/lid-source-state.txt's own header documents this contract; see DECISIONS.md D29).
-echo "== lean lid: refreshing lean/lid-source-state.txt (fast-gate tripwire) =="
+echo "== lean lid: checking lean/lid-source-state.txt (fast-gate tripwire) for changes =="
 STATE_FILE="$HERE/lid-source-state.txt"
 COMMIT="$(git -C "$HERE" rev-parse HEAD 2>/dev/null || echo '?')"
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-{
-  cat <<HDR
+NEW_HASHES="$(
+  for f in "$LEN_RS" "$BIGINT_RS" "$OID_RS" "$TAG_RS" "$TLV_RS" "$SEQ_RS"; do
+    rel="der-verified/src/$(basename "$f")"
+    sha="$(sha256sum "$f" | awk '{print $1}')"
+    printf '%s  %s\n' "$sha" "$rel"
+  done
+)"
+OLD_HASHES="$(grep -v '^#' "$STATE_FILE" 2>/dev/null | grep -v '^[[:space:]]*$' || true)"
+if [ "$NEW_HASHES" = "$OLD_HASHES" ]; then
+  echo "== lean lid: lid-source-state.txt unchanged (hashes identical) =="
+else
+  {
+    cat <<HDR
 # lean/lid-source-state.txt — Lean-lid source-drift tripwire (fast-gate state).
 #
 # ONE-LINE CONTRACT, read by gates/check_lid_staleness.py (per-commit, via check_fast.sh) and
@@ -335,12 +346,12 @@ STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 # not "still proves". Toolchain drift (Aeneas/Charon pin mismatch) is exclusively the full gate's
 # job (see this script's own pin check above).
 #
-# Regenerated: $STAMP, at git commit $COMMIT, by this full green lean/check_lean.sh run.
+# State as of: $STAMP, commit $COMMIT (rewritten only when hashes change; a green run that
+# changes nothing leaves this file untouched).
 HDR
-  for f in "$LEN_RS" "$BIGINT_RS" "$OID_RS" "$TAG_RS" "$TLV_RS" "$SEQ_RS"; do
-    rel="der-verified/src/$(basename "$f")"
-    sha="$(sha256sum "$f" | awk '{print $1}')"
-    printf '%s  %s\n' "$sha" "$rel"
-  done
-} > "$STATE_FILE"
-echo "== lean lid: lid-source-state.txt refreshed =="
+    printf '%s\n' "$NEW_HASHES"
+  } > "$STATE_FILE"
+  echo "== lean lid: lid-source-state.txt refreshed (hashes changed) -- COMMIT this refreshed"
+  echo "   file; gates/check_lid_staleness.py --strict will correctly FAIL until it is staged" \
+       "or committed (working-tree/index divergence is expected right after a rewrite)."
+fi

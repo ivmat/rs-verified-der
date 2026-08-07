@@ -172,7 +172,10 @@ def check(strict: bool = False) -> int:
             "index/worktree divergence on " + ", ".join(diverged) + " -- unstaged changes on a "
             "covered path would NOT be included in a `git commit` right now, so the commit could "
             "land with drifted source alongside an old (or stale-ack'd) baseline. `git add` "
-            + ", ".join(diverged) + " too before committing."
+            + ", ".join(diverged) + " too before committing. (If this fires right after a green "
+            "lean/check_lean.sh run and the diverged path is lean/lid-source-state.txt itself, "
+            "that is the expected, correct failure: check_lean.sh only rewrites that file when the "
+            "hashes actually changed, so `git add` it and commit -- this is not a false positive.)"
         )
     stale_notices = []
     strict_pending = []
