@@ -8,13 +8,13 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 171 proof harnesses over 26 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 174 proof harnesses over 27 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
 - **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
   ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free.
-- **320** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
+- **345** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
 > proof envelope: exactly what is proven, under what bounds and assumptions, what is stubbed, and
@@ -32,6 +32,13 @@ the canonical content codecs: `BOOLEAN`, `INTEGER` (`i64` and arbitrary-magnitud
 `TBSCertificate`, `Certificate`) by composing the verified codecs. They interpret **no**
 algorithm/key/signature/certificate semantics — a demonstration that the verified core is usable
 downstream, inside the same fence.
+
+**Signature-container framing (Kani-proven, no Lean lid):** the [`ecdsa_sig_value`] module parses the
+ASN.1 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480) — `SEQUENCE { r INTEGER, s INTEGER }` — composing
+`sequence` + `big_integer`. `r`/`s` are exposed as opaque validated bytes, never materialized as
+numbers. DER framing and canonicality only: **no** curve-order range check (`1 <= r,s <= n-1` needs a
+curve, which this container does not carry), **no** low-S policy (a protocol profile choice, not a DER
+validity rule), and **no** cryptographic interpretation — see the module doc for the full fence.
 
 **Typed profile-validation layer (Kani-proven, no Lean lid):** the [`profile`] module is a first
 slice of a layer built *on top of* the structural parsers above, checking cross-field RFC 5280 rules
@@ -93,7 +100,7 @@ flowchart TB
     subgraph codecs_layer["DER content codecs"]
         direction LR
         codecs_green["big_integer · oid · sequence"]:::green
-        codecs_blue["bit_string · boolean · context_tag · enumerated<br/>generalized_time · integer · null · octet_string<br/>restricted_string · set_of · utc_time · utf8_string"]:::blue
+        codecs_blue["bit_string · boolean · context_tag · ecdsa_sig_value<br/>enumerated · generalized_time · integer · null<br/>octet_string · restricted_string · set_of · utc_time<br/>utf8_string"]:::blue
         codecs_gray["General SET (X.690 §10.3)"]:::gray
     end
     subgraph framing_layer["tag / length / TLV framing base"]
@@ -162,12 +169,12 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 320 tests + 27 doc-tests
+cargo test                                    # 345 tests + 28 doc-tests
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
 cargo kani setup
-cargo kani -Z stubbing                          # 171 proof harnesses
+cargo kani -Z stubbing                          # 174 proof harnesses
 ```
 
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
@@ -228,7 +235,7 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 (`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 18-test
 self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
-**143** of the 171 harnesses (the shard filters are by module, not a pinned count, so this total is
+**143** of the 174 harnesses (the shard filters are by module, not a pinned count, so this total is
 re-derived from the per-module counts rather than maintained by hand; see
 `.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
 parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
@@ -238,7 +245,7 @@ stub in the workflow, on a large-memory runner).
 
 ### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
 
-**All 171 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
+**All 174 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
 harness counts below were re-derived from the current module counts by static count, not a fresh
 timing run — treat the *times themselves* as the prior measurement's indicative, possibly-stale
 numbers, and the counts as current):

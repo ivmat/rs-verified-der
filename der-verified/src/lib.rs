@@ -21,6 +21,11 @@
 //! - [`big_integer`] — DER INTEGER content (§8.3) at arbitrary magnitude: the big-serial-number
 //!   complement to [`integer`]'s `i64` cap (`DECISIONS.md` D2a/D14) — validates minimality only,
 //!   exposing opaque comparison-only bytes rather than materializing a numeric value.
+//! - [`ecdsa_sig_value`] — the ASN.1 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480) container: a
+//!   **structural** `SEQUENCE { r INTEGER, s INTEGER }` parser composing [`sequence`] +
+//!   [`big_integer`], exposing `r`/`s` as opaque validated bytes (never materialized as numbers).
+//!   Framing and canonicality only: no curve-order range check, no low-S policy, no cryptographic
+//!   interpretation (see the module docs for the full scope fence).
 //! - [`octet_string`] — DER OCTET STRING (§8.7): primitive-form only, rejecting the BER
 //!   constructed/segmented form (a parser-differential vector).
 //! - [`enumerated`] — DER ENUMERATED (§8.4): a thin re-tagging of [`integer`]'s content codec
@@ -128,6 +133,7 @@ pub mod big_integer;
 pub mod bit_string;
 pub mod boolean;
 pub mod context_tag;
+pub mod ecdsa_sig_value;
 pub mod enumerated;
 pub mod generalized_time;
 pub mod integer;

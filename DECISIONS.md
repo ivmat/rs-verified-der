@@ -1761,3 +1761,65 @@ injected (inverted the drift comparison) and confirmed 3 of the 12 tests catch i
 anything the cheap check can't back up. **Confidence medium** (a new gate with one round of
 fault-injection and both negative-control directions exercised, not yet load-bearing across a real
 multi-commit drift-then-milestone cycle).
+
+## D30 — `ecdsa_sig_value`: a new structural module for RFC 3279's `ECDSA-Sig-Value` container, Band A only  ·  landed (high)
+
+**Call.** Added `ecdsa_sig_value.rs`: a structural parser for the ASN.1 `ECDSA-Sig-Value`
+(RFC 3279 §2.2.3, re-used unchanged by RFC 5480) — `SEQUENCE { r INTEGER, s INTEGER }` — the
+top-ranked "pure framing, zero new toolchain" slice identified by a prior crypto-FV scoping pass
+over this crate's own DER core. Composes `sequence` (outer envelope, both the composable
+`decode_sequence_tlv` and top-level-strict `decode_sequence_tlv_strict`) and `big_integer`
+(`validate_integer_content`, `TAG`) verbatim — no new primitive, no new toolchain, exactly the
+"Band A: pure framing" characterization that investigation drew.
+
+**Shape.** `EcdsaSigValue<'a> { r: &'a [u8], s: &'a [u8] }` — `r`/`s` are the validated-minimal
+INTEGER **content** octets, never materialized as numbers, mirroring `big_integer`'s own stance
+(D14) and `x509_tbs_certificate::serial_number`'s precedent (the crate's other opaque-bignum
+field): a signature scalar is a comparison/range-check operand for a caller with a curve, never an
+arithmetic operand this crate performs. Two entry points, matching the crate's established
+strict/lenient split (`sequence::decode_sequence_tlv` / `_strict`): `parse_ecdsa_sig_value`
+(composable — does not require exact input consumption, so it can sit inside a larger structure)
+and `parse_ecdsa_sig_value_strict` (top-level — rejects trailing bytes, the classic
+parser-differential vector). Decode-only, matching `x509_algorithm_identifier`'s and
+`x509_validity`'s own pattern (no sibling structural module carries its own encoder).
+
+**Deliberately out of scope, not this module's job:**
+1. **No curve-order range check** (`1 <= r,s <= n-1`, SEC1 §4.1.3). `ECDSA-Sig-Value` does not
+   carry its curve — `n` lives in a different structure (an `AlgorithmIdentifier`/SPKI's curve
+   OID) — so this would be a property of the signature *composed with* a curve identifier, not of
+   the container alone. A future module, not this one.
+2. **No low-S policy** (`s <= n/2`, e.g. Bitcoin BIP-62/BIP-66). Protocol-specific policy, not a
+   general DER/RFC 3279/RFC 5480 validity requirement — belongs in a `profile`-layer rule
+   (alongside `profile.rs`'s existing three RFC 5280 cross-field rules), not in a transfer-syntax
+   codec.
+3. **No cryptographic interpretation whatsoever** — no curve-point, subgroup-membership, or
+   signature-verification semantics.
+
+**Why it matters despite the narrow fence.** `ECDSA-Sig-Value`'s DER-vs-BER framing is a
+historically productive parser-differential surface: lax BER-tolerant INTEGER encoding (redundant
+sign-guard padding, non-canonical lengths) in some OpenSSL-era parsers is exactly the crack
+Bitcoin's BIP-66 soft fork closed by mandating strict DER for every consensus signature. This
+module proves the DER-canonicality half of that history — malleable re-encodings of the same
+`(r, s)` pair are rejected, not merely one canonical encoding accepted.
+
+**Verified.** 25 `#[test]`s (real P-256-shaped specimen with a high-bit `r` needing the 33-octet
+`0x00` sign-guard form — the module doc's own example — plus BER-long-form-length, non-minimal
+INTEGER, empty INTEGER, one/three-child counts, trailing bytes both inside and after the SEQUENCE,
+wrong outer tag, primitive SEQUENCE identifier, and truncations at every TLV boundary). 3 Kani
+harnesses (`parse_never_panics`, `parse_strict_never_panics`,
+`parse_strict_ok_path_witnessed_high_bit_r`) at a `[u8; 16]` symbolic buffer (matching
+`x509_algorithm_identifier`'s own bound) plus a dedicated 71-octet concrete-specimen harness for
+the sign-guard shape the symbolic bound is too narrow to reach on its own — unlike
+`x509_validity::parse_never_panics` (D-adjacent, disclosed vacuity at `[u8; 16]`), this module's
+8-octet arithmetic floor (`2` outer header `+ 3 + 3` for two minimal INTEGER TLVs) sits well inside
+16 octets, and the run confirms it: `VERIFICATION: SUCCESSFUL` on all three harnesses, `0 of 1038`
+checks failed, **16 of 16 `kani::cover` properties satisfied** (1 + 2 + 13 split across the three
+harnesses) — no vacuity, nothing to disclose. `systemd-run --user --scope -p MemoryMax=22G -p
+MemorySwapMax=0` sandboxed; wall time ~9.4 s for the module (single-harness-filtered run,
+`cargo kani --harness ecdsa_sig_value::`). Added to `gates/tiers.txt` as `LIGHT` and to CI's
+`codecs-b` shard (`.github/workflows/ci.yml`); `check_tier_parity.py` PASS.
+
+**Verdict.** **KEEP.** The highest-value Band-A delta the scoping investigation identified, landed
+inside the existing fence with zero new toolchain and zero primitive changes. **Confidence high**
+(shallow composition, no stubbing needed, full non-vacuity, exact match to two independent existing
+sibling patterns for both the API shape and the strict/lenient split).

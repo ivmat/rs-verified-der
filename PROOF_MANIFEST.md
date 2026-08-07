@@ -2,12 +2,12 @@
 
 This is the **honest proof envelope** for this crate: what is machine-checked, over what domain,
 under what assumptions and stubs — and, given equal weight, **what is not**. It exists so that a
-reader who is not going to read 171 proof harnesses and 6 Lean developments can still know what
+reader who is not going to read 174 proof harnesses and 6 Lean developments can still know what
 they are being offered, and where the guarantee stops.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "171 Kani harnesses, 6 Lean lids, 320 tests" describes how
+> **Counts are inventory, not coverage.** "174 Kani harnesses, 6 Lean lids, 345 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -62,18 +62,18 @@ deviations. Read the two differently.
 <!-- BEGIN GENERATED:inventory (gates/gen_proof_manifest.py) -->
 | Inventory (static, derived from `der-verified/src` + `lean/`) | Count |
 |---|---:|
-| source modules (excl. `lib.rs`) | 26 |
-| …of which carry at least one `#[kani::proof]` | 26 |
-| public entry points (free `pub fn`s + public `impl` methods) | 68 |
-| …named by at least one Kani harness | 57 |
+| source modules (excl. `lib.rs`) | 27 |
+| …of which carry at least one `#[kani::proof]` | 27 |
+| public entry points (free `pub fn`s + public `impl` methods) | 70 |
+| …named by at least one Kani harness | 59 |
 | …named by **no** Kani harness | **11** |
-| `#[kani::proof]` harnesses | 171 |
+| `#[kani::proof]` harnesses | 174 |
 | `kani::assume` harness preconditions (narrow the proved domain) | 136 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 75 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 91 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 7 / 4 |
-| `#[test]` unit + regression tests | 320 |
+| `#[test]` unit + regression tests | 345 |
 | crate-doc examples run as doc-tests | 1 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
@@ -210,7 +210,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 320 unit and regression tests (plus 27 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 345 unit and regression tests (plus 28 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.
@@ -232,10 +232,11 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**`evidence/check-ba40709.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff ba40709..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
+**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-ba40709.log` (at `ba40709`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ea8dad4-remainder.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ea8dad4.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check_tractable-67c1f80.log` (at `67c1f80`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -292,7 +293,7 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — about 136 of the 171 harnesses (the shard filters are by module, not a
+  the memory-tractable share — about 136 of the 174 harnesses (the shard filters are by module, not a
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
@@ -335,6 +336,7 @@ carry that.
 | `bit_string` | 3 | 3 | 8 | 3..6 | 6..8 | 9 | 2 | 0 |  |
 | `boolean` | 2 | 2 | 3 | — | — | 0 | 0 | 0 |  |
 | `context_tag` | 1 | 1 | 1 | 16 | 20 | 0 | 2 | 0 |  |
+| `ecdsa_sig_value` | 2 | 2 | 3 | 16..71 | 20 | 0 | 16 | 0 |  |
 | `enumerated` | 2 | 2 | 3 | 9 | 12 | 1 | 10 | 0 |  |
 | `generalized_time` | 3 | 2 | 16 | 3..19 | 16..20 | 20 | 3 | 0 |  |
 | `integer` | 2 | 2 | 7 | 8..10 | 12 | 4 | 2 | 0 |  |
@@ -415,6 +417,7 @@ exact statement, including its `assume` preconditions.
 - **`bit_string`** (8): `roundtrip_canonical`, `decode_never_panics`, `decode_accepts_only_canonical`, `empty_is_classified`, `unused_too_large_is_classified`, `nonzero_padding_is_classified`, `empty_nonzero_unused_is_classified`, `octet_aligned_iff_unused_zero`
 - **`boolean`** (3): `one_octet_is_canonical`, `roundtrip`, `wrong_length_is_bad_length`
 - **`context_tag`** (1): `decode_explicit_context_never_panics`
+- **`ecdsa_sig_value`** (3): `parse_never_panics`, `parse_strict_never_panics`, `parse_strict_ok_path_witnessed_high_bit_r`
 - **`enumerated`** (3): `decode_delegates_to_integer`, `encode_delegates_to_integer`, `roundtrip`
 - **`generalized_time`** (16): `roundtrip_all_fields`, `decode_never_panics`, `decode_accepts_only_canonical`, `accepted_iff_canonical_oracle`, `short_length_is_bad_length`, `non_digit_is_classified`, `not_zulu_is_classified`, `month_range_is_classified`, `day_range_is_classified`, `hour_range_is_classified`, `minute_range_is_classified`, `second_range_is_classified`, `bad_fraction_separator_is_classified`, `fraction_empty_is_classified`, `fraction_trailing_zero_is_classified`, `fraction_non_digit_is_classified`
 - **`integer`** (7): `roundtrip_all_i64`, `decode_never_panics`, `decode_accepts_only_minimal`, `empty_is_classified`, `redundant_positive_padding_is_non_minimal`, `redundant_negative_padding_is_non_minimal`, `nine_octets_is_too_large`
@@ -482,6 +485,7 @@ This is the list that decides whether the rest of the document is worth anything
 | `sequence` | structural child-walk correctness is ∀-length and ∀-children; the strict variants' rejection classification is Kani-bounded only |
 | `set_of` | bounded only. `SET OF` member-ordering (§11.6) is validated; **general `SET` (§10.3) is out of scope** (§9) |
 | `x509_algorithm_identifier` | bounded, structural only: frames the object; interprets no algorithm semantics and no parameters |
+| `ecdsa_sig_value` | bounded, structural only: DER framing and canonicality of `SEQUENCE { r INTEGER, s INTEGER }`. **No curve-order range check** (`1 <= r,s <= n-1` needs a curve identifier this container does not carry), **no low-S policy** (protocol profile, not DER validity), **no cryptographic interpretation** |
 | `x509_spki` | bounded, structural only: no key parsing, no key validity, no algorithm/key agreement check |
 | `x509_name` | bounded, structural only. The composition proof is **modular** (`validate_rdn` stubbed — §8.4). No name-constraint semantics, no string canonicalisation/comparison rules |
 | `x509_validity` | bounded, structural only: no comparison against a clock. Its `parse_never_panics` cover is **known-unsatisfiable at `[u8; 16]`** and disclosed (§8.2) |
@@ -560,10 +564,10 @@ buffer widths and unwind ranges are in §4's table; the crate-wide distribution:
 | 14 | 12 |
 | 16 | 61 |
 | 18 | 5 |
-| 20 | 12 |
+| 20 | 15 |
 | 21 | 1 |
 | 22 | 1 |
-| **total bounded** | **152** |
+| **total bounded** | **155** |
 
 19 harnesses declare no `#[kani::unwind]`, so no unwind bound is imposed on them and CBMC must unroll to completion every loop they reach. For those harnesses the loop depth is therefore *not* a limit on the claim: a loop CBMC could not fully unroll would fail an unwinding assertion rather than pass quietly. Their input domains are still bounded by buffer width like every other harness. Listed so a reader can check each one: `big_integer::empty_is_empty`, `big_integer::redundant_positive_padding_is_non_minimal`, `big_integer::redundant_negative_padding_is_non_minimal`, `bit_string::empty_is_classified`, `bit_string::empty_nonzero_unused_is_classified`, `boolean::one_octet_is_canonical`, `boolean::roundtrip`, `boolean::wrong_length_is_bad_length`, `enumerated::encode_delegates_to_integer`, `integer::empty_is_classified`, `integer::redundant_positive_padding_is_non_minimal`, `integer::redundant_negative_padding_is_non_minimal`, `null::only_empty_is_valid`, `oid::empty_is_classified`, `restricted_string::charset_exactly_matches_oracle_printable`, `restricted_string::charset_exactly_matches_oracle_ia5`, `restricted_string::charset_exactly_matches_oracle_numeric`, `restricted_string::charset_exactly_matches_oracle_visible`, `utc_time::full_year_pivot_is_correct`.
 <!-- END GENERATED:bounds -->
@@ -589,8 +593,8 @@ input space. This crate treats that as the default suspicion, and the check is m
 <!-- BEGIN GENERATED:non-vacuity (gates/gen_proof_manifest.py) -->
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
-| harnesses | 171 |
-| `kani::cover` witnesses | 75, in 24 of the 26 modules that have harnesses |
+| harnesses | 174 |
+| `kani::cover` witnesses | 91, in 25 of the 27 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **0** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 82 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
@@ -877,6 +881,12 @@ decision recorded in `DECISIONS.md`, not a defect:
 - **The `x509_*` modules are structural parsers.** They frame RFC 5280 objects by composing the
   verified codecs and interpret **no** algorithm, key, signature or certificate semantics.
 - **`oid` validates encoding form without materialising arc values.**
+- **`ecdsa_sig_value` frames `SEQUENCE { r INTEGER, s INTEGER }` only.** No curve-order range check
+  (`1 <= r,s <= n-1` needs a curve identifier this container does not carry on its own), no low-S
+  policy (a protocol-profile choice, e.g. Bitcoin BIP-62/BIP-66, not a general DER/RFC 3279 validity
+  rule), no cryptographic interpretation.
+  `r`/`s` are exposed as opaque validated bytes, never materialized as numbers (mirrors
+  `big_integer`'s and `x509_tbs_certificate::serial_number`'s stance).
 - **A behaviour-preserving refactor was made for verifiability, not for the runtime:**
   `tag::decode_tag`'s high-tag loop was rewritten from `return`-inside-loop to break-with-`Result`
   so Aeneas would extract a body instead of a bodyless axiom (mirroring the earlier `validate_oid`

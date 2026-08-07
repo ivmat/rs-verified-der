@@ -6,6 +6,17 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+### Added
+- **`ecdsa_sig_value` module** — a structural parser for the ASN.1 `ECDSA-Sig-Value`
+  (RFC 3279 §2.2.3 / RFC 5480): `SEQUENCE { r INTEGER, s INTEGER }`, composing `sequence` +
+  `big_integer`. `r`/`s` are exposed as opaque validated bytes, never materialized as numbers.
+  Two entry points matching the crate's established strict/lenient split
+  (`parse_ecdsa_sig_value` / `parse_ecdsa_sig_value_strict`). DER framing and canonicality only:
+  **no** curve-order range check, **no** low-S policy, **no** cryptographic interpretation — see
+  `DECISIONS.md` D30 and the module doc for the full scope fence. 25 new `#[test]`s, 3 new Kani
+  harnesses (16 of 16 `kani::cover` properties satisfied, no vacuity). Harness count 171 → 174,
+  test count 320 → 345, module count 26 → 27.
+
 ### Documentation / assurance process
 - **`paper/der-verified.tex` brought back in sync with `PROOF_MANIFEST.md`.** The artifact/experience
   paper had drifted to a snapshot from before the `tag`/`tlv`/`sequence` L4 lids landed: it said

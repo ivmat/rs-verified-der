@@ -24,7 +24,7 @@ been going for minutes — is that normal?"*
 
 ## Cost tiers
 
-**The large majority of the 171 harnesses are fast** — sub-second to a few seconds. Typical per-module
+**The large majority of the 174 harnesses are fast** — sub-second to a few seconds. Typical per-module
 worst case: `length` 0.4 s, `integer` 0.5 s, `oid` 0.04 s, `boolean` 0.03 s, `bit_string` 0.4 s,
 `tag` 0.5 s, `utc_time` 1.0 s, `big_integer` 0.7 s. Whole modules like `oid`, `boolean`, `null`,
 `enumerated`, `tag` finish in well under a second total.
