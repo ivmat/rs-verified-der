@@ -18,9 +18,9 @@ been going for minutes — is that normal?"*
   from `cbmc`'s process.
 - **Caveat:** these are point-in-time numbers on one machine; solver and CBMC versions move them.
   Treat the **tiers** as durable, the exact seconds as indicative. The project's reference CI box
-  verifies the full suite (currently 164 harnesses — count re-confirmed by source grep; the
-  per-harness timings below are the prior measurement pass and were not re-run for the newer
-  harnesses) end-to-end.
+  verifies the full suite end-to-end (for the current harness count see `PROOF_MANIFEST.md` §1 —
+  the generated, gated inventory; the per-harness timings below are the prior measurement pass and
+  were not re-run for the newer harnesses).
 
 ## Cost tiers
 

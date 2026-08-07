@@ -75,8 +75,9 @@ jobs:
   #     that on the heaviest harnesses (see the heavy tier below), so it OOM-kills the job.
   #  2. Sharding also parallelises the multi-minute proof floor.
   # Each shard selects harnesses by fully-qualified-name substring (`--harness <module>::`).
-  # This matrix covers the 143 harnesses whose peak memory fits a 7 GB runner. The remaining
-  # 28 (the heavy tier) are verified locally via ./check.sh — see `kani-heavy` below and README.
+  # This matrix covers the harnesses whose peak memory fits a 7 GB runner — the LIGHT tier in
+  # gates/tiers.txt, gated by gates/check_tier_parity.py (no hardcoded count here: it drifts).
+  # The heavy tier is verified locally via ./check.sh — see `kani-heavy` below and README.
   kani:
     name: kani (${{ matrix.shard }})
     runs-on: ubuntu-latest
