@@ -262,8 +262,9 @@ Codec & Unbounded property proven ($\forall$-length) \\
 \end{tabular}
 \caption{The six L4 Aeneas${\to}$Lean~4 lids. All \code{sorry}-free; the full
 axiom set each rests on---beyond Lean's standard \code{propext} /
-\code{Classical.choice} / \code{Quot.sound}, the named Aeneas-Std spec axioms
-and \code{bv\_decide}'s certificate axiom---is disclosed via
+\code{Classical.choice} / \code{Quot.sound}, the named assumed-spec axioms
+(characterising Aeneas-Std primitives and, in disclosed cases, this crate's own
+opaquely-extracted code) and \code{bv\_decide}'s certificate axiom---is disclosed via
 \code{\#print axioms} (\code{sorry}-free is not axiom-free).}
 \label{tab:l4}
 \end{table}
@@ -308,8 +309,9 @@ them. \emph{L3} trusts Kani's Rust${\to}$GOTO encoding, CBMC and its underlying
 SAT/SMT solver (the proofs are not independently certificate-checked), and the
 fact that Kani's bundled toolchain is a different compiler instance than the
 \code{stable} \code{rustc} that ships the crate. \emph{L4} additionally trusts
-the Lean~4 kernel, the disclosed non-standard axioms (the Aeneas-Std spec axioms
-and \code{bv\_decide}'s certificate axiom), and the \emph{Aeneas model} of the
+the Lean~4 kernel, the disclosed non-standard axioms (the assumed-spec axioms ---
+both Aeneas-Std characterisations and disclosed crate-specific ones --- and
+\code{bv\_decide}'s certificate axiom), and the \emph{Aeneas model} of the
 Rust---the Charon/Aeneas translation is not itself formally verified against
 \code{rustc} semantics (the standard Aeneas assurance boundary). Both layers
 also assume the extract shims' features/\code{cfg}s match the shipping build.
@@ -774,7 +776,8 @@ checked) and the Rust${\to}$GOTO encoding; L4 additionally trusts the Lean~4
 kernel, the disclosed axioms, and the Charon/Aeneas translation against
 \code{rustc} semantics. Both layers begin with the same source and rustc-derived
 machinery, so they are complementary, not independent. \code{sorry}-free is not
-axiom-free: the L4 proofs rest on named Aeneas-Std spec axioms and
+axiom-free: the L4 proofs rest on named assumed-spec axioms (Aeneas-Std
+characterisations and, where disclosed, crate-specific ones) and
 \code{bv\_decide}'s certificate axiom (disclosed via \code{\#print axioms}). The
 extract shims' features/\code{cfg}s are assumed to match the shipping build.
 Moreover the L4 gate does \emph{not} mechanically exclude extraction that

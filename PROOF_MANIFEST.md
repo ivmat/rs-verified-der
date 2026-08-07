@@ -245,9 +245,10 @@ The precise provenance of the L3 verdict, stated plainly because "the proofs pas
 in this document a reader cannot check from the source alone:
 
 - **The verdict is now read off a committed artifact, not transcribed.** The current run is
-  **2026-07-31 at commit `28e1429`** — `171 VERIFICATION: SUCCESSFUL, 0 FAILED`, `cargo test` green,
-  and the L4 Lean gate `PASS (sorry-free)` (1704 `lake` jobs) in the same pass, 91 minutes wall. The
-  three unsatisfied covers are again exactly the three §8.2 discloses. The first such run, described
+  **2026-08-07 at commit `ba40709`** (`evidence/check-ba40709.log`) — `171 successfully verified
+  harnesses, 0 failures`, `cargo test` green, the L4 Lean gate `PASS (sorry-free)`, and the
+  lid-staleness `--strict` gate green in the same pass, 53m37s wall under a `MemoryMax=22G` scope.
+  The three unsatisfied covers are again exactly the three §8.2 discloses. The first such run, described
   below, was `./check.sh`
   end-to-end on **2026-07-30** at commit `b355f76` — `cargo kani -Z stubbing` over all 164 harnesses
   **sequentially** (no `-j`; parallel harnesses multiply peak RSS), inside a `MemoryMax=22G`
