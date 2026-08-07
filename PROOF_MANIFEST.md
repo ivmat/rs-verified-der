@@ -108,7 +108,7 @@ Because the rustc pin is a floating channel, **the rustc version is a property o
 <!-- END GENERATED:pins -->
 
 <!-- BEGIN GENERATED:pins-observed (gates/gen_proof_manifest.py) -->
-Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.97.0 (2d8144b78 2026-07-07)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
+Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.93.1 (01f6ddf75 2026-02-11) (built from a source tarball)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
 <!-- END GENERATED:pins-observed -->
 
 Toolchain identity is part of every claim in this document. Two honest qualifications:
@@ -223,6 +223,7 @@ module (§7) they are the *only* evidence that exists.
 | `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
 | `evidence/check-461f751.log` | `461f751` | 171 | 0 | 3 |
 | `evidence/check-b355f76.log` | `b355f76` | 164 | 0 | 3 |
+| `evidence/check-ba40709.log` | `ba40709` | 171 | 0 | 3 |
 | `evidence/check-ea8dad4-remainder.log` | `ea8dad4` | 8 | 0 | 2 |
 | `evidence/check-ea8dad4.log` | `ea8dad4` | 162 | 0 | 0 |
 | `evidence/check_tractable-67c1f80.log` | `67c1f80` | 143 | 0 | 1 |
@@ -231,7 +232,7 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
+**`evidence/check-ba40709.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff ba40709..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
