@@ -26,6 +26,16 @@
 //! algorithm OID** — that composition is the caller's job, exactly as `ecdsa_sig_value`'s own doc
 //! frames its relationship to a signature's `BIT STRING`/OCTET STRING payload.
 //!
+//! **A composing caller must also check the BIT STRING is octet-aligned.** [`crate::x509_spki`]'s
+//! [`SubjectPublicKeyInfo::subject_public_key`](crate::x509_spki::SubjectPublicKeyInfo) is a
+//! [`crate::bit_string::BitString`], not a bare byte slice: it carries an `unused`
+//! (`0..=7`) count of trailing padding bits alongside `data`. A BIT STRING with `unused != 0` is
+//! *not* a complete, octet-aligned DER payload — its final octet carries padding bits that are
+//! part of the encoding, not of an embedded `RSAPublicKey`. A caller MUST require `unused == 0`
+//! (e.g. via [`crate::bit_string::require_octet_aligned`]) before handing `subject_public_key.data`
+//! to [`parse_rsa_public_key_strict`]; skipping that check silently discards metadata this module
+//! has no way to see, since it only ever receives `&[u8]`.
+//!
 //! **`modulus`/`publicExponent` are exposed as raw validated content, not materialized as
 //! numbers.** Following [`crate::big_integer`]'s own stance (`DECISIONS.md` D14) and
 //! [`crate::ecdsa_sig_value`]'s `r`/`s` precedent: an RSA modulus and exponent are used downstream
@@ -232,18 +242,22 @@ pub fn parse_rsa_public_key_strict(input: &[u8]) -> Result<RsaPublicKey<'_>, Rsa
 // Kani proof harnesses.
 // ---------------------------------------------------------------------------
 //
-// Buffer sizing / unwind: a 16-octet symbolic buffer, matching `ecdsa_sig_value`'s own bound (the
-// two modules share the identical two-INTEGER SEQUENCE shape). The smallest possible RSAPublicKey
-// is small: an outer SEQUENCE header (>= 2 octets) plus two minimal-INTEGER TLVs (each
-// `tag + len + >=1 content octet` = >= 3 octets), an arithmetic floor of 2 + 3 + 3 = 8 octets --
-// well inside 16, so the Ok cover below is NOT expected to be vacuous; run and read the actual
-// satisfaction count rather than trusting this arithmetic (crate convention). The call chain
-// performs up to three independent `decode_tlv` calls (outer SEQUENCE, `modulus`,
-// `publicExponent`) plus `validate_integer_content`'s own unwind-free `if`-chain (no loop) -- no
-// call recurses or loops over an unbounded sibling count (this parser reads a fixed two-field
-// schema). `#[kani::unwind(20)]` covers a maximal-header `decode_tlv` (~11, per `tlv.rs`) with
-// margin, matching `ecdsa_sig_value`'s own bound; if Kani reports an unwinding-assertion failure,
-// raise this bound (do not weaken scope).
+// Buffer sizing / unwind: a 16-octet symbolic buffer with a symbolic LENGTH (`0..=16`), matching
+// `ecdsa_sig_value`'s own bound (the two modules share the identical two-INTEGER SEQUENCE shape)
+// and the crate's established symbolic-length convention (`x509_certificate.rs`,
+// `x509_tbs_certificate.rs`, `x509_name.rs`, `x509_extension.rs`): a fixed-length-only proof would
+// leave every shorter input UNDISCHARGED, since control flow is length-dependent — a claim of
+// "every input up to 16 octets" requires exploring every length in `0..=16`, not just the single
+// length 16. The smallest possible RSAPublicKey is small: an outer SEQUENCE header (>= 2 octets)
+// plus two minimal-INTEGER TLVs (each `tag + len + >=1 content octet` = >= 3 octets), an
+// arithmetic floor of 2 + 3 + 3 = 8 octets -- well inside the 0..=16 domain, so the Ok cover below
+// is NOT expected to be vacuous; run and read the actual satisfaction count rather than trusting
+// this arithmetic (crate convention). The call chain performs up to three independent `decode_tlv`
+// calls (outer SEQUENCE, `modulus`, `publicExponent`) plus `validate_integer_content`'s own
+// unwind-free `if`-chain (no loop) -- no call recurses or loops over an unbounded sibling count
+// (this parser reads a fixed two-field schema). `#[kani::unwind(20)]` covers a maximal-header
+// `decode_tlv` (~11, per `tlv.rs`) with margin, matching `ecdsa_sig_value`'s own bound; if Kani
+// reports an unwinding-assertion failure, raise this bound (do not weaken scope).
 //
 // A realistic RSA-2048 modulus (257 content octets: a 256-octet 2048-bit value whose top bit is
 // set, plus the mandatory 0x00 sign-guard octet) is far outside what a 16-octet symbolic buffer
@@ -257,7 +271,10 @@ pub fn parse_rsa_public_key_strict(input: &[u8]) -> Result<RsaPublicKey<'_>, Rsa
 mod proofs {
     use super::*;
 
-    /// Robustness: `parse_rsa_public_key` never panics on any input up to 16 octets.
+    /// Robustness: `parse_rsa_public_key` never panics on any input **of any length up to 16
+    /// octets** -- the buffer AND its length are both symbolic (see the module's Kani sizing
+    /// comment), so this is a bounded claim over the whole `0..=16`-octet domain, not just the
+    /// single 16-octet length.
     ///
     /// Cover (T6 primary rule): witnesses the `Ok` tail AND, separately, every distinct structural
     /// rejection variant this module can classify -- not just "some input is accepted, some is
@@ -269,7 +286,13 @@ mod proofs {
     #[kani::unwind(20)]
     fn parse_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_rsa_public_key(&buf);
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `x509_name.rs`): so the "any input up to 16 octets" claim
+        // above holds at every length in the domain, not just the single length 16.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let result = parse_rsa_public_key(input);
 
         kani::cover(result.is_ok(), "a well-formed RSAPublicKey reaches the Ok tail");
 
@@ -291,6 +314,10 @@ mod proofs {
             "an empty outer content (no modulus) is rejected",
         );
         kani::cover(
+            matches!(result, Err(RsaPublicKeyError::Modulus(IntegerFieldError::Tlv(_)))),
+            "modulus field: malformed TLV framing (bad length / truncated) is rejected",
+        );
+        kani::cover(
             matches!(result, Err(RsaPublicKeyError::Modulus(IntegerFieldError::WrongTag))),
             "modulus field: a non-INTEGER tag is rejected",
         );
@@ -306,6 +333,10 @@ mod proofs {
         kani::cover(
             result == Err(RsaPublicKeyError::MissingPublicExponent),
             "modulus present but publicExponent absent (outer content ends after modulus) is rejected",
+        );
+        kani::cover(
+            matches!(result, Err(RsaPublicKeyError::PublicExponent(IntegerFieldError::Tlv(_)))),
+            "publicExponent field: malformed TLV framing (bad length / truncated) is rejected",
         );
         kani::cover(
             matches!(result, Err(RsaPublicKeyError::PublicExponent(IntegerFieldError::WrongTag))),
@@ -328,14 +359,19 @@ mod proofs {
         let _ = result;
     }
 
-    /// Robustness: `parse_rsa_public_key_strict` never panics on any input up to 16 octets, and
+    /// Robustness: `parse_rsa_public_key_strict` never panics on any input **of any length up to
+    /// 16 octets** (buffer and length both symbolic, matching `parse_never_panics` above), and
     /// specifically exercises its one behavioural difference from the composable entry point: a
     /// top-level trailing byte after an otherwise-complete `RSAPublicKey` is rejected.
     #[kani::proof]
     #[kani::unwind(20)]
     fn parse_strict_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_rsa_public_key_strict(&buf);
+        // Symbolic input length -- see `parse_never_panics`'s doc comment.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let result = parse_rsa_public_key_strict(input);
 
         kani::cover(result.is_ok(), "a well-formed top-level RSAPublicKey (no trailing bytes) reaches the Ok tail");
         kani::cover(

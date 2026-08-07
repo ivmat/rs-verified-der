@@ -15,6 +15,16 @@
 //! is verified by this crate"*); this module is what a caller who *has* extracted that BIT STRING's
 //! bit-payload octets applies next, to frame it as its own two-INTEGER `SEQUENCE`.
 //!
+//! **A composing caller must also check the BIT STRING is octet-aligned.**
+//! [`crate::x509_certificate::Certificate::signature_value`] is a [`crate::bit_string::BitString`],
+//! not a bare byte slice: it carries an `unused` (`0..=7`) count of trailing padding bits alongside
+//! `data`. A BIT STRING with `unused != 0` is *not* a complete, octet-aligned DER payload — its
+//! final octet carries padding bits that are part of the encoding, not of an embedded
+//! `ECDSA-Sig-Value`. A caller MUST require `unused == 0` (e.g. via
+//! [`crate::bit_string::require_octet_aligned`]) before handing `signature_value.data` to
+//! [`parse_ecdsa_sig_value_strict`]; skipping that check silently discards metadata this module has
+//! no way to see, since it only ever receives `&[u8]`.
+//!
 //! **`r`/`s` are exposed as raw validated content, not materialized as numbers.** Following
 //! [`crate::big_integer`]'s own stance (`DECISIONS.md` D14) and [`crate::x509_tbs_certificate`]'s
 //! `serial_number` field (the crate's other opaque-bignum precedent): a signature scalar is used
@@ -213,25 +223,33 @@ pub fn parse_ecdsa_sig_value_strict(input: &[u8]) -> Result<EcdsaSigValue<'_>, E
 // Kani proof harnesses.
 // ---------------------------------------------------------------------------
 //
-// Buffer sizing / unwind: a 16-octet symbolic buffer, matching `x509_algorithm_identifier`'s and
-// `x509_validity`'s own bound. Unlike `x509_validity` (whose Time fields have an arithmetic floor of
-// 13/15 content octets each, pushing its own Ok cover past 16 octets into disclosed vacuity), the
-// smallest possible ECDSA-Sig-Value is small: an outer SEQUENCE header (>= 2 octets) plus two
-// minimal-INTEGER TLVs (each `tag + len + >=1 content octet` = >= 3 octets), an arithmetic floor of
-// 2 + 3 + 3 = 8 octets -- well inside 16, so (unlike `x509_validity::parse_never_panics`) the Ok cover
-// below is NOT expected to be vacuous; run and read the actual satisfaction count rather than trusting
-// this arithmetic (crate convention, `DOCS-SYNC.md`'s "watched to fail" discipline). The call chain
-// performs up to three independent `decode_tlv` calls (outer SEQUENCE, `r`, `s`) plus
-// `validate_integer_content`'s own unwind-free `if`-chain (no loop) -- no call recurses or loops over
-// an unbounded sibling count (this parser reads a fixed two-field schema). `#[kani::unwind(20)]`
-// covers a maximal-header `decode_tlv` (~11, per `tlv.rs`) with margin, matching
+// Buffer sizing / unwind: a 16-octet symbolic buffer with a symbolic LENGTH (`0..=16`), matching
+// `x509_algorithm_identifier`'s and `x509_validity`'s own bound, and the crate's established
+// symbolic-length convention (`x509_certificate.rs`, `x509_tbs_certificate.rs`, `x509_name.rs`,
+// `x509_extension.rs`): a fixed-length-only proof would leave every shorter input UNDISCHARGED,
+// since control flow is length-dependent -- a claim of "every input up to 16 octets" requires
+// exploring every length in `0..=16`, not just the single length 16. Unlike `x509_validity` (whose
+// Time fields have an arithmetic floor of 13/15 content octets each, pushing its own Ok cover past
+// 16 octets into disclosed vacuity), the smallest possible ECDSA-Sig-Value is small: an outer
+// SEQUENCE header (>= 2 octets) plus two minimal-INTEGER TLVs (each `tag + len + >=1 content
+// octet` = >= 3 octets), an arithmetic floor of 2 + 3 + 3 = 8 octets -- well inside the 0..=16
+// domain, so (unlike `x509_validity::parse_never_panics`) the Ok cover below is NOT expected to be
+// vacuous; run and read the actual satisfaction count rather than trusting this arithmetic (crate
+// convention, `DOCS-SYNC.md`'s "watched to fail" discipline). The call chain performs up to three
+// independent `decode_tlv` calls (outer SEQUENCE, `r`, `s`) plus `validate_integer_content`'s own
+// unwind-free `if`-chain (no loop) -- no call recurses or loops over an unbounded sibling count
+// (this parser reads a fixed two-field schema). `#[kani::unwind(20)]` covers a maximal-header
+// `decode_tlv` (~11, per `tlv.rs`) with margin, matching
 // `x509_algorithm_identifier::parse_algorithm_identifier_never_panics`'s bound; if Kani reports an
 // unwinding-assertion failure, raise this bound (do not weaken scope).
 #[cfg(kani)]
 mod proofs {
     use super::*;
 
-    /// Robustness: `parse_ecdsa_sig_value` never panics on any input up to 16 octets.
+    /// Robustness: `parse_ecdsa_sig_value` never panics on any input **of any length up to 16
+    /// octets** -- the buffer AND its length are both symbolic (see the module's Kani sizing
+    /// comment), so this is a bounded claim over the whole `0..=16`-octet domain, not just the
+    /// single 16-octet length.
     ///
     /// Cover (T6 primary rule): witnesses the `Ok` tail AND, separately, every distinct structural
     /// rejection variant this module can classify -- not just "some input is accepted, some is
@@ -243,7 +261,13 @@ mod proofs {
     #[kani::unwind(20)]
     fn parse_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_ecdsa_sig_value(&buf);
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `x509_name.rs`): so the "any input up to 16 octets" claim
+        // above holds at every length in the domain, not just the single length 16.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let result = parse_ecdsa_sig_value(input);
 
         kani::cover(result.is_ok(), "a well-formed ECDSA-Sig-Value reaches the Ok tail");
 
@@ -262,6 +286,10 @@ mod proofs {
 
         kani::cover(result == Err(EcdsaSigValueError::MissingR), "an empty outer content (no r) is rejected");
         kani::cover(
+            matches!(result, Err(EcdsaSigValueError::R(IntegerFieldError::Tlv(_)))),
+            "r field: malformed TLV framing (bad length / truncated) is rejected",
+        );
+        kani::cover(
             matches!(result, Err(EcdsaSigValueError::R(IntegerFieldError::WrongTag))),
             "r field: a non-INTEGER tag is rejected",
         );
@@ -277,6 +305,10 @@ mod proofs {
         kani::cover(
             result == Err(EcdsaSigValueError::MissingS),
             "r present but s absent (outer content ends after r) is rejected",
+        );
+        kani::cover(
+            matches!(result, Err(EcdsaSigValueError::S(IntegerFieldError::Tlv(_)))),
+            "s field: malformed TLV framing (bad length / truncated) is rejected",
         );
         kani::cover(
             matches!(result, Err(EcdsaSigValueError::S(IntegerFieldError::WrongTag))),
@@ -299,14 +331,19 @@ mod proofs {
         let _ = result;
     }
 
-    /// Robustness: `parse_ecdsa_sig_value_strict` never panics on any input up to 16 octets, and
+    /// Robustness: `parse_ecdsa_sig_value_strict` never panics on any input **of any length up to
+    /// 16 octets** (buffer and length both symbolic, matching `parse_never_panics` above), and
     /// specifically exercises its one behavioural difference from the composable entry point: a
     /// top-level trailing byte after an otherwise-complete `ECDSA-Sig-Value` is rejected.
     #[kani::proof]
     #[kani::unwind(20)]
     fn parse_strict_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_ecdsa_sig_value_strict(&buf);
+        // Symbolic input length -- see `parse_never_panics`'s doc comment.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let result = parse_ecdsa_sig_value_strict(input);
 
         kani::cover(result.is_ok(), "a well-formed top-level ECDSA-Sig-Value (no trailing bytes) reaches the Ok tail");
         kani::cover(

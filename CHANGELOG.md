@@ -17,9 +17,12 @@ All notable changes to `der-verified` are documented here. The format is based o
   unwrap an SPKI itself. DER framing and canonicality only: **no** exponent oddness/minimum-value
   policy, **no** modulus size policy, **no** RSA semantics whatsoever — see `DECISIONS.md` D31 and
   the module doc for the full scope fence. 24 new `#[test]`s + 1 new doc-test, 3 new Kani harnesses
-  (16 of 16 `kani::cover` properties satisfied, no vacuity; the RSA-2048-shaped accept path is
+  (18 of 18 `kani::cover` properties satisfied, no vacuity; the RSA-2048-shaped accept path is
   witnessed by a dedicated concrete-specimen harness, mirroring `ecdsa_sig_value`'s own P-256-shaped
-  harness). Harness count 174 → 177, test count 345 → 369, module count 27 → 28.
+  harness). Harness count 174 → 177, test count 345 → 369, module count 27 → 28. The two
+  `never_panics` harnesses use a symbolic input length (not just a symbolic 16-octet buffer) and
+  each carry a `IntegerFieldError::Tlv` cover for both `modulus` and `publicExponent`, closing a
+  post-review gap (18 covers total, up from 16 at commit time).
 - **`ecdsa_sig_value` module** — a structural parser for the ASN.1 `ECDSA-Sig-Value`
   (RFC 3279 §2.2.3 / RFC 5480): `SEQUENCE { r INTEGER, s INTEGER }`, composing `sequence` +
   `big_integer`. `r`/`s` are exposed as opaque validated bytes, never materialized as numbers.
@@ -27,8 +30,11 @@ All notable changes to `der-verified` are documented here. The format is based o
   (`parse_ecdsa_sig_value` / `parse_ecdsa_sig_value_strict`). DER framing and canonicality only:
   **no** curve-order range check, **no** low-S policy, **no** cryptographic interpretation — see
   `DECISIONS.md` D30 and the module doc for the full scope fence. 25 new `#[test]`s, 3 new Kani
-  harnesses (16 of 16 `kani::cover` properties satisfied, no vacuity). Harness count 171 → 174,
-  test count 320 → 345, module count 26 → 27.
+  harnesses (18 of 18 `kani::cover` properties satisfied, no vacuity). Harness count 171 → 174,
+  test count 320 → 345, module count 26 → 27. Post-review (2026-08-07): the two `never_panics`
+  harnesses now use a symbolic input length (not just a symbolic 16-octet buffer) and each carry an
+  added `IntegerFieldError::Tlv` cover for both `r` and `s`, closing a gap flagged in review (18
+  covers total, up from 16 at commit time).
 
 ### Documentation / assurance process
 - **`paper/der-verified.tex` brought back in sync with `PROOF_MANIFEST.md`.** The artifact/experience

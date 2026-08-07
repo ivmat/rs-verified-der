@@ -280,3 +280,30 @@ scope boundary referenced below.
       proof-manifest self-test + proof-manifest gate + workspace tests) is rc=0.
 - [x] A "why / threat-model" writeup covering what a verified decoder buys you —
       [`docs/why-verified.md`](docs/why-verified.md).
+
+## Sweep candidate: leaf-module harnesses predating the symbolic-input-length convention
+
+- [ ] **The crate's heavier modules (`x509_certificate.rs`, `x509_tbs_certificate.rs`,
+      `x509_name.rs`, `x509_extension.rs`) already use a symbolic `len: usize = kani::any();
+      kani::assume(len <= buf.len()); let input = &buf[..len];` before parsing — so a
+      `never_panics`-style harness's "any input up to N octets" claim holds at every length in the
+      domain, not just the full buffer. `ecdsa_sig_value.rs` and `rsa_public_key.rs` had the older,
+      narrower pattern (`let buf: [u8; 16] = kani::any(); parse(&buf)`, proving only the single
+      length 16) and were fixed in D32 (2026-08-07). A positively-controlled grep across
+      `der-verified/src` for the *fixed* pattern, checked against whether the crate's established
+      `let len: usize = kani::any();`/`kani::assume(len <= buf.len())` idiom appears near each hit
+      (confirmed present for the four known-good files above, confirming the grep discriminates),
+      finds the following modules **still on the old, narrower pattern** and not yet swept:
+      `x509_algorithm_identifier.rs` (the crate's other 16-octet-fixed leaf template, explicitly
+      named out of scope for D32), `restricted_string.rs` (5 harnesses), `octet_string.rs` (3),
+      `set_of.rs` (1), `utf8_string.rs` (1), `tlv.rs` (2), `x509_spki.rs` (1), `sequence.rs` (1),
+      `context_tag.rs` (1), and one harness inside `x509_extension.rs` itself
+      (`parse_extension_never_panics` — that module's *other* harness,
+      `validate_extensions_never_panics`, already has the fix). `x509_validity.rs`'s
+      `parse_never_panics` also has the old fixed-buffer shape, but its own disclosed-vacuity note
+      (§8.2) already documents that its `Ok` cover is unsatisfiable past the arithmetic floor at
+      `[u8; 16]`, so widening it to a symbolic length needs the same care D32 gave the two modules
+      here, not a mechanical copy. Not all of the harnesses above necessarily need the fix — some
+      may not have callers that invoke them on a suffix slice the way the stubbed
+      `x509_tbs_certificate`/`x509_certificate` compositions do — so this is a **sweep candidate to
+      triage per-module**, not a blanket TODO; the grep and file list above are the starting point.

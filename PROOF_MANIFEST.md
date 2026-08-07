@@ -68,9 +68,9 @@ deviations. Read the two differently.
 | …named by at least one Kani harness | 61 |
 | …named by **no** Kani harness | **11** |
 | `#[kani::proof]` harnesses | 177 |
-| `kani::assume` harness preconditions (narrow the proved domain) | 136 |
+| `kani::assume` harness preconditions (narrow the proved domain) | 140 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 107 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 111 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 7 / 4 |
 | `#[test]` unit + regression tests | 369 |
@@ -336,7 +336,7 @@ carry that.
 | `bit_string` | 3 | 3 | 8 | 3..6 | 6..8 | 9 | 2 | 0 |  |
 | `boolean` | 2 | 2 | 3 | — | — | 0 | 0 | 0 |  |
 | `context_tag` | 1 | 1 | 1 | 16 | 20 | 0 | 2 | 0 |  |
-| `ecdsa_sig_value` | 2 | 2 | 3 | 16..71 | 20 | 0 | 16 | 0 |  |
+| `ecdsa_sig_value` | 2 | 2 | 3 | 16..71 | 20 | 2 | 18 | 0 |  |
 | `enumerated` | 2 | 2 | 3 | 9 | 12 | 1 | 10 | 0 |  |
 | `generalized_time` | 3 | 2 | 16 | 3..19 | 16..20 | 20 | 3 | 0 |  |
 | `integer` | 2 | 2 | 7 | 8..10 | 12 | 4 | 2 | 0 |  |
@@ -346,7 +346,7 @@ carry that.
 | `oid` | 1 | 1 | 5 | 4..6 | 8 | 5 | 2 | 0 | ✅ |
 | `profile` | 1 | 1 | 6 | 1..2 | 4 | 2 | 16 | 0 |  |
 | `restricted_string` | 14 | 5 | 26 | 3..16 | 6..16 | 30 | 4 | 0 |  |
-| `rsa_public_key` | 2 | 2 | 3 | 16..270 | 20 | 0 | 16 | 0 |  |
+| `rsa_public_key` | 2 | 2 | 3 | 16..270 | 20 | 2 | 18 | 0 |  |
 | `sequence` | 6 | 6 | 7 | 8..16 | 16 | 0 | 2 | 0 | ✅ |
 | `set_of` | 5 | 5 | 13 | 3..16 | 16 | 2 | 2 | 0 |  |
 | `tag` | 2 | 2 | 7 | 7 | 12 | 5 | 2 | 0 | ✅ |
@@ -596,7 +596,7 @@ input space. This crate treats that as the default suspicion, and the check is m
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
 | harnesses | 177 |
-| `kani::cover` witnesses | 107, in 26 of the 28 modules that have harnesses |
+| `kani::cover` witnesses | 111, in 26 of the 28 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **0** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 82 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
@@ -605,7 +605,7 @@ input space. This crate treats that as the default suspicion, and the check is m
 
 What the remaining 82 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
-**What the 136 harness assumptions actually restrict.** 92 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
+**What the 140 harness assumptions actually restrict.** 96 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
 Two things to hold in mind reading it. First, the classifier is deliberately conservative: anything it cannot show is a pure size/range bound is listed, so some entries below *are* range constraints in a shape it does not recognise (a negated range such as `!(mo >= 1 && mo <= 12)`, for instance). It errs toward disclosing. Second, content narrowing is usually the **point** of the harness rather than a weakness in it: a rejection-classification harness exists precisely to pin a malformed shape and assert the exact error it must produce, and it must narrow to that shape to do so. What the list gives you is the ability to check that judgement yourself, harness by harness, instead of taking a count on trust.
 

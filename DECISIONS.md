@@ -1880,3 +1880,66 @@ toolchain and zero primitive changes. **Confidence high** (shallow composition, 
 full non-vacuity, exact structural match to the D30 sibling for both the API shape and the
 strict/lenient split; the one real divergence — the concrete-specimen large-modulus harness — is
 itself a direct copy of D30's own P-256-shaped-specimen tradeoff).
+
+## D32 — Three review findings closed on D30/D31 (`ecdsa_sig_value`, `rsa_public_key`): symbolic input
+length, two missing `Tlv`-variant covers, and a BIT STRING alignment precondition  ·  landed (medium)
+
+**Call.** Three findings from a second-model review of D30/D31, all confirmed and fixed, applied
+identically to both modules (they share the identical two-INTEGER `SEQUENCE` shape and the same
+harness template, so the same gap existed twice):
+
+1. **Fixed input length, not a symbolic one.** Both modules' `parse_never_panics` /
+   `parse_strict_never_panics` harnesses declared `let buf: [u8; 16] = kani::any();` and called
+   `parse(&buf)` directly — proving the claim only at the single length 16, not "any input up to 16
+   octets" as their doc comments and D30/D31's own text (above) asserted. The crate's heavier
+   modules (`x509_certificate.rs`, `x509_tbs_certificate.rs`, `x509_name.rs`, `x509_extension.rs`)
+   had already established the fix: a symbolic `len: usize = kani::any(); kani::assume(len <=
+   buf.len()); let input = &buf[..len];`, then parse `input`. Both modules' four `never_panics`
+   harnesses now follow that convention; the doc comments were reworded to state the bounded claim
+   precisely ("**of any length** up to 16 octets") rather than leaving room to misread it as
+   unbounded. `x509_algorithm_identifier` (the crate's other 16-octet-fixed leaf template) has the
+   same pre-existing gap and is **explicitly out of scope here** — recorded as a sweep item in
+   `TODO.md` instead, since fixing every occurrence of the old pattern is a separate, larger sweep.
+2. **Two missing rejection-variant covers.** Both modules' module docs claimed every distinct
+   structural rejection variant was witnessed by `kani::cover`, but neither harness's `Ok` file
+   named `IntegerFieldError::Tlv` (malformed TLV framing inside the `modulus`/`r` or
+   `publicExponent`/`s` field) — the harness had a cover for the *outer* SEQUENCE's `Tlv(_)`
+   variant, but not for the per-field one, even though `IntegerFieldError::Tlv` is a real,
+   independently-reachable variant (witnessed concretely by e.g.
+   `rsa_public_key::tests::rejects_truncated_modulus_tlv` /
+   `rejects_truncated_public_exponent_tlv`, `ecdsa_sig_value::tests::rejects_truncated_r_tlv` /
+   `rejects_truncated_s_tlv`, all well under 16 octets). Added the missing cover for both fields in
+   both modules (4 new covers total, 2 per module) rather than narrowing the doc's claim — and the
+   re-run below confirms all four are satisfiable at the 16-octet bound, so there is nothing to
+   disclose.
+3. **BIT STRING alignment precondition undocumented.** Both modules describe composing with a BIT
+   STRING payload (`x509_spki::SubjectPublicKeyInfo::subject_public_key` for `rsa_public_key`;
+   `x509_certificate::Certificate::signature_value` for `ecdsa_sig_value`) but never said the
+   composing caller must ALSO check the BIT STRING's `unused == 0` (`crate::bit_string::BitString`)
+   before treating `.data` as a complete, octet-aligned DER payload — a `BitString` with
+   `unused != 0` carries trailing padding bits that are part of the encoding, not of the embedded
+   structure, and silently discarding that metadata is exactly the kind of composition bug this
+   crate's scope fences exist to prevent callers from making by accident. Both module docs now
+   state the precondition explicitly and point at `crate::bit_string::require_octet_aligned` as the
+   check to apply first.
+
+**Verified (re-run after all three fixes).** `systemd-run --user --scope -p MemoryMax=22G -p
+MemorySwapMax=0 -- cargo kani -Z stubbing --harness rsa_public_key:: --harness ecdsa_sig_value::`;
+all six harnesses (three per module) `VERIFICATION:- SUCCESSFUL`. Both modules' `parse_never_panics`
+now report **15 of 15** `kani::cover` properties satisfied (13 → 15, the two new `Tlv` covers, each
+individually satisfiable); `parse_strict_never_panics` and the concrete-specimen harness are
+unchanged at 2 of 2 / 1 of 1. Per-module cover total: 16 → **18** (matches
+`gen_proof_manifest.py --write`'s regenerated `PROOF_MANIFEST.md`). Check-count deltas from the
+symbolic-length change, confirmed against a baseline re-run of the pre-fix source (via `git stash`):
+`parse_never_panics` moved 650 → 668 checks in both modules (new slice-indexing / length-comparison
+checks from `&buf[..len]`); `parse_strict_never_panics` happened to tie at 195 → 195 in both
+modules, but a line-level diff of the two runs' check lists confirms the *underlying* check set
+changed (new `RangeFrom`/`ToISize`/slice-index checks replaced others removed by the same
+compilation-shape change) — the equal total is a coincidence in the count, not evidence the harness
+is unchanged. `check_fast.sh` green, `cargo clippy --all-targets -- -D warnings` clean,
+`gen_proof_manifest.py --write` regenerated the `inventory`/`per-module`/`non-vacuity` regions
+(`kani::assume` 136 → 140, `kani::cover` 107 → 111, both modules' per-module row `0`/`16` →
+`2`/`18`).
+
+**Verdict.** **KEEP, forward-fix.** `ecdsa_sig_value.rs` is already pushed, so this landed as a
+normal forward commit rather than an amend, per the crate's history-append discipline.
