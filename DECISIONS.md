@@ -1697,6 +1697,23 @@ doesn't block) but fails a further edit after acknowledgment (the ack itself goe
 under `--strict`, which `check.sh` now runs immediately after `lean/check_lean.sh` — so a milestone
 run that goes green must have cleared every PENDING itself, not merely tolerated it.
 
+**Amendment (same session, two review findings closed before release).** The gate does not merely
+read the state file's own set of lines as given: `derive_expected_paths()` PARSES
+`lean/check_lean.sh`'s own `check_drift <Model> "<file>"` calls to derive the expected six-file
+set and fails (naming the delta, either direction) if the state file's set doesn't match — so
+deleting a manifest line no longer silently shrinks coverage; `check_lean.sh` stays the single
+source of truth for WHICH files, the state file carries only their hashes. Fail-closed if
+`check_drift(...)` can't be parsed at all (zero entries), same posture as every other fail-closed
+path in this gate. Separately, when run inside a git checkout the gate also fails on
+index/worktree divergence across the covered paths (the six sources plus the state file itself,
+via `git diff --name-only`): staging a lid-source edit, `--ack`ing it in the working tree, and
+committing without `git add`-ing the state file too would otherwise let the commit land with
+drifted source alongside an unstaged (old) baseline, since the hash check alone only ever reads
+the working tree, not the index a `git commit` actually records. Degrades gracefully (skips, with
+the hash check still running) outside a git checkout. `check.sh` also now runs this gate's
+self-test explicitly (`gates/test_check_lid_staleness.py`), matching every other gate-with-a-
+self-test in that script — it was previously wired only into `check_fast.sh`.
+
 **Honest limit — stated, not discovered later.** This gate detects SOURCE drift only. It has no
 opinion on TOOLCHAIN drift (an Aeneas/Charon pin bump with unchanged source text but changed
 meaning) — that stays exclusively `lean/check_lean.sh`'s own pin check (§0b of that script, this

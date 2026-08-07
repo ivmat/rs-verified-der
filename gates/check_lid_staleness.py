@@ -21,12 +21,16 @@ Usage:
 """
 import hashlib
 import pathlib
+import re
+import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 STATE_FILE = ROOT / "lean" / "lid-source-state.txt"
+CHECK_LEAN_SH = ROOT / "lean" / "check_lean.sh"
 
 _HEXDIGITS = frozenset("0123456789abcdef")
+_CHECK_DRIFT_RE = re.compile(r'check_drift\s+\S+\s+"([^"]+)"')
 
 
 class ParseError(Exception):
@@ -67,6 +71,66 @@ def parse_state(text: str):
     return entries
 
 
+def derive_expected_paths():
+    """Return the set of repo-relative lid-source paths derived from `lean/check_lean.sh`'s own
+    `check_drift <Model> "<file>"` calls -- check_lean.sh stays the single source of truth for
+    WHICH files are lid-covered (see DECISIONS.md D29); this gate must never grow a second,
+    silently-driftable hand-maintained list. Raises ParseError (fail closed) if check_lean.sh is
+    missing or no check_drift(...) calls can be found in it -- an empty derived set is never
+    treated as "nothing to check".
+    """
+    if not CHECK_LEAN_SH.exists():
+        raise ParseError(f"cannot derive expected lid sources: missing {CHECK_LEAN_SH}")
+    text = CHECK_LEAN_SH.read_text(encoding="utf-8")
+    basenames = set()
+    for match in _CHECK_DRIFT_RE.finditer(text):
+        for part in match.group(1).split("/"):
+            part = part.strip()
+            if part:
+                basenames.add(part)
+    if not basenames:
+        raise ParseError(
+            f"cannot derive expected lid sources: no check_drift(...) calls found in {CHECK_LEAN_SH}"
+        )
+    return {f"der-verified/src/{name}" for name in basenames}
+
+
+def _in_git_checkout() -> bool:
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(ROOT), "rev-parse", "--is-inside-work-tree"],
+            capture_output=True, text=True,
+        )
+    except FileNotFoundError:
+        return False
+    return proc.returncode == 0 and proc.stdout.strip() == "true"
+
+
+def git_diverged_paths(rel_paths):
+    """Repo-relative `rel_paths` (relative to ROOT) whose git INDEX content differs from the
+    current WORKING TREE content right now -- i.e. an unstaged change against what a `git commit`
+    would actually record. Returns None if ROOT is not inside a git checkout (or git itself is
+    unavailable): callers must degrade gracefully in that case -- the hash check still runs
+    regardless, this is an additional signal, not a replacement for it.
+
+    This is what closes the index/worktree lying scenario: stage a lid-source edit, `--ack` it
+    (which only touches the WORKING TREE), and commit without `git add`-ing the state file too --
+    the commit would then carry drifted source alongside the OLD (unstaged) baseline. If the state
+    file (or any covered source) still differs between the index and the working tree, that
+    divergence would survive into the commit unexamined, so this fails loudly instead.
+    """
+    if not _in_git_checkout():
+        return None
+    proc = subprocess.run(
+        ["git", "-C", str(ROOT), "diff", "--name-only", "--", *rel_paths],
+        capture_output=True, text=True,
+    )
+    if proc.returncode != 0:
+        return None
+    changed = {line.strip() for line in proc.stdout.splitlines() if line.strip()}
+    return sorted(p for p in rel_paths if p in changed)
+
+
 def check(strict: bool = False) -> int:
     if not STATE_FILE.exists():
         print(f"FAIL check_lid_staleness: state file missing: {STATE_FILE}", file=sys.stderr)
@@ -79,6 +143,37 @@ def check(strict: bool = False) -> int:
         return 1
 
     problems = []
+
+    try:
+        expected_paths = derive_expected_paths()
+    except ParseError as exc:
+        print(f"FAIL check_lid_staleness: {exc}", file=sys.stderr)
+        return 1
+
+    state_paths = {e["path"] for e in entries}
+    missing = sorted(expected_paths - state_paths)
+    extra = sorted(state_paths - expected_paths)
+    if missing or extra:
+        problems.append(
+            f"{STATE_FILE.name}'s source set doesn't match lean/check_lean.sh's check_drift(...) sources"
+        )
+        for p in missing:
+            problems.append(f"  missing from {STATE_FILE.name} (a check_drift source with no line): {p}")
+        for p in extra:
+            problems.append(f"  unexpected in {STATE_FILE.name} (not a check_drift source): {p}")
+
+    state_rel_path = str(STATE_FILE.relative_to(ROOT))
+    covered_paths = sorted(state_paths | {state_rel_path})
+    diverged = git_diverged_paths(covered_paths)
+    if diverged is None:
+        pass  # not a git checkout (or git unavailable): index/worktree divergence check skipped
+    elif diverged:
+        problems.append(
+            "index/worktree divergence on " + ", ".join(diverged) + " -- unstaged changes on a "
+            "covered path would NOT be included in a `git commit` right now, so the commit could "
+            "land with drifted source alongside an old (or stale-ack'd) baseline. `git add` "
+            + ", ".join(diverged) + " too before committing."
+        )
     stale_notices = []
     strict_pending = []
 

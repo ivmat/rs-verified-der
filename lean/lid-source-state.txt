@@ -9,7 +9,10 @@
 #                                              python3 gates/check_lid_staleness.py --ack <path>
 #
 # WHICH files: derived from lean/check_lean.sh's own check_drift() sources -- never a second
-# hand-maintained list. The fast gate reads this file only; it does not parse check_lean.sh.
+# hand-maintained list. gates/check_lid_staleness.py PARSES check_lean.sh's check_drift(...)
+# calls to derive the expected source set and fails if this file's set doesn't match (either
+# direction) -- so check_lean.sh stays the single source of truth for WHICH files, this file
+# carries only their hashes.
 #
 # Contract: Aeneas embeds source LINE SPANS in what it extracts, so ANY edit to a lid-covered file
 # -- including a docs-only `//!` line -- can silently break the extracted Lean model. This file
