@@ -299,3 +299,45 @@ if printf '%s\n' "$BUILD_OUT" | grep -q "sorryAx"; then
   exit 1
 fi
 echo "== lean lid: PASS (sorry-free) =="
+
+# 3) Refresh the fast gate's staleness tripwire (gates/check_lid_staleness.py, run every commit via
+#    check_fast.sh). Only reached here because `set -eu` already aborted the whole script above on
+#    ANY failure -- extraction, drift, lake build, or a smuggled sorry -- so a full green run is
+#    exactly the event that should clear PENDING markers and re-baseline the six hashes. Reuses the
+#    SAME six path variables named in the check_drift() calls above, not a second hand-kept list
+#    (lean/lid-source-state.txt's own header documents this contract; see DECISIONS.md D29).
+echo "== lean lid: refreshing lean/lid-source-state.txt (fast-gate tripwire) =="
+STATE_FILE="$HERE/lid-source-state.txt"
+COMMIT="$(git -C "$HERE" rev-parse HEAD 2>/dev/null || echo '?')"
+STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+{
+  cat <<HDR
+# lean/lid-source-state.txt — Lean-lid source-drift tripwire (fast-gate state).
+#
+# ONE-LINE CONTRACT, read by gates/check_lid_staleness.py (per-commit, via check_fast.sh) and
+# refreshed ONLY by lean/check_lean.sh (the full gate, on a green run; check.sh --strict):
+#   <sha256>  <repo-relative-path>          -- matches the shipped source's current sha256.
+#   PENDING <sha256>  <repo-relative-path>  -- drift ACKNOWLEDGED but not yet re-verified through
+#                                              Lean; the hash is the file's CURRENT content, so a
+#                                              further edit re-triggers FAIL. Acknowledge with:
+#                                              python3 gates/check_lid_staleness.py --ack <path>
+#
+# WHICH files: derived from lean/check_lean.sh's own check_drift() sources -- never a second
+# hand-maintained list. The fast gate reads this file only; it does not parse check_lean.sh.
+#
+# Contract: Aeneas embeds source LINE SPANS in what it extracts, so ANY edit to a lid-covered file
+# -- including a docs-only \`//!\` line -- can silently break the extracted Lean model. This file
+# is the cheap (six sha256 reads) per-commit tripwire for that; it cannot re-verify anything
+# through Lean itself, so a matching hash means only "unchanged since the last green Lean run",
+# not "still proves". Toolchain drift (Aeneas/Charon pin mismatch) is exclusively the full gate's
+# job (see this script's own pin check above).
+#
+# Regenerated: $STAMP, at git commit $COMMIT, by this full green lean/check_lean.sh run.
+HDR
+  for f in "$LEN_RS" "$BIGINT_RS" "$OID_RS" "$TAG_RS" "$TLV_RS" "$SEQ_RS"; do
+    rel="der-verified/src/$(basename "$f")"
+    sha="$(sha256sum "$f" | awk '{print $1}')"
+    printf '%s  %s\n' "$sha" "$rel"
+  done
+} > "$STATE_FILE"
+echo "== lean lid: lid-source-state.txt refreshed =="

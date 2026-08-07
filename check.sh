@@ -38,4 +38,6 @@ echo "== cargo kani :: der-verified (L3 proof floor) =="
 cargo kani -Z stubbing --manifest-path "$ROOT/der-verified/Cargo.toml"
 echo "== lean lid :: der-verified length/big_integer/oid codecs (L4, unbounded; guarded) =="
 sh "$ROOT/lean/check_lean.sh"
+echo "== lid-staleness gate --strict (after the Lean gate, which just refreshed the state on green) =="
+python3 "$ROOT/gates/check_lid_staleness.py" --strict
 echo "== check.sh: PASS =="

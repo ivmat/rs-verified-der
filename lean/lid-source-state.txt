@@ -1,0 +1,32 @@
+# lean/lid-source-state.txt — Lean-lid source-drift tripwire (fast-gate state).
+#
+# ONE-LINE CONTRACT, read by gates/check_lid_staleness.py (per-commit, via check_fast.sh) and
+# refreshed ONLY by lean/check_lean.sh (the full gate, on a green run; check.sh --strict):
+#   <sha256>  <repo-relative-path>          -- matches the shipped source's current sha256.
+#   PENDING <sha256>  <repo-relative-path>  -- drift ACKNOWLEDGED but not yet re-verified through
+#                                              Lean; the hash is the file's CURRENT content, so a
+#                                              further edit re-triggers FAIL. Acknowledge with:
+#                                              python3 gates/check_lid_staleness.py --ack <path>
+#
+# WHICH files: derived from lean/check_lean.sh's own check_drift() sources -- never a second
+# hand-maintained list. The fast gate reads this file only; it does not parse check_lean.sh.
+#
+# Contract: Aeneas embeds source LINE SPANS in what it extracts, so ANY edit to a lid-covered file
+# -- including a docs-only `//!` line -- can silently break the extracted Lean model. This file is
+# the cheap (six sha256 reads) per-commit tripwire for that; it cannot re-verify anything through
+# Lean itself, so a matching hash means only "unchanged since the last green Lean run", not "still
+# proves". Toolchain drift (Aeneas/Charon pin mismatch) is exclusively the full gate's job.
+#
+# Baseline note (2026-08-07, DECISIONS.md D29): these six lines were generated from the tree at
+# commit e44960c WITHOUT running the Lean toolchain here (too memory/time-expensive to run inline
+# for this task). They are asserted fresh, not merely typed, because
+# `git diff --stat 06586a8 -- der-verified/src/{length,big_integer,oid,tag,tlv,sequence}.rs` is
+# empty -- none of the six lid sources have moved since evidence/lid-green-2026-08-03.log's
+# underlying green `lean/check_lean.sh` run (commit 06586a8). Had any of the six shown drift, its
+# line below would be PENDING instead of asserted current.
+80ada6f0a9d47ae1fb1d6447073591e639dda3aa3c27078655d67a25f39ec2fc  der-verified/src/length.rs
+d6a19e010323f58f6fd3501ccb4dc84bf3c21a9dc7ba6d4d9ff11816d45409db  der-verified/src/big_integer.rs
+252d5f61c7a125342388e09a923095aa294d22c45e74fd19f07497fae073cfa0  der-verified/src/oid.rs
+3951b29aee75f3dd9ede31df6910e44b885d8a35ff9bee8a5eb145643d7c3ebe  der-verified/src/tag.rs
+8912d3e9807032107606962105e7acb312ed9f7ee16a9f106ba35c4dc0d9719d  der-verified/src/tlv.rs
+c81cca7bf4fafbee5f625d005cd2e93eca097dff5b93849e8ed2e9777839a48c  der-verified/src/sequence.rs

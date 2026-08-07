@@ -7,6 +7,11 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [Unreleased]
 
 ### Documentation / assurance process
+- **Added a per-commit tripwire for Lean-lid source drift** (`gates/check_lid_staleness.py` +
+  `lean/lid-source-state.txt`, wired into `check_fast.sh`/`check.sh`): the six Aeneas-extracted
+  source files can silently break the extracted Lean model on any edit, but the gate that catches
+  it only ran at milestones — this closes the per-commit gap without claiming to re-verify
+  anything through Lean itself (see DECISIONS.md D29).
 - **The count-claim guard was passing over three stale counts, one of them in the crates.io README.**
   Adding 11 tests (309 → 320) surfaced it: `--check` reported PASS while `README.md`,
   `der-verified/README.md` and `docs/why-verified.md` all still said 309. Two independent causes, both

@@ -5,6 +5,10 @@
 # The SLOW proof floor — `cargo kani` (the L3 proof) + the Lean lid — deliberately stays in check.sh:
 # run it at milestones / before a release, NOT per commit. Minutes-long formal proofs in a blocking hook
 # would breed `git commit --no-verify`. check.sh remains the full gate; this is its fast front.
+#
+# One SLOW-gate blind spot IS covered here: the Lean lid's six Aeneas-extracted sources
+# (lean/lid-source-state.txt) can drift on ANY edit, including docs-only, without the full Lean
+# gate running to notice — gates/check_lid_staleness.py is the cheap per-commit tripwire for that.
 set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo "== hygiene gate (doc links; pure stdlib) =="
@@ -17,6 +21,10 @@ echo "== verification-map gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_gen_verification_map.py"
 echo "== verification-map gate (README.md's mermaid map vs source; pure stdlib) =="
 python3 "$ROOT/gates/gen_verification_map.py" --check
+echo "== lid-staleness gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_check_lid_staleness.py"
+echo "== lid-staleness gate (Lean-lid source drift since the last green Lean run; pure stdlib, fast) =="
+python3 "$ROOT/gates/check_lid_staleness.py"
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
 echo "== check_fast.sh: PASS (Kani + Lean NOT run here — run check.sh at milestones) =="

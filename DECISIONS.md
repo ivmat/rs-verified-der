@@ -1671,3 +1671,56 @@ anonymous-constructor nesting that were diagnosed via the elaborator's own displ
 than guessed). verify-not-auto-apply throughout: every extraction step, the source refactor's
 Kani/test re-verification, the Iterator-fields patch's reproducibility, and the sorry-gate's
 non-vacuity (at both the file and full-gate level) were confirmed via real exit codes, not assumed.
+
+## D29 — A per-commit tripwire for Lean-lid source drift, since the full gate that catches it doesn't run per commit  ·  landed (medium)
+
+**Call.** Aeneas embeds source LINE SPANS in what it extracts, so ANY edit to one of the six
+Aeneas-extracted files behind the D7/D25/D27/D28 Lean lids (`length.rs`, `big_integer.rs`,
+`oid.rs`, `tag.rs`, `tlv.rs`, `sequence.rs`) — including a docs-only `//!` line — can break the
+extracted Lean model. `lean/check_lean.sh` catches this (`check_drift`), but it is a minutes-long
+milestone gate wired only into `check.sh`, not the per-commit `check_fast.sh` (deliberately — see
+`check_fast.sh`'s own header, D8). A broken lid could therefore sit unnoticed for however many
+commits pass before the next full `check.sh` run: exactly what happened in the run documented in
+`evidence/LID-GATE-FAULTS-2026-08-03.md` §"No commit touched a verified path in between" — the gap
+was empty by luck, not by any gate closing it.
+
+**Design.** A new committed state file, `lean/lid-source-state.txt`: one `<sha256>  <path>` line
+per lid source, refreshed ONLY by `lean/check_lean.sh` on a full green run (§3 of that script,
+reusing the exact path variables its own `check_drift` calls already use — never a second
+hand-maintained file list). The new per-commit gate, `gates/check_lid_staleness.py` (pure stdlib,
+wired into `check_fast.sh`), re-hashes the six files on every commit and fails closed on any
+mismatch, naming the file and printing both remedies: re-run `lean/check_lean.sh` (which
+re-verifies through Lean and refreshes the state), or acknowledge the drift with `--ack <path>`,
+which writes a `PENDING <hash>  <path>` line at the file's CURRENT hash. A PENDING line passes the
+per-commit gate (with a loud `STALE:` notice printed every run — the debt stays visible, it just
+doesn't block) but fails a further edit after acknowledgment (the ack itself goes stale), and fails
+under `--strict`, which `check.sh` now runs immediately after `lean/check_lean.sh` — so a milestone
+run that goes green must have cleared every PENDING itself, not merely tolerated it.
+
+**Honest limit — stated, not discovered later.** This gate detects SOURCE drift only. It has no
+opinion on TOOLCHAIN drift (an Aeneas/Charon pin bump with unchanged source text but changed
+meaning) — that stays exclusively `lean/check_lean.sh`'s own pin check (§0b of that script, this
+same design doc's D7 precedent). A green `check_lid_staleness.py` run says "unchanged since the
+last green Lean run", never "still proves" — the six sha256 reads cannot re-verify anything through
+Lean, by construction; that claim is not implied or suggested anywhere in the gate's own output.
+
+**Baseline, not asserted blind.** The full Lean gate was not re-run to seed the initial state (too
+memory/time-expensive to run inline for this task — see `rs-verified-memory-playbook`). Instead the
+six sources were checked against the last recorded green Lean run,
+`evidence/lid-green-2026-08-03.log` (commit `06586a8`): `git diff --stat 06586a8 -- <the six
+files>` is empty, so all six are asserted current, not PENDING. Had any shown drift, its line would
+have been written PENDING honestly instead.
+
+**Verified, watched to fail, both directions.** `sh check_fast.sh` green with the new gate wired
+in. Negative control: a `//! x` line appended to `tag.rs` makes `check_fast.sh` FAIL, naming
+`tag.rs` and printing both remedies. Acknowledging via `--ack der-verified/src/tag.rs` makes it PASS
+non-strict (with a `STALE:` notice) and FAIL under `--strict`. Reverting both the doc line and the
+acknowledgment restores green. `gates/test_check_lid_staleness.py` (12 tests, temp-dir fixtures,
+no repo mutation) covers both failure directions plus malformed/missing/duplicate state; fault-
+injected (inverted the drift comparison) and confirmed 3 of the 12 tests catch it before reverting.
+`gen_proof_manifest.py --check` unaffected.
+
+**Verdict.** **KEEP.** Closes the exact blind spot D7's own gate history exposed, without claiming
+anything the cheap check can't back up. **Confidence medium** (a new gate with one round of
+fault-injection and both negative-control directions exercised, not yet load-bearing across a real
+multi-commit drift-then-milestone cycle).
