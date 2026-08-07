@@ -12,18 +12,13 @@
 # hand-maintained list. The fast gate reads this file only; it does not parse check_lean.sh.
 #
 # Contract: Aeneas embeds source LINE SPANS in what it extracts, so ANY edit to a lid-covered file
-# -- including a docs-only `//!` line -- can silently break the extracted Lean model. This file is
-# the cheap (six sha256 reads) per-commit tripwire for that; it cannot re-verify anything through
-# Lean itself, so a matching hash means only "unchanged since the last green Lean run", not "still
-# proves". Toolchain drift (Aeneas/Charon pin mismatch) is exclusively the full gate's job.
+# -- including a docs-only `//!` line -- can silently break the extracted Lean model. This file
+# is the cheap (six sha256 reads) per-commit tripwire for that; it cannot re-verify anything
+# through Lean itself, so a matching hash means only "unchanged since the last green Lean run",
+# not "still proves". Toolchain drift (Aeneas/Charon pin mismatch) is exclusively the full gate's
+# job (see this script's own pin check above).
 #
-# Baseline note (2026-08-07, DECISIONS.md D29): these six lines were generated from the tree at
-# commit e44960c WITHOUT running the Lean toolchain here (too memory/time-expensive to run inline
-# for this task). They are asserted fresh, not merely typed, because
-# `git diff --stat 06586a8 -- der-verified/src/{length,big_integer,oid,tag,tlv,sequence}.rs` is
-# empty -- none of the six lid sources have moved since evidence/lid-green-2026-08-03.log's
-# underlying green `lean/check_lean.sh` run (commit 06586a8). Had any of the six shown drift, its
-# line below would be PENDING instead of asserted current.
+# Regenerated: 2026-08-07T06:56:04Z, at git commit 256032f48f22dc0bfc37ce069b92b3fb775b043e, by this full green lean/check_lean.sh run.
 80ada6f0a9d47ae1fb1d6447073591e639dda3aa3c27078655d67a25f39ec2fc  der-verified/src/length.rs
 d6a19e010323f58f6fd3501ccb4dc84bf3c21a9dc7ba6d4d9ff11816d45409db  der-verified/src/big_integer.rs
 252d5f61c7a125342388e09a923095aa294d22c45e74fd19f07497fae073cfa0  der-verified/src/oid.rs
