@@ -32,6 +32,7 @@ LIGHT x509_algorithm_identifier
 LIGHT x509_spki
 LIGHT x509_validity
 LIGHT ecdsa_sig_value
+LIGHT rsa_public_key
 LIGHT profile
 LIGHT utf8_string
 

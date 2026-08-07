@@ -26,6 +26,12 @@
 //!   [`big_integer`], exposing `r`/`s` as opaque validated bytes (never materialized as numbers).
 //!   Framing and canonicality only: no curve-order range check, no low-S policy, no cryptographic
 //!   interpretation (see the module docs for the full scope fence).
+//! - [`rsa_public_key`] — the PKCS#1 `RSAPublicKey` (RFC 8017 §A.1.1) container: structurally the
+//!   *same* two-INTEGER `SEQUENCE { modulus INTEGER, publicExponent INTEGER }` shape as
+//!   [`ecdsa_sig_value`], composing [`sequence`] + [`big_integer`], exposing `modulus`/
+//!   `publicExponent` as opaque validated bytes (never materialized as numbers). Framing and
+//!   canonicality only: no exponent policy, no modulus size policy, no RSA semantics, and no SPKI
+//!   unwrapping (see the module docs for the full scope fence).
 //! - [`octet_string`] — DER OCTET STRING (§8.7): primitive-form only, rejecting the BER
 //!   constructed/segmented form (a parser-differential vector).
 //! - [`enumerated`] — DER ENUMERATED (§8.4): a thin re-tagging of [`integer`]'s content codec
@@ -143,6 +149,7 @@ pub mod octet_string;
 pub mod oid;
 pub mod profile;
 pub mod restricted_string;
+pub mod rsa_public_key;
 pub mod sequence;
 pub mod set_of;
 pub mod tag;

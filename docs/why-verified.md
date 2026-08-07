@@ -28,7 +28,7 @@ cross-field profile rules. That boundary is the whole honesty story (below).
 
 ## Two layers of proof
 
-**L3 — bounded, with Kani (CBMC under the hood).** 174 proof harnesses across 27 modules. Each proves,
+**L3 — bounded, with Kani (CBMC under the hood).** 177 proof harnesses across 28 modules. Each proves,
 for all inputs up to a stated size, the default safety properties (no panic, no overflow, no
 out-of-bounds) *plus* the functional ones: decode/encode round-trips, canonicality/minimality, and
 that malformed or non-canonical encodings are rejected with the right error. Bounded model checking is
@@ -41,7 +41,7 @@ proven in Lean 4 for inputs of *any* length (and, for `sequence`, any number of 
 `sorry`-free. The lid re-extracts from the shipped source and fails on drift, so it provably concerns
 the code you actually ship.
 
-Plus 345 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
+Plus 369 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
 zero dependencies, and allocation-free decode paths.
 
 **A newer, separately-graded layer: typed profile validation.** The `profile` module checks three RFC
@@ -87,7 +87,7 @@ symbolic input length closed it (and closed the same latent gap in the other mod
 
 ```sh
 git clone https://github.com/ivmat/rs-verified-der && cd rs-verified-der
-cargo test                       # 345 tests + 28 doc-tests
+cargo test                       # 369 tests + 29 doc-tests
 cargo install --locked kani-verifier && cargo kani setup
 cargo kani -Z stubbing           # the 164-harness proof floor
 ./check.sh                       # everything, incl. the Lean lids if the toolchain is present

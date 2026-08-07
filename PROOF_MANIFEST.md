@@ -2,12 +2,12 @@
 
 This is the **honest proof envelope** for this crate: what is machine-checked, over what domain,
 under what assumptions and stubs — and, given equal weight, **what is not**. It exists so that a
-reader who is not going to read 174 proof harnesses and 6 Lean developments can still know what
+reader who is not going to read 177 proof harnesses and 6 Lean developments can still know what
 they are being offered, and where the guarantee stops.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "174 Kani harnesses, 6 Lean lids, 345 tests" describes how
+> **Counts are inventory, not coverage.** "177 Kani harnesses, 6 Lean lids, 369 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -62,18 +62,18 @@ deviations. Read the two differently.
 <!-- BEGIN GENERATED:inventory (gates/gen_proof_manifest.py) -->
 | Inventory (static, derived from `der-verified/src` + `lean/`) | Count |
 |---|---:|
-| source modules (excl. `lib.rs`) | 27 |
-| …of which carry at least one `#[kani::proof]` | 27 |
-| public entry points (free `pub fn`s + public `impl` methods) | 70 |
-| …named by at least one Kani harness | 59 |
+| source modules (excl. `lib.rs`) | 28 |
+| …of which carry at least one `#[kani::proof]` | 28 |
+| public entry points (free `pub fn`s + public `impl` methods) | 72 |
+| …named by at least one Kani harness | 61 |
 | …named by **no** Kani harness | **11** |
-| `#[kani::proof]` harnesses | 174 |
+| `#[kani::proof]` harnesses | 177 |
 | `kani::assume` harness preconditions (narrow the proved domain) | 136 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 91 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 107 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 7 / 4 |
-| `#[test]` unit + regression tests | 345 |
+| `#[test]` unit + regression tests | 369 |
 | crate-doc examples run as doc-tests | 1 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
@@ -210,7 +210,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 345 unit and regression tests (plus 28 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 369 unit and regression tests (plus 29 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.
@@ -293,7 +293,7 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — about 136 of the 174 harnesses (the shard filters are by module, not a
+  the memory-tractable share — about 149 of the 177 harnesses (the shard filters are by module, not a
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
@@ -346,6 +346,7 @@ carry that.
 | `oid` | 1 | 1 | 5 | 4..6 | 8 | 5 | 2 | 0 | ✅ |
 | `profile` | 1 | 1 | 6 | 1..2 | 4 | 2 | 16 | 0 |  |
 | `restricted_string` | 14 | 5 | 26 | 3..16 | 6..16 | 30 | 4 | 0 |  |
+| `rsa_public_key` | 2 | 2 | 3 | 16..270 | 20 | 0 | 16 | 0 |  |
 | `sequence` | 6 | 6 | 7 | 8..16 | 16 | 0 | 2 | 0 | ✅ |
 | `set_of` | 5 | 5 | 13 | 3..16 | 16 | 2 | 2 | 0 |  |
 | `tag` | 2 | 2 | 7 | 7 | 12 | 5 | 2 | 0 | ✅ |
@@ -427,6 +428,7 @@ exact statement, including its `assume` preconditions.
 - **`oid`** (5): `validate_never_panics`, `empty_is_classified`, `leading_0x80_is_non_minimal`, `later_0x80_is_non_minimal`, `unterminated_is_truncated`
 - **`profile`** (6): `utc_time_can_never_denote_2050_or_later`, `rule1_mismatch_iff_algorithms_differ`, `rule2_requires_v3_iff_extensions_present_and_not_v3`, `rule3_generalized_too_early_iff_year_le_2049`, `error_precedence_follows_declaration_order`, `validate_profile_never_panics`
 - **`restricted_string`** (26): `charset_exactly_matches_oracle_printable`, `charset_exactly_matches_oracle_ia5`, `charset_exactly_matches_oracle_numeric`, `charset_exactly_matches_oracle_visible`, `validate_iff_all_in_charset_printable`, `validate_iff_all_in_charset_ia5`, `validate_iff_all_in_charset_numeric`, `validate_iff_all_in_charset_visible`, `roundtrip_printable`, `roundtrip_ia5`, `roundtrip_numeric`, `roundtrip_visible`, `decode_never_panics`, `constructed_form_is_rejected_printable`, `constructed_form_is_rejected_ia5`, `constructed_form_is_rejected_numeric`, `constructed_form_is_rejected_visible`, `accepted_identifier_is_canonical_printable`, `accepted_identifier_is_canonical_ia5`, `accepted_identifier_is_canonical_numeric`, `accepted_identifier_is_canonical_visible`, `out_of_charset_reports_position`, `wrong_tag_is_classified_printable`, `wrong_tag_is_classified_ia5`, `wrong_tag_is_classified_numeric`, `wrong_tag_is_classified_visible`
+- **`rsa_public_key`** (3): `parse_never_panics`, `parse_strict_never_panics`, `parse_strict_ok_path_witnessed_rsa_2048_shaped`
 - **`sequence`** (7): `iterate_never_panics`, `no_over_read`, `ok_implies_exact_tiling`, `roundtrip_two_children`, `tag_correctness`, `accepted_identifier_is_canonical_0x30`, `strict_rejects_trailing`
 - **`set_of`** (13): `iterate_never_panics`, `no_over_read`, `ok_implies_exact_tiling`, `ordering_iff_oracle`, `cmp_padded_matches_oracle`, `unsorted_children_are_rejected`, `unsorted_reports_first_violation_index`, `unsorted_reports_first_violation_index_depth_four`, `duplicate_adjacent_encodings_are_accepted`, `tag_correctness`, `accepted_identifier_is_canonical_0x31`, `strict_rejects_trailing`, `roundtrip_two_sorted_children`
 - **`tag`** (7): `roundtrip_all_tags`, `decode_tag_never_panics`, `decode_tag_accepts_only_canonical`, `high_tag_of_small_number_is_non_minimal`, `leading_zero_high_tag_is_non_minimal`, `truncated_high_tag_is_classified`, `too_large_tag_is_classified`
@@ -564,10 +566,10 @@ buffer widths and unwind ranges are in §4's table; the crate-wide distribution:
 | 14 | 12 |
 | 16 | 61 |
 | 18 | 5 |
-| 20 | 15 |
+| 20 | 18 |
 | 21 | 1 |
 | 22 | 1 |
-| **total bounded** | **155** |
+| **total bounded** | **158** |
 
 19 harnesses declare no `#[kani::unwind]`, so no unwind bound is imposed on them and CBMC must unroll to completion every loop they reach. For those harnesses the loop depth is therefore *not* a limit on the claim: a loop CBMC could not fully unroll would fail an unwinding assertion rather than pass quietly. Their input domains are still bounded by buffer width like every other harness. Listed so a reader can check each one: `big_integer::empty_is_empty`, `big_integer::redundant_positive_padding_is_non_minimal`, `big_integer::redundant_negative_padding_is_non_minimal`, `bit_string::empty_is_classified`, `bit_string::empty_nonzero_unused_is_classified`, `boolean::one_octet_is_canonical`, `boolean::roundtrip`, `boolean::wrong_length_is_bad_length`, `enumerated::encode_delegates_to_integer`, `integer::empty_is_classified`, `integer::redundant_positive_padding_is_non_minimal`, `integer::redundant_negative_padding_is_non_minimal`, `null::only_empty_is_valid`, `oid::empty_is_classified`, `restricted_string::charset_exactly_matches_oracle_printable`, `restricted_string::charset_exactly_matches_oracle_ia5`, `restricted_string::charset_exactly_matches_oracle_numeric`, `restricted_string::charset_exactly_matches_oracle_visible`, `utc_time::full_year_pivot_is_correct`.
 <!-- END GENERATED:bounds -->
@@ -593,8 +595,8 @@ input space. This crate treats that as the default suspicion, and the check is m
 <!-- BEGIN GENERATED:non-vacuity (gates/gen_proof_manifest.py) -->
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
-| harnesses | 174 |
-| `kani::cover` witnesses | 91, in 25 of the 27 modules that have harnesses |
+| harnesses | 177 |
+| `kani::cover` witnesses | 107, in 26 of the 28 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **0** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 82 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |

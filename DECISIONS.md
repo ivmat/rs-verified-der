@@ -1823,3 +1823,60 @@ MemorySwapMax=0` sandboxed; wall time ~9.4 s for the module (single-harness-filt
 inside the existing fence with zero new toolchain and zero primitive changes. **Confidence high**
 (shallow composition, no stubbing needed, full non-vacuity, exact match to two independent existing
 sibling patterns for both the API shape and the strict/lenient split).
+
+## D31 — `rsa_public_key`: PKCS#1 `RSAPublicKey` container, Band A only, mirroring D30  ·  landed (high)
+
+**Call.** Added `rsa_public_key.rs`: a structural parser for the ASN.1 `RSAPublicKey` (RFC 8017
+§A.1.1, PKCS#1) — `SEQUENCE { modulus INTEGER, publicExponent INTEGER }` — structurally the *same*
+two-INTEGER `SEQUENCE` shape as D30's `ecdsa_sig_value`, so this decision leans on D30's rationale
+rather than repeating it: same Band-A "pure framing, zero new toolchain" characterization, same
+composition of `sequence` (`decode_sequence_tlv` / `decode_sequence_tlv_strict`) and `big_integer`
+(`validate_integer_content`, `TAG`) verbatim, same opaque-bignum stance (D14), same strict/lenient
+entry-point split.
+
+**Shape.** `RsaPublicKey<'a> { modulus: &'a [u8], public_exponent: &'a [u8] }` — `parse_rsa_public_key`
+(composable) and `parse_rsa_public_key_strict` (top-level, rejects trailing bytes).
+
+**Where it sits.** For an `rsaEncryption` key, an X.509 SPKI's `subjectPublicKey` BIT STRING payload
+*is* the DER encoding of an `RSAPublicKey` — `x509_spki` already extracts that BIT STRING's payload
+as an opaque, uninterpreted span. This module parses the container wherever a caller hands it one;
+it does **not** unwrap an SPKI itself and does **not** check any algorithm OID — that composition,
+and the `algorithm` OID check that licenses it, is the caller's job.
+
+**Deliberately out of scope, not this module's job (Band B / profile-layer, same posture as D30):**
+1. **No exponent oddness/minimum-value policy** (e.g. "`e` must be odd", "`e >= 3`", "`e == 65537`").
+   RFC 8017's ASN.1 schema imposes no such constraint on the *encoding* — it is a
+   key-generation/acceptance policy, for a `profile`-layer rule, not this transfer-syntax codec.
+2. **No modulus size policy** (e.g. "reject moduli under 2048 bits"). A deployment/acceptance
+   choice, not a framing property.
+3. **No RSA semantics whatsoever** — no primality, no `n = p*q` structure, no relationship between
+   `modulus` and `publicExponent`, no cryptographic interpretation.
+
+**Divergence from the D30 sibling pattern.** The realistic accept-vector for RSA is a large modulus
+(RSA-2048's 257-octet INTEGER content, well past the crate's usual 16-octet symbolic Kani bound),
+so — exactly mirroring `ecdsa_sig_value`'s own P-256-shaped concrete harness for its own
+too-large-for-the-symbolic-bound shape — the RSA-2048-shaped accept path is witnessed by one
+dedicated concrete-specimen Kani harness plus a concrete `#[test]`, not by widening the 16-octet
+symbolic bound (CBMC does not scale to a >256-octet fully-symbolic buffer at this crate's harness
+style). No other divergence from D30's pattern.
+
+**Verified.** 24 new `#[test]`s + 1 new doc-test (25 total: a small accept vector matching the
+module doc's own example, the RSA-2048-shaped concrete vector with `e = 65537`, and the same
+rejection battery as `ecdsa_sig_value`, adapted to `modulus`/`publicExponent`). 3 Kani harnesses
+(`parse_never_panics`, `parse_strict_never_panics`,
+`parse_strict_ok_path_witnessed_rsa_2048_shaped`) at a `[u8; 16]` symbolic buffer (matching
+`ecdsa_sig_value`'s own bound) plus the dedicated 270-octet RSA-2048-shaped concrete harness. All
+three `VERIFICATION:- SUCCESSFUL`, `0 of 650`/`0 of 195`/`0 of 218 (4 unreachable)` checks failed,
+**16 of 16 `kani::cover` properties satisfied** (13 + 2 + 1, split across the three harnesses) — no
+vacuity, nothing to disclose. `systemd-run --user --scope -p MemoryMax=22G -p MemorySwapMax=0 --
+cargo kani -Z stubbing --harness rsa_public_key::`; verification times 9.19 s / 6.00 s / 3.80 s per
+harness. Added to `gates/tiers.txt` as `LIGHT` and to CI's `codecs-b` shard
+(`.github/workflows/ci.yml`); `check_tier_parity.py` PASS. Harness count 174 → 177 (28 harnessed
+modules), test count 345 → 369.
+
+**Verdict.** **KEEP.** Same posture as D30: the highest-value adjacent Band-A delta (an RSA
+counterpart to the ECDSA signature container), landed inside the existing fence with zero new
+toolchain and zero primitive changes. **Confidence high** (shallow composition, no stubbing needed,
+full non-vacuity, exact structural match to the D30 sibling for both the API shape and the
+strict/lenient split; the one real divergence — the concrete-specimen large-modulus harness — is
+itself a direct copy of D30's own P-256-shaped-specimen tradeoff).

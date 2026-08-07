@@ -7,6 +7,19 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [Unreleased]
 
 ### Added
+- **`rsa_public_key` module** — a structural parser for the PKCS#1 `RSAPublicKey` (RFC 8017
+  §A.1.1): `SEQUENCE { modulus INTEGER, publicExponent INTEGER }`, structurally the same
+  two-INTEGER `SEQUENCE` shape as `ecdsa_sig_value`, composing `sequence` + `big_integer`.
+  `modulus`/`publicExponent` are exposed as opaque validated bytes, never materialized as numbers.
+  Two entry points matching the crate's established strict/lenient split (`parse_rsa_public_key` /
+  `parse_rsa_public_key_strict`). This is the container that sits inside an SPKI's BIT STRING
+  payload for an `rsaEncryption` key; this module parses it wherever it appears — it does **not**
+  unwrap an SPKI itself. DER framing and canonicality only: **no** exponent oddness/minimum-value
+  policy, **no** modulus size policy, **no** RSA semantics whatsoever — see `DECISIONS.md` D31 and
+  the module doc for the full scope fence. 24 new `#[test]`s + 1 new doc-test, 3 new Kani harnesses
+  (16 of 16 `kani::cover` properties satisfied, no vacuity; the RSA-2048-shaped accept path is
+  witnessed by a dedicated concrete-specimen harness, mirroring `ecdsa_sig_value`'s own P-256-shaped
+  harness). Harness count 174 → 177, test count 345 → 369, module count 27 → 28.
 - **`ecdsa_sig_value` module** — a structural parser for the ASN.1 `ECDSA-Sig-Value`
   (RFC 3279 §2.2.3 / RFC 5480): `SEQUENCE { r INTEGER, s INTEGER }`, composing `sequence` +
   `big_integer`. `r`/`s` are exposed as opaque validated bytes, never materialized as numbers.
