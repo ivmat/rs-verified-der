@@ -66,12 +66,16 @@ encoding, and never panic doing so. We report on \crate{}, an idiomatic Rust
 DER/X.690 encoding core built so that its correctness evidence
 \emph{re-runs from a fresh clone}. The crate combines two verification
 lineages over the same source: a mandatory, exhaustive-but-bounded Kani/CBMC
-floor of 161 proof harnesses across 25 modules---each harness proving its own
+floor of 171 proof harnesses across 26 modules---each harness proving its own
 asserted property (safety, and per codec some of round-trip, minimality, or
-rejection) over a stated bound---and an optional, additive set of three
-Aeneas${\to}$Lean~4 ``lids'' that lift three codecs (where an $\forall$-length
-guarantee is most valuable and the functional model is cleanest) to inputs of
-\emph{any} length, gated by a drift-detecting re-extraction check.
+rejection) over a stated bound---and an optional, additive set of six
+Aeneas${\to}$Lean~4 ``lids'' that lift six codecs (three leaf codecs where an
+$\forall$-length guarantee is most valuable and the functional model is
+cleanest, plus the tag codec and, on the structural composition layer, the
+TLV header/length pairing and the SEQUENCE child-walk---the latter the
+crate's first $\forall$-length \emph{and} $\forall$-children, unbounded-loop
+lid) to inputs of \emph{any} length, gated by a drift-detecting re-extraction
+check.
 We describe (i)~the dual-layer architecture and the build engineering that
 lets a stable-toolchain Kani gate coexist with a nightly-pinned extraction
 pipeline without duplicating source; (ii)~two API- and proof-structuring
@@ -151,8 +155,14 @@ member ordering (\S11.6). The \code{x509\_*} modules parse RFC~5280 objects
 (\code{AlgorithmIdentifier}, \code{SubjectPublicKeyInfo}, \code{Name},
 \code{Validity}, \code{Extension}, \code{TBSCertificate}, \code{Certificate})
 by composing the verified codecs, but interpret \emph{no} algorithm, key,
-signature, or trust semantics. Out of scope (and explicitly \emph{not}
-proven): cryptography, path/trust validation, and the full RFC~5280 profile.
+signature, or trust semantics. A separate \code{profile} module sits above
+those parsers and is Kani-proven, but not Lean-lidded: it checks three
+RFC~5280 \emph{cross-field} rules (signature-algorithm agreement,
+extensions-imply-v3, and the UTCTime/GeneralizedTime year-2050 encoding
+choice) as biconditionals over already-materialized field \emph{values}
+rather than over DER bytes, so it carries Kani's assurance grade but not
+L4's. Out of scope (and explicitly \emph{not}
+proven): cryptography, path/trust validation, and the rest of the RFC~5280 profile.
 This fence is not incidental---it is the crate's central honesty claim
 (\S\ref{sec:scope},\S\ref{sec:envelope}). We stress up front that the claim is
 \emph{per-codec and per-bound}: which property (round-trip, minimality, an
@@ -176,11 +186,11 @@ The verification stack has two lineages over the \emph{same} Rust source
   note/.style={font=\scriptsize\itshape, align=center}]
 \node[box, fill=black!5] (src) {Shipped Rust source\\\code{der-verified/src/*.rs}};
 \node[box, below left=9mm and -6mm of src] (l3)
-  {\textbf{L3 floor} --- stable toolchain\\Kani $\to$ CBMC\\161 bounded harnesses};
+  {\textbf{L3 floor} --- stable toolchain\\Kani $\to$ CBMC\\171 bounded harnesses};
 \node[box, below right=9mm and -6mm of src] (shim)
   {Extraction shims --- nightly\\\code{\#[path]}, workspace-excluded};
 \node[box, below=9mm of shim] (l4)
-  {\textbf{L4 lids} --- Charon $\to$ Aeneas $\to$ Lean~4\\3 codecs, $\forall$-length, \code{sorry}-free};
+  {\textbf{L4 lids} --- Charon $\to$ Aeneas $\to$ Lean~4\\6 codecs, $\forall$-length, \code{sorry}-free};
 \draw[->] (src) -- (l3);
 \draw[->] (src) -- (shim);
 \draw[->] (shim) -- node[right, note] {drift gate:\\re-extract \& diff} (l4);
@@ -195,7 +205,7 @@ complementary, not independent (both begin with the same Rust).}
 \end{figure}
 
 \paragraph{L3 --- the floor (mandatory, bounded).}
-161 Kani proof harnesses across 25 modules. Kani compiles each
+171 Kani proof harnesses across 26 modules. Kani compiles each
 \code{\#[kani::proof]} to CBMC and discharges it as a bit-precise SAT/SMT
 query. Every harness proves, by Kani's default checks, memory safety, absence
 of panics, and absence of arithmetic overflow on its input domain, plus the
@@ -211,13 +221,25 @@ the Kani toolchain.
 
 \paragraph{L4 --- the lids (optional, additive, unbounded).}
 Bounded proofs leave a nagging question: what about inputs larger than the
-bound? For three codecs---\code{length} (\S8.1.3), \code{big\_integer}
-(\S8.3), and \code{oid} (\S8.19)---the Rust is additionally translated,
+bound? For six codecs---\code{length} (\S8.1.3), \code{big\_integer}
+(\S8.3), \code{oid} (\S8.19), \code{tag} (\S8.1.2), \code{tlv} (the
+tag/length header composition), and \code{sequence} (\S8.9/\S8.10, the
+crate's first \emph{structural-composition} and first \emph{unbounded-loop}
+lids)---the Rust is additionally translated,
 Rust~$\to$~Charon~$\to$~Aeneas~$\to$~Lean~4, into a pure functional model, and
 the corresponding properties are proven in Lean for inputs of \emph{any}
-length, \code{sorry}-free (Table~\ref{tab:l4}). The L4 layer lifts exactly the
-codecs where an $\forall$-length guarantee is most valuable and the functional
-model is cleanest.
+length (and, for \code{sequence}, any number of children), \code{sorry}-free
+(Table~\ref{tab:l4}). The L4 layer lifts exactly the
+codecs and composition points where an $\forall$-length guarantee is most
+valuable and the functional model is cleanest. The \code{tag} lid was added
+after (and specifically to reduce) the \code{tlv}/\code{sequence} lids'
+own trust surface: both had originally treated \code{decode\_tag} as an
+assumed Aeneas-Std spec (an axiom, not a body) because of the same
+depth-two-loop \code{return} shape \S\ref{sec:gotcha} describes for
+\code{oid}; refactoring \code{tag} the same way and proving its own lid
+discharged those four \code{tag\_decode\_*} axiom instances, shrinking each of
+\code{tlv}'s and \code{sequence}'s disclosed assumed-spec counts from seven to
+six.
 
 \begin{table}[t]
 \centering
@@ -226,12 +248,15 @@ model is cleanest.
 \toprule
 Codec & Unbounded property proven ($\forall$-length) \\
 \midrule
-\code{length} & every branch of \code{decode\_length}; round-trip canonicality \\
-\code{big\_integer} & minimality biconditional (validate side); encode round-trip \\
-\code{oid} & OID canonical-form biconditional (validate side) \\
+\code{length} & every branch of \code{decode\_length}; round-trip canonicality (\code{decode\_accepts\_only\_canonical}) \\
+\code{big\_integer} & minimality biconditional, validate side (\code{validate\_iff\_minimal}); encode round-trip (\code{encode\_minimal\_integer\_into\_roundtrip}) \\
+\code{oid} & OID canonical-form biconditional, validate side (\code{validate\_iff\_canonical}) \\
+\code{tag} & \code{decode\_tag}'s totality and consumption bound (\code{tag\_decode\_total}, \code{tag\_decode\_used\_bounds}) \\
+\code{tlv} & \code{decode\_tlv}'s structural correctness and no-over-read (\code{decode\_tlv\_structure}) \\
+\code{sequence} & \code{decode\_sequence}'s structural correctness, $\forall$-length \emph{and} $\forall$-children (\code{decode\_sequence\_structure}) \\
 \bottomrule
 \end{tabular}
-\caption{The three L4 Aeneas${\to}$Lean~4 lids. All \code{sorry}-free; the full
+\caption{The six L4 Aeneas${\to}$Lean~4 lids. All \code{sorry}-free; the full
 axiom set each rests on---beyond Lean's standard \code{propext} /
 \code{Classical.choice} / \code{Quot.sound}, the named Aeneas-Std spec axioms
 and \code{bv\_decide}'s certificate axiom---is disclosed via
@@ -259,7 +284,14 @@ and the shipped Rust remains trusted (the trust base, below); the gate closes
 the source-drift hole, not the translation gap (and, per \S\ref{sec:gotcha}, not
 a silent axiom-degradation hole). The lid additionally fails closed on any
 \code{sorry} (checked mechanically for \code{sorryAx} / ``declaration uses
-\code{sorry}'').
+\code{sorry}''). Because that re-extraction/diff step is a minutes-long
+milestone gate wired only into the full \code{check.sh}, a per-commit
+\emph{tripwire} closes the window between milestone runs: a committed
+content-hash state file over the six lidded source files, re-checked on every
+commit, fails closed if any of them changed without a corresponding full Lean
+re-verification (or is explicitly acknowledged as pending debt)---so a lid
+cannot silently go stale for several commits before the next full gate
+catches it.
 
 \paragraph{Trust base (both layers).}
 Neither layer is trust-free, and we enumerate both boundaries rather than hide
@@ -284,7 +316,8 @@ Rust-to-LLBC front-end driving Aeneas) requires its own pinned \emph{nightly}
 the drift the L4 gate exists to prevent; repointing the whole crate to nightly
 would risk the Kani gate. We resolve this with one small \emph{shim crate per
 extracted module} (\code{lean/extract/}, \code{lean/extract-bigint/},
-\code{lean/extract-oid/}), each of which (1)~\code{\#[path]}-includes the
+\code{lean/extract-oid/}, \code{lean/extract-tag/}, \code{lean/extract-tlv/},
+\code{lean/extract-sequence/}), each of which (1)~\code{\#[path]}-includes the
 \emph{exact same} source file from \code{der-verified/src/} rather than
 duplicating it, (2)~carries its own \code{rust-toolchain.toml} pinned to
 Charon's nightly, and (3)~is \emph{excluded} from the root Cargo workspace, so
@@ -311,10 +344,12 @@ setting is the instance.
 Large compositions are proven \emph{modularly}: an already-verified inner
 parser is replaced in an outer harness by a \code{\#[kani::stub]} carrying the
 inner function's proven postcondition, so CBMC reasons only about the
-composition glue. The crate uses four such stubs across three harnesses,
-forming a DAG (\code{x509\_certificate} $\to$ \code{x509\_tbs\_certificate}
-$\to$ \{\code{x509\_name} $\to$ its RDN lemma, \code{x509\_extension}\});
-each link is a real function separately proven panic-free.
+composition glue. The crate uses seven such stub applications across four
+harnesses, forming a DAG (\code{x509\_certificate} $\to$
+\code{x509\_tbs\_certificate} $\to$ \{\code{x509\_name} $\to$ its RDN lemma,
+\code{x509\_extension}, and---in one positive-construction witness harness
+only---\code{x509\_validity}\}); each link is a real function separately
+proven panic-free.
 
 The subtle part is \emph{how} the stub's contract is discharged. A DER parser's
 control flow is length-dependent: every length check reads
@@ -464,7 +499,7 @@ is required to reproduce the floor.
 \paragraph{Per-module cost profile.}
 Table~\ref{tab:cost} summarizes the tiers, measured on a deliberately modest
 16~GB Apple-silicon laptop with \code{cargo-kani 0.67.0} / CBMC~6.8.0. Cost is
-heavily right-skewed: the large majority of the 161 harnesses finish
+heavily right-skewed: the large majority of the 171 harnesses finish
 sub-second to a few seconds; a moderate tier runs single-digit to tens of
 seconds; a heavy tail is dominated by the \code{set\_of} \S11.6 padded
 comparison re-derived over symbolic content; and two harnesses exceed a 16~GB
@@ -511,15 +546,16 @@ one is iterating on. Kani's supported backends are documented~\cite{kani};
 we simply supply one concrete comparative data point.
 
 \paragraph{Reproducibility.}
-CI runs the memory-tractable share of the floor (135 of 161 harnesses,
-sharded by module across three parallel runners) on every push; the 26
-heaviest (\code{set\_of}, \code{sequence}, \code{x509\_extension},
+CI runs the memory-tractable share of the floor (about 136 of the 171
+harnesses, filtered by module across parallel runners) on every push; the
+heaviest modules (\code{set\_of}, \code{sequence}, \code{x509\_extension},
 \code{x509\_certificate}, \code{x509\_tbs\_certificate}, \code{x509\_name})
 peak above a standard 7~GB hosted runner and are documented as local-milestone
-checks. On a 16-core / 29~GB Linux reference box the three CI
-shards run in ${\sim}4$--$5$~min wall (\code{codecs-a} 84 harnesses ${\sim}28$~s,
-\code{codecs-b} 42 ${\sim}40$~s, \code{utf8} 9 ${\sim}247$~s), and the full
-suite verifies end to end with zero failures.
+checks. The most recently committed full-suite run (16-core / 29~GB Linux
+reference box, sequential---no \code{-j}, since parallel harnesses multiply
+peak RSS---inside a 22~GB memory cgroup) verified all 171 harnesses
+\code{SUCCESSFUL}, 0 \code{FAILED}, in ${\sim}91$~min wall, alongside a green
+\code{cargo test} and a green L4 Lean pass in the same run.
 
 \section{Scoping honestly}
 \label{sec:scope}
@@ -570,7 +606,7 @@ claim precise and auditable via:
 \item a \textbf{per-module inventory table} (harness count, \code{\#[kani::unwind]}
   range, and whether an L4 lid exists), so a reader sees which module has what
   depth of assurance rather than an aggregate count;
-\item explicit disclosure that \textbf{130 \code{kani::assume} preconditions}
+\item explicit disclosure that \textbf{136 \code{kani::assume} preconditions}
   narrow the proved domain, with the framing that the properties hold
   \emph{for inputs satisfying the assumptions} and inputs outside them are
   simply not claimed;
@@ -578,7 +614,7 @@ claim precise and auditable via:
   sub-parser, and where each stub's own proof lives), so compositional
   soundness is auditable rather than asserted;
 \item a dedicated \textbf{``what is NOT proven'' scope fence} (no cryptography,
-  no full profile semantics, bounded except the three L4 codecs, the
+  no full profile semantics, bounded except the six L4 codecs, the
   Aeneas-translation trust gap), stated as prominently as what \emph{is}
   proven.
 \end{itemize}
@@ -617,7 +653,7 @@ declarations where a real definition was expected.
 The fix was a source refactor: rewrite \code{validate\_oid} as a \emph{single
 loop} with an explicit \code{at\_subid\_start} state variable, so every early
 \code{return} sits at loop-depth~1. The refactor was \emph{regression-checked}
-rather than assumed safe---the crate's five \code{oid} Kani harnesses and its 294
+rather than assumed safe---the crate's five \code{oid} Kani harnesses and its 320
 tests pass against it---which is bounded, example-based regression evidence,
 \emph{not} a full behavioural-equivalence proof between the two implementations.
 The refactored \code{oid} harnesses are also inexpensive today (${\sim}0.04$~s
@@ -701,9 +737,12 @@ We collect the caveats stated throughout, since an experience paper's value
 depends on them being legible in one place.
 
 \emph{Assurance scope.} The L3 floor is \emph{bounded}: properties hold over
-fixed-size symbolic buffers, under 130 disclosed \code{kani::assume}
+fixed-size symbolic buffers, under 136 disclosed \code{kani::assume}
 preconditions, up to stated unwind depths; inputs outside those domains are not
-claimed. Only three codecs have $\forall$-length L4 lids. The correctness of the
+claimed. Only six codecs have $\forall$-length L4 lids (and, for \code{sequence}
+alone, an additional $\forall$-children lift over the same lid); every other
+codec, and the rejection/canonicality classification of even the six lidded
+codecs, remains Kani-bounded. The correctness of the
 harness \emph{assertions} and the stub \emph{contracts} is itself a manual
 modelling step; a wrong assertion proves the wrong thing. The modular proofs
 rest on the refinement obligation of \S\ref{sec:symlen} (bound dominance,
@@ -752,8 +791,8 @@ layers above.
 
 \paragraph{Availability.}
 \crate{} is on crates.io and at \url{https://github.com/ivmat/rs-verified-der}.
-From a fresh clone, \code{./check.sh} reproduces the L3 floor (161 Kani
-harnesses) and the 294 tests; it additionally re-extracts and checks the three
+From a fresh clone, \code{./check.sh} reproduces the L3 floor (171 Kani
+harnesses) and the 320 tests; it additionally re-extracts and checks the six
 Aeneas${\to}$Lean lids \emph{when} the pinned extraction toolchain is present,
 and otherwise skips them and still passes on the floor (\S\ref{sec:arch}). A
 full-evidence reproduction (floor + lids + the honest proof envelope) therefore

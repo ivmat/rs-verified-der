@@ -7,6 +7,16 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [Unreleased]
 
 ### Documentation / assurance process
+- **`paper/der-verified.tex` brought back in sync with `PROOF_MANIFEST.md`.** The artifact/experience
+  paper had drifted to a snapshot from before the `tag`/`tlv`/`sequence` L4 lids landed: it said
+  "three L4 lids" and "161 harnesses" throughout. Now says six lids (`length`, `big_integer`, `oid`,
+  `tag`, `tlv`, `sequence`, with theorem names in the L4 table and a note on the `tag` refactor
+  discharging four trust-axiom instances from `tlv`/`sequence`, 7→6 each), 171 Kani harnesses across
+  26 modules, 320 tests, 136 `kani::assume` preconditions, seven stub applications across four
+  harnesses (was "four stubs across three harnesses"), a mention of the `profile` module in the scope
+  paragraph, and a sentence on the D29 per-commit lid-staleness tripwire. No `pdflatex`/`tectonic` was
+  available to recompile; `paper/README.md` now says the checked-in `der-verified.pdf` is stale
+  relative to the `.tex` and must be recompiled before any Zenodo upload.
 - **Added a per-commit tripwire for Lean-lid source drift** (`gates/check_lid_staleness.py` +
   `lean/lid-source-state.txt`, wired into `check_fast.sh`/`check.sh`): the six Aeneas-extracted
   source files can silently break the extracted Lean model on any edit, but the gate that catches

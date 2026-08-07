@@ -16,3 +16,12 @@ pdflatex der-verified.tex
 All content is drawn from artifacts already public in this repo
 (`README.md`, `PROOF_MANIFEST.md`, `docs/why-verified.md`,
 `docs/verification-cost.md`).
+
+**`der-verified.pdf` is STALE relative to `der-verified.tex`.** The `.tex`
+was updated 2026-08-07 to match the current `PROOF_MANIFEST.md` (171 Kani
+harnesses, 6 Aeneas→Lean lids, 320 tests); the checked-in `.pdf` was not
+regenerated in that pass (no `pdflatex`/`tectonic`/`xelatex`/`latexmk` was
+available on the machine that made the edit). Recompile with two
+`pdflatex` passes (or `tectonic`) on a machine that has the toolchain — mac,
+typically — and check the resulting PDF's content against the `.tex` before
+any Zenodo upload or other publication.
