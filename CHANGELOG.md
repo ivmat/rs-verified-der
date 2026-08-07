@@ -20,8 +20,9 @@ All notable changes to `der-verified` are documented here. The format is based o
   (18 of 18 `kani::cover` properties satisfied, no vacuity; the RSA-2048-shaped accept path is
   witnessed by a dedicated concrete-specimen harness, mirroring `ecdsa_sig_value`'s own P-256-shaped
   harness). Harness count 174 → 177, test count 345 → 369, module count 27 → 28. The two
-  `never_panics` harnesses use a symbolic input length (not just a symbolic 16-octet buffer) and
-  each carry a `IntegerFieldError::Tlv` cover for both `modulus` and `publicExponent`, closing a
+  `never_panics` harnesses use a symbolic input length (not just a symbolic 16-octet buffer), and
+  the non-strict `parse_never_panics` carries an added `IntegerFieldError::Tlv` cover for both
+  `modulus` and `publicExponent`, closing a
   post-review gap (18 covers total, up from 16 at commit time).
 - **`ecdsa_sig_value` module** — a structural parser for the ASN.1 `ECDSA-Sig-Value`
   (RFC 3279 §2.2.3 / RFC 5480): `SEQUENCE { r INTEGER, s INTEGER }`, composing `sequence` +
@@ -32,8 +33,9 @@ All notable changes to `der-verified` are documented here. The format is based o
   `DECISIONS.md` D30 and the module doc for the full scope fence. 25 new `#[test]`s, 3 new Kani
   harnesses (18 of 18 `kani::cover` properties satisfied, no vacuity). Harness count 171 → 174,
   test count 320 → 345, module count 26 → 27. Post-review (2026-08-07): the two `never_panics`
-  harnesses now use a symbolic input length (not just a symbolic 16-octet buffer) and each carry an
-  added `IntegerFieldError::Tlv` cover for both `r` and `s`, closing a gap flagged in review (18
+  harnesses now use a symbolic input length (not just a symbolic 16-octet buffer), and the
+  non-strict `parse_never_panics` carries an added `IntegerFieldError::Tlv` cover for both `r` and
+  `s`, closing a gap flagged in review (18
   covers total, up from 16 at commit time).
 
 ### Documentation / assurance process

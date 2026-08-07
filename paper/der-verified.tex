@@ -621,7 +621,7 @@ claim precise and auditable via:
 \item a \textbf{per-module inventory table} (harness count, \code{\#[kani::unwind]}
   range, and whether an L4 lid exists), so a reader sees which module has what
   depth of assurance rather than an aggregate count;
-\item explicit disclosure that \textbf{136 \code{kani::assume} preconditions}
+\item explicit disclosure that \textbf{140 \code{kani::assume} preconditions}
   narrow the proved domain, with the framing that the properties hold
   \emph{for inputs satisfying the assumptions} and inputs outside them are
   simply not claimed;
@@ -752,7 +752,7 @@ We collect the caveats stated throughout, since an experience paper's value
 depends on them being legible in one place.
 
 \emph{Assurance scope.} The L3 floor is \emph{bounded}: properties hold over
-fixed-size symbolic buffers, under 136 disclosed \code{kani::assume}
+fixed-size symbolic buffers, under 140 disclosed \code{kani::assume}
 preconditions, up to stated unwind depths; inputs outside those domains are not
 claimed. Only six codecs have $\forall$-length L4 lids (and, for \code{sequence}
 alone, an additional $\forall$-children lift over the same lid); every other
