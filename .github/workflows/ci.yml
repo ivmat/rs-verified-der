@@ -97,6 +97,7 @@ jobs:
               --harness boolean:: --harness null:: --harness context_tag::
               --harness x509_algorithm_identifier:: --harness x509_spki::
               --harness x509_validity:: --harness ecdsa_sig_value::
+              --harness ec_private_key::
               --harness rsa_public_key:: --harness profile:: --harness pkcs8::
           - shard: utf8
             filters: "--harness utf8_string::"

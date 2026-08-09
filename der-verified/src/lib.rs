@@ -21,6 +21,13 @@
 //! - [`big_integer`] — DER INTEGER content (§8.3) at arbitrary magnitude: the big-serial-number
 //!   complement to [`integer`]'s `i64` cap (`DECISIONS.md` D2a/D14) — validates minimality only,
 //!   exposing opaque comparison-only bytes rather than materializing a numeric value.
+//! - [`ec_private_key`] — the SEC1 `ECPrivateKey` (RFC 5915 §3) container: a **structural**
+//!   `SEQUENCE { version INTEGER, privateKey OCTET STRING, parameters [0] EXPLICIT OPTIONAL,
+//!   publicKey [1] EXPLICIT BIT STRING OPTIONAL }` parser composing [`sequence`] + [`big_integer`]
+//!   + [`octet_string`] + [`context_tag`] + [`bit_string`], exposing `privateKey`/`parameters` as
+//!   opaque bytes and `publicKey` as a decoded [`bit_string::BitString`]. `version` is required to
+//!   be exactly `ecPrivkeyVer1` (`1`); both trailing fields are EXPLICIT context tags (contrast
+//!   [`pkcs8`]'s IMPLICIT `[0]`). See the module docs for the full scope fence.
 //! - [`ecdsa_sig_value`] — the ASN.1 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480) container: a
 //!   **structural** `SEQUENCE { r INTEGER, s INTEGER }` parser composing [`sequence`] +
 //!   [`big_integer`], exposing `r`/`s` as opaque validated bytes (never materialized as numbers).
@@ -146,6 +153,7 @@ pub mod big_integer;
 pub mod bit_string;
 pub mod boolean;
 pub mod context_tag;
+pub mod ec_private_key;
 pub mod ecdsa_sig_value;
 pub mod enumerated;
 pub mod generalized_time;
