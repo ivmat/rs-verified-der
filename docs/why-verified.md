@@ -41,7 +41,7 @@ proven in Lean 4 for inputs of *any* length (and, for `sequence`, any number of 
 `sorry`-free. The lid re-extracts from the shipped source and fails on drift, so it provably concerns
 the code you actually ship.
 
-Plus 396 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
+Plus 397 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
 zero dependencies, and allocation-free decode paths.
 
 **A newer, separately-graded layer: typed profile validation.** The `profile` module checks three RFC
@@ -87,7 +87,7 @@ symbolic input length closed it (and closed the same latent gap in the other mod
 
 ```sh
 git clone https://github.com/ivmat/rs-verified-der && cd rs-verified-der
-cargo test                       # 396 tests + 30 doc-tests
+cargo test                       # 397 tests + 30 doc-tests
 cargo install --locked kani-verifier && cargo kani setup
 cargo kani -Z stubbing           # the 164-harness proof floor
 ./check.sh                       # everything, incl. the Lean lids if the toolchain is present

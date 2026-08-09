@@ -92,7 +92,7 @@
 use crate::big_integer::{validate_integer_content, BigIntError, TAG as BIG_INTEGER_TAG};
 use crate::octet_string::{decode_octet_string, OctetStringError};
 use crate::sequence::{decode_sequence_tlv, decode_sequence_tlv_strict, SequenceError};
-use crate::tag::Class;
+use crate::tag::{decode_tag, Class};
 use crate::tlv::{decode_tlv, TlvError};
 use crate::x509_algorithm_identifier::{parse_algorithm_identifier, AlgIdError, AlgorithmIdentifier};
 
@@ -232,12 +232,22 @@ fn parse_fields(outer_content: &[u8]) -> Result<PrivateKeyInfo<'_>, Pkcs8Error> 
     let attributes = if rest.is_empty() {
         None
     } else {
-        let (tlv, tlv_used) =
-            decode_tlv(rest).map_err(|e| Pkcs8Error::Attributes(AttributesError::Tlv(e)))?;
-        if tlv.tag.class != Class::ContextSpecific || tlv.tag.number != 0 {
-            // Not an attributes wrapper at all: a genuinely unpermitted third/fourth field.
+        // Classify the trailing element by its TAG first: only a genuine context-`[0]` wrapper is an
+        // `attributes` attempt. A non-`[0]` tag -- or an identifier octet too malformed to even
+        // decode as a tag -- is an unpermitted trailing element (`TrailingElements`), even when its
+        // length/content framing is ALSO malformed. Decoding the whole TLV first and blaming any
+        // framing error on the `[0]` wrapper would misreport a truncated non-`[0]` element (e.g. a
+        // truncated BOOLEAN) as a malformed attributes wrapper, violating the documented boundary
+        // (second-model review 2026-08-09).
+        let (tag, _) = decode_tag(rest).map_err(|_| Pkcs8Error::TrailingElements)?;
+        if tag.class != Class::ContextSpecific || tag.number != 0 {
             return Err(Pkcs8Error::TrailingElements);
         }
+        // It IS a context-`[0]`: from here, its own TLV framing errors are genuinely
+        // attributes-wrapper errors, and `Attributes(_)` is now produced ONLY on this [0]-confirmed
+        // path (closing the too-broad-cover gap the same review flagged).
+        let (tlv, tlv_used) =
+            decode_tlv(rest).map_err(|e| Pkcs8Error::Attributes(AttributesError::Tlv(e)))?;
         if !tlv.tag.constructed {
             return Err(Pkcs8Error::Attributes(AttributesError::NotConstructed));
         }
@@ -295,10 +305,12 @@ pub fn parse_pkcs8_private_key_info_strict(input: &[u8]) -> Result<PrivateKeyInf
 // `x509_tbs_certificate.rs`, `x509_name.rs`): a fixed-length-only proof would leave every shorter
 // input UNDISCHARGED, since control flow is length-dependent.
 //
-// The minimal PrivateKeyInfo floor is EXACTLY 14 octets: outer SEQUENCE header (2: `30 0c`) +
-// version INTEGER (3: `02 01 00`) + a minimal one-field AlgorithmIdentifier shaped like Ed25519's
-// (7: `30 05 06 03 xx xx xx`) + an empty privateKey OCTET STRING (2: `04 00`) = 2+3+7+2 = 14. A
-// 16-octet symbolic buffer therefore has only 2 spare octets of slack over that floor — tight, but
+// The minimal PrivateKeyInfo floor is 12 octets: outer SEQUENCE header (2: `30 0a`) + version
+// INTEGER (3: `02 01 00`) + a minimal one-field AlgorithmIdentifier (5: `30 03 06 01 00` — a
+// single-octet OID, since `crate::oid::validate_oid` accepts the one-octet content `00`, arc {0 0})
+// + an empty privateKey OCTET STRING (2: `04 00`) = 2+3+5+2 = 12. (An Ed25519-shaped AlgId with a
+// 3-octet OID makes it 14; 12 is the true minimum — corrected in second-model review 2026-08-09.) A
+// 16-octet symbolic buffer therefore has 4 spare octets of slack over that floor — tight, but
 // (unlike `x509_validity::parse_never_panics`, whose Time fields impose a >=32-octet floor that
 // provably cannot fit in 16) the floor here is <= 16, so the Ok cover is NOT expected to be
 // vacuous by the same arithmetic argument `ecdsa_sig_value`/`rsa_public_key` make for their own
@@ -791,6 +803,25 @@ mod tests {
                 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70,
                 0x04, 0x00,
                 0x01, 0x01, 0xFF,
+        ];
+        assert_eq!(parse_pkcs8_private_key_info(&bytes), Err(Pkcs8Error::TrailingElements));
+    }
+
+    #[test]
+    fn rejects_malformed_non_context0_trailing_as_trailing_elements() {
+        // Regression (second-model review 2026-08-09): a trailing element whose tag is NOT context
+        // `[0]` (a BOOLEAN, 0x01) AND whose length framing is ALSO malformed (declares 5 content
+        // octets, supplies 1). It must be classified by its TAG -- non-`[0]` => `TrailingElements`,
+        // NOT a malformed `[0]` attributes wrapper. Before the tag-first fix, `decode_tlv` failed on
+        // the truncated length first and the error was misreported as `Attributes(Tlv(Truncated))`.
+        // Outer content is 12 + 3 = 15 (0x0f); the third trailing byte is present but never a valid
+        // TLV, which is exactly the point (the tag alone decides the classification).
+        let bytes = [
+            0x30, 0x0f,
+                0x02, 0x01, 0x00,
+                0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70,
+                0x04, 0x00,
+                0x01, 0x05, 0xFF, // BOOLEAN, len 5, truncated -- a non-[0] trailing element
         ];
         assert_eq!(parse_pkcs8_private_key_info(&bytes), Err(Pkcs8Error::TrailingElements));
     }
