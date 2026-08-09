@@ -7,6 +7,23 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [Unreleased]
 
 ### Added
+- **`pkcs8` module** — a structural parser for the PKCS#8 v1 `PrivateKeyInfo` container
+  (RFC 5208 §5): `SEQUENCE { version INTEGER, privateKeyAlgorithm AlgorithmIdentifier, privateKey
+  OCTET STRING, attributes [0] IMPLICIT OPTIONAL }`, composing `sequence` + `big_integer` +
+  `x509_algorithm_identifier` + `octet_string`. `version` is required to be exactly v1 (content
+  `0x00`) — a non-zero/multi-octet version is the distinct `UnsupportedVersion` error; RFC 5958
+  `OneAsymmetricKey` (PKCS#8 v2) is explicitly out of scope. `privateKeyAlgorithm` materializes as
+  the already-parsed `AlgorithmIdentifier` (mirroring how `x509_certificate` holds its own);
+  `privateKey` and the optional `[0]` `attributes` wrapper's content are exposed as opaque
+  validated bytes, never interpreted or descended into (`attributes`' `SET OF Attribute` member
+  ordering/content is a caller's job). Two entry points matching the crate's established
+  strict/lenient split (`parse_pkcs8_private_key_info` / `parse_pkcs8_private_key_info_strict`).
+  27 new `#[test]`s + 1 new doc-test, 3 new Kani harnesses (16 of 16 `kani::cover` properties
+  satisfied on the fully-symbolic `parse_never_panics` harness — including the `Ok` tail — at the
+  module's measured 14-octet minimal-`PrivateKeyInfo` floor within its 16-octet symbolic bound, no
+  vacuity; a real openssl-generated Ed25519 specimen is witnessed by a dedicated concrete-specimen
+  harness, hand-verified against `openssl asn1parse` before use, mirroring `ecdsa_sig_value`'s own
+  P-256-shaped harness). Harness count 177 → 180, test count 369 → 396, module count 28 → 29.
 - **`rsa_public_key` module** — a structural parser for the PKCS#1 `RSAPublicKey` (RFC 8017
   §A.1.1): `SEQUENCE { modulus INTEGER, publicExponent INTEGER }`, structurally the same
   two-INTEGER `SEQUENCE` shape as `ecdsa_sig_value`, composing `sequence` + `big_integer`.

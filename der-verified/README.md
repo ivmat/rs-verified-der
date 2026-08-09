@@ -4,12 +4,12 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, re-runnable
 from a fresh clone: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 177 proof harnesses over 28 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 180 proof harnesses over 29 modules — memory safety, no
   panics, no overflow, plus functional properties (round-trip, canonicality/minimality, rejection of
   malformed/non-canonical encodings).
 - **L4 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`, `tag`,
   `tlv`, `sequence`) are additionally proven over inputs of **any length**, `sorry`-free.
-- **369** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
+- **396** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
 
 > Read [`PROOF_MANIFEST.md`](https://github.com/ivmat/rs-verified-der/blob/main/PROOF_MANIFEST.md)
 > before relying on any of this — the honest proof envelope: exactly what is proven, under what bounds
@@ -25,7 +25,9 @@ strings, `UTF8String`, `UTCTime`, `GeneralizedTime`, `SEQUENCE`, `SET OF` §11.6
 verified codecs. **Signature-container framing (no semantics):** `ecdsa_sig_value` parses the ASN.1
 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480, `SEQUENCE { r INTEGER, s INTEGER }`), exposing `r`/`s`
 as opaque validated bytes — no curve-order range check, no low-S policy, no cryptographic
-interpretation. **Typed profile layer (Kani-proven, no Lean lid):** the `profile` module checks
+interpretation. **`pkcs8`** parses the PKCS#8 v1 `PrivateKeyInfo` container (RFC 5208 §5), v1 only
+(RFC 5958 v2 out of scope), exposing `privateKey`/`attributes` as opaque bytes. **Typed profile
+layer (Kani-proven, no Lean lid):** the `profile` module checks
 three RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
 UTCTime/GeneralizedTime year-2050 encoding choice); each is proven as a biconditional over symbolic
 field values, as is their documented precedence — see `PROOF_MANIFEST.md`.

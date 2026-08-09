@@ -8,13 +8,13 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 177 proof harnesses over 28 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 180 proof harnesses over 29 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
 - **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
   ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free.
-- **369** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
+- **396** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
 > proof envelope: exactly what is proven, under what bounds and assumptions, what is stubbed, and
@@ -48,6 +48,15 @@ as numbers. This is the container that sits inside an SPKI's BIT STRING payload 
 `rsaEncryption` key; this module parses it wherever it appears — it does **not** unwrap an SPKI
 itself. DER framing and canonicality only: **no** exponent oddness/minimum-value policy, **no**
 modulus size policy, and **no** RSA semantics whatsoever — see the module doc for the full fence.
+
+**Key-container framing (Kani-proven, no Lean lid):** the [`pkcs8`] module parses the PKCS#8 v1
+`PrivateKeyInfo` container (RFC 5208 §5) — `SEQUENCE { version INTEGER, privateKeyAlgorithm
+AlgorithmIdentifier, privateKey OCTET STRING, attributes [0] IMPLICIT OPTIONAL }` — composing
+`sequence` + `big_integer` + `x509_algorithm_identifier` + `octet_string`. `version` is required to
+be exactly v1 (RFC 5958's `OneAsymmetricKey`/PKCS#8 v2 is explicitly out of scope); `privateKey` and
+the optional `attributes` wrapper's content are exposed as opaque bytes, never interpreted — this
+module validates only the `[0]` wrapper's framing, never descending into `SET OF Attribute`. See the
+module doc for the full fence.
 
 **Typed profile-validation layer (Kani-proven, no Lean lid):** the [`profile`] module is a first
 slice of a layer built *on top of* the structural parsers above, checking cross-field RFC 5280 rules
@@ -109,7 +118,7 @@ flowchart TB
     subgraph codecs_layer["DER content codecs"]
         direction LR
         codecs_green["big_integer · oid · sequence"]:::green
-        codecs_blue["bit_string · boolean · context_tag · ecdsa_sig_value<br/>enumerated · generalized_time · integer · null<br/>octet_string · restricted_string · rsa_public_key · set_of<br/>utc_time · utf8_string"]:::blue
+        codecs_blue["bit_string · boolean · context_tag · ecdsa_sig_value<br/>enumerated · generalized_time · integer · null<br/>octet_string · pkcs8 · restricted_string · rsa_public_key<br/>set_of · utc_time · utf8_string"]:::blue
         codecs_gray["General SET (X.690 §10.3)"]:::gray
     end
     subgraph framing_layer["tag / length / TLV framing base"]
@@ -178,12 +187,12 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 369 tests + 29 doc-tests
+cargo test                                    # 396 tests + 30 doc-tests
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
 cargo kani setup
-cargo kani -Z stubbing                          # 177 proof harnesses
+cargo kani -Z stubbing                          # 180 proof harnesses
 ```
 
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
@@ -244,7 +253,7 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 (`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 18-test
 self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
-**149** of the 177 harnesses (the shard filters are by module, not a pinned count, so this total is
+**152** of the 180 harnesses (the shard filters are by module, not a pinned count, so this total is
 re-derived from the per-module counts rather than maintained by hand; see
 `.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
 parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
@@ -254,7 +263,7 @@ stub in the workflow, on a large-memory runner).
 
 ### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
 
-**All 177 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
+**All 180 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
 harness counts below were re-derived from the current module counts by static count, not a fresh
 timing run — treat the *times themselves* as the prior measurement's indicative, possibly-stale
 numbers, and the counts as current):

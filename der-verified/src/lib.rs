@@ -32,6 +32,13 @@
 //!   `publicExponent` as opaque validated bytes (never materialized as numbers). Framing and
 //!   canonicality only: no exponent policy, no modulus size policy, no RSA semantics, and no SPKI
 //!   unwrapping (see the module docs for the full scope fence).
+//! - [`pkcs8`] — the PKCS#8 v1 `PrivateKeyInfo` container (RFC 5208 §5): a **structural**
+//!   `SEQUENCE { version INTEGER, privateKeyAlgorithm AlgorithmIdentifier, privateKey OCTET STRING,
+//!   attributes [0] IMPLICIT OPTIONAL }` parser composing [`sequence`] + [`big_integer`] +
+//!   [`x509_algorithm_identifier`] + [`octet_string`], exposing `privateKey` and the optional
+//!   `attributes` wrapper's content as opaque bytes. v1 only (the `version` INTEGER is required to
+//!   be exactly `0`); RFC 5958 `OneAsymmetricKey` (PKCS#8 v2) is explicitly out of scope. See the
+//!   module docs for the full scope fence.
 //! - [`octet_string`] — DER OCTET STRING (§8.7): primitive-form only, rejecting the BER
 //!   constructed/segmented form (a parser-differential vector).
 //! - [`enumerated`] — DER ENUMERATED (§8.4): a thin re-tagging of [`integer`]'s content codec
@@ -147,6 +154,7 @@ pub mod length;
 pub mod null;
 pub mod octet_string;
 pub mod oid;
+pub mod pkcs8;
 pub mod profile;
 pub mod restricted_string;
 pub mod rsa_public_key;
