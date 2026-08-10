@@ -33,6 +33,13 @@
 //!   [`big_integer`], exposing `r`/`s` as opaque validated bytes (never materialized as numbers).
 //!   Framing and canonicality only: no curve-order range check, no low-S policy, no cryptographic
 //!   interpretation (see the module docs for the full scope fence).
+//! - [`encrypted_private_key_info`] — RFC 5958 §3 `EncryptedPrivateKeyInfo` container: a
+//!   **structural** `SEQUENCE { encryptionAlgorithm AlgorithmIdentifier, encryptedData OCTET
+//!   STRING }` parser composing [`sequence`] + [`x509_algorithm_identifier`] + [`octet_string`], the
+//!   simplest of this crate's SEQUENCE containers (fixed two-field schema, no version, no OPTIONAL
+//!   field). `encryptedData` is left opaque ciphertext; `encryptionAlgorithm.parameters` stays raw,
+//!   inheriting [`x509_algorithm_identifier`]'s documented framing-only stance. See the module docs
+//!   for the full scope fence.
 //! - [`rsa_private_key`] — the PKCS#1 `RSAPrivateKey` (RFC 8017 §A.1.2) container: a
 //!   **structural** `SEQUENCE { version, modulus, publicExponent, privateExponent, prime1, prime2,
 //!   exponent1, exponent2, coefficient, otherPrimeInfos OPTIONAL }` parser composing [`sequence`] +
@@ -162,6 +169,7 @@ pub mod boolean;
 pub mod context_tag;
 pub mod ec_private_key;
 pub mod ecdsa_sig_value;
+pub mod encrypted_private_key_info;
 pub mod enumerated;
 pub mod generalized_time;
 pub mod integer;

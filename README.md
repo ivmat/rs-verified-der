@@ -8,13 +8,13 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 188 proof harnesses over 31 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 191 proof harnesses over 32 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
 - **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
   ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free.
-- **462** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
+- **472** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
 > proof envelope: exactly what is proven, under what bounds and assumptions, what is stubbed, and
@@ -118,7 +118,7 @@ flowchart TB
     subgraph codecs_layer["DER content codecs"]
         direction LR
         codecs_green["big_integer · oid · sequence"]:::green
-        codecs_blue["bit_string · boolean · context_tag · ec_private_key<br/>ecdsa_sig_value · enumerated · generalized_time · integer<br/>null · octet_string · pkcs8 · restricted_string<br/>rsa_private_key · rsa_public_key · set_of · utc_time<br/>utf8_string"]:::blue
+        codecs_blue["bit_string · boolean · context_tag · ec_private_key<br/>ecdsa_sig_value · encrypted_private_key_info · enumerated · generalized_time<br/>integer · null · octet_string · pkcs8<br/>restricted_string · rsa_private_key · rsa_public_key · set_of<br/>utc_time · utf8_string"]:::blue
         codecs_gray["General SET (X.690 §10.3)"]:::gray
     end
     subgraph framing_layer["tag / length / TLV framing base"]
@@ -187,12 +187,12 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 462 tests + 30 doc-tests
+cargo test                                    # 472 tests + 30 doc-tests
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
 cargo kani setup
-cargo kani -Z stubbing                          # 188 proof harnesses
+cargo kani -Z stubbing                          # 191 proof harnesses
 ```
 
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
@@ -256,7 +256,7 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 (`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 33-test
 self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
-**160** of the 188 harnesses (the shard filters are by module, not a pinned count, so this total is
+**163** of the 191 harnesses (the shard filters are by module, not a pinned count, so this total is
 re-derived from the per-module counts rather than maintained by hand; see
 `.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
 parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
@@ -266,7 +266,7 @@ stub in the workflow, on a large-memory runner).
 
 ### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
 
-**All 188 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
+**All 191 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
 harness counts below were re-derived from the current module counts by static count, not a fresh
 timing run — treat the *times themselves* as the prior measurement's indicative, possibly-stale
 numbers, and the counts as current):
@@ -275,7 +275,7 @@ numbers, and the counts as current):
 |---|---|---|---|
 | `cargo test` + `clippy` (no external deps) | — | ~2 s | — |
 | CI shard `codecs-a` | 85 | ~28 s | < 0.2 GB |
-| CI shard `codecs-b` | 66 | ~40 s | ~1 GB |
+| CI shard `codecs-b` | 69 | ~40 s | ~1 GB |
 | CI shard `utf8` | 9 | ~247 s | 2.7 GB |
 | local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | ≈24 | ~30 min | ~20 GB (`x509_extension`) |
 | local: `x509_tbs_certificate` + `x509_name` (`validate_name` stub + `validate_rdn` lemma) | ≈4 | ~9 min | ~17 GB (`validate_rdn`) |

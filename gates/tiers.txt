@@ -36,6 +36,7 @@ LIGHT ec_private_key
 LIGHT rsa_public_key
 LIGHT rsa_private_key
 LIGHT pkcs8
+LIGHT encrypted_private_key_info
 LIGHT profile
 LIGHT utf8_string
 

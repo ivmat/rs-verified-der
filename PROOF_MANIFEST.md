@@ -2,12 +2,12 @@
 
 This is the **honest proof envelope** for this crate: what is machine-checked, over what domain,
 under what assumptions and stubs — and, given equal weight, **what is not**. It exists so that a
-reader who is not going to read 188 proof harnesses and 6 Lean developments can still know what
+reader who is not going to read 191 proof harnesses and 6 Lean developments can still know what
 they are being offered, and where the guarantee stops.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "188 Kani harnesses, 6 Lean lids, 462 tests" describes how
+> **Counts are inventory, not coverage.** "191 Kani harnesses, 6 Lean lids, 472 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -62,18 +62,18 @@ deviations. Read the two differently.
 <!-- BEGIN GENERATED:inventory (gates/gen_proof_manifest.py) -->
 | Inventory (static, derived from `der-verified/src` + `lean/`) | Count |
 |---|---:|
-| source modules (excl. `lib.rs`) | 31 |
-| …of which carry at least one `#[kani::proof]` | 31 |
-| public entry points (free `pub fn`s + public `impl` methods) | 78 |
-| …named by at least one Kani harness | 67 |
+| source modules (excl. `lib.rs`) | 32 |
+| …of which carry at least one `#[kani::proof]` | 32 |
+| public entry points (free `pub fn`s + public `impl` methods) | 80 |
+| …named by at least one Kani harness | 69 |
 | …named by **no** Kani harness | **11** |
-| `#[kani::proof]` harnesses | 188 |
-| `kani::assume` harness preconditions (narrow the proved domain) | 148 |
+| `#[kani::proof]` harnesses | 191 |
+| `kani::assume` harness preconditions (narrow the proved domain) | 150 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 168 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 180 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 11 / 8 |
-| `#[test]` unit + regression tests | 462 |
+| `#[test]` unit + regression tests | 472 |
 | crate-doc examples run as doc-tests | 1 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
@@ -210,7 +210,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 462 unit and regression tests (plus 30 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 472 unit and regression tests (plus 30 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.
@@ -293,7 +293,7 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — 160 of the 188 harnesses (the shard filters are by module, not a
+  the memory-tractable share — 163 of the 191 harnesses (the shard filters are by module, not a
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
@@ -338,6 +338,7 @@ carry that.
 | `context_tag` | 1 | 1 | 1 | 16 | 20 | 0 | 2 | 0 |  |
 | `ec_private_key` | 2 | 2 | 3 | 10..121 | 20 | 2 | 20 | 0 |  |
 | `ecdsa_sig_value` | 2 | 2 | 3 | 16..71 | 20 | 2 | 18 | 0 |  |
+| `encrypted_private_key_info` | 2 | 2 | 3 | 11..16 | 20 | 2 | 12 | 0 |  |
 | `enumerated` | 2 | 2 | 3 | 9 | 12 | 1 | 10 | 0 |  |
 | `generalized_time` | 3 | 2 | 16 | 3..19 | 16..20 | 20 | 3 | 0 |  |
 | `integer` | 2 | 2 | 7 | 8..10 | 12 | 4 | 2 | 0 |  |
@@ -423,6 +424,7 @@ exact statement, including its `assume` preconditions.
 - **`context_tag`** (1): `decode_explicit_context_never_panics`
 - **`ec_private_key`** (3): `parse_never_panics`, `parse_strict_never_panics`, `parse_ok_path_witnessed`
 - **`ecdsa_sig_value`** (3): `parse_never_panics`, `parse_strict_never_panics`, `parse_strict_ok_path_witnessed_high_bit_r`
+- **`encrypted_private_key_info`** (3): `parse_never_panics`, `parse_strict_never_panics`, `parse_ok_path_witnessed`
 - **`enumerated`** (3): `decode_delegates_to_integer`, `encode_delegates_to_integer`, `roundtrip`
 - **`generalized_time`** (16): `roundtrip_all_fields`, `decode_never_panics`, `decode_accepts_only_canonical`, `accepted_iff_canonical_oracle`, `short_length_is_bad_length`, `non_digit_is_classified`, `not_zulu_is_classified`, `month_range_is_classified`, `day_range_is_classified`, `hour_range_is_classified`, `minute_range_is_classified`, `second_range_is_classified`, `bad_fraction_separator_is_classified`, `fraction_empty_is_classified`, `fraction_trailing_zero_is_classified`, `fraction_non_digit_is_classified`
 - **`integer`** (7): `roundtrip_all_i64`, `decode_never_panics`, `decode_accepts_only_minimal`, `empty_is_classified`, `redundant_positive_padding_is_non_minimal`, `redundant_negative_padding_is_non_minimal`, `nine_octets_is_too_large`
@@ -572,10 +574,10 @@ buffer widths and unwind ranges are in §4's table; the crate-wide distribution:
 | 14 | 12 |
 | 16 | 62 |
 | 18 | 5 |
-| 20 | 27 |
+| 20 | 30 |
 | 21 | 1 |
 | 22 | 1 |
-| **total bounded** | **169** |
+| **total bounded** | **172** |
 
 19 harnesses declare no `#[kani::unwind]`, so no unwind bound is imposed on them and CBMC must unroll to completion every loop they reach. For those harnesses the loop depth is therefore *not* a limit on the claim: a loop CBMC could not fully unroll would fail an unwinding assertion rather than pass quietly. Their input domains are still bounded by buffer width like every other harness. Listed so a reader can check each one: `big_integer::empty_is_empty`, `big_integer::redundant_positive_padding_is_non_minimal`, `big_integer::redundant_negative_padding_is_non_minimal`, `bit_string::empty_is_classified`, `bit_string::empty_nonzero_unused_is_classified`, `boolean::one_octet_is_canonical`, `boolean::roundtrip`, `boolean::wrong_length_is_bad_length`, `enumerated::encode_delegates_to_integer`, `integer::empty_is_classified`, `integer::redundant_positive_padding_is_non_minimal`, `integer::redundant_negative_padding_is_non_minimal`, `null::only_empty_is_valid`, `oid::empty_is_classified`, `restricted_string::charset_exactly_matches_oracle_printable`, `restricted_string::charset_exactly_matches_oracle_ia5`, `restricted_string::charset_exactly_matches_oracle_numeric`, `restricted_string::charset_exactly_matches_oracle_visible`, `utc_time::full_year_pivot_is_correct`.
 <!-- END GENERATED:bounds -->
@@ -601,8 +603,8 @@ input space. This crate treats that as the default suspicion, and the check is m
 <!-- BEGIN GENERATED:non-vacuity (gates/gen_proof_manifest.py) -->
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
-| harnesses | 188 |
-| `kani::cover` witnesses | 168, in 29 of the 31 modules that have harnesses |
+| harnesses | 191 |
+| `kani::cover` witnesses | 180, in 30 of the 32 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **1** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 83 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
@@ -613,7 +615,7 @@ Harnesses with implicit checks only — each needs a justification, or a cover:
 
 What the remaining 83 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
-**What the 148 harness assumptions actually restrict.** 104 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
+**What the 150 harness assumptions actually restrict.** 106 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
 Two things to hold in mind reading it. First, the classifier is deliberately conservative: anything it cannot show is a pure size/range bound is listed, so some entries below *are* range constraints in a shape it does not recognise (a negated range such as `!(mo >= 1 && mo <= 12)`, for instance). It errs toward disclosing. Second, content narrowing is usually the **point** of the harness rather than a weakness in it: a rejection-classification harness exists precisely to pin a malformed shape and assert the exact error it must produce, and it must narrow to that shape to do so. What the list gives you is the ability to check that judgement yourself, harness by harness, instead of taking a count on trust.
 

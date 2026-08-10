@@ -4,12 +4,12 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, re-runnable
 from a fresh clone: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 188 proof harnesses over 31 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 191 proof harnesses over 32 modules — memory safety, no
   panics, no overflow, plus functional properties (round-trip, canonicality/minimality, rejection of
   malformed/non-canonical encodings).
 - **L4 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`, `tag`,
   `tlv`, `sequence`) are additionally proven over inputs of **any length**, `sorry`-free.
-- **462** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
+- **472** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
 
 > Read [`PROOF_MANIFEST.md`](https://github.com/ivmat/rs-verified-der/blob/main/PROOF_MANIFEST.md)
 > before relying on any of this — the honest proof envelope: exactly what is proven, under what bounds
