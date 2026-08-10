@@ -587,10 +587,12 @@ pub fn parse_rsa_private_key_strict(input: &[u8]) -> Result<RsaPrivateKey<'_>, R
 // plus a propagated member `Err`, with the per-member validator stubbed); and
 // `validate_other_prime_info_never_panics` **4 of 4** (the leaf member validator's `Ok` plus its three
 // member-reject classes). No disclosed-unsatisfiable cover is introduced, so the crate's LIGHT-tier
-// one-unsatisfiable-cover budget is untouched. The whole `rsa_private_key::` run completes in ~258 s
-// under a 20 GB cap with no OOM, comfortably inside the ~7 GB LIGHT envelope (`gates/tiers.txt`): the
-// pre-stub four-harness run measured ~3.5 GB peak, and the stubs only reduce the dominant harnesses'
-// cost while the added walk lemma is small — so LIGHT placement holds by measurement, not assumption.
+// one-unsatisfiable-cover budget is untouched. The whole five-harness `rsa_private_key::` run completes
+// in ~250 s with no OOM at a MEASURED peak of ~4.9 GB (cgroup `memory.peak` for the whole CBMC process
+// tree, under a fixed 22 GB cap) — comfortably inside the ~7 GB LIGHT envelope (`gates/tiers.txt`), so
+// LIGHT placement holds by this five-harness measurement (not the earlier pre-stub four-harness ~3.5 GB
+// figure). The leaf lemma's 16-octet buffer is what raised the peak above the pre-stub number while
+// keeping it LIGHT.
 #[cfg(kani)]
 mod proofs {
     use super::*;
@@ -817,7 +819,8 @@ mod proofs {
     /// `x509_name::validate_never_panics`'s own stub-based composition.
     ///
     /// A minimal well-formed one-member `otherPrimeInfos` content (`30 09 02 01 01 02 01 01 02 01
-    /// 01`, 11 octets) fits inside 16, so the `Ok` cover is expected to be non-vacuous; a stubbed
+    /// 01`, 11 octets) fits inside 16, so the `Ok` cover (which requires a non-empty walk of >= 1
+    /// member -- see the cover) is expected to be non-vacuous; a stubbed
     /// member `Err` propagating straight through the walk (`OtherPrimeInfoMember(_)`) is reachable
     /// well within 16 octets too (even a 2-octet truncated first member reaches the stub call).
     /// `#[kani::unwind(16)]`: each loop iteration is one `decode_sequence_tlv` call (a single
@@ -835,7 +838,15 @@ mod proofs {
         let content = &buf[..len];
         let result = validate_other_prime_infos(content);
 
-        kani::cover(result.is_ok(), "the member walk reaches Ok over stubbed members");
+        // `is_ok() && !content.is_empty()` (not bare `is_ok()`): the empty walk returns `Ok`
+        // immediately WITHOUT entering the loop, so a bare `is_ok()` cover is satisfiable at `len == 0`
+        // and would witness zero member walks. Requiring non-empty content forces the witness through
+        // >= 1 real `decode_sequence_tlv` + stubbed-member iteration -- panic-freedom itself still
+        // covers the empty case (no `assume` narrows the harness domain).
+        kani::cover(
+            result.is_ok() && !content.is_empty(),
+            "the member walk reaches Ok after walking >= 1 stubbed member",
+        );
         kani::cover(
             matches!(result, Err(RsaPrivateKeyError::OtherPrimeInfoMember(_))),
             "a stubbed member Err propagates through the walk",
@@ -845,30 +856,38 @@ mod proofs {
     }
 
     /// Robustness: `validate_other_prime_info` -- a SINGLE `OtherPrimeInfo` member (three canonical
-    /// INTEGERs, no loop) -- never panics on any input **of any length up to 10 octets** (buffer and
+    /// INTEGERs, no loop) -- never panics on any input **of any length up to 16 octets** (buffer and
     /// length both symbolic). This harness proves the per-member validator, the part of the
-    /// otherPrimeInfos machinery that carries the real branching logic.
+    /// otherPrimeInfos machinery that carries the real branching logic. The 16-octet domain is not
+    /// arbitrary: it matches `validate_other_prime_infos_never_panics`'s 16-octet buffer, so the
+    /// panic-freedom contract that walk lemma STUBS into `validate_other_prime_info` is discharged
+    /// here over the full `member_content` the walk can hand it (a 16-octet walk buffer, minus a
+    /// >=2-octet member SEQUENCE header, yields at most 14 content octets -- inside 16). A leaf buffer
+    /// below 14 (the former 10 among them) would leave the stub's contract undischarged over that tail.
     ///
-    /// The OUTER walk (`validate_other_prime_infos`'s `while` loop over an unbounded member count) is
-    /// deliberately NOT harnessed symbolically: a fully-symbolic variable-count-nested walk explodes
-    /// CBMC's state (the `x509_name`-class cost -- an earlier 14-octet attempt at it exceeded a 20 GB
-    /// cap; and even a *concrete* multi-prime specimen through the loop measured intractable, >9 min).
-    /// It is instead witnessed by the `#[cfg(test)]` one-/two-member tests. That is sound: the loop
+    /// The OUTER walk (`validate_other_prime_infos`'s `while` loop over an unbounded member count) IS
+    /// harnessed symbolically for panic-freedom -- by `validate_other_prime_infos_never_panics` above,
+    /// with THIS per-member validator STUBBED. What is deliberately NOT attempted is the
+    /// fully-symbolic UNSTUBBED nested walk (the outer loop with the real member validator inlined):
+    /// that variable-count-nested walk explodes CBMC's state (the `x509_name`-class cost -- an earlier
+    /// 14-octet attempt at it exceeded a 20 GB cap; and even a *concrete* multi-prime specimen through
+    /// the loop measured intractable, >9 min). The unstubbed multi-member composition is instead
+    /// witnessed by the `#[cfg(test)]` one-/two-member tests. That is sound: the loop
     /// body only composes two
     /// independently-proven-panic-free functions (`decode_sequence_tlv` -- a verified primitive -- and
     /// this validator) and advances by a primitive-guaranteed `used >= 2`, so the loop itself adds no
     /// unproven branching, exactly the crate's disclosed "small symbolic + concrete positives" stance
     /// for everything past this module's ~29-octet floor.
     ///
-    /// The minimal well-formed member content (`02 01 01 02 01 01 02 01 01`, 9 octets) fits inside 10,
+    /// The minimal well-formed member content (`02 01 01 02 01 01 02 01 01`, 9 octets) fits inside 16,
     /// so the `Ok` cover is non-vacuous, and each member-reject class ([`OtherPrimeInfoError`]) is
-    /// reachable within 10. `#[kani::unwind(12)]` covers the three sequential `decode_integer_tlv`
+    /// reachable within 16. `#[kani::unwind(12)]` covers the three sequential `decode_integer_tlv`
     /// calls (each a maximal-header `decode_tlv`, ~11 per `tlv.rs`) with margin; if Kani reports an
     /// unwinding-assertion failure, raise this bound (do not weaken scope).
     #[kani::proof]
     #[kani::unwind(12)]
     fn validate_other_prime_info_never_panics() {
-        let buf: [u8; 10] = kani::any();
+        let buf: [u8; 16] = kani::any();
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
         let member_content = &buf[..len];

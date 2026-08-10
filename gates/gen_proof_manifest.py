@@ -974,6 +974,17 @@ GUARDED_DOCS = ['PROOF_MANIFEST.md', 'README.md', 'der-verified/README.md',
 # with. Verified by re-staling it deliberately: rc=0 before this change, rc=1 after.
 NUM = r'(?<![\w.])(\d+|%s)(?:\*\*|\*|`)?' % '|'.join(WORDNUM)
 
+# Case-insensitive number token, for the FEW guards whose guarded value is legitimately *spelled* and
+# whose phrase is unique enough that a sentence-initial Titlecase number is unambiguous — currently
+# only `stub_harnesses` ("Four/Eight harnesses are **modular proofs**"). It must stay narrow: the
+# broad crate-total guards ("N Kani harnesses") are deliberately case-SENSITIVE because the real total
+# there is always a digit (188), so case-folding them buys nothing yet would misread a per-module
+# sentence like "Six Kani harnesses cover this module" (PROOF_MANIFEST.md:522) as a stale crate total.
+# The lowercase-only word list was, for those, an accidental-but-correct filter. Scoped `(?i:...)`
+# folds only the number token; the phrase stays case-sensitive. Closed a real hole: `PROOF_MANIFEST`'s
+# "Four ... modular proofs" sat wrong (true total 8) yet evaded the guard because it was capitalized.
+NUM_CI = r'(?<![\w.])(\d+|(?i:%s))(?:\*\*|\*|`)?' % '|'.join(WORDNUM)
+
 GUARDS = [
     ('harnesses', NUM + r'\s+Kani harnesses'),
     ('harnesses', NUM + r'\s+proof harnesses'),
@@ -995,10 +1006,31 @@ GUARDS = [
     ('modules_with_kani', r'across\s+' + NUM + r'\s+modules'),
     ('modules_with_kani', r'harnesses over\s+' + NUM),
     # prose counts inside the manifest itself, so its two halves can never disagree
-    ('stub_harnesses', NUM + r'\s+(?:X\.509\s+)?harnesses are \*\*modular'),
+    ('stub_harnesses', NUM_CI + r'\s+(?:X\.509\s+)?harnesses are \*\*modular'),
     ('disclosed_vacuities', NUM + r'\s+harnesses have a cover'),
     ('unharnessed_entry_points', r'one of the\s+' + NUM + r'\s+above'),
 ]
+
+
+def guard_line_hits(line):
+    """Every (key, parsed_number, matched_text) a count-guard finds on one line.
+
+    Single source of truth for `guard_violations` AND its tests, so a test cannot pass on a private
+    copy of the regex while the real gate drifts. The `stub_harnesses` guard uses `NUM_CI` (scoped
+    case-insensitive number — see the note there) so a sentence-initial Titlecase count ("Four
+    harnesses are **modular proofs**") is captured; without it a stale count silently evades the gate,
+    exactly how `PROOF_MANIFEST`'s "Four" sat wrong while the real total was 8. The broad crate-total
+    guards keep `NUM` (case-sensitive) on purpose, so a per-module "Six Kani harnesses" is not misread
+    as the crate total. Negative-tested both ways in `test_gen_proof_manifest.py`.
+    """
+    out = []
+    for key, pat in GUARDS:
+        for m in re.finditer(pat, line):
+            raw = m.group(1)
+            got = WORDNUM.get(raw.lower(), None)
+            got = int(raw) if got is None else got
+            out.append((key, got, m.group(0).strip()))
+    return out
 
 
 def guard_violations(f):
@@ -1009,13 +1041,9 @@ def guard_violations(f):
         if not os.path.exists(p):
             continue
         for lineno, line in enumerate(read_text(p).split('\n'), 1):
-            for key, pat in GUARDS:
-                for m in re.finditer(pat, line):
-                    raw = m.group(1)
-                    got = WORDNUM.get(raw.lower(), None)
-                    got = int(raw) if got is None else got
-                    if got != t[key]:
-                        bad.append((doc, lineno, key, got, t[key], m.group(0).strip()))
+            for key, got, matched in guard_line_hits(line):
+                if got != t[key]:
+                    bad.append((doc, lineno, key, got, t[key], matched))
     return bad
 
 

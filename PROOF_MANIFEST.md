@@ -293,7 +293,7 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — about 152 of the 188 harnesses (the shard filters are by module, not a
+  the memory-tractable share — 160 of the 188 harnesses (the shard filters are by module, not a
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
@@ -348,7 +348,7 @@ carry that.
 | `pkcs8` | 2 | 2 | 3 | 16..48 | 20 | 2 | 19 | 0 |  |
 | `profile` | 1 | 1 | 6 | 1..2 | 4 | 2 | 16 | 0 |  |
 | `restricted_string` | 14 | 5 | 26 | 3..16 | 6..16 | 30 | 4 | 0 |  |
-| `rsa_private_key` | 2 | 2 | 5 | 10..317 | 12..20 | 4 | 18 | 4 |  |
+| `rsa_private_key` | 2 | 2 | 5 | 16..317 | 12..20 | 4 | 18 | 4 |  |
 | `rsa_public_key` | 2 | 2 | 3 | 16..270 | 20 | 2 | 18 | 0 |  |
 | `sequence` | 6 | 6 | 7 | 8..16 | 16 | 0 | 2 | 0 | ✅ |
 | `set_of` | 5 | 5 | 13 | 3..16 | 16 | 2 | 2 | 0 |  |
@@ -813,7 +813,7 @@ If you are relying on one of these biconditionals, read the oracle, not just the
 
 ### 8.4 Modular proofs via stubs
 
-Four harnesses are **modular proofs**: they replace an already-independently-proven sub-parser with a
+Eight harnesses are **modular proofs**: they replace an already-independently-proven sub-parser with a
 `#[kani::stub]` capturing its proven contract, so CBMC can verify the composition glue tractably.
 
 <!-- BEGIN GENERATED:stubs (gates/gen_proof_manifest.py) -->

@@ -253,10 +253,10 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs, on every push and PR: the two **hygiene gates**
-(`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 18-test
+(`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 33-test
 self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
-**152** of the 188 harnesses (the shard filters are by module, not a pinned count, so this total is
+**160** of the 188 harnesses (the shard filters are by module, not a pinned count, so this total is
 re-derived from the per-module counts rather than maintained by hand; see
 `.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
 parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
@@ -274,8 +274,8 @@ numbers, and the counts as current):
 | Stage | Harnesses | Solve time | Peak RAM |
 |---|---|---|---|
 | `cargo test` + `clippy` (no external deps) | — | ~2 s | — |
-| CI shard `codecs-a` | 84 | ~28 s | < 0.2 GB |
-| CI shard `codecs-b` | ≈43 | ~40 s | ~1 GB |
+| CI shard `codecs-a` | 85 | ~28 s | < 0.2 GB |
+| CI shard `codecs-b` | 66 | ~40 s | ~1 GB |
 | CI shard `utf8` | 9 | ~247 s | 2.7 GB |
 | local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | ≈24 | ~30 min | ~20 GB (`x509_extension`) |
 | local: `x509_tbs_certificate` + `x509_name` (`validate_name` stub + `validate_rdn` lemma) | ≈4 | ~9 min | ~17 GB (`validate_rdn`) |

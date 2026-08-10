@@ -127,6 +127,52 @@ class CommentStripping(unittest.TestCase):
         self.assertEqual(kept, ['#[test]', 'fn real() { kani::cover!(true); }'])
 
 
+class CountGuardCaseFolding(unittest.TestCase):
+    """A count-claim written sentence-initial (Titlecase spelled number) must still be guarded.
+
+    `PROOF_MANIFEST` opened section 8.4 with "Four harnesses are **modular proofs**". The spelled-
+    number alternatives in `NUM` are lowercase, so the guard — matching case-sensitively — never saw
+    "Four", and the prose count sat at 4 while the generated table below it listed 8. The fix is the
+    scoped `(?i:...)` group on the number token. These are an opposing pair: the leniency test pins
+    that Titlecase counts are caught, the strictness test pins that the fold did NOT leak into the
+    phrase (which would turn every Titlecased sentence into a false-hit candidate).
+    """
+
+    def _keys(self, line):
+        return [(k, n) for k, n, _ in gen.guard_line_hits(line)]
+
+    def test_capitalized_spelled_count_is_guarded(self):
+        self.assertIn(('stub_harnesses', 4),
+                      self._keys('Four harnesses are **modular proofs**: they replace a sub-parser'))
+
+    def test_lowercase_spelled_count_still_guarded(self):
+        self.assertIn(('stub_harnesses', 4),
+                      self._keys('four harnesses are **modular proofs**'))
+
+    def test_case_fold_is_scoped_to_the_number_not_the_phrase(self):
+        # An all-caps PHRASE must not match: if it does, the scoped flag silently became global and
+        # every Titlecased sentence is now a candidate false hit.
+        self.assertEqual(gen.guard_line_hits('Four HARNESSES ARE **MODULAR proofs**'), [])
+
+    def test_guard_violations_routes_through_guard_line_hits(self):
+        # Wiring pin: if `guard_violations` regressed to a private inlined regex, the case-fold tests
+        # above would pin a helper the gate no longer uses. A value-only assertion cannot catch that
+        # regression — a lowercase count elsewhere in the guarded docs (README's "eight ... **modular**
+        # proofs") would still trip a stale case-sensitive copy, so the violation appears either way.
+        # Spy on the helper instead and assert the gate actually routes every line through it.
+        import unittest.mock as mock
+        real = gen.guard_line_hits
+        seen = []
+
+        def spy(line):
+            seen.append(line)
+            return real(line)
+
+        with mock.patch.object(gen, 'guard_line_hits', spy):
+            gen.guard_violations(facts())
+        self.assertTrue(seen, 'guard_violations did not route through guard_line_hits')
+
+
 class RegionPlumbing(unittest.TestCase):
     def test_advisory_region_is_still_generated_and_still_marker_checked(self):
         # Advisory means "not byte-compared", NOT "not maintained": --write must still write it,
