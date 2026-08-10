@@ -34,6 +34,7 @@ LIGHT x509_validity
 LIGHT ecdsa_sig_value
 LIGHT ec_private_key
 LIGHT rsa_public_key
+LIGHT rsa_private_key
 LIGHT pkcs8
 LIGHT profile
 LIGHT utf8_string

@@ -33,6 +33,13 @@
 //!   [`big_integer`], exposing `r`/`s` as opaque validated bytes (never materialized as numbers).
 //!   Framing and canonicality only: no curve-order range check, no low-S policy, no cryptographic
 //!   interpretation (see the module docs for the full scope fence).
+//! - [`rsa_private_key`] — the PKCS#1 `RSAPrivateKey` (RFC 8017 §A.1.2) container: a
+//!   **structural** `SEQUENCE { version, modulus, publicExponent, privateExponent, prime1, prime2,
+//!   exponent1, exponent2, coefficient, otherPrimeInfos OPTIONAL }` parser composing [`sequence`] +
+//!   [`big_integer`], exposing the eight key-material INTEGERs as opaque validated bytes (never
+//!   materialized as numbers) and the optional `otherPrimeInfos` SEQUENCE's content opaque. Enforces
+//!   RFC 8017's `version` ↔ `otherPrimeInfos` cross-field rule (`version == 1` iff `otherPrimeInfos`
+//!   is present). See the module docs for the full scope fence.
 //! - [`rsa_public_key`] — the PKCS#1 `RSAPublicKey` (RFC 8017 §A.1.1) container: structurally the
 //!   *same* two-INTEGER `SEQUENCE { modulus INTEGER, publicExponent INTEGER }` shape as
 //!   [`ecdsa_sig_value`], composing [`sequence`] + [`big_integer`], exposing `modulus`/
@@ -165,6 +172,7 @@ pub mod oid;
 pub mod pkcs8;
 pub mod profile;
 pub mod restricted_string;
+pub mod rsa_private_key;
 pub mod rsa_public_key;
 pub mod sequence;
 pub mod set_of;
