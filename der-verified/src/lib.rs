@@ -23,8 +23,8 @@
 //!   exposing opaque comparison-only bytes rather than materializing a numeric value.
 //! - [`ec_private_key`] — the SEC1 `ECPrivateKey` (RFC 5915 §3) container: a **structural**
 //!   `SEQUENCE { version INTEGER, privateKey OCTET STRING, parameters [0] EXPLICIT OPTIONAL,
-//!   publicKey [1] EXPLICIT BIT STRING OPTIONAL }` parser composing [`sequence`] + [`big_integer`]
-//!   + [`octet_string`] + [`context_tag`] + [`bit_string`], exposing `privateKey`/`parameters` as
+//!   publicKey [1] EXPLICIT BIT STRING OPTIONAL }` parser composing [`sequence`], [`big_integer`],
+//!   [`octet_string`], [`context_tag`], and [`bit_string`], exposing `privateKey`/`parameters` as
 //!   opaque bytes and `publicKey` as a decoded [`bit_string::BitString`]. `version` is required to
 //!   be exactly `ecPrivkeyVer1` (`1`); both trailing fields are EXPLICIT context tags (contrast
 //!   [`pkcs8`]'s IMPLICIT `[0]`). See the module docs for the full scope fence.

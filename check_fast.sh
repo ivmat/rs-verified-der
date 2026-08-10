@@ -27,4 +27,8 @@ echo "== lid-staleness gate (Lean-lid source drift since the last green Lean run
 python3 "$ROOT/gates/check_lid_staleness.py"
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
+echo "== clippy (workspace; -D warnings — MATCHES the CI 'test + clippy' job) =="
+# Cheap and per-commit-worthy: without this, a clippy-only lint (e.g. a doc bullet
+# continuation) passes local test but fails CI, which this gate exists to prevent.
+cargo clippy --manifest-path "$ROOT/Cargo.toml" --all-targets -- -D warnings
 echo "== check_fast.sh: PASS (Kani + Lean NOT run here — run check.sh at milestones) =="
