@@ -214,7 +214,7 @@ fn parse_fields(outer_content: &[u8]) -> Result<RsaPublicKey<'_>, RsaPublicKeyEr
 ///    [`crate::tlv::decode_tlv`] + [`crate::big_integer::validate_integer_content`]), requiring
 ///    the two fields to exactly tile the SEQUENCE's content.
 ///
-/// Never panics on any input (proven by the `parse_never_panics` Kani harness below); returns a
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_never_panics` Kani harness below); returns a
 /// classified [`RsaPublicKeyError`] on any structural deviation.
 pub fn parse_rsa_public_key(input: &[u8]) -> Result<(RsaPublicKey<'_>, usize), RsaPublicKeyError> {
     let (outer_content, used) =

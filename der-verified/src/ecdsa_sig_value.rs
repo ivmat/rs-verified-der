@@ -198,7 +198,7 @@ fn parse_fields(outer_content: &[u8]) -> Result<EcdsaSigValue<'_>, EcdsaSigValue
 ///    [`crate::big_integer::validate_integer_content`]), requiring the two fields to exactly tile
 ///    the SEQUENCE's content.
 ///
-/// Never panics on any input (proven by the `parse_never_panics` Kani harness below); returns a
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_never_panics` Kani harness below); returns a
 /// classified [`EcdsaSigValueError`] on any structural deviation.
 pub fn parse_ecdsa_sig_value(input: &[u8]) -> Result<(EcdsaSigValue<'_>, usize), EcdsaSigValueError> {
     let (outer_content, used) = decode_sequence_tlv(input).map_err(EcdsaSigValueError::BadOuterSeq)?;

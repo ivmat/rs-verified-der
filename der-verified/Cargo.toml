@@ -1,6 +1,6 @@
 [package]
 name = "der-verified"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 # MEASURED, not declared. Was "1.70", which was false in two independent ways and had never
 # been checked by anything: the committed `Cargo.lock` is version 4 (Cargo 1.70 refuses to parse

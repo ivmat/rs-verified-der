@@ -67,7 +67,7 @@ pub enum ContextTagError {
 /// value), not yet decoded — and the total number of bytes the wrapper and its content consumed
 /// from `input`. The caller applies the inner type's own decoder to the returned slice.
 ///
-/// Never panics on any input; returns a classified [`ContextTagError`] on any structural
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `decode_explicit_context_never_panics` harness); returns a classified [`ContextTagError`] on any structural
 /// deviation.
 pub fn decode_explicit_context(
     expected_number: u32,

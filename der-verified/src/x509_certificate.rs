@@ -165,7 +165,7 @@ pub enum CertificateError {
 /// [`decode_bit_string`] — mirroring [`crate::x509_tbs_certificate::parse_tbs_certificate`]'s
 /// offset-walk idiom.
 ///
-/// Never panics on any input (proven, for a small representative buffer, by the
+/// Never panics on any input **up to the harness's 12-octet symbolic bound** (proven, with the tbs sub-parser modularly stubbed, by the
 /// `parse_certificate_never_panics` Kani harness below — see its comment for the modular-stubbing
 /// rationale); returns a classified [`CertificateError`] on any structural deviation.
 pub fn parse_certificate(input: &[u8]) -> Result<Certificate<'_>, CertificateError> {

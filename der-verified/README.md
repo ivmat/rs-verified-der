@@ -26,7 +26,11 @@ verified codecs. **Signature-container framing (no semantics):** `ecdsa_sig_valu
 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480, `SEQUENCE { r INTEGER, s INTEGER }`), exposing `r`/`s`
 as opaque validated bytes — no curve-order range check, no low-S policy, no cryptographic
 interpretation. **`pkcs8`** parses the PKCS#8 v1 `PrivateKeyInfo` container (RFC 5208 §5), v1 only
-(RFC 5958 v2 out of scope), exposing `privateKey`/`attributes` as opaque bytes. **Typed profile
+(RFC 5958 v2 out of scope), exposing `privateKey`/`attributes` as opaque bytes. The sibling
+key/signature containers — `rsa_public_key` (PKCS#1 `RSAPublicKey`), `ec_private_key`
+(SEC1 `ECPrivateKey`), `rsa_private_key` (PKCS#1 `RSAPrivateKey`), and `encrypted_private_key_info`
+(RFC 5958 `EncryptedPrivateKeyInfo`) — parse the same way: DER framing/canonicality only, key
+material exposed as opaque validated bytes, no cryptographic interpretation. **Typed profile
 layer (Kani-proven, no Lean lid):** the `profile` module checks
 three RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
 UTCTime/GeneralizedTime year-2050 encoding choice); each is proven as a biconditional over symbolic
@@ -41,7 +45,8 @@ constraints, validity-against-clock).
 use der_verified::length::decode_length;
 use der_verified::x509_certificate::parse_certificate;
 
-// Every decoder is strict: it accepts a byte string only if it is the unique canonical DER encoding.
+// Decoders reject non-canonical encodings of the value they consume; the `_strict` entry points
+// additionally reject any trailing bytes (composable decoders leave the caller to check consumption).
 let (length_value, consumed) = decode_length(&bytes)?;   // rejects non-minimal / non-canonical lengths
 let cert = parse_certificate(der_bytes)?;                // structural X.509 framing (no crypto)
 ```

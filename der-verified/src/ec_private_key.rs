@@ -385,7 +385,7 @@ fn parse_fields(outer_content: &[u8]) -> Result<EcPrivateKey<'_>, EcPrivateKeyEr
 /// `parameters` wrapper, and the optional `[1] EXPLICIT` `publicKey` BIT STRING — requiring the
 /// fields to exactly tile the SEQUENCE's content.
 ///
-/// Never panics on any input (proven by the `parse_never_panics` Kani harness below); returns a
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_never_panics` Kani harness below); returns a
 /// classified [`EcPrivateKeyError`] on any structural deviation.
 pub fn parse_ec_private_key(input: &[u8]) -> Result<(EcPrivateKey<'_>, usize), EcPrivateKeyError> {
     let (outer_content, used) = decode_sequence_tlv(input).map_err(EcPrivateKeyError::BadOuterSeq)?;

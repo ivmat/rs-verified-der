@@ -124,16 +124,28 @@
 //!   — §4.1.1.2's `signatureAlgorithm`/`tbsCertificate.signature` equality, the §4.1.2.1/§4.1.2.9
 //!   "extensions is v3-only" rule, and the §4.1.2.5 UTCTime-through-2049/GeneralizedTime-from-2050
 //!   encoding-choice rule — establishing the pattern the rest of this layer (key usage, basic
-//!   constraints, name constraints, path validation, …) is expected to follow. Tested (`#[test]`)
-//!   only so far — no Kani harness or Lean lid backs this layer yet; see `PROOF_MANIFEST.md`.
+//!   constraints, name constraints, path validation, …) is expected to follow. Backed by six
+//!   bounded Kani harnesses that prove each rule as a biconditional over symbolic FIELD VALUES (not
+//!   symbolic DER bytes), plus `#[test]` vectors — no Lean lid yet; see `PROOF_MANIFEST.md`.
 //!
 //! **Verification:** each module carries Kani proof harnesses in a `#[cfg(kani)]` block, so an
 //! ordinary `cargo build` / `cargo test` neither sees nor depends on Kani. Run the proofs with
-//! `cargo kani` (or `./check.sh`). Each codec is proven, over its harness's bounded input domain,
-//! to (1) round-trip, (2) never panic, and (3) be **canonical** — decode accepts a byte string only
-//! if it is the unique canonical encoding of the decoded value — plus per-variant error-class
-//! correctness. Six codecs (`length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence`) are
-//! additionally proven ∀-length via an Aeneas→Lean lid. The bounds, assumptions, and stubs behind
+//! `cargo kani` (or `./check.sh`). What is proven is **module-specific** — read `PROOF_MANIFEST.md`
+//! for the per-module property list, never assume a uniform guarantee:
+//! - The **value codecs** (the canonical content types: `length`, `INTEGER`/`big_integer`, `BOOLEAN`,
+//!   `OID`, `BIT`/`OCTET STRING`, `ENUMERATED`, the string types, `SEQUENCE`, `SET OF`, the times)
+//!   are proven, over their harness's bounded input domain, to (1) round-trip, (2) never panic, and
+//!   (3) be **canonical** — decode accepts a byte string only if it is the unique canonical encoding
+//!   of the decoded value — plus per-variant error-class correctness.
+//! - The **structural composition parsers** (the `x509_*` objects and the signature/key containers
+//!   `ecdsa_sig_value`, `rsa_public_key`, `pkcs8`, `ec_private_key`, `rsa_private_key`,
+//!   `encrypted_private_key_info`) are parse-only (no encoder): their harnesses prove bounded
+//!   **panic-freedom** and that the parser enforces DER framing/canonicality *by rejection*, with
+//!   `kani::cover` reachability witnesses for the accept path and each error class — not a
+//!   round-trip biconditional.
+//!
+//! Six codecs (`length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence`) are additionally proven
+//! ∀-length via an Aeneas→Lean lid. The bounds, assumptions, and stubs behind
 //! each claim — and what is *not* proven — are the honest envelope in `PROOF_MANIFEST.md`; read it
 //! before relying on any of this.
 //!

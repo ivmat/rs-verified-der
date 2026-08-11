@@ -287,7 +287,7 @@ pub enum TbsCertificateError {
 /// that span, then advances the offset by the span's length — mirroring
 /// [`crate::x509_extension::validate_extensions`]'s offset-walk idiom.
 ///
-/// Never panics on any input (proven, for a small representative buffer, by the
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven, with sub-parsers modularly stubbed, by the
 /// `parse_tbs_certificate_never_panics` Kani harness below — see its comment for why full-size
 /// tractability is out of scope and how the residual is covered compositionally); returns a
 /// classified [`TbsCertificateError`] on any structural deviation.

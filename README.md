@@ -162,7 +162,7 @@ cargo add der-verified
 
 ```toml
 [dependencies]
-der-verified = "0.1.0"
+der-verified = "0.1.1"
 ```
 
 (Or pin to the repo as a git dependency:
@@ -187,7 +187,7 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 472 tests + 30 doc-tests
+cargo test                                    # 472 tests + 33 doc-tests
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain

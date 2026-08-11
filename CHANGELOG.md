@@ -6,7 +6,48 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-08-11
+
+New formally-verified DER structural parsers over the 0.1.0 primitives — the ECDSA/RSA/PKCS#8
+signature-and-key container line (`ecdsa_sig_value`, `rsa_public_key`, `pkcs8`, `ec_private_key`,
+`rsa_private_key`, `encrypted_private_key_info`) plus the `profile` cross-field-rule slice — together
+with a proof-envelope hardening pass (symbolic-length harness domains, honest bounded-claim wording,
+gate-robustness self-tests, a CI shard rebalance). Crate state at release: **191 Kani harnesses,
+472 unit tests + 33 doctests, 32 harnessed modules**, verified end-to-end by a committed full-gate
+run (`evidence/check-ffcea81.log`: 191/191 harnesses, L4 Lean lids sorry-free).
+
 ### Added
+- **`encrypted_private_key_info` module** — a structural parser for the PKCS#8
+  `EncryptedPrivateKeyInfo` (RFC 5958 §3): `SEQUENCE { encryptionAlgorithm AlgorithmIdentifier,
+  encryptedData OCTET STRING }`, composing `x509_algorithm_identifier` + `octet_string`.
+  `encryptionAlgorithm`'s `parameters` stay opaque (TLV framing only — the PBES2/PBKDF2 params schema
+  is not decoded) and `encryptedData` is opaque ciphertext; the two fields must exactly tile the
+  SEQUENCE (the trailing-data differential is closed) with the crate's strict/lenient entry-point
+  split (`parse_encrypted_private_key_info` / `_strict`). Absent mandatory fields are classified
+  distinctly (`MissingEncryptionAlgorithm` / `MissingEncryptedData`), mirroring `pkcs8`. 10 new
+  `#[test]`s + 1 new doc-test, 3 new Kani harnesses (9 of 9 `kani::cover` on the fully-symbolic
+  `parse_never_panics` — Ok tail + every reject arm, no vacuity — over the module's 9-octet floor
+  within a 16-octet symbolic bound; a real openssl PBES2/PBKDF2/AES specimen and a minimal specimen
+  are each witnessed, hand-verified against `openssl asn1parse`). Harness count 188 → 191, module
+  count 31 → 32.
+- **`rsa_private_key` module** — a structural parser for the PKCS#1 `RSAPrivateKey` (RFC 8017 §A.1.2):
+  the `version` + the eight two-prime key-material INTEGERs + the optional multiprime
+  `otherPrimeInfos`, composing `sequence` + `big_integer`. All key material is opaque validated bytes;
+  the `version`↔`otherPrimeInfos` cross-field rule is enforced. The variable-count `otherPrimeInfos`
+  member walk is proven panic-free by MODULAR STUBBING (a leaf lemma over a single member, a walk
+  lemma over the member sequence with the per-member validator stubbed, and the parse harnesses
+  stubbing the whole walk) so the parse harnesses stay tractable. Strict/lenient entry points. 5 new
+  Kani harnesses (per-cover 11 / — / 1 / 2 / 4, all satisfied, no vacuity; the leaf lemma proves the
+  member validator over the full 16-octet member domain the walk can hand it). Harness count
+  183 → 188, module count 30 → 31.
+- **`ec_private_key` module** — a structural parser for the SEC1 `ECPrivateKey` (RFC 5915):
+  `SEQUENCE { version INTEGER, privateKey OCTET STRING, parameters [0] EXPLICIT OPTIONAL, publicKey
+  [1] EXPLICIT OPTIONAL }`, composing `sequence` + `octet_string` + `context_tag` (the `[0]`/`[1]`
+  fields are EXPLICIT tags, decoded two-step). `privateKey` is opaque; the `[0]` parameters wrapper is
+  validated to contain exactly one canonical DER TLV (its schema arm left opaque); `[1]` wraps a BIT
+  STRING public key. Strict/lenient entry points. 3 new Kani harnesses (per-cover 17 / 2 / 1, no
+  vacuity; a real openssl P-256 specimen is witnessed). Harness count 180 → 183, module count
+  29 → 30.
 - **`pkcs8` module** — a structural parser for the PKCS#8 v1 `PrivateKeyInfo` container
   (RFC 5208 §5): `SEQUENCE { version INTEGER, privateKeyAlgorithm AlgorithmIdentifier, privateKey
   OCTET STRING, attributes [0] IMPLICIT OPTIONAL }`, composing `sequence` + `big_integer` +
