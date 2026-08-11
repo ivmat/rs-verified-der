@@ -167,7 +167,7 @@ fn decode_public_key_tlv(input: &[u8]) -> Result<(BitString<'_>, usize), SpkiErr
 /// 3. back at the outer level, the `subjectPublicKey` BIT STRING ([`decode_tlv`] +
 ///    [`decode_bit_string`]), requiring it to exactly fill what remains of the outer content.
 ///
-/// Never panics on any input (proven by the `parse_never_panics` Kani harness below); returns a
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_never_panics` Kani harness below); returns a
 /// classified [`SpkiError`] on any structural deviation.
 pub fn parse_subject_public_key_info(input: &[u8]) -> Result<SubjectPublicKeyInfo<'_>, SpkiError> {
     // 1. Outer SEQUENCE: must consume the whole input (top-level anti-trailing-data).
@@ -220,7 +220,12 @@ mod proofs {
     #[kani::unwind(20)]
     fn parse_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_subject_public_key_info(&buf);
+        // Symbolic input length so the "up to 16 octets" claim holds at every length in `0..=16`,
+        // not just the single length 16 -- control flow is length-dependent (crate convention:
+        // `pkcs8`/`ec_private_key`/`x509_name`).
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let result = parse_subject_public_key_info(&buf[..len]);
         kani::cover(result.is_ok(), "a well-formed SubjectPublicKeyInfo reaches the Ok tail");
         let _ = result;
     }

@@ -29,12 +29,13 @@ python3 "$ROOT/gates/check_tier_parity.py" --selftest
 python3 "$ROOT/gates/check_tier_parity.py"
 
 echo "== cargo kani :: der-verified (L3 proof floor) =="
-# -Z stubbing: three never-panics harnesses are MODULAR proofs — x509_name (stubs validate_rdn),
-# x509_tbs_certificate (stubs validate_name, validate_extensions), and x509_certificate (stubs
-# parse_tbs_certificate). Each stubbed sub-parser is independently proven panic-free at its own
-# harness (over symbolic input length), so CBMC can verify the composition glue tractably (see those
-# modules' Kani comments and PROOF_MANIFEST.md). The flag only enables the feature; harnesses without
-# #[kani::stub] are unaffected.
+# -Z stubbing: several never-panics harnesses are MODULAR proofs — the x509 certificate chain
+# (x509_name stubs validate_rdn; x509_tbs_certificate stubs validate_name/validate_extensions;
+# x509_certificate stubs parse_tbs_certificate) and rsa_private_key (stubs validate_other_prime_infos /
+# validate_other_prime_info). PROOF_MANIFEST.md §8.4 has the authoritative, generated list. Each
+# stubbed sub-parser is independently proven panic-free at its own harness (over symbolic input
+# length), so CBMC can verify the composition glue tractably (see those modules' Kani comments). The
+# flag only enables the feature; harnesses without #[kani::stub] are unaffected.
 cargo kani -Z stubbing --manifest-path "$ROOT/der-verified/Cargo.toml"
 echo "== lean lid :: der-verified length/big_integer/oid codecs (L4, unbounded; guarded) =="
 sh "$ROOT/lean/check_lean.sh"

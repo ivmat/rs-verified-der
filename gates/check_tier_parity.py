@@ -51,11 +51,79 @@ def read_tiers(path: Path = TIERS):
     return light, heavy
 
 
+def _block_under(text: str, key_re: str):
+    """The lines strictly nested under the FIRST line matching `key_re` (indented more than it), up to
+    the next line at the same-or-lesser indent. Shared by the kani-job and matrix-include scoping."""
+    lines, out, base_indent = text.splitlines(), [], None
+    for l in lines:
+        m = re.match(key_re, l)
+        if base_indent is None:
+            if m:
+                base_indent, out = len(m.group(1)), []
+            continue
+        if l.strip() and (len(l) - len(l.lstrip())) <= base_indent:
+            break
+        out.append(l)
+    return "\n".join(out)
+
+
+def _kani_job_text(text: str):
+    """The body of the `kani:` job only -- so a `filters:` key in ANOTHER job cannot supply a phantom
+    module to the parity set (which would mask that module's omission from the real Kani matrix). A
+    trailing `# comment` on the `kani:` header is tolerated."""
+    return _block_under(text, r"(\s*)kani:\s*(#.*)?$")
+
+
+def _matrix_include_text(text: str):
+    """The kani job's `matrix:` -> `include:` list block -- so a `filters:`-looking line inside some
+    OTHER block scalar (a `run: |` step body, a description) is not read as a matrix key. Scoped
+    THROUGH `matrix:` first, then `include:` within it, so even a stray bare `include:` in a step body
+    (not nested under `matrix:`) is excluded. The real shard filters are list items directly under the
+    matrix's `include:`; nothing else is."""
+    matrix = _block_under(_kani_job_text(text), r"(\s*)matrix:\s*(#.*)?$")
+    return _block_under(matrix, r"(\s*)include:\s*(#.*)?$")
+
+
+def _strip_inline_comment(line: str):
+    """Drop a trailing YAML `# ...` comment. A `--harness <mod>::` filter never contains `#`, so a
+    ` #`-preceded run is always a comment -- e.g. `filters: >-  # --harness phantom::` must not leak
+    `phantom` into the set."""
+    return re.sub(r"\s+#.*$", "", line)
+
+
+def _filters_blocks(text: str):
+    """The text of every `filters:` scalar in the kani matrix's `include:` list (the shard filters),
+    as (folded or inline) YAML block values. Scoping to the `kani:` job's `matrix: include:` block AND
+    to `filters:` keys within it is what stops a stray `--harness` ANYWHERE else -- another job, an
+    `echo`/`run:` step body, a prose or inline comment -- from being miscounted as a shard filter.
+    Commented-out lines (the kani-heavy job) are dropped first."""
+    lines = [_strip_inline_comment(l) for l in _matrix_include_text(text).splitlines()
+             if not l.lstrip().startswith("#")]
+    blocks, i = [], 0
+    while i < len(lines):
+        m = re.match(r"(\s*)filters:\s*(.*)$", lines[i])
+        if not m:
+            i += 1
+            continue
+        key_indent, buf, i = len(m.group(1)), [m.group(2)], i + 1
+        # A block scalar continues while its lines are indented MORE than the `filters:` key.
+        while i < len(lines):
+            if lines[i].strip() == "":
+                i += 1
+                continue
+            if len(lines[i]) - len(lines[i].lstrip()) <= key_indent:
+                break
+            buf.append(lines[i])
+            i += 1
+        blocks.append("\n".join(buf))
+    return blocks
+
+
 def ci_filter_modules(text: str):
-    """Modules named by `--harness <mod>::` in the ci.yml kani matrix, ignoring the commented-out
-    kani-heavy job (its lines start with '#')."""
-    live = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
-    return sorted(set(re.findall(r"--harness\s+([A-Za-z0-9_]+)::", live)))
+    """Modules named by `--harness <mod>::` inside the kani job's `filters:` scalars only (NOT the
+    whole workflow -- see `_filters_blocks`)."""
+    joined = "\n".join(_filters_blocks(text))
+    return sorted(set(re.findall(r"--harness\s+([A-Za-z0-9_]+)::", joined)))
 
 
 def harnessed_modules(src: Path):
@@ -127,6 +195,56 @@ def selftest():
         errs, *_ = check(tiers_path=p2)
         assert any("no harnesses" in e for e in errs), "stale tier entry not caught"
         ok.append("stale-entry caught")
+
+        # 4. A stray `--harness` OUTSIDE the filters blocks (an echo in another step) must NOT be
+        #    scraped as a shard filter -- otherwise a phantom module fails the LIGHT-set comparison.
+        real_ci = CI.read_text()
+        polluted = real_ci + '\n  bogus-step:\n    run: echo "--harness phantom_module::"\n'
+        assert "phantom_module" not in ci_filter_modules(polluted), \
+            "a --harness outside a filters: block was miscounted as a shard filter"
+        errs, *_ = check(ci_text=polluted)
+        assert not any("phantom_module" in e for e in errs), "stray --harness leaked into parity check"
+        ok.append("stray-harness-outside-filters ignored")
+
+        # 5. A `filters:` key in ANOTHER job must NOT leak -- it could mask a module dropped from the
+        #    real kani matrix. The kani job is last, so a later same-indent job ends its block.
+        other_job = real_ci + '\n  unrelated_job:\n    filters: "--harness phantom_job::"\n'
+        assert "phantom_job" not in ci_filter_modules(other_job), \
+            "a filters: key in a non-kani job leaked into the shard set"
+        ok.append("filters-in-other-job ignored")
+
+        # 6. An inline YAML comment after `filters:` must NOT be scraped (a `--harness` in a comment
+        #    is not a real filter).
+        commented = ('jobs:\n  kani:\n    strategy:\n      matrix:\n        include:\n'
+                     '          - shard: x\n            filters: >-  # --harness phantom_comment::\n'
+                     '              --harness real_mod::\n')
+        cm = ci_filter_modules(commented)
+        assert "phantom_comment" not in cm and "real_mod" in cm, \
+            f"inline-comment contamination or real-filter loss: {cm}"
+        ok.append("inline-comment-in-filters ignored")
+
+        # 7. A `filters:`-looking line inside a `run: |` step body (NOT under matrix.include) must NOT
+        #    leak, and a real matrix filter alongside it must still be read. Also exercises a `kani:`
+        #    header carrying a trailing comment.
+        run_body = ('jobs:\n  kani:  # the proof job\n    steps:\n      - run: |\n'
+                    '          filters: --harness phantom_run::\n'
+                    '    strategy:\n      matrix:\n        include:\n'
+                    '          - shard: x\n            filters: "--harness real_mod2::"\n')
+        rm = ci_filter_modules(run_body)
+        assert "phantom_run" not in rm and "real_mod2" in rm, \
+            f"a filters: line inside a run: body leaked, or a real matrix filter was lost: {rm}"
+        ok.append("filters-in-run-body ignored (+commented kani header)")
+
+        # 8. A stray bare `include:` in a step body (NOT under `matrix:`) must not be mistaken for the
+        #    matrix's include list -- extraction is scoped THROUGH `matrix:` first.
+        fake_include = ('jobs:\n  kani:\n    steps:\n      - run: |\n          include:\n'
+                        '            filters: "--harness phantom_include::"\n'
+                        '    strategy:\n      matrix:\n        include:\n'
+                        '          - shard: x\n            filters: "--harness real_mod3::"\n')
+        fm = ci_filter_modules(fake_include)
+        assert "phantom_include" not in fm and "real_mod3" in fm, \
+            f"a bare include: in a step body was mistaken for the matrix include: {fm}"
+        ok.append("bare-include-in-step-body ignored")
 
     print("check_tier_parity.py: SELFTEST PASS -- " + ", ".join(ok) + ".")
 

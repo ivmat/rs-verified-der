@@ -253,12 +253,12 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs, on every push and PR: the two **hygiene gates**
-(`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 33-test
+(`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 35-test
 self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
 **163** of the 191 harnesses (the shard filters are by module, not a pinned count, so this total is
 re-derived from the per-module counts rather than maintained by hand; see
-`.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across three
+`.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across four
 parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
 `x509_tbs_certificate`, `x509_extension`, `x509_name`) peak above a standard 7 GB runner, so — like
 the L4 Lean lids — they are a **local-milestone check** via `./check.sh` (or the `kani-heavy` job
@@ -275,13 +275,17 @@ numbers, and the counts as current):
 |---|---|---|---|
 | `cargo test` + `clippy` (no external deps) | — | ~2 s | — |
 | CI shard `codecs-a` | 85 | ~28 s | < 0.2 GB |
-| CI shard `codecs-b` | 69 | ~40 s | ~1 GB |
+| CI shard `codecs-b` | 52 | pending† | ~1 GB |
+| CI shard `private-keys` | 17 | pending† | ~1 GB |
 | CI shard `utf8` | 9 | ~247 s | 2.7 GB |
 | local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | ≈24 | ~30 min | ~20 GB (`x509_extension`) |
 | local: `x509_tbs_certificate` + `x509_name` (`validate_name` stub + `validate_rdn` lemma) | ≈4 | ~9 min | ~17 GB (`validate_rdn`) |
 
-The three CI Kani shards run in parallel (~4–5 min wall). The full local floor is ~40 min of proving;
-peak RAM ~20 GB.
+The four CI Kani shards run in parallel (~4–5 min wall, bounded by the `utf8` shard). †The composite
+private-key container parsers (`ec_private_key`, `rsa_public_key`, `rsa_private_key`,
+`pkcs8`, `encrypted_private_key_info`) were split out of `codecs-b` into their own `private-keys`
+shard to keep `codecs-b`'s wall-clock down; per-shard solve times for the two rebalanced shards await
+a fresh CI run. The full local floor is ~40 min of proving; peak RAM ~20 GB.
 
 **`x509_name` is a modular proof.** A monolithic never-panics proof over `validate_name` is intractable
 (>100 GB in CBMC symbolic execution — the SET-OF §11.6 ordering re-derived over symbolic content, before

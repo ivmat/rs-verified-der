@@ -17,7 +17,10 @@
 //! delegates `privateKeyAlgorithm` whole to [`crate::x509_algorithm_identifier::parse_algorithm_identifier`]
 //! — it does not hand-roll any tag/length/TLV parsing of its own.
 //!
-//! **Scope boundaries (deliberate) — this module proves DER framing and canonicality ONLY:**
+//! **Scope boundaries (deliberate).** This module proves DER framing and canonicality of the fields
+//! it DECODES only; the opaque `privateKey` and `attributes` CONTENT is exposed raw and is NOT
+//! canonicality-checked (e.g. a `[0]` attributes wrapper with well-formed framing but arbitrary
+//! content octets such as `A0 01 FF` is accepted — its `SET OF Attribute` value is never decoded):
 //! - **v1 only.** `version` is a general DER INTEGER structurally, but this module additionally
 //!   REQUIRES its content to be exactly the single octet `0x00` (v1) — a non-zero or multi-octet
 //!   version is rejected as [`Pkcs8Error::UnsupportedVersion`], a distinct, named error from a
@@ -273,7 +276,7 @@ fn parse_fields(outer_content: &[u8]) -> Result<PrivateKeyInfo<'_>, Pkcs8Error> 
 /// and the optional `[0]` `attributes` wrapper — requiring the fields to exactly tile the SEQUENCE's
 /// content.
 ///
-/// Never panics on any input (proven by the `parse_never_panics` Kani harness below); returns a
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_never_panics` Kani harness below); returns a
 /// classified [`Pkcs8Error`] on any structural deviation.
 pub fn parse_pkcs8_private_key_info(
     input: &[u8],
@@ -443,10 +446,18 @@ mod proofs {
             result.is_ok(),
             "a well-formed top-level PrivateKeyInfo (no trailing bytes) reaches the Ok tail",
         );
-        kani::cover(
-            matches!(result, Err(Pkcs8Error::BadOuterSeq(SequenceError::TrailingData))),
-            "strict decode rejects a byte trailing the whole PrivateKeyInfo",
-        );
+        // Witness the strict/composable DIFFERENCE precisely: an input that is a VALID PrivateKeyInfo
+        // *followed by* >= 1 trailing octet -- the composable parse accepts it consuming fewer bytes
+        // than the input, and strict rejects the very same input as TrailingData. A bare `TrailingData`
+        // cover would also be satisfied by an empty/invalid object plus a trailing byte, which is not
+        // the property this entry point exists to enforce.
+        if let Ok((_info, used)) = parse_pkcs8_private_key_info(input) {
+            kani::cover(
+                used < input.len()
+                    && matches!(result, Err(Pkcs8Error::BadOuterSeq(SequenceError::TrailingData))),
+                "strict rejects a valid PrivateKeyInfo followed by >= 1 trailing octet",
+            );
+        }
 
         let _ = result;
     }

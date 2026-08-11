@@ -29,7 +29,8 @@ EOT
 
 echo "== cargo kani :: der-verified (LIGHT tier only) =="
 echo "   filters:$FILTERS"
-# -Z stubbing for the same reason as check.sh: three never-panics harnesses are modular proofs.
+# -Z stubbing for the same reason as check.sh: several never-panics harnesses are modular proofs
+# (the authoritative, generated list is in PROOF_MANIFEST.md §8.4).
 # shellcheck disable=SC2086
 cargo kani -Z stubbing --manifest-path "$ROOT/der-verified/Cargo.toml" $FILTERS
 

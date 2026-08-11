@@ -97,9 +97,15 @@ jobs:
               --harness boolean:: --harness null:: --harness context_tag::
               --harness x509_algorithm_identifier:: --harness x509_spki::
               --harness x509_validity:: --harness ecdsa_sig_value::
-              --harness ec_private_key::
-              --harness rsa_public_key:: --harness rsa_private_key::
-              --harness profile:: --harness pkcs8::
+              --harness profile::
+          # The composite private-key container parsers are the heaviest-per-harness LIGHT modules
+          # (they compose sequence + big_integer + algorithm_identifier + octet_string), so they get
+          # their own shard to keep codecs-b's wall-clock down. Still LIGHT — check_tier_parity gates
+          # that these four shards' union equals the LIGHT tier exactly.
+          - shard: private-keys
+            filters: >-
+              --harness ec_private_key:: --harness rsa_public_key::
+              --harness rsa_private_key:: --harness pkcs8::
               --harness encrypted_private_key_info::
           - shard: utf8
             filters: "--harness utf8_string::"

@@ -204,7 +204,7 @@ fn decode_extn_id_tlv(input: &[u8]) -> Result<(&[u8], usize), ExtensionError> {
 /// 4. `extnValue`, an OCTET STRING ([`decode_octet_string`]), requiring it to exactly fill what
 ///    remains of the outer content.
 ///
-/// Never panics on any input (proven by the `parse_extension_never_panics` Kani harness below);
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_extension_never_panics` Kani harness below);
 /// returns a classified [`ExtensionError`] on any structural deviation.
 pub fn parse_extension(input: &[u8]) -> Result<Extension<'_>, ExtensionError> {
     // 1. Outer SEQUENCE: must consume the whole input (top-level anti-trailing-data).
@@ -279,7 +279,7 @@ pub fn parse_extension(input: &[u8]) -> Result<Extension<'_>, ExtensionError> {
 /// growing a second, parallel "framing error" variant for what is conceptually the same failure
 /// class as a malformed member.
 ///
-/// Never panics on any input (proven by the `validate_extensions_never_panics` Kani harness
+/// Never panics on any input **up to the harness's 13-octet symbolic bound** (proven by the `validate_extensions_never_panics` Kani harness
 /// below); returns a classified [`ExtensionsError`] on any structural deviation. Returns `Ok(())`
 /// — this is a validator, not a materializing parser; see the module docs for why.
 pub fn validate_extensions(input: &[u8]) -> Result<(), ExtensionsError> {
@@ -351,7 +351,12 @@ mod proofs {
     #[kani::unwind(20)]
     fn parse_extension_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_extension(&buf);
+        // Symbolic input length so the "up to 16 octets" claim holds at every length in `0..=16`,
+        // not just the single length 16 -- control flow is length-dependent (crate convention;
+        // matches this module's own `validate_extensions_never_panics` below).
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let result = parse_extension(&buf[..len]);
         kani::cover(result.is_ok(), "a well-formed Extension reaches parse_extension's Ok tail");
         let _ = result;
     }

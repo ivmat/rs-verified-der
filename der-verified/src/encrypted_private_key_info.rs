@@ -293,13 +293,21 @@ mod proofs {
             result.is_ok(),
             "a well-formed top-level EncryptedPrivateKeyInfo (no trailing bytes) reaches the Ok tail",
         );
-        kani::cover(
-            matches!(
-                result,
-                Err(EncryptedPrivateKeyInfoError::BadOuterSeq(SequenceError::TrailingData))
-            ),
-            "strict decode rejects a byte trailing the whole EncryptedPrivateKeyInfo",
-        );
+        // Witness the strict/composable DIFFERENCE precisely: an input that is a VALID
+        // EncryptedPrivateKeyInfo *followed by* >= 1 trailing octet -- the composable parse accepts it
+        // consuming fewer bytes than the input, and strict rejects the very same input as TrailingData.
+        // A bare `TrailingData` cover would also be satisfied by an empty/invalid object plus a
+        // trailing byte, which is not the property this entry point exists to enforce.
+        if let Ok((_info, used)) = parse_encrypted_private_key_info(input) {
+            kani::cover(
+                used < input.len()
+                    && matches!(
+                        result,
+                        Err(EncryptedPrivateKeyInfoError::BadOuterSeq(SequenceError::TrailingData))
+                    ),
+                "strict rejects a valid EncryptedPrivateKeyInfo followed by >= 1 trailing octet",
+            );
+        }
 
         let _ = result;
     }

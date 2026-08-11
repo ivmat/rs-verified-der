@@ -118,7 +118,7 @@ fn decode_oid_tlv(input: &[u8]) -> Result<(&[u8], usize), AlgIdError> {
 ///    TLV ([`decode_tlv`], stored raw), requiring the two fields to exactly tile the SEQUENCE's
 ///    content.
 ///
-/// Never panics on any input (proven by the `parse_algorithm_identifier_never_panics` Kani harness
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_algorithm_identifier_never_panics` Kani harness
 /// below); returns a classified [`AlgIdError`] on any structural deviation.
 pub fn parse_algorithm_identifier(
     input: &[u8],
@@ -170,7 +170,12 @@ mod proofs {
     #[kani::unwind(20)]
     fn parse_algorithm_identifier_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_algorithm_identifier(&buf);
+        // Symbolic input length so the "up to 16 octets" claim holds at every length in `0..=16`,
+        // not just the single length 16 -- control flow is length-dependent (crate convention:
+        // `pkcs8`/`ec_private_key`/`x509_name`).
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let result = parse_algorithm_identifier(&buf[..len]);
         kani::cover(result.is_ok(), "a well-formed AlgorithmIdentifier reaches the Ok tail");
         if let Ok((algid, _used)) = result {
             kani::cover(algid.parameters.is_none(), "a one-field AlgorithmIdentifier (no parameters) is accepted");

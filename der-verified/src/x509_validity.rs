@@ -172,7 +172,7 @@ fn decode_time_tlv(input: &[u8]) -> Result<(Time<'_>, usize), TimeError> {
 /// 3. `notAfter`, a `Time` CHOICE (`decode_time_tlv`), requiring it to exactly fill what remains
 ///    of the outer content.
 ///
-/// Never panics on any input (proven by the `parse_never_panics` Kani harness below); returns a
+/// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_never_panics` Kani harness below); returns a
 /// classified [`ValidityError`] on any structural deviation. Accepts either `Time` spelling for
 /// either field — see the module docs for why the RFC 5280 §4.1.2.5 UTCTime/GeneralizedTime
 /// year-2050 profile rule is deliberately not enforced here.
@@ -250,7 +250,13 @@ mod proofs {
     #[kani::unwind(20)]
     fn parse_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = parse_validity(&buf);
+        // Symbolic input length so the "up to 16 octets" panic-freedom claim holds at every length
+        // in `0..=16`, not just the single length 16 -- control flow is length-dependent. (The `Ok`
+        // cover stays a disclosed vacuity: the two Time fields impose a >= 32-octet floor no 16-octet
+        // input can reach -- see this harness's own doc.)
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let result = parse_validity(&buf[..len]);
         kani::cover(result.is_ok(), "a well-formed Validity reaches the Ok tail");
         let _ = result;
     }

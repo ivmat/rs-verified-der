@@ -173,6 +173,56 @@ class CountGuardCaseFolding(unittest.TestCase):
         self.assertTrue(seen, 'guard_violations did not route through guard_line_hits')
 
 
+class EntryPointAttributionScoping(unittest.TestCase):
+    """`harnessed_entry_points` must be credited from `#[kani::proof]` bodies ONLY — never from a
+    `#[kani::stub]` helper body. A `pub fn` merely NAMED in a stub body is not exercised by any
+    harness, so crediting it would overclaim coverage. This is the load-bearing counter-test: it
+    FAILS on the old whole-`mod proofs` match and passes on the harness-body-scoped match.
+    """
+
+    FIXTURE = '\n'.join([
+        'pub fn target_fn(x: &[u8]) -> bool { x.is_empty() }',
+        'pub fn other_fn(x: &[u8]) -> bool { !x.is_empty() }',
+        '',
+        '#[cfg(kani)]',
+        'mod proofs {',
+        '    use super::*;',
+        '    #[allow(dead_code)]',
+        '    fn stub_thing(_x: &[u8]) -> bool { target_fn(&[]) }',  # names target_fn in a HELPER body
+        '    #[kani::proof]',
+        '    fn only_names_other() {',
+        '        let b: [u8; 4] = kani::any();',
+        '        let _ = other_fn(&b);',  # harness names other_fn, NOT target_fn
+        '    }',
+        '}',
+        '',
+        '#[cfg(test)]',
+        'mod tests {}',
+        '',
+    ])
+
+    def _facts(self):
+        with tempfile.NamedTemporaryFile('w', suffix='.rs', delete=False, encoding='utf-8') as fh:
+            fh.write(self.FIXTURE)
+            path = fh.name
+        try:
+            return gen.module_facts(path)
+        finally:
+            os.unlink(path)
+
+    def test_stub_body_mention_does_not_credit_coverage(self):
+        f = self._facts()
+        self.assertIn('target_fn', f['unharnessed_entry_points'],
+                      'a pub fn named only in a stub body was miscredited as harnessed')
+        self.assertNotIn('target_fn', f['harnessed_entry_points'])
+
+    def test_real_harness_body_mention_still_credits(self):
+        # The paired leniency check: an entry point genuinely named in a #[kani::proof] body must
+        # still be credited, so the scoping did not over-tighten into crediting nothing.
+        f = self._facts()
+        self.assertIn('other_fn', f['harnessed_entry_points'])
+
+
 class RegionPlumbing(unittest.TestCase):
     def test_advisory_region_is_still_generated_and_still_marker_checked(self):
         # Advisory means "not byte-compared", NOT "not maintained": --write must still write it,

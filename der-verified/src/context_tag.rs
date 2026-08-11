@@ -111,8 +111,13 @@ mod proofs {
     #[kani::unwind(20)]
     fn decode_explicit_context_never_panics() {
         let buf: [u8; 16] = kani::any();
+        // Symbolic input length so the "up to 16 octets" claim holds at every length in `0..=16`,
+        // not just the single length 16 -- control flow is length-dependent (crate convention:
+        // `pkcs8`/`ec_private_key`/`x509_name`).
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
         let n: u32 = kani::any();
-        let result = decode_explicit_context(n, &buf);
+        let result = decode_explicit_context(n, &buf[..len]);
         kani::cover(result.is_ok(), "a well-formed EXPLICIT [n] wrapper reaches the Ok tail");
         if let Ok((inner, _used)) = result {
             kani::cover(!inner.is_empty(), "a non-empty wrapped inner TLV is accepted");

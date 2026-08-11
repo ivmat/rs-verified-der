@@ -250,6 +250,10 @@ def parse_harnesses(proofs, consts):
             continue
         out.append({
             'name': name,
+            # The harness's own body (comment-stripped). `analyze` matches entry points against the
+            # UNION of these bodies only -- never against helper/stub bodies -- so a `pub fn` merely
+            # NAMED inside a `#[kani::stub]` body is not miscredited as harnessed.
+            'code': code,
             'unwind': [int(m.group(1)) for l in attrs
                        for m in [re.match(r'\s*#\[kani::unwind\((\d+)\)\]', l)] if m],
             'stubs': [m.group(1).strip() for l in attrs
@@ -281,13 +285,16 @@ def module_facts(path):
                      for m in [re.match(r'pub (?:const |unsafe )?fn ([A-Za-z0-9_]+)', l)] if m]
     harnesses, helper_assumes = parse_harnesses(proofs, const_widths(lines))
     proof_code = strip_comments(proofs)
-    proof_text = '\n'.join(proof_code)
+    # Match entry points against the union of the `#[kani::proof]` HARNESS bodies only -- NOT the
+    # whole `mod proofs` (which also contains `#[kani::stub]` helper bodies). A `pub fn` merely named
+    # inside a stub body must not be miscredited as harnessed; scoping to harness bodies closes that.
+    harness_text = '\n'.join(l for h in harnesses for l in h['code'])
     # Match on the short name: an entry point recorded as `Charset::contains` is called as
     # `charset.contains(b)` in a harness, so searching for the qualified name would report it
     # unharnessed. This makes an already-loose syntactic check looser still, which is why §4 states
     # plainly that "named by a harness" is not evidence of verification.
     harnessed = [e for e in entry_points
-                 if re.search(r'\b%s\b' % re.escape(e.split('::')[-1]), proof_text)]
+                 if re.search(r'\b%s\b' % re.escape(e.split('::')[-1]), harness_text)]
     unwinds = sorted({u for h in harnesses for u in h['unwind']})
     n_harness_assumes = sum(h['assumes'] for h in harnesses)
     n_region_assumes = sum(l.count('kani::assume(') for l in proof_code)
