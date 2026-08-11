@@ -226,13 +226,14 @@ module (§7) they are the *only* evidence that exists.
 | `evidence/check-ba40709.log` | `ba40709` | 171 | 0 | 3 |
 | `evidence/check-ea8dad4-remainder.log` | `ea8dad4` | 8 | 0 | 2 |
 | `evidence/check-ea8dad4.log` | `ea8dad4` | 162 | 0 | 0 |
+| `evidence/check-ffcea81.log` | `ffcea81` | 191 | 0 | 3 |
 | `evidence/check_tractable-67c1f80.log` | `67c1f80` | 143 | 0 | 1 |
 
 Every column here is read out of the committed log itself, so this table is reproducible from the tree alone and is gate-enforced. Whether a given run still speaks for HEAD needs `git`, which a tarball or shallow clone may not have — that question is answered separately just below, and is advisory for exactly that reason.
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
+**`evidence/check-ffcea81.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff ffcea81..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -246,10 +247,10 @@ The precise provenance of the L3 verdict, stated plainly because "the proofs pas
 in this document a reader cannot check from the source alone:
 
 - **The verdict is now read off a committed artifact, not transcribed.** The current run is
-  **2026-08-07 at commit `ba40709`** (`evidence/check-ba40709.log`) — `171 successfully verified
+  **2026-08-11 at commit `ffcea81`** (`evidence/check-ffcea81.log`) — `191 successfully verified
   harnesses, 0 failures`, `cargo test` green, the L4 Lean gate `PASS (sorry-free)`, and the
-  lid-staleness `--strict` gate green in the same pass, 53m37s wall under a `MemoryMax=22G` scope.
-  The three unsatisfied covers are again exactly the three §8.2 discloses. The first such run, described
+  lid-staleness gate green in the same pass, ~63m wall (3755s) at a measured 21.0 GB peak under a
+  fixed `MemoryMax=22G` scope. The three unsatisfied covers are again exactly the three §8.2 discloses. The first such run, described
   below, was `./check.sh`
   end-to-end on **2026-07-30** at commit `b355f76` — `cargo kani -Z stubbing` over all 164 harnesses
   **sequentially** (no `-j`; parallel harnesses multiply peak RSS), inside a `MemoryMax=22G`
