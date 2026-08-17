@@ -103,8 +103,9 @@ def strip_comments(lines):
 #
 # The recognition rule is ANY-of, not ALL-of: rustdoc treats a fence as Rust the moment it sees
 # ONE recognised token, and does not reject the block just because OTHER tokens in the same info
-# string are unrecognised (`rust,foo` and `no_run,foo` are both still compiled/run; `foo,bar`
-# alone is not). This was verified empirically against the pinned toolchain
+# string are unrecognised (`rust,foo` is discovered and run; `no_run,foo` is discovered/compiled
+# but not executed -- `no_run` still suppresses execution even alongside an unrecognised token;
+# `foo,bar` alone is not discovered at all). This was verified empirically against the pinned toolchain
 # (`rustc 1.93.1 (01f6ddf75 2026-02-11)`, `rust-toolchain.toml` channel = "stable") with a
 # throwaway probe crate exercising every combination below, rather than assumed from the rustdoc
 # book, because the book does not document the ANY-vs-ALL semantics explicitly:
@@ -120,14 +121,25 @@ def strip_comments(lines):
 #                                         it appears; NOT in the recognised set below.
 #   ```standalone_crate````           -> discovered AND RUN on its own, no `rust` token needed.
 #                                         IS in the recognised set below.
-#   ```rust,foo```` / ```no_run,foo```` -> both discovered AND RUN: one recognised token is
+#   ```rust,foo````                    -> discovered AND RUN: one recognised token (`rust`) is
 #                                         enough even with an unrecognised one alongside it.
+#   ```no_run,foo````                  -> discovered/compiled but NOT EXECUTED: `no_run` suppresses
+#                                         execution regardless of the unrecognised token alongside
+#                                         it -- the label rustdoc prints for this test is
+#                                         "... - compile", not "... - run" (confirmed with the
+#                                         same probe: a `no_run` fence containing `loop {}` passes
+#                                         instantly rather than hanging, because it is never run).
 #   ```foo```` / ```bar,baz```` / ```E0308```` (bare, no `compile_fail`) -> none discovered: no
 #                                         token in the info string is recognised, so rustdoc
 #                                         treats the whole block as a non-Rust language sample.
-#   ```compile_fail,E0308````         -> discovered AND RUN: `compile_fail` alone is the
-#                                         recognised token; the bare error code needs no special
-#                                         handling of its own under the ANY-of rule.
+#   ```compile_fail,E0308````         -> discovered/compiled but NOT EXECUTED: `compile_fail`
+#                                         alone is the recognised token; rustdoc expects the block
+#                                         to FAIL TO COMPILE and never attempts to run it either
+#                                         way (confirmed with the same probe: a `compile_fail`
+#                                         fence containing an unconditional `panic!()` still
+#                                         passes, because it is never executed). The bare error
+#                                         code needs no special handling of its own under the
+#                                         ANY-of rule.
 #   ```ignore-x86_64````              -> discovered as a doctest, reported `ignored` at run time
 #                                         (this box is x86_64) -- the `ignore-TARGET` form is
 #                                         recognised on its own, same as bare `ignore`.
@@ -156,7 +168,10 @@ def _is_rust_doctest_info(info):
 
     ANY recognised token is sufficient (see the empirical notes above) -- this is deliberately
     NOT `all(...)`: an info string with one recognised token and any number of unrecognised ones
-    alongside it (`rust,foo`, `no_run,foo`) is still a doctest rustdoc compiles and runs.
+    alongside it (`rust,foo`, `no_run,foo`) is still a doctest rustdoc discovers and compiles
+    (whether it goes on to EXECUTE the code depends on the recognised token itself -- `no_run`
+    and `compile_fail` both compile without executing; this function only decides "is this a
+    doctest at all", not "does it run").
     """
     info = info.strip()
     if not info:
@@ -188,7 +203,21 @@ DOC_FENCE_RE = re.compile(r'^\s*(?:///|//!)\s*(`{3,})(.*)$')
 # silent miscount.
 UNPARSEABLE_DOCTEST_FORM_CHECKS = [
     (re.compile(r'/\*[*!]'), 'a block doc comment (`/** */` or `/*! */`)'),
-    (re.compile(r'#!?\[doc\s*='), 'a `#[doc = "..."]` / `#![doc = "..."]` attribute'),
+    # Whitespace-tolerant between `#`, `!` and `[`: Rust's attribute syntax is token-level, not
+    # adjacency-sensitive, so `# [doc = "..."]` and `#! [doc = "..."]` are both valid and both
+    # compile/run as doctests exactly like the tight `#[doc = ...]`/`#![doc = ...]` form --
+    # confirmed with a probe crate (release-review follow-up; the original tight `#!?\[doc\s*='
+    # regex missed both, silently returning 0 instead of raising).
+    (re.compile(r'#\s*!?\s*\[\s*doc\s*='), 'a `#[doc = "..."]` / `#![doc = "..."]` attribute'),
+    # `#[cfg_attr(predicate, doc = "...")]` also compiles/runs as a doctest (same probe) and is a
+    # materially different shape the direct-form pattern above cannot see -- `doc = ` sits nested
+    # inside `cfg_attr(...)`'s argument list, not immediately after `[`. The bounded, non-greedy,
+    # `]`-excluding window (rather than a paren-balanced parse) deliberately tolerates a NESTED
+    # predicate such as `cfg_attr(all(), doc = "...")`: a naive `[^)]*`-style scan would stop at
+    # the first `)` (the one closing `all(`) and miss the `doc =` that follows it, which is
+    # exactly the shape rustc accepts and the probe confirmed compiles/runs.
+    (re.compile(r'#\s*!?\s*\[\s*cfg_attr\s*\([^\]]{0,300}?\bdoc\s*='),
+     'a `#[cfg_attr(..., doc = "...")]` attribute'),
     (re.compile(r'^\s*(?:///|//!)\s*~~~'), 'a tilde (`~~~`) fence inside a doc comment'),
 ]
 
@@ -222,13 +251,15 @@ def count_doctests(text, path=None):
             continue
         ticks, info = m.group(1), m.group(2)
         if in_fence:
-            # A CommonMark closing fence must be at least as long as its opener; a run of ticks
-            # embedded as literal example text inside the block (shorter than the opener) does
-            # not close it. This crate always closes with the same length it opened with, but the
-            # check keeps a same-or-longer embedded run from prematurely toggling the state.
-            if len(ticks) < fence_len:
-                continue
-            in_fence = False
+            # CommonMark: a closing fence must be AT LEAST as long as its opener, AND have
+            # nothing but whitespace after the ticks -- a same-or-longer run of ticks followed
+            # by non-whitespace text is ordinary CONTENT inside the block (e.g. an example line
+            # that itself starts with several backticks), not a closer. Confirmed with a probe:
+            # a four-backtick-opened block containing a line "````not-a-close, still content"
+            # is discovered/run as ONE doctest, not two -- the length-only check below used to
+            # treat that content line as a valid close and miscount it as two.
+            if len(ticks) >= fence_len and info.strip() == '':
+                in_fence = False
             continue
         in_fence, fence_len = True, len(ticks)
         if _is_rust_doctest_info(info):

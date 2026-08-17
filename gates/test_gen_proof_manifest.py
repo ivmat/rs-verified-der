@@ -280,8 +280,12 @@ class RustdocAttributeSemantics(unittest.TestCase):
         self.assertEqual(gen.count_doctests(src), 1)
 
     def test_known_attribute_plus_unknown_token_is_counted(self):
-        # Probed: ```no_run,foo``` is discovered and run too -- ANY recognised token suffices,
-        # not specifically `rust`. This is what distinguishes ANY-of from ALL-of.
+        # Probed: ```no_run,foo``` is discovered/compiled but NOT executed (`no_run` still
+        # suppresses execution -- rustdoc labels this test "... - compile", not "... - run"; the
+        # body below is `loop {}` specifically because it would hang forever if it were actually
+        # executed, and the test still passes instantly). ANY recognised token suffices to make
+        # the block a doctest at all, not specifically `rust`; whether it then EXECUTES is a
+        # separate question this test does not assert on either way.
         src = self._lines('//! ```no_run,foo', '//! loop {}', '//! ```')
         self.assertEqual(gen.count_doctests(src), 1)
 
@@ -301,6 +305,9 @@ class RustdocAttributeSemantics(unittest.TestCase):
         self.assertEqual(gen.count_doctests(src), 0)
 
     def test_compile_fail_with_error_code_is_counted(self):
+        # `compile_fail` is discovered/compiled but NOT executed either (rustdoc expects the
+        # block to FAIL to compile and never attempts to run it) -- this test only asserts it
+        # counts as a doctest at all, not that it runs.
         src = self._lines('//! ```compile_fail,E0308', '//! let x: u8 = "not a number";', '//! ```')
         self.assertEqual(gen.count_doctests(src), 1)
 
@@ -333,6 +340,44 @@ class RustdocAttributeSemantics(unittest.TestCase):
         src = '#[doc = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n"]\npub fn f() {}\n'
         with self.assertRaises(SystemExit):
             gen.count_doctests(src)
+
+    def test_spaced_hash_bracket_doc_attribute_fails_closed(self):
+        # Release-review regression: Rust's attribute syntax is token-level, not adjacency-
+        # sensitive -- `# [doc = "..."]` (whitespace between `#` and `[`, and between `[` and
+        # `doc`) is VALID Rust and compiles/runs as a doctest identically to `#[doc = "..."]`
+        # (confirmed with a probe crate: `cargo test --doc` discovered and ran it). The original
+        # tight `#!?\[doc\s*=` regex required `#`, an optional `!`, and `[` to be adjacent, so
+        # this form slipped through silently returning 0 instead of raising.
+        src = '# [doc = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n"]\npub fn f() {}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_spaced_inner_doc_attribute_fails_closed(self):
+        # Same regression, the inner-attribute form: `#! [doc = "..."]` (space between `#!` and
+        # `[`) is also valid and also compiles/runs as a doctest (confirmed with the same probe,
+        # placed at module scope where an inner attribute is syntactically permitted).
+        src = 'pub mod m {\n#! [doc = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n"]\n}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_cfg_attr_doc_form_with_nested_parens_fails_closed(self):
+        # `#[cfg_attr(predicate, doc = "...")]` also compiles/runs as a doctest (confirmed with
+        # the same probe) and is a materially different shape from the direct `#[doc = ...]`
+        # form -- `doc = ` sits nested inside `cfg_attr(...)`'s own argument list. The predicate
+        # here (`all()`) itself contains a `)`, which is exactly the shape that would defeat a
+        # naive `[^)]*`-bounded scan (it would stop at the `)` closing `all(` and never reach
+        # `doc =` at all) -- this is the regression case, not just the general form.
+        src = '#[cfg_attr(all(), doc = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n")]\npub fn f() {}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_cfg_attr_doc_cfg_badge_form_does_not_fail_closed(self):
+        # Leniency counter-check: `#[cfg_attr(docsrs, doc(cfg(feature = "x")))]` is the common
+        # "docs.rs cfg badge" idiom -- `doc(cfg(...))` ATTACHES metadata to existing docs, it does
+        # not set doc TEXT via `doc = "..."`, so it never renders a fenced block of its own and
+        # must not trip the fail-closed guard. `doc` here is followed by `(`, not `=`.
+        src = '#[cfg_attr(docsrs, doc(cfg(feature = "x")))]\npub fn f() {}\n'
+        self.assertEqual(gen.count_doctests(src), 0)   # does not raise
 
     def test_tilde_fence_inside_doc_comment_fails_closed(self):
         # Probed: CommonMark's `~~~` fence form is honoured by rustdoc exactly like backticks --
@@ -394,6 +439,30 @@ class RustdocAttributeSemantics(unittest.TestCase):
             '//! ```', '//! assert_eq!(2, 2);', '//! ```',
         )
         self.assertEqual(gen.count_doctests(src), 2)
+
+    def test_same_or_longer_tick_run_with_trailing_text_does_not_close_the_fence(self):
+        # Release-review regression: CommonMark permits a closing fence only when the remainder
+        # of the line (after the ticks) is whitespace-only. A same-or-longer run of ticks
+        # followed by non-whitespace TEXT is ordinary content inside the block, not a closer --
+        # confirmed with a probe: a four-backtick-opened block containing the line
+        # "````not-a-close, still content" (4 ticks, but with trailing text) is discovered/run as
+        # ONE doctest, not two. The length-only check (`len(ticks) >= fence_len`, with no check on
+        # what follows the ticks) used to treat that content line as a valid close and count two.
+        src = self._lines(
+            '//! ````',
+            '//! let s = "example";',
+            '//! ````not-a-close, still content',
+            '//! assert_eq!(1, 1);',
+            '//! ````',
+        )
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_closing_fence_with_trailing_whitespace_only_still_closes(self):
+        # The paired leniency check: a closer with ONLY trailing whitespace (no other text) must
+        # still close the fence -- CommonMark explicitly permits spaces/tabs after the closing
+        # ticks, and requiring a byte-exact empty remainder would be an over-strict regression.
+        src = '//! ```   \n//! assert_eq!(1, 1);\n//! ```\t\n'
+        self.assertEqual(gen.count_doctests(src), 1)
 
 
 class DoctestGuardCatchesDrift(unittest.TestCase):
