@@ -5,6 +5,18 @@ status: owner decides — not decided in this session
 
 # `no_std` — decision memo (2026-08-17)
 
+> **Revised same-day, after a release-review pass on the first draft.** The original version
+> carried the 2026-08-03 OOM-kill (`evidence/FLOOR-2026-08-03.md`) forward as an *unresolved,
+> current* blocker on Option A ("blocked on the memory ceiling"). That review pointed at
+> `evidence/check-ffcea81.log:5,12` (committed 2026-08-11, `ca0754f`): a full `./check.sh` run on
+> this same box under a *fixed*
+> `MemoryMax=22G` cap completed **SUCCESSFULLY**, peaking at **21.0 GB**. That run predates this
+> memo's first draft, so citing the 2026-08-03 figures as current was stale, not wrong-when-written
+> — but it changes the central claim about Option A from "blocked" to "feasible, costs release
+> time." The sections below are corrected accordingly; the 2026-08-03 facts are kept, re-labelled as
+> historical/superseded, because they are still true of *that specific run* and explain why the
+> then-current cap was too small (it was *computed*, not the fixed 22G the 08-11 run used).
+
 ## Why this memo exists
 
 `PROOF_MANIFEST.md` claimed the crate is `no_std`. It is not: nothing in `der-verified/src` carries
@@ -29,12 +41,18 @@ is applied separately and is small enough not to need a decision — see "Immedi
 - The crate's own module docs (`x509_name.rs`, `big_integer.rs`) already argue for a heap-free,
   validate-don't-materialize design — `#![no_std]` would be consistent with, not a departure from,
   the existing design stance.
-- **Blocker recorded 2026-08-03, unresolved at this writing:** the L3 Kani proof floor cannot
-  currently be run to completion on this box — `evidence/FLOOR-2026-08-03.md` documents an
-  OOM-kill under a computed 20 GiB `MemoryMax` cap, below the crate's own documented ~22-24 GiB
-  requirement. This session was explicitly told not to start any Kani/CBMC solver runs, so that
-  blocker is neither re-confirmed nor re-measured here — it is carried forward as-is from
-  `TODO.md`/`evidence/FLOOR-2026-08-03.md`.
+- **The 2026-08-03 OOM-kill is HISTORICAL, and superseded.** The first version of this memo
+  carried `evidence/FLOOR-2026-08-03.md`'s OOM-kill (under a *computed* 20 GiB `MemoryMax` cap,
+  below the crate's ~22 GiB requirement) forward as an unresolved blocker on the same box. It is
+  not current: **`evidence/check-ffcea81.log` (committed by `ca0754f`, dated 2026-08-11) records
+  a full `./check.sh` run on this same box that completed SUCCESSFULLY** — 191/191 Kani harnesses
+  `SUCCESSFUL`, 0 `FAILED`, under a *fixed, documented* `MemoryMax=22G` cap (not the 2026-08-03
+  run's computed-and-too-low 20 GiB), peaking at a measured cgroup `memory.peak` of **21.0 GB**
+  (line 12 of the log), wall-clock ~63 minutes. So the L3 floor is **not** blocked on this box's
+  hardware — the 2026-08-03 finding was a too-small *computed* cap on that particular run, not a
+  ceiling this box cannot clear. (This session did not re-run the floor itself — no Kani/CBMC
+  solver runs were started here, per this session's constraints. The 21.0 GB figure is read out of
+  the already-committed `evidence/check-ffcea81.log`, not freshly measured.)
 - **Unsettled question named in `TODO.md:171-174`:** whether `cargo kani` sets `cfg(test)`. If it
   ever does, a naive `#![cfg_attr(not(test), no_std)]` would silently verify the `std` configuration
   instead of the shipped one — `TODO.md` already prescribes guarding this with a
@@ -62,12 +80,15 @@ TODO item's phrasing "gated on a `std` feature") on `der-verified/src/lib.rs`, p
 
 **Costs / risks.**
 
-- **Blocked on the memory ceiling, not on the code change itself.** The source edit is small and
-  well-scoped (measured above), but landing it *without* a fresh floor run would ship the crate
-  with source that has never been proved — weaker evidence than the crate currently has, to buy a
-  capability nothing is waiting on. This is exactly the reasoning `TODO.md` already gives for not
-  landing it on 2026-08-03, and nothing has changed that reasoning since (this session did not
-  attempt to re-run the floor, per its constraints).
+- **FEASIBLE on this box, not blocked on the memory ceiling** — see "the 2026-08-03 OOM-kill is
+  historical" above: the 2026-08-11 run already cleared the full floor at 21.0 GB peak under a
+  22 GiB cap, on the same hardware. What Option A actually costs is a fresh full `./check.sh` run
+  *against the changed source* (source that adds `#![no_std]` is different source than what
+  `check-ffcea81.log` verified — `VERIFIED_PATHS` in `gates/gen_proof_manifest.py` is exactly the
+  mechanism that says so), plus release time/headroom to run it (~63 minutes wall-clock per the
+  08-11 log, plus the L4 Lean lid) and to review its result before publish. That is a real cost —
+  it is release-time and reviewer-attention, not a hardware blocker — and it is the reason this
+  memo still recommends B *for the 0.1.1 release specifically* below, not because A cannot be done.
 - A `std` feature (if chosen over a blanket `cfg_attr`) is itself API-surface-shaped: once
   published, removing or renaming it is a breaking change under semver, same as any other public
   Cargo feature.
@@ -102,8 +123,12 @@ decision this memo asks for; it is a correction of a currently-false statement, 
 - Leaves `TODO.md`'s open item exactly where it already was — this is not a regression, just a
   non-decision.
 
-**What it changes in `PROOF_MANIFEST.md`/gates.** Nothing beyond the wording already corrected;
-no new gate, no new evidence run required, no proof re-run needed for the 0.1.1 release.
+**What it changes in `PROOF_MANIFEST.md`/gates.** Nothing beyond the wording already corrected; no
+new gate, no new evidence run required *by this decision itself*. **Option B itself adds no
+proof-run requirement** — but that is not the same as "no run is owed before publish": this
+session's other fixes (task #20, item 3 in particular) already touched `der-verified/src`, so a
+full `./check.sh` run is owed before `cargo publish` regardless of which `no_std` option is chosen.
+Choosing B does not add a *second*, `no_std`-specific reason for one.
 
 ## Immediate fix applied in this session (not a decision — a correction)
 
@@ -126,19 +151,31 @@ the Option-B state.
 
 ## Recommendation
 
-**Option B for the 0.1.1 release; Option A only once the L3 floor can be run to completion on
-available hardware (or budget for a bigger box / a memory-reduced harness split), never landed
-without a fresh proof run covering the changed source.** The reasoning:
+**Option B for the 0.1.1 release; Option A as a follow-up release, landed together with the fresh
+full `./check.sh` run its source change requires.** Revised reasoning (the original draft of this
+memo rested on Option A being infeasible on this hardware, which the 2026-08-11 evidence
+contradicts — see above; the reasoning below no longer depends on that claim):
 
-- The crate's honest-envelope discipline (`PROOF_MANIFEST.md`'s own stated rule: "where a claim
-  would be stronger than the evidence, the evidence wins and the claim is narrowed") argues
-  directly against landing `#![no_std]` while the floor that would verify it cannot complete here.
+- Option A is **feasible, not blocked** — 21.0 GB peak under a 22 GiB cap, on this box, per
+  `evidence/check-ffcea81.log`. So the case for B now rests on release SCOPE and TIMING, not on A
+  being impossible: a full run is release-time (~63 minutes plus the L4 lid) and reviewer-attention
+  cost that 0.1.1 does not currently have scheduled, and a fresh full run is owed before *this*
+  release regardless (see "what it changes" under Option B) — adding `#![no_std]` on top would mean
+  that same run also has to carry a new, not-yet-reviewed source change into a release that is
+  already held on other items.
 - Nothing is currently waiting on the `no_std` capability — `TODO.md` calls it "Low priority; a
-  strong differentiator when done", not a blocker for anything scheduled.
-- The source-side work is cheap and already scoped (this memo's Option A section), so Option A
-  is not being deferred for lack of a plan — only for lack of a machine that can complete the
-  floor, or a plan to split/reduce that floor's peak memory.
+  strong differentiator when done", not a blocker for anything scheduled, so there is no forcing
+  function to bundle it into 0.1.1 specifically.
+- The source-side work is cheap and already scoped (this memo's Option A section) — the honest
+  reason to defer it is sequencing (land it deliberately, with its own review and its own fresh
+  floor run) rather than folding an unplanned scope addition into an already-held release, not any
+  infeasibility.
+- The crate's honest-envelope discipline (`PROOF_MANIFEST.md`'s own stated rule: "where a claim
+  would be stronger than the evidence, the evidence wins and the claim is narrowed") still argues
+  against asserting `no_std` before its own gate and floor run exist — that part of the original
+  reasoning holds regardless of the memory-ceiling correction above.
 
 **Owner decides.** This memo does not choose between A and B; it exists so the owner can, with the
 costs of each laid out. If the owner picks Option A, `TODO.md`'s existing scoping (the `cfg(test)`
-guard, the `thumbv7em-none-eabi` target, the fresh floor run) is the plan to execute against.
+guard, the `thumbv7em-none-eabi` target, the fresh floor run) is the plan to execute against — and
+per the correction above, that floor run is now known to fit on this hardware.
