@@ -79,11 +79,14 @@ deviations. Read the two differently.
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
 <!-- END GENERATED:inventory -->
 
-Zero runtime dependencies (`der-verified/Cargo.toml` has an empty `[dependencies]`), `no_std`, no
-`alloc` on the decode paths, and `#![forbid(unsafe_code)]`. There is therefore **no unsafe-code
-assumption and no third-party-crate assumption in the trust base** — an unusually small dependency
-surface, and the reason the classes of verification difficulty that come from `unsafe` code and from
-third-party crates do not arise here.
+Zero runtime dependencies (`der-verified/Cargo.toml` has an empty `[dependencies]`), no `alloc` on
+the decode paths, and `#![forbid(unsafe_code)]`. **Not `#![no_std]` today** — the crate does not
+carry that attribute, though the source is `no_std`-*ready* by measurement (see `TODO.md`'s
+"`no_std` support" item and `NO_STD-DECISION-MEMO-2026-08-17.md` for the add-vs-drop tradeoff; this
+line is corrected to say so rather than claim the attribute exists). There is therefore **no
+unsafe-code assumption and no third-party-crate assumption in the trust base** — an unusually small
+dependency surface, and the reason the classes of verification difficulty that come from `unsafe`
+code and from third-party crates do not arise here.
 
 Read "trust base" narrowly: it means the *linked* code. It does not extend to `core`, whose internals
 are `unsafe` and are trusted, nor to the verification tools themselves (§3.2), nor to allocation —
