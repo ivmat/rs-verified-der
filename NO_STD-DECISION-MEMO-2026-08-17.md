@@ -86,7 +86,10 @@ TODO item's phrasing "gated on a `std` feature") on `der-verified/src/lib.rs`, p
   *against the changed source* (source that adds `#![no_std]` is different source than what
   `check-ffcea81.log` verified — `VERIFIED_PATHS` in `gates/gen_proof_manifest.py` is exactly the
   mechanism that says so), plus release time/headroom to run it (~63 minutes wall-clock per the
-  08-11 log, plus the L4 Lean lid) and to review its result before publish. That is a real cost —
+  08-11 log — `./check.sh` runs the L4 Lean lid as one stage of that same single run, per
+  `check.sh`'s own script order and confirmed in the log itself, so the ~63 minutes ALREADY
+  includes it, not an additional cost on top) and to review its result before publish. That is a
+  real cost —
   it is release-time and reviewer-attention, not a hardware blocker — and it is the reason this
   memo still recommends B *for the 0.1.1 release specifically* below, not because A cannot be done.
 - A `std` feature (if chosen over a blanket `cfg_attr`) is itself API-surface-shaped: once
@@ -158,7 +161,8 @@ contradicts — see above; the reasoning below no longer depends on that claim):
 
 - Option A is **feasible, not blocked** — 21.0 GB peak under a 22 GiB cap, on this box, per
   `evidence/check-ffcea81.log`. So the case for B now rests on release SCOPE and TIMING, not on A
-  being impossible: a full run is release-time (~63 minutes plus the L4 lid) and reviewer-attention
+  being impossible: a full run is release-time (~63 minutes, already including the L4 Lean lid —
+  `./check.sh` runs it as one stage of that same single measured run) and reviewer-attention
   cost that 0.1.1 does not currently have scheduled, and a fresh full run is owed before *this*
   release regardless (see "what it changes" under Option B) — adding `#![no_std]` on top would mean
   that same run also has to carry a new, not-yet-reviewed source change into a release that is
