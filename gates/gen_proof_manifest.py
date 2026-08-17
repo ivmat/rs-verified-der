@@ -94,7 +94,12 @@ def strip_comments(lines):
 
 # A fenced code block whose OPENING line's info string (the text right after the ``` `` ` `` on
 # that line) is empty, or contains at least one of these recognised attribute tokens, is what
-# rustdoc compiles and runs as a doctest under `cargo test --doc`. A fence whose info string
+# rustdoc DISCOVERS AND COMPILES as a doctest under `cargo test --doc` -- most of them also
+# EXECUTE the code (that is the common case, and what "doctest" usually connotes), but two
+# members of this set deliberately do not: `no_run` compiles without executing, and
+# `compile_fail` compiles (expecting failure) and also never executes. See the per-attribute
+# notes below for exactly which is which; "compiled and run" here means "is a doctest at all",
+# not "definitely gets executed". A fence whose info string
 # contains ONLY unrecognised tokens — a real language tag such as `text`, `sh`, `json`, `toml`, or
 # any other word rustdoc does not know — is rendered as an opaque, untested code sample. This
 # crate leans on exactly that distinction: every module's prose-example fence is bare (tested),
@@ -187,6 +192,11 @@ def _is_rust_doctest_info(info):
 # like a three-backtick one).
 DOC_FENCE_RE = re.compile(r'^\s*(?:///|//!)\s*(`{3,})(.*)$')
 
+# CommonMark's closing-fence rule: only SPACES OR TABS may follow the ticks -- deliberately not
+# `\s` (which is Unicode-whitespace-aware in Python's `re` and would also match e.g. NBSP) and not
+# `str.strip()` (same over-broad notion of whitespace). See the note where this is used.
+CLOSING_FENCE_TRAILING_RE = re.compile(r'^[ \t]*$')
+
 # Doc-comment forms this scanner CANNOT parse, each confirmed in the same probe to be discovered
 # and RUN by rustdoc as an ordinary doctest -- so silently ignoring them here would silently
 # UNDER-count, the opposite of the earlier `lib.rs`-only bug but the same shape of failure. Rather
@@ -211,12 +221,27 @@ UNPARSEABLE_DOCTEST_FORM_CHECKS = [
     (re.compile(r'#\s*!?\s*\[\s*doc\s*='), 'a `#[doc = "..."]` / `#![doc = "..."]` attribute'),
     # `#[cfg_attr(predicate, doc = "...")]` also compiles/runs as a doctest (same probe) and is a
     # materially different shape the direct-form pattern above cannot see -- `doc = ` sits nested
-    # inside `cfg_attr(...)`'s argument list, not immediately after `[`. The bounded, non-greedy,
-    # `]`-excluding window (rather than a paren-balanced parse) deliberately tolerates a NESTED
-    # predicate such as `cfg_attr(all(), doc = "...")`: a naive `[^)]*`-style scan would stop at
-    # the first `)` (the one closing `all(`) and miss the `doc =` that follows it, which is
-    # exactly the shape rustc accepts and the probe confirmed compiles/runs.
-    (re.compile(r'#\s*!?\s*\[\s*cfg_attr\s*\([^\]]{0,300}?\bdoc\s*='),
+    # inside `cfg_attr(...)`'s argument list, not immediately after `[`.
+    #
+    # UNBOUNDED, delimiter-agnostic scan for `doc\s*=` anywhere after `cfg_attr(`, all the way to
+    # the end of the text if need be -- deliberately NOT a bounded character window and NOT a
+    # `]`-excluding one, because both of those failed CLOSED (found by release review, reproduced
+    # and regression-tested below):
+    #   - a bounded window (a prior version capped it at 300 chars) misses a real
+    #     `cfg_attr(...doc = ...)` whose `doc =` sits past the bound -- reproduced with 301 spaces
+    #     inserted before `all(), doc = ...`.
+    #   - a `]`-excluding window stops at the FIRST `]` it meets, including one that occurs INSIDE
+    #     a preceding string-literal argument (e.g. `cfg_attr(feature = "with ] bracket",
+    #     doc = "...")`) -- long before the real `doc =` token that follows it.
+    # This path's only job is to REFUSE (raise) rather than silently under-count, so scanning
+    # unbounded and risking a false positive on some later, unrelated `doc =` elsewhere in the
+    # same file is the accepted cost; under-triggering is not acceptable here. A fully delimiter-
+    # AND string-literal-aware parse (tracking nested `(`/`)` depth while skipping over Rust's
+    # several string literal forms -- plain `"..."`, raw `r"..."`/`r#"..."#`, byte strings) would
+    # narrow the false-positive surface, but is a materially bigger and more fragile piece of code
+    # to get right for a heuristic guard whose failure mode should be "asks a human", not "gets
+    # its own parse subtly wrong and stays quiet" -- the exact bug this fix replaces.
+    (re.compile(r'#\s*!?\s*\[\s*cfg_attr\s*\([\s\S]*?\bdoc\s*='),
      'a `#[cfg_attr(..., doc = "...")]` attribute'),
     (re.compile(r'^\s*(?:///|//!)\s*~~~'), 'a tilde (`~~~`) fence inside a doc comment'),
 ]
@@ -235,7 +260,11 @@ def _check_no_unparseable_doctest_forms(path, text):
 
 
 def count_doctests(text, path=None):
-    """Count fenced code blocks inside doc comments that `cargo test --doc` actually runs.
+    """Count fenced code blocks inside doc comments that `cargo test --doc` discovers as
+    doctests (i.e. that `cargo test --doc` reports as a `test src/...rs - name (line N) ...`
+    entry) -- most of these are also EXECUTED, but `no_run` and `compile_fail` fences are
+    discovered/compiled and counted here without ever being executed; see the notes above
+    `RUST_DOCTEST_ATTRS`.
 
     Only the OPENING fence's info string decides (the closing fence never carries one). Un-
     anchored backticks outside a doc-comment line are not a doctest fence at all and are ignored,
@@ -252,13 +281,22 @@ def count_doctests(text, path=None):
         ticks, info = m.group(1), m.group(2)
         if in_fence:
             # CommonMark: a closing fence must be AT LEAST as long as its opener, AND have
-            # nothing but whitespace after the ticks -- a same-or-longer run of ticks followed
-            # by non-whitespace text is ordinary CONTENT inside the block (e.g. an example line
-            # that itself starts with several backticks), not a closer. Confirmed with a probe:
-            # a four-backtick-opened block containing a line "````not-a-close, still content"
-            # is discovered/run as ONE doctest, not two -- the length-only check below used to
-            # treat that content line as a valid close and miscount it as two.
-            if len(ticks) >= fence_len and info.strip() == '':
+            # nothing but SPACES OR TABS after the ticks -- a same-or-longer run of ticks
+            # followed by non-whitespace text is ordinary CONTENT inside the block (e.g. an
+            # example line that itself starts with several backticks), not a closer. Confirmed
+            # with a probe: a four-backtick-opened block containing a line
+            # "````not-a-close, still content" is discovered/run as ONE doctest, not two -- a
+            # length-only check used to treat that content line as a valid close and miscount it
+            # as two.
+            #
+            # Deliberately `[ \t]*`, NOT `info.strip() == ''`: Python's `str.strip()` treats any
+            # Unicode-whitespace character (category Zs, including U+00A0 NO-BREAK SPACE) as
+            # strippable, but CommonMark's closing-fence rule permits only literal spaces and
+            # tabs. Found by release review, reproduced: a candidate closer followed by a single
+            # NBSP was wrongly accepted as a close by `.strip()` (miscounting two doctests as
+            # one block split in half), while rustdoc itself does not close on it either (the
+            # NBSP line is ordinary content, same as the non-whitespace case above).
+            if len(ticks) >= fence_len and CLOSING_FENCE_TRAILING_RE.match(info):
                 in_fence = False
             continue
         in_fence, fence_len = True, len(ticks)

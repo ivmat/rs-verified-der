@@ -371,6 +371,28 @@ class RustdocAttributeSemantics(unittest.TestCase):
         with self.assertRaises(SystemExit):
             gen.count_doctests(src)
 
+    def test_cfg_attr_doc_form_past_a_bounded_window_still_fails_closed(self):
+        # Release-review round 3 regression: a prior version of this check used a 300-character
+        # bounded window after `cfg_attr(` before giving up. That is failure-OPEN -- a real,
+        # active `cfg_attr(..., doc = "...")` whose `doc =` happens to sit further in than the
+        # bound silently returned 0 instead of raising. Reproduced with 301 spaces (one past the
+        # old bound) before `all(), doc = ...`; the scan must now be unbounded.
+        src = ('#[cfg_attr(' + (' ' * 301) + 'all(), doc = "fenced\\n```\\n'
+               'assert_eq!(1, 1);\\n```\\n")]\npub fn f() {}\n')
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_cfg_attr_doc_form_with_bracket_inside_a_preceding_string_still_fails_closed(self):
+        # The second failure-OPEN direction of the same bug: a prior version's window excluded
+        # `]` entirely, so a `]` occurring INSIDE a string-literal argument that comes BEFORE
+        # `doc =` (not the attribute's own closing bracket) stopped the scan early and it never
+        # reached the real `doc =` token. Reproduced with a `feature = "with ] bracket"` argument
+        # preceding `doc = "..."` in the same `cfg_attr(...)`.
+        src = ('#[cfg_attr(feature = "with ] bracket", doc = "fenced\\n```\\n'
+               'assert_eq!(1, 1);\\n```\\n")]\npub fn f() {}\n')
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
     def test_cfg_attr_doc_cfg_badge_form_does_not_fail_closed(self):
         # Leniency counter-check: `#[cfg_attr(docsrs, doc(cfg(feature = "x")))]` is the common
         # "docs.rs cfg badge" idiom -- `doc(cfg(...))` ATTACHES metadata to existing docs, it does
@@ -462,6 +484,23 @@ class RustdocAttributeSemantics(unittest.TestCase):
         # still close the fence -- CommonMark explicitly permits spaces/tabs after the closing
         # ticks, and requiring a byte-exact empty remainder would be an over-strict regression.
         src = '//! ```   \n//! assert_eq!(1, 1);\n//! ```\t\n'
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_nbsp_after_candidate_closer_does_not_close_the_fence(self):
+        # Release-review round 3 regression: Python's `str.strip()` treats U+00A0 NO-BREAK SPACE
+        # (and other Unicode Zs whitespace) as strippable, but CommonMark's closing-fence rule
+        # permits only literal spaces and tabs. Confirmed with a probe: a four-backtick candidate
+        # closer followed by a single NBSP does NOT close the fence in rustdoc either (it is
+        # discovered/run as ONE doctest); the old `info.strip() == ''` check wrongly treated the
+        # NBSP-only remainder as "no trailing text" and closed early, miscounting two.
+        nbsp = ' '
+        src = self._lines(
+            '//! ````',
+            '//! let s = "example";',
+            '//! ````' + nbsp,
+            '//! assert_eq!(1, 1);',
+            '//! ````',
+        )
         self.assertEqual(gen.count_doctests(src), 1)
 
 
