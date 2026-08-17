@@ -237,7 +237,8 @@ pub enum EcPrivateKeyError {
     /// A `[0]`-confirmed `parameters` wrapper or its inner content was malformed — either the
     /// `[0] EXPLICIT` wrapper's own TLV framing, or its content was not exactly one canonical DER
     /// TLV. Only reached once the element's own tag has already been classified as context `[0]`
-    /// — see [`parse_fields`]'s tag-first discipline. See [`ParametersError`].
+    /// — see `parse_fields`'s tag-first discipline (private; not linkable from public docs). See
+    /// [`ParametersError`].
     Parameters(ParametersError),
     /// A `[1]`-confirmed `publicKey` wrapper/inner was malformed. See [`PublicKeyError`].
     PublicKey(PublicKeyError),
