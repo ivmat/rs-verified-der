@@ -113,6 +113,35 @@ class CargoInvocation(unittest.TestCase):
             with self.assertRaises(gate.CargoListError):
                 gate.cargo_measured_doctest_count()
 
+    def test_duplicate_summary_lines_raise_rather_than_take_the_first(self):
+        # Release-review round 5 regression: `.search()` silently takes the FIRST match, so
+        # output containing "33 tests, 0 benchmarks" followed later by "34 tests, 0 benchmarks"
+        # used to read as 33 without any indication the output was ambiguous. Two summary-shaped
+        # lines must raise, not silently pick either one.
+        with mock.patch.object(gate.subprocess, 'run',
+                               return_value=_completed(
+                                   '33 tests, 0 benchmarks\n34 tests, 0 benchmarks\n')):
+            with self.assertRaises(gate.CargoListError):
+                gate.cargo_measured_doctest_count()
+
+    def test_nonzero_benchmark_count_raises(self):
+        # Release-review round 5 regression: the old regex matched but never checked the
+        # benchmark count, so "33 tests, 2 benchmarks" was silently accepted as 33 doctests with
+        # the 2 benchmarks unaccounted for. This crate has no #[bench]s; a nonzero count here must
+        # raise rather than be silently ignored.
+        with mock.patch.object(gate.subprocess, 'run',
+                               return_value=_completed('33 tests, 2 benchmarks\n')):
+            with self.assertRaises(gate.CargoListError):
+                gate.cargo_measured_doctest_count()
+
+    def test_single_summary_zero_benchmarks_still_passes(self):
+        # The paired leniency check: the ordinary, expected shape (exactly one summary line,
+        # zero benchmarks) must still parse cleanly -- the two checks above must not have made
+        # the happy path collateral damage.
+        with mock.patch.object(gate.subprocess, 'run',
+                               return_value=_completed('33 tests, 0 benchmarks\n')):
+            self.assertEqual(gate.cargo_measured_doctest_count(), 33)
+
     def test_invocation_uses_list_not_execute(self):
         # This gate's job is "how many doctests exist", not "do they pass" -- --list must never be
         # dropped, or this gate would start actually EXECUTING every doctest on every commit.

@@ -83,7 +83,11 @@ _spec.loader.exec_module(gen)
 # this shape (verified against the installed toolchain): "33 tests, 0 benchmarks", "1 test, 0
 # benchmarks" (singular at N=1), "0 tests, 0 benchmarks" (none). Anchored with `re.M` so it matches
 # regardless of what precedes it on earlier lines (build progress, the "Doc-tests <crate>" banner).
-SUMMARY_RE = re.compile(r'^(\d+)\s+tests?,\s+\d+\s+benchmarks?\s*$', re.M)
+# Group 2 (the benchmark count) is captured too, not just matched -- `cargo_measured_doctest_count`
+# requires it to be exactly 0 (this repo has no `#[bench]`s; a nonzero benchmark count would mean
+# either a real benchmark got mixed into what this gate reads as "doctests", or the output shape
+# changed in a way this regex is misreading -- either way, silently accepting it is wrong).
+SUMMARY_RE = re.compile(r'^(\d+)\s+tests?,\s+(\d+)\s+benchmarks?\s*$', re.M)
 
 TIMEOUT_S = 120
 
@@ -114,13 +118,34 @@ def cargo_measured_doctest_count(manifest_path=WORKSPACE_MANIFEST):
         raise CargoListError(
             'cargo test --doc -p der-verified -- --list exited %d\n--- stdout ---\n%s\n'
             '--- stderr ---\n%s' % (proc.returncode, proc.stdout, proc.stderr))
-    m = SUMMARY_RE.search(proc.stdout)
-    if not m:
+    matches = SUMMARY_RE.findall(proc.stdout)
+    if not matches:
         raise CargoListError(
             'could not find a "N tests, M benchmarks" summary line in cargo\'s --list output -- '
             'the output shape may have changed on this cargo version.\n--- stdout ---\n%s'
             % proc.stdout)
-    return int(m.group(1))
+    if len(matches) > 1:
+        # `.search()` silently takes the FIRST match -- if cargo's output ever contained more than
+        # one summary-shaped line (a second `--list` invocation's output concatenated in, a
+        # workspace with more than one doc-test binary, stray/malformed output that happens to
+        # look like a second summary), that would read as whichever one happened to come first
+        # rather than raising. Ambiguous ground truth must fail closed, not silently pick one.
+        raise CargoListError(
+            'found %d "N tests, M benchmarks" summary lines in cargo\'s --list output, expected '
+            'exactly one -- ambiguous, refusing to guess which is authoritative.\n'
+            '--- stdout ---\n%s' % (len(matches), proc.stdout))
+    test_count_s, bench_count_s = matches[0]
+    bench_count = int(bench_count_s)
+    if bench_count != 0:
+        # This crate has no `#[bench]`s; a nonzero benchmark count here means either a real
+        # benchmark slipped into what this gate treats as "doctests" (which would silently inflate
+        # the ground truth it's compared against) or the output is not what this regex thinks it
+        # is. Either way, fail closed rather than accept a benchmark count this gate never checked.
+        raise CargoListError(
+            'cargo\'s --list summary reports %d benchmark(s), expected exactly 0 -- this gate only '
+            'validates the doctest COUNT, not benchmarks, so a nonzero figure here is unaccounted '
+            'for and must not be silently ignored.\n--- stdout ---\n%s' % (bench_count, proc.stdout))
+    return int(test_count_s)
 
 
 def static_doctest_count():
