@@ -88,6 +88,68 @@ def strip_comments(lines):
     return [l for l in lines if not COMMENT_RE.match(l)]
 
 
+# --------------------------------------------------------------------------------------
+# doctest counting
+# --------------------------------------------------------------------------------------
+
+# A fenced code block whose OPENING line's info string (the text right after the ``` `` ` `` on
+# that line) is empty, or consists only of these attribute tokens, is what rustdoc compiles and
+# runs as a doctest under `cargo test --doc`. A fence carrying any OTHER token — a real language
+# tag such as `text`, `sh`, `json`, `toml` — is rendered as an opaque, untested code sample. This
+# crate leans on exactly that distinction: every module's prose-example fence is bare (tested),
+# and every module's illustrative-but-not-runnable ASN.1/hex block is ```` ```text ```` (not
+# tested). Getting this wrong in either direction is exactly the two ways this counter can drift:
+# treating a ```text block as a doctest (over-lenient) or failing to recognise a `rust,no_run`
+# fence as one (over-strict) — both are negative-tested in `test_gen_proof_manifest.py`.
+RUST_DOCTEST_ATTRS = {'rust', 'ignore', 'should_panic', 'no_run', 'compile_fail',
+                     'allow_fail', 'edition2015', 'edition2018', 'edition2021',
+                     'edition2024', 'test_harness'}
+
+# Only fences opened from INSIDE a doc comment (`///` or `//!`) produce a doctest at all; a bare
+# ``` `` ` `` inside ordinary code (e.g. a string literal in a `#[test]`) is not doc-comment prose
+# and rustdoc never sees it as a fence. Anchoring on the doc-comment prefix is what keeps this
+# counter from mistaking such a literal for a doctest fence.
+DOC_FENCE_RE = re.compile(r'^\s*(?:///|//!)\s*```(.*)$')
+
+
+def _is_rust_doctest_info(info):
+    """True if a fence's opening info string is what rustdoc treats as runnable Rust."""
+    info = info.strip()
+    if not info:
+        return True
+
+    def norm(tok):
+        if re.match(r'^ignore-', tok):        # `ignore-x86_64`-style platform-scoped ignore
+            return 'ignore'
+        if re.match(r'^E\d+$', tok):          # an error code paired with `compile_fail`
+            return 'compile_fail'
+        return tok
+
+    tokens = [norm(t) for t in re.split(r'[,\s]+', info) if t]
+    return bool(tokens) and all(t in RUST_DOCTEST_ATTRS for t in tokens)
+
+
+def count_doctests(text):
+    """Count fenced code blocks inside doc comments that `cargo test --doc` actually runs.
+
+    Only the OPENING fence's info string decides (the closing ``` `` ` `` never carries one).
+    Un-anchored ``` `` ` `` outside a doc-comment line is not a doctest fence at all and is
+    ignored, so a literal ``` `` ` `` inside a `#[test]` string could never be miscounted.
+    """
+    n, in_fence = 0, False
+    for line in text.split('\n'):
+        m = DOC_FENCE_RE.match(line)
+        if not m:
+            continue
+        if in_fence:
+            in_fence = False
+            continue
+        in_fence = True
+        if _is_rust_doctest_info(m.group(1)):
+            n += 1
+    return n
+
+
 def split_regions(lines):
     """Split a module into (top-level, `mod proofs`, `mod tests`) by line range.
 
@@ -571,7 +633,15 @@ def collect():
             + sum(l.count('#[test]') for l in strip_comments(lib_lines)),
             # `cargo test` also runs the crate-doc examples; they are tests a reader will see in
             # the output, so they are named rather than folded into the `#[test]` figure.
-            'doctests': lib.count('```') // 2,
+            #
+            # Counts EVERY module's doc-comment fences, not just `lib.rs`'s — the previous
+            # `lib.count('```') // 2` only ever saw `lib.rs`'s own doc comment (reporting 1
+            # regardless of how many the other 32 modules' `//!` examples added), and would have
+            # double-counted a ```` ```text ```` block as a doctest had `lib.rs` ever carried one.
+            # `count_doctests` fixes both: it sums across every `.rs` file in `SRC`, and it only
+            # counts a fence whose info string is one rustdoc actually compiles/runs.
+            'doctests': sum(count_doctests(read_text(os.path.join(SRC, f)))
+                            for f in sorted(os.listdir(SRC)) if f.endswith('.rs')),
             'lids': len(lids),
             'forbid_unsafe': '#![forbid(unsafe_code)]' in lib,
             'unsafe_blocks': sum(len(re.findall(r'\bunsafe\s*\{', l))
@@ -1006,6 +1076,12 @@ GUARDS = [
     ('tests', NUM + r'\s+concrete and regression tests'),
     ('tests', r'#\s*' + NUM + r'\s+tests'),
     ('tests', NUM + r'\s+tests\b'),
+    # `README.md`'s and `docs/why-verified.md`'s "cargo test" one-liners both quote the doctest
+    # count next to the unit-test count ("472 tests + 33 doc-tests"); without this guard a stale
+    # doctest figure there was invisible to the gate even though the unit-test figure beside it
+    # was already caught by the `tests` guard above. Found stale (30 vs the true 33) while fixing
+    # `count_doctests` — this guard is what stops it drifting back silently.
+    ('doctests', NUM + r'\s+doc-tests'),
     ('assumes', r'\(' + NUM + r'\s+across the crate\)'),
     ('covers', NUM + r'\s+`kani::cover`'),
     ('lids', NUM + r'\s+(?:L4/L5\s+)?lids'),

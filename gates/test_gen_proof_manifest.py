@@ -90,6 +90,14 @@ class StillEnforced(unittest.TestCase):
         f['totals']['harnesses'] += 1
         self.assertIn('inventory', [n for n, _, _ in gen.region_diffs(manifest(), f)])
 
+    def test_drifted_doctest_count_still_fails_check(self):
+        # The inventory-row half of the doctest fix: `--write` regenerates "crate-doc examples
+        # run as doc-tests | N |" from `totals['doctests']`, so a drift there must fail `--check`
+        # exactly like the harness count above does.
+        f = facts()
+        f['totals']['doctests'] += 1
+        self.assertIn('inventory', [n for n, _, _ in gen.region_diffs(manifest(), f)])
+
     def test_drifted_declared_toolchain_pin_still_fails_check(self):
         # The declared pins share a section with the advisory line but are read from in-tree
         # files (ci.yml, lean/check_lean.sh, rust-toolchain.toml) — crate properties, enforced.
@@ -125,6 +133,141 @@ class CommentStripping(unittest.TestCase):
         ]
         kept = gen.strip_comments(lines)
         self.assertEqual(kept, ['#[test]', 'fn real() { kani::cover!(true); }'])
+
+
+class DoctestCounting(unittest.TestCase):
+    """`count_doctests` replaced `lib.count('```') // 2`, which had two bugs: it only ever read
+    `lib.rs` (missing every other module's `//!` example), and it counted EVERY fence — including
+    a ```` ```text ```` illustrative block — as if rustdoc ran it. Both directions matter and are
+    tested here as an opposing pair, same discipline as `CountGuardCaseFolding` above: an
+    over-lenient counter passes a gate that should have caught a real drift, and an over-strict one
+    fails a gate for a legitimate doctest, blocking an honest contributor before a single proof
+    runs. The crate's own measured total — `cargo test --doc` reports 33 — pins the real-source
+    end of this pair.
+    """
+
+    def _lines(self, *lines):
+        return '\n'.join(lines) + '\n'
+
+    # --- over-lenient direction: a non-Rust fence must NOT be counted --------------------------
+
+    def test_text_tagged_fence_is_not_counted(self):
+        # This is the actual bug: every module in this crate pairs a bare (tested) fence with a
+        # ```text (untested, illustrative) one, and `lib.count('```') // 2` could not tell them
+        # apart — it would have silently doubled the count the moment `lib.rs` grew a second fence.
+        src = self._lines('//! Example:', '//! ```text', '//! not real rust, illustrative only',
+                          '//! ```')
+        self.assertEqual(gen.count_doctests(src), 0)
+
+    def test_other_non_rust_language_tags_are_not_counted(self):
+        for lang in ('sh', 'bash', 'json', 'toml', 'yaml'):
+            with self.subTest(lang=lang):
+                src = self._lines('//! ```%s' % lang, '//! not rust', '//! ```')
+                self.assertEqual(gen.count_doctests(src), 0)
+
+    def test_fence_outside_a_doc_comment_is_not_counted(self):
+        # A literal ``` inside a `#[test]` string (or any non-doc-comment line) is not prose
+        # rustdoc ever sees as a fence; miscounting it would be a different flavour of
+        # over-leniency (inventing doctests that do not exist).
+        src = self._lines('    let s = "```";', '    let t = "```";')
+        self.assertEqual(gen.count_doctests(src), 0)
+
+    # --- over-strict direction: every fence rustdoc DOES run must still be counted -------------
+
+    def test_bare_fence_is_counted(self):
+        src = self._lines('//! Example:', '//! ```', '//! let x = 1;', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_explicit_rust_tag_is_counted(self):
+        src = self._lines('//! ```rust', '//! let x = 1;', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_rust_doctest_attribute_fences_are_still_counted(self):
+        # `no_run`, `should_panic`, `ignore`, `compile_fail`, editions, and combinations thereof
+        # are all still Rust as far as rustdoc's fence classifier is concerned — only a REAL
+        # language tag (`text`, `sh`, ...) opts a fence out. An over-strict fix that stopped
+        # recognising these would undercount a legitimate module's doctest.
+        for info in ('rust,no_run', 'should_panic', 'ignore', 'rust,ignore',
+                    'compile_fail,E0308', 'rust,edition2021'):
+            with self.subTest(info=info):
+                src = self._lines('//! ```%s' % info, '//! code', '//! ```')
+                self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_ignore_target_variant_is_counted(self):
+        # `ignore-x86_64`-style platform-scoped ignores are a real rustdoc form this crate does
+        # not currently use, but a counter that only recognised bare `ignore` would undercount the
+        # day one is added.
+        src = self._lines('//! ```ignore-x86_64', '//! code', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_counts_every_fence_across_multiple_doc_comments_in_one_file(self):
+        # The load-bearing regression test for the actual bug: TWO doctest fences in one file,
+        # the shape `lib.count('```') // 2` handled by accident (2 fences / 2 = 1, wrongly) but
+        # would have gotten wrong the moment a THIRD fence (tested or not) was added anywhere.
+        src = self._lines(
+            '//! ```', '//! let a = 1;', '//! ```', '//!', '//! ```text', '//! illustrative',
+            '//! ```',
+            '', '/// A second doc comment on another item in the same file.', '/// ```',
+            '/// let b = 2;', '/// ```',
+        )
+        self.assertEqual(gen.count_doctests(src), 2)   # the two REAL fences, not the ```text one
+
+    # --- the crate's own measured total, so a regression in EITHER direction is caught end-to-end
+
+    def test_crate_total_doctests_matches_the_measured_cargo_test_doc_count(self):
+        # `cargo test --doc -p der-verified` reports "33 passed" (measured 2026-08-17, the
+        # handover's own figure). This pins the whole pipeline — `count_doctests` summed across
+        # every module in `SRC`, not just `lib.rs` — against ground truth, not just fixtures.
+        self.assertEqual(facts()['totals']['doctests'], 33)
+
+    def test_only_lib_rs_undercounts_against_the_all_module_total(self):
+        # The counter-test for the fix itself: summing `count_doctests` over `lib.rs` ALONE (the
+        # old scope) must NOT reach the real crate total, or this whole fix is a no-op that
+        # happens to produce the same number by coincidence.
+        lib_only = gen.count_doctests(gen.read_text(os.path.join(gen.SRC, 'lib.rs')))
+        self.assertLess(lib_only, facts()['totals']['doctests'])
+
+
+class DoctestGuardCatchesDrift(unittest.TestCase):
+    """The `doctests` GUARDS entry: a hand-written "N doc-tests" claim in a guarded doc must be
+    checked against the real count, the same way `tests`/`harnesses` already are. Before this
+    entry existed, `docs/why-verified.md` said "30 doc-tests" while the true count was 33 and
+    nothing noticed — this is the regression pair for that gap.
+    """
+
+    def test_stale_doctest_count_is_flagged(self):
+        hits = gen.guard_line_hits('cargo test   # 472 tests + 30 doc-tests')
+        self.assertIn(('doctests', 30, '30 doc-tests'), hits)
+
+    def test_correct_doctest_count_in_guarded_doc_does_not_fail_check(self):
+        # The leniency half of the pair: the CORRECT figure, once fixed, must not itself trip
+        # the guard — a guard that flags every occurrence regardless of value would be as useless
+        # as one that flags none.
+        f = facts()
+        n = f['totals']['doctests']
+        hits = gen.guard_line_hits('cargo test   # 472 tests + %d doc-tests' % n)
+        got = [h for h in hits if h[0] == 'doctests'][0]
+        self.assertEqual(got[1], n)
+
+    def test_doctest_guard_is_wired_into_guard_violations(self):
+        # Wiring pin, same shape as `test_guard_violations_routes_through_guard_line_hits` above:
+        # a private copy of the regex in `guard_line_hits` that `guard_violations` stopped calling
+        # would still pass a value-only test. Drive it through an actual guarded doc's content.
+        f = facts()
+        bad_count = f['totals']['doctests'] + 5
+        line = 'cargo test   # 472 tests + %d doc-tests' % bad_count
+        with tempfile.NamedTemporaryFile('w', suffix='.md', delete=False, encoding='utf-8') as fh:
+            fh.write(line + '\n')
+            path = fh.name
+        try:
+            bad = []
+            for lineno, l in enumerate(gen.read_text(path).split('\n'), 1):
+                for key, got, matched in gen.guard_line_hits(l):
+                    if got != f['totals'][key]:
+                        bad.append((path, lineno, key, got, f['totals'][key], matched))
+            self.assertTrue(any(b[2] == 'doctests' and b[3] == bad_count for b in bad))
+        finally:
+            os.unlink(path)
 
 
 class CountGuardCaseFolding(unittest.TestCase):

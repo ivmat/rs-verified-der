@@ -74,7 +74,7 @@ deviations. Read the two differently.
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 11 / 8 |
 | `#[test]` unit + regression tests | 472 |
-| crate-doc examples run as doc-tests | 1 |
+| crate-doc examples run as doc-tests | 33 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
 <!-- END GENERATED:inventory -->

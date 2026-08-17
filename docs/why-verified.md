@@ -87,7 +87,7 @@ symbolic input length closed it (and closed the same latent gap in the other mod
 
 ```sh
 git clone https://github.com/ivmat/rs-verified-der && cd rs-verified-der
-cargo test                       # 472 tests + 30 doc-tests
+cargo test                       # 472 tests + 33 doc-tests
 cargo install --locked kani-verifier && cargo kani setup
 cargo kani -Z stubbing           # the 164-harness proof floor
 ./check.sh                       # everything, incl. the Lean lids if the toolchain is present
