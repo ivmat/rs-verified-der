@@ -393,6 +393,34 @@ class RustdocAttributeSemantics(unittest.TestCase):
         with self.assertRaises(SystemExit):
             gen.count_doctests(src)
 
+    def test_cfg_attr_with_comment_before_open_paren_fails_closed(self):
+        # Release-review round 4 regression: Rust's tokenizer accepts an arbitrary run of
+        # whitespace OR `/* ... */` block comments between any two tokens, so
+        # `cfg_attr/*c*/(all(), doc = "...")` is valid and compiles/runs as a doctest identically
+        # to the plain form -- confirmed with a probe crate. Caught by the STATIC layer
+        # (gen_proof_manifest.py's comment-tolerant cfg_attr regex); the measured cross-check in
+        # gates/check_doctest_count.py is the structural backstop for any FUTURE shape neither this
+        # test nor that regex anticipates.
+        src = '#[cfg_attr/*c*/(all(), doc = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n")]\npub fn f() {}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_cfg_attr_with_comment_before_doc_equals_fails_closed(self):
+        # Same regression, the second reported spelling: a comment between `doc` and `=`
+        # (`cfg_attr(all(), doc/*c*/ = "...")`) is also valid and also compiles/runs as a doctest
+        # -- confirmed with the same probe. Caught by the STATIC layer.
+        src = '#[cfg_attr(all(), doc/*c*/ = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n")]\npub fn f() {}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_cfg_attr_raw_identifier_spelling_fails_closed(self):
+        # The third reported spelling: `r#cfg_attr` (the raw-identifier form of the same
+        # identifier) is also valid Rust and also compiles/runs as a doctest -- confirmed with the
+        # same probe. Caught by the STATIC layer (the `(?:r#)?` prefix in the cfg_attr regex).
+        src = '#[r#cfg_attr(all(), doc = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n")]\npub fn f() {}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
     def test_cfg_attr_doc_cfg_badge_form_does_not_fail_closed(self):
         # Leniency counter-check: `#[cfg_attr(docsrs, doc(cfg(feature = "x")))]` is the common
         # "docs.rs cfg badge" idiom -- `doc(cfg(...))` ATTACHES metadata to existing docs, it does

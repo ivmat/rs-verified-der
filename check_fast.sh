@@ -27,6 +27,10 @@ echo "== lid-staleness gate (Lean-lid source drift since the last green Lean run
 python3 "$ROOT/gates/check_lid_staleness.py"
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
+echo "== doctest-count gate: self-test (the gate's own gate; pure stdlib except its own two real-cargo tests) =="
+python3 "$ROOT/gates/test_check_doctest_count.py"
+echo "== doctest-count gate (gen_proof_manifest.py's static scan vs cargo's own count — structural backstop against any doc-attribute shape the static regexes don't recognise; ~0.1-0.4s, warm right after the cargo test step above) =="
+python3 "$ROOT/gates/check_doctest_count.py"
 echo "== clippy (workspace; -D warnings — MATCHES the CI 'test + clippy' job) =="
 # Cheap and per-commit-worthy: without this, a clippy-only lint (e.g. a doc bullet
 # continuation) passes local test but fails CI, which this gate exists to prevent.

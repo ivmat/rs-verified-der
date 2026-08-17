@@ -24,6 +24,12 @@ echo "== verification-map gate (README.md's mermaid map vs source; pure stdlib) 
 python3 "$ROOT/gates/gen_verification_map.py" --check
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
+echo "== doctest-count gate: self-test (the gate's own gate; pure stdlib except its own two real-cargo tests) =="
+python3 "$ROOT/gates/test_check_doctest_count.py"
+echo "== doctest-count gate (gen_proof_manifest.py's static scan vs cargo's own count — structural backstop against any doc-attribute shape the static regexes don't recognise) =="
+# Also present in check_fast.sh (runs on every commit); repeated here so the release path's own
+# guarantee — a fresh full check.sh run at final HEAD before publish — independently covers it.
+python3 "$ROOT/gates/check_doctest_count.py"
 echo "== tier-parity gate (+ its self-test): the LIGHT/HEAVY split is data, so gate it =="
 python3 "$ROOT/gates/check_tier_parity.py" --selftest
 python3 "$ROOT/gates/check_tier_parity.py"

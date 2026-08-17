@@ -241,7 +241,26 @@ UNPARSEABLE_DOCTEST_FORM_CHECKS = [
     # narrow the false-positive surface, but is a materially bigger and more fragile piece of code
     # to get right for a heuristic guard whose failure mode should be "asks a human", not "gets
     # its own parse subtly wrong and stays quiet" -- the exact bug this fix replaces.
-    (re.compile(r'#\s*!?\s*\[\s*cfg_attr\s*\([\s\S]*?\bdoc\s*='),
+    #
+    # Comment- AND raw-identifier-tolerant at every token boundary this pattern names (`#`, `!`,
+    # `[`, `cfg_attr`, `(`, and `doc`-to-`=`): Rust's tokenizer accepts an arbitrary run of
+    # whitespace OR `/* ... */` block comments between any two tokens, and `r#<ident>` is a valid
+    # spelling of (almost) any identifier, not only reserved words. Release review found three
+    # further real false negatives this way: `cfg_attr/*c*/(...)`, `cfg_attr(..., doc/*c*/ = ...)`
+    # and `#[r#cfg_attr(...)]`, each confirmed compiled/run by the same probe. This regex patch is
+    # defense in depth for these THREE KNOWN shapes, closing the fast static path a little further
+    # -- it is deliberately NOT the primary defence against this class of bug, because the class
+    # itself (an unbounded space of valid comment placements and raw-identifier spellings) cannot
+    # be enumerated by regex at all. `gates/check_doctest_count.py` is the primary defence: it asks
+    # `cargo test --doc -- --list` (i.e. rustdoc itself) for the REAL count and fails if the static
+    # scan here disagrees, so an as-yet-unknown fourth shape still gets caught, structurally, even
+    # though no regex here recognises it.
+    (re.compile(r'#(?:\s|/\*[\s\S]*?\*/)*!?(?:\s|/\*[\s\S]*?\*/)*\[(?:\s|/\*[\s\S]*?\*/)*'
+               # `(?:r#)?` -- the raw-identifier prefix is a SINGLE token with no whitespace of
+               # its own (`r # cfg_attr` with spaces is NOT the same token and is not what this
+               # tolerates); only the boundary BEFORE and AFTER it is comment/whitespace-tolerant.
+               r'(?:r#)?cfg_attr(?:\s|/\*[\s\S]*?\*/)*\('
+               r'[\s\S]*?\bdoc(?:\s|/\*[\s\S]*?\*/)*='),
      'a `#[cfg_attr(..., doc = "...")]` attribute'),
     (re.compile(r'^\s*(?:///|//!)\s*~~~'), 'a tilde (`~~~`) fence inside a doc comment'),
 ]
