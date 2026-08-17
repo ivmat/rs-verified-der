@@ -93,59 +93,145 @@ def strip_comments(lines):
 # --------------------------------------------------------------------------------------
 
 # A fenced code block whose OPENING line's info string (the text right after the ``` `` ` `` on
-# that line) is empty, or consists only of these attribute tokens, is what rustdoc compiles and
-# runs as a doctest under `cargo test --doc`. A fence carrying any OTHER token — a real language
-# tag such as `text`, `sh`, `json`, `toml` — is rendered as an opaque, untested code sample. This
+# that line) is empty, or contains at least one of these recognised attribute tokens, is what
+# rustdoc compiles and runs as a doctest under `cargo test --doc`. A fence whose info string
+# contains ONLY unrecognised tokens — a real language tag such as `text`, `sh`, `json`, `toml`, or
+# any other word rustdoc does not know — is rendered as an opaque, untested code sample. This
 # crate leans on exactly that distinction: every module's prose-example fence is bare (tested),
 # and every module's illustrative-but-not-runnable ASN.1/hex block is ```` ```text ```` (not
-# tested). Getting this wrong in either direction is exactly the two ways this counter can drift:
-# treating a ```text block as a doctest (over-lenient) or failing to recognise a `rust,no_run`
-# fence as one (over-strict) — both are negative-tested in `test_gen_proof_manifest.py`.
+# tested).
+#
+# The recognition rule is ANY-of, not ALL-of: rustdoc treats a fence as Rust the moment it sees
+# ONE recognised token, and does not reject the block just because OTHER tokens in the same info
+# string are unrecognised (`rust,foo` and `no_run,foo` are both still compiled/run; `foo,bar`
+# alone is not). This was verified empirically against the pinned toolchain
+# (`rustc 1.93.1 (01f6ddf75 2026-02-11)`, `rust-toolchain.toml` channel = "stable") with a
+# throwaway probe crate exercising every combination below, rather than assumed from the rustdoc
+# book, because the book does not document the ANY-vs-ALL semantics explicitly:
+#
+#   ```allow_fail````                 -> NOT discovered as a doctest at all (same as an unknown
+#                                         language tag) -- `allow_fail` is NOT a token current
+#                                         rustdoc recognises on its own.
+#   ```rust,allow_fail````            -> discovered AND RUN (the explicit `rust` token alone is
+#                                         enough), and a failing assertion inside it reports as a
+#                                         hard `FAILED`, not a tolerated failure -- `allow_fail`
+#                                         has no special "tolerate failure" effect on this
+#                                         toolchain either as a modifier. Obsolete/inert either way
+#                                         it appears; NOT in the recognised set below.
+#   ```standalone_crate````           -> discovered AND RUN on its own, no `rust` token needed.
+#                                         IS in the recognised set below.
+#   ```rust,foo```` / ```no_run,foo```` -> both discovered AND RUN: one recognised token is
+#                                         enough even with an unrecognised one alongside it.
+#   ```foo```` / ```bar,baz```` / ```E0308```` (bare, no `compile_fail`) -> none discovered: no
+#                                         token in the info string is recognised, so rustdoc
+#                                         treats the whole block as a non-Rust language sample.
+#   ```compile_fail,E0308````         -> discovered AND RUN: `compile_fail` alone is the
+#                                         recognised token; the bare error code needs no special
+#                                         handling of its own under the ANY-of rule.
+#   ```ignore-x86_64````              -> discovered as a doctest, reported `ignored` at run time
+#                                         (this box is x86_64) -- the `ignore-TARGET` form is
+#                                         recognised on its own, same as bare `ignore`.
+#   ```edition2027```` (not a real edition) -> discovered AND RUN regardless -- rustdoc does not
+#                                         validate the edition NUMBER for classification purposes,
+#                                         only that the token matches the `editionNNNN` shape.
 RUST_DOCTEST_ATTRS = {'rust', 'ignore', 'should_panic', 'no_run', 'compile_fail',
-                     'allow_fail', 'edition2015', 'edition2018', 'edition2021',
-                     'edition2024', 'test_harness'}
+                     'standalone_crate', 'test_harness'}
 
-# Only fences opened from INSIDE a doc comment (`///` or `//!`) produce a doctest at all; a bare
-# ``` `` ` `` inside ordinary code (e.g. a string literal in a `#[test]`) is not doc-comment prose
-# and rustdoc never sees it as a fence. Anchoring on the doc-comment prefix is what keeps this
-# counter from mistaking such a literal for a doctest fence.
-DOC_FENCE_RE = re.compile(r'^\s*(?:///|//!)\s*```(.*)$')
+# `edition2015`/`2018`/`2021`/`2024` are covered by this pattern rather than a fixed enum in
+# RUST_DOCTEST_ATTRS -- `edition2027` (not a real edition on this toolchain) was still discovered
+# and run in the empirical probe above, so hardcoding a closed set of edition numbers would itself
+# be a future under-count the moment a new edition ships and a doc comment starts using it before
+# this script is updated.
+EDITION_RE = re.compile(r'^edition\d+$')
+# `ignore-x86_64`-style platform-scoped ignore, confirmed recognised on its own above.
+IGNORE_TARGET_RE = re.compile(r'^ignore-')
+
+
+def _is_recognized_rust_attr(tok):
+    return tok in RUST_DOCTEST_ATTRS or bool(EDITION_RE.match(tok)) or bool(IGNORE_TARGET_RE.match(tok))
 
 
 def _is_rust_doctest_info(info):
-    """True if a fence's opening info string is what rustdoc treats as runnable Rust."""
+    """True if a fence's opening info string is what rustdoc treats as runnable Rust.
+
+    ANY recognised token is sufficient (see the empirical notes above) -- this is deliberately
+    NOT `all(...)`: an info string with one recognised token and any number of unrecognised ones
+    alongside it (`rust,foo`, `no_run,foo`) is still a doctest rustdoc compiles and runs.
+    """
     info = info.strip()
     if not info:
         return True
-
-    def norm(tok):
-        if re.match(r'^ignore-', tok):        # `ignore-x86_64`-style platform-scoped ignore
-            return 'ignore'
-        if re.match(r'^E\d+$', tok):          # an error code paired with `compile_fail`
-            return 'compile_fail'
-        return tok
-
-    tokens = [norm(t) for t in re.split(r'[,\s]+', info) if t]
-    return bool(tokens) and all(t in RUST_DOCTEST_ATTRS for t in tokens)
+    tokens = [t for t in re.split(r'[,\s]+', info) if t]
+    return any(_is_recognized_rust_attr(t) for t in tokens)
 
 
-def count_doctests(text):
+# Doc-comment fence markers this scanner CAN parse: `///`/`//!` line doc comments, with a fence
+# opened by a run of three-or-more backticks (CommonMark allows longer runs so a block containing
+# a literal ``` `` ` `` can itself be fenced with four+; rustdoc honours this, confirmed in the
+# same probe -- a bare ```` ```` ```` fence with no info string was discovered and run exactly
+# like a three-backtick one).
+DOC_FENCE_RE = re.compile(r'^\s*(?:///|//!)\s*(`{3,})(.*)$')
+
+# Doc-comment forms this scanner CANNOT parse, each confirmed in the same probe to be discovered
+# and RUN by rustdoc as an ordinary doctest -- so silently ignoring them here would silently
+# UNDER-count, the opposite of the earlier `lib.rs`-only bug but the same shape of failure. Rather
+# than attempt to parse block comments, doc attributes, or CommonMark's alternate tilde-fence
+# syntax (none of which this crate currently uses -- `grep` over `der-verified/src` finds zero
+# occurrences of any of them), `count_doctests` FAILS CLOSED: it raises rather than silently
+# returning a number that does not account for them. A crate this size, with a hand-maintained
+# proof envelope that fails loudly elsewhere on anything it cannot attribute (see
+# `entry_points_of`'s own "Teach the script about it rather than letting the count drift."), should
+# not make doctest counting the one place that miscounts quietly. Supporting these forms properly
+# means tracking doc-comment SCOPE (which the current, deliberately simple per-line prefix scan
+# does not do) rather than just fence lines, which is a materially bigger rewrite this crate does
+# not currently need -- so the immediate remedy for a real future occurrence is a person, not a
+# silent miscount.
+UNPARSEABLE_DOCTEST_FORM_CHECKS = [
+    (re.compile(r'/\*[*!]'), 'a block doc comment (`/** */` or `/*! */`)'),
+    (re.compile(r'#!?\[doc\s*='), 'a `#[doc = "..."]` / `#![doc = "..."]` attribute'),
+    (re.compile(r'^\s*(?:///|//!)\s*~~~'), 'a tilde (`~~~`) fence inside a doc comment'),
+]
+
+
+def _check_no_unparseable_doctest_forms(path, text):
+    for pattern, label in UNPARSEABLE_DOCTEST_FORM_CHECKS:
+        if pattern.search(text):
+            raise SystemExit(
+                'gen_proof_manifest: %s appears to contain %s, which rustdoc compiles/runs as a '
+                'doctest but count_doctests() cannot see (it only scans `///`/`//!` triple-or-more-'
+                'backtick fences). Counting would silently UNDER-count rather than fail loudly. '
+                'Teach count_doctests() about this form, or confirm it is not actually a doctest '
+                'and narrow the check above, rather than letting the total drift.'
+                % (path or '<in-memory text>', label))
+
+
+def count_doctests(text, path=None):
     """Count fenced code blocks inside doc comments that `cargo test --doc` actually runs.
 
-    Only the OPENING fence's info string decides (the closing ``` `` ` `` never carries one).
-    Un-anchored ``` `` ` `` outside a doc-comment line is not a doctest fence at all and is
-    ignored, so a literal ``` `` ` `` inside a `#[test]` string could never be miscounted.
+    Only the OPENING fence's info string decides (the closing fence never carries one). Un-
+    anchored backticks outside a doc-comment line are not a doctest fence at all and are ignored,
+    so a literal ``` `` ` `` inside a `#[test]` string could never be miscounted. Raises (fails
+    closed) if the text contains a doc-comment FORM this scanner cannot parse at all -- see
+    `UNPARSEABLE_DOCTEST_FORM_CHECKS`.
     """
-    n, in_fence = 0, False
+    _check_no_unparseable_doctest_forms(path, text)
+    n, in_fence, fence_len = 0, False, 0
     for line in text.split('\n'):
         m = DOC_FENCE_RE.match(line)
         if not m:
             continue
+        ticks, info = m.group(1), m.group(2)
         if in_fence:
+            # A CommonMark closing fence must be at least as long as its opener; a run of ticks
+            # embedded as literal example text inside the block (shorter than the opener) does
+            # not close it. This crate always closes with the same length it opened with, but the
+            # check keeps a same-or-longer embedded run from prematurely toggling the state.
+            if len(ticks) < fence_len:
+                continue
             in_fence = False
             continue
-        in_fence = True
-        if _is_rust_doctest_info(m.group(1)):
+        in_fence, fence_len = True, len(ticks)
+        if _is_rust_doctest_info(info):
             n += 1
     return n
 
@@ -640,7 +726,7 @@ def collect():
             # double-counted a ```` ```text ```` block as a doctest had `lib.rs` ever carried one.
             # `count_doctests` fixes both: it sums across every `.rs` file in `SRC`, and it only
             # counts a fence whose info string is one rustdoc actually compiles/runs.
-            'doctests': sum(count_doctests(read_text(os.path.join(SRC, f)))
+            'doctests': sum(count_doctests(read_text(os.path.join(SRC, f)), os.path.join(SRC, f))
                             for f in sorted(os.listdir(SRC)) if f.endswith('.rs')),
             'lids': len(lids),
             'forbid_unsafe': '#![forbid(unsafe_code)]' in lib,
@@ -1082,6 +1168,13 @@ GUARDS = [
     # was already caught by the `tests` guard above. Found stale (30 vs the true 33) while fixing
     # `count_doctests` — this guard is what stops it drifting back silently.
     ('doctests', NUM + r'\s+doc-tests'),
+    # PROOF_MANIFEST.md §3.3 uses a THIRD phrasing for the same number ("472 unit and regression
+    # tests (plus 30 module and crate-doc examples)") that neither guard above matches — a fixed
+    # phrase list is invisible to a synonym, same lesson as the `tests` guard's own note above.
+    # Found stale (30 vs the true 33) in the release review of this very fix; this guard is the
+    # closer, scoped narrowly to the actual phrase rather than a bare "N examples" (which would
+    # also match unrelated prose using the word "examples" after some other count).
+    ('doctests', NUM + r'\s+module and crate-doc examples'),
     ('assumes', r'\(' + NUM + r'\s+across the crate\)'),
     ('covers', NUM + r'\s+`kani::cover`'),
     ('lids', NUM + r'\s+(?:L4/L5\s+)?lids'),

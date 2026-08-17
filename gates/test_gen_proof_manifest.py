@@ -228,6 +228,174 @@ class DoctestCounting(unittest.TestCase):
         self.assertLess(lib_only, facts()['totals']['doctests'])
 
 
+class RustdocAttributeSemantics(unittest.TestCase):
+    """The release review's follow-up pass on `count_doctests`: the classifier must mirror rustdoc's ACTUAL
+    fence-attribute semantics, not an assumed approximation of them. Every case below was
+    verified empirically against the pinned toolchain (`rustc 1.93.1`, `rust-toolchain.toml`
+    channel = "stable") with a throwaway probe crate before being encoded here — see the
+    commentary above `RUST_DOCTEST_ATTRS` in `gen_proof_manifest.py` for the full probe notes.
+    These tests pin that empirical finding in-repo so it cannot silently drift back to an
+    assumption.
+    """
+
+    def _lines(self, *lines):
+        return '\n'.join(lines) + '\n'
+
+    # --- (a) `standalone_crate` is a real, currently-recognised token ---------------------------
+
+    def test_standalone_crate_alone_is_counted(self):
+        # Probed: ```standalone_crate``` alone (no `rust` token) is discovered AND run.
+        src = self._lines('//! ```standalone_crate', '//! fn main() { assert_eq!(1, 1); }',
+                          '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_standalone_without_crate_suffix_is_not_a_real_token(self):
+        # Leniency counter-check: `standalone_crate` must be recognised as the EXACT token it is,
+        # not a prefix match that would also (wrongly) accept a merely similar-looking word.
+        src = self._lines('//! ```standalone', '//! not actually rust', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 0)
+
+    # --- (b) `allow_fail` is obsolete/unrecognised on the pinned toolchain ----------------------
+
+    def test_bare_allow_fail_is_not_counted(self):
+        # Probed: ```allow_fail``` ALONE is not discovered as a doctest at all by rustc 1.93.1's
+        # rustdoc -- treated exactly like an unknown language tag, not like a recognised
+        # rust-doctest attribute. `allow_fail` must NOT be in RUST_DOCTEST_ATTRS.
+        src = self._lines('//! ```allow_fail', '//! assert_eq!(1, 2);', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 0)
+
+    def test_rust_comma_allow_fail_is_still_counted(self):
+        # The explicit `rust` token alone is what makes this one count -- probed: it IS discovered
+        # and RUN, and a failing assertion inside it reports as a hard FAILED (no "tolerate
+        # failure" leniency from `allow_fail` on this toolchain). Recognised via the `rust` token,
+        # not because `allow_fail` itself carries any meaning.
+        src = self._lines('//! ```rust,allow_fail', '//! assert_eq!(1, 1);', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    # --- (c) ANY recognised token is sufficient, even alongside unrecognised ones ---------------
+
+    def test_rust_plus_unknown_token_is_counted(self):
+        # Probed: ```rust,foo``` is discovered and run -- the explicit `rust` token is enough.
+        src = self._lines('//! ```rust,foo', '//! assert_eq!(1, 1);', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_known_attribute_plus_unknown_token_is_counted(self):
+        # Probed: ```no_run,foo``` is discovered and run too -- ANY recognised token suffices,
+        # not specifically `rust`. This is what distinguishes ANY-of from ALL-of.
+        src = self._lines('//! ```no_run,foo', '//! loop {}', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_only_unknown_tokens_are_not_counted(self):
+        # The leniency-direction counter-check for (c): if NO token is recognised, the block is
+        # still an ordinary non-Rust language sample, exactly like a single unknown tag. Probed:
+        # ```bar,baz``` is not discovered at all.
+        src = self._lines('//! ```bar,baz', '//! not rust', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 0)
+
+    def test_bare_error_code_without_compile_fail_is_not_counted(self):
+        # Probed: a bare ```E0308``` (no `compile_fail` alongside it) is NOT discovered -- the
+        # error-code shape only matters when paired with the `compile_fail` token itself, which is
+        # what ANY-of already handles; no special E-code normalisation is needed (and adding one
+        # would silently regress ANY-of back toward over-leniency for this exact case).
+        src = self._lines('//! ```E0308', '//! not valid rust', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 0)
+
+    def test_compile_fail_with_error_code_is_counted(self):
+        src = self._lines('//! ```compile_fail,E0308', '//! let x: u8 = "not a number";', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_edition_number_rustdoc_has_never_shipped_is_still_counted(self):
+        # Probed: ```edition2027``` (not a real edition on this toolchain) was still discovered
+        # AND RUN -- rustdoc does not validate the edition value for classification, only that the
+        # token has the `editionNNNN` shape. A hardcoded enum of known editions would itself go
+        # stale the moment a new edition ships and a doc comment starts using it.
+        src = self._lines('//! ```edition2027', '//! assert_eq!(1, 1);', '//! ```')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    # --- (d) doc-comment forms this scanner cannot parse: fail CLOSED, not silently -------------
+
+    def test_block_doc_comment_fails_closed(self):
+        # Probed: `/** ... */` block doc comments ARE compiled/run by rustdoc exactly like a `///`
+        # one -- this scanner only understands `///`/`//!` line comments, so silently proceeding
+        # would silently UNDER-count. It must raise instead.
+        src = '/** block doc\n```\nassert_eq!(1, 1);\n```\n*/\npub fn f() {}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_inner_block_doc_comment_fails_closed(self):
+        src = '/*! inner block doc\n```\nassert_eq!(1, 1);\n```\n*/\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_doc_attribute_form_fails_closed(self):
+        # Probed: `#[doc = "..."]` (and its inner-attribute form `#![doc = "..."]`) are also
+        # compiled/run exactly like a `///` comment -- same silent-undercount risk.
+        src = '#[doc = "fenced\\n```\\nassert_eq!(1, 1);\\n```\\n"]\npub fn f() {}\n'
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_tilde_fence_inside_doc_comment_fails_closed(self):
+        # Probed: CommonMark's `~~~` fence form is honoured by rustdoc exactly like backticks --
+        # this scanner only recognises backtick fences.
+        src = self._lines('//! ~~~', '//! assert_eq!(1, 1);', '//! ~~~')
+        with self.assertRaises(SystemExit):
+            gen.count_doctests(src)
+
+    def test_fail_closed_message_names_the_path_when_given(self):
+        # The error should be actionable: point at the offending file, not just "somewhere".
+        src = '/** x\n```\ny\n```\n*/\n'
+        with self.assertRaisesRegex(SystemExit, 'src/whatever.rs'):
+            gen.count_doctests(src, 'src/whatever.rs')
+
+    # --- leniency counter-checks for (d): ordinary, parseable forms must NOT trip the guard -----
+
+    def test_ordinary_block_comment_without_doc_marker_does_not_fail_closed(self):
+        # `/* ... */` (no `*` or `!` right after the opening `/*`) is an ORDINARY comment, not a
+        # doc comment -- rustdoc never sees it at all, so it must not trip the fail-closed guard.
+        src = '/* just a regular comment, not documentation */\npub fn f() {}\n'
+        self.assertEqual(gen.count_doctests(src), 0)   # does not raise
+
+    def test_doc_hidden_attribute_does_not_fail_closed(self):
+        # `#[doc(hidden)]` and friends use the `(...)` attribute-macro form, not `#[doc = ...]`,
+        # and can never carry a literal fenced doctest -- must not trip the guard.
+        src = '#[doc(hidden)]\npub fn f() {}\n#[doc(alias = "g")]\npub fn g() {}\n'
+        self.assertEqual(gen.count_doctests(src), 0)   # does not raise
+
+    def test_normal_source_with_no_unparseable_forms_does_not_fail_closed(self):
+        # The crate's own real modules must never trip this guard -- run it over every module.
+        for f in sorted(os.listdir(gen.SRC)):
+            if f.endswith('.rs'):
+                with self.subTest(module=f):
+                    gen.count_doctests(gen.read_text(os.path.join(gen.SRC, f)),
+                                       os.path.join(gen.SRC, f))   # must not raise
+
+    # --- four-or-more-backtick fences: SUPPORTED (not fail-closed), a cheap correct extension ---
+
+    def test_four_backtick_fence_is_supported_not_failed_closed(self):
+        # Probed: a bare ```` fence (no info string) is discovered and run identically to a
+        # three-backtick one -- CommonMark allows longer opening fences (so a block that itself
+        # needs to show ``` `` ` `` as literal text can be wrapped in more backticks). Chosen to
+        # SUPPORT this (cheap, a one-character regex generalisation) rather than fail closed.
+        src = self._lines('//! ````', '//! assert_eq!(1, 1);', '//! ````')
+        self.assertEqual(gen.count_doctests(src), 1)
+
+    def test_four_backtick_fence_with_text_tag_still_not_counted(self):
+        src = self._lines('//! ````text', '//! not rust', '//! ````')
+        self.assertEqual(gen.count_doctests(src), 0)
+
+    def test_short_backtick_run_embedded_inside_a_longer_fence_does_not_close_it(self):
+        # A four-backtick-opened block may contain a literal ``` `` ` `` (three backticks) as
+        # example TEXT without closing the fence early -- CommonMark requires the closer to be at
+        # least as long as the opener. Two fences, both counted; the embedded triple does not
+        # split them into more (or fewer) than two.
+        src = self._lines(
+            '//! ````', '//! assert_eq!(1, 1); // shows a literal ``` here', '//! ````',
+            '//!',
+            '//! ```', '//! assert_eq!(2, 2);', '//! ```',
+        )
+        self.assertEqual(gen.count_doctests(src), 2)
+
+
 class DoctestGuardCatchesDrift(unittest.TestCase):
     """The `doctests` GUARDS entry: a hand-written "N doc-tests" claim in a guarded doc must be
     checked against the real count, the same way `tests`/`harnesses` already are. Before this
@@ -238,6 +406,23 @@ class DoctestGuardCatchesDrift(unittest.TestCase):
     def test_stale_doctest_count_is_flagged(self):
         hits = gen.guard_line_hits('cargo test   # 472 tests + 30 doc-tests')
         self.assertIn(('doctests', 30, '30 doc-tests'), hits)
+
+    def test_stale_module_and_crate_doc_examples_phrasing_is_flagged(self):
+        # PROOF_MANIFEST.md §3.3 uses a THIRD phrasing the "doc-tests" guard above does not match
+        # ("472 unit and regression tests (plus 30 module and crate-doc examples)") -- the release
+        # review caught this sailing through `--check` at a stale 30 while the true count was
+        # already 33. This is the regression pair for that specific phrase.
+        hits = gen.guard_line_hits(
+            'runs 472 unit and regression tests (plus 30 module and crate-doc examples) over')
+        self.assertIn(('doctests', 30, '30 module and crate-doc examples'), hits)
+
+    def test_correct_examples_phrasing_does_not_fail_check(self):
+        f = facts()
+        n = f['totals']['doctests']
+        hits = gen.guard_line_hits(
+            'runs 472 unit and regression tests (plus %d module and crate-doc examples) over' % n)
+        got = [h for h in hits if h[0] == 'doctests'][0]
+        self.assertEqual(got[1], n)
 
     def test_correct_doctest_count_in_guarded_doc_does_not_fail_check(self):
         # The leniency half of the pair: the CORRECT figure, once fixed, must not itself trip
