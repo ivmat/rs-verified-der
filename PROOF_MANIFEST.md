@@ -225,6 +225,7 @@ module (§7) they are the *only* evidence that exists.
 |---|---|---:|---:|---:|
 | `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
 | `evidence/check-461f751.log` | `461f751` | 171 | 0 | 3 |
+| `evidence/check-69bbc9f.log` | `69bbc9f` | 191 | 0 | 3 |
 | `evidence/check-b355f76.log` | `b355f76` | 164 | 0 | 3 |
 | `evidence/check-ba40709.log` | `ba40709` | 171 | 0 | 3 |
 | `evidence/check-ea8dad4-remainder.log` | `ea8dad4` | 8 | 0 | 2 |
@@ -236,7 +237,7 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
+**`evidence/check-69bbc9f.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff 69bbc9f..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
