@@ -1,0 +1,529 @@
+Running as unit: run-p47183-i74091.scope; invocation ID: 9bada6fe323f4a90ae046ce05c2b684b
+Kani Rust Verifier 0.67.0 (cargo plugin)
+   Compiling der-verified v0.1.1 (/home/ivo/repo/rs-verified-der/der-verified)
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.57s
+Checking harness tag::proofs::decode_tag_accepts_only_canonical...
+CBMC 6.8.0 (cbmc-6.8.0)
+CBMC version 6.8.0 (cbmc-6.8.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/ivo/repo/rs-verified-der/target/kani/x86_64-unknown-linux-gnu/debug/deps/der_verified-89d9ba04730ccb49__RNvNtNtCs8Uhk9se0wUe_12der_verified3tag6proofs33decode_tag_accepts_only_canonical.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10decode_tag.0 iteration 1 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10decode_tag.0 iteration 2 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10decode_tag.0 iteration 3 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10decode_tag.0 iteration 4 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10decode_tag.0 iteration 5 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10decode_tag.0 iteration 6 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tag::decode_tag thread 0
+aborting path on assume(false) at file der-verified/src/tag.rs line 214 column 5 function tag::proofs::decode_tag_accepts_only_canonical thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 1 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 2 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 3 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 4 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 5 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 6 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 7 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 8 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 9 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 10 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 11 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Not unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.0 iteration 12 file der-verified/src/tag.rs line 85 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.1 iteration 1 file der-verified/src/tag.rs line 90 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.1 iteration 2 file der-verified/src/tag.rs line 90 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.1 iteration 3 file der-verified/src/tag.rs line 90 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.1 iteration 4 file der-verified/src/tag.rs line 90 column 5 function tag::encode_tag thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10encode_tag.1 iteration 5 file der-verified/src/tag.rs line 90 column 5 function tag::encode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 23 column 13 function kani::rustc_intrinsics::size_of_val_raw::<[u8]> thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::rustc_intrinsics::size_of_val_raw::<[u8]> thread 0
+Unwinding loop memcmp.0 iteration 1 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 2 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 3 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 4 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 5 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 6 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 7 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 8 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 9 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 10 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 11 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Not unwinding loop memcmp.0 iteration 12 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Runtime Symex: 0.0966451s
+size of program expression: 9059 steps
+slicing removed 6182 assignments
+Generated 432 VCC(s), 162 remaining after simplification
+Runtime Postprocess Equation: 0.0012734s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.0127117s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 3.43e-06s
+Solving with CaDiCaL 2.0.0
+30280 variables, 80939 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.00167907s
+Runtime decision procedure: 0.0147909s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+30281 variables, 80940 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.00197221s
+Runtime decision procedure: 0.00205151s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+30282 variables, 80941 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.000608153s
+Runtime decision procedure: 0.000718824s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+30283 variables, 80942 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0106068s
+Runtime decision procedure: 0.0107097s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+30284 variables, 80943 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.0458651s
+Runtime decision procedure: 0.0459158s
+
+RESULTS:
+Check 1: kani::rustc_intrinsics::size_of_val_raw::<[u8]>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani_core/src/models.rs:23:13 in function kani::rustc_intrinsics::size_of_val_raw::<[u8]>
+
+Check 2: kani::rustc_intrinsics::size_of_val_raw::<[u8]>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "failed to compute `size_of_val`"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::size_of_val_raw::<[u8]>
+
+Check 3: kani::rustc_intrinsics::size_of_val_raw::<[u8]>.assertion.1
+	 - Status: SUCCESS
+	 - Description: "cannot compute `size_of_val` for extern types"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::size_of_val_raw::<[u8]>
+
+Check 4: core::slice::index::slice_index_fail::do_panic::runtime.assertion.1
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:58:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 5: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset in bytes overflows isize"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 6: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "Offset result and original pointer must point to the same allocation"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 7: tag::decode_tag.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:111:23 in function tag::decode_tag
+
+Check 8: tag::decode_tag.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:145:21 in function tag::decode_tag
+
+Check 9: tag::decode_tag.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: der-verified/src/tag.rs:148:18 in function tag::decode_tag
+
+Check 10: tag::decode_tag.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:149:9 in function tag::decode_tag
+
+Check 11: tag::decode_tag.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:150:9 in function tag::decode_tag
+
+Check 12: tag::decode_tag.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function tag::decode_tag
+
+Check 13: tag::encode_tag.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: der-verified/src/tag.rs:76:14 in function tag::encode_tag
+
+Check 14: tag::encode_tag.assertion.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/tag.rs:78:9 in function tag::encode_tag
+
+Check 15: tag::encode_tag.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/tag.rs:81:5 in function tag::encode_tag
+
+Check 16: tag::encode_tag.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:84:17 in function tag::encode_tag
+
+Check 17: tag::encode_tag.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:86:9 in function tag::encode_tag
+
+Check 18: tag::encode_tag.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:87:9 in function tag::encode_tag
+
+Check 19: tag::encode_tag.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/tag.rs:91:26 in function tag::encode_tag
+
+Check 20: tag::encode_tag.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/tag.rs:91:25 in function tag::encode_tag
+
+Check 21: tag::encode_tag.assertion.9
+	 - Status: SUCCESS
+	 - Description: "attempt to multiply with overflow"
+	 - Location: der-verified/src/tag.rs:91:21 in function tag::encode_tag
+
+Check 22: tag::encode_tag.assertion.10
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:92:25 in function tag::encode_tag
+
+Check 23: tag::encode_tag.assertion.11
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/tag.rs:93:17 in function tag::encode_tag
+
+Check 24: tag::encode_tag.assertion.12
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:96:13 in function tag::encode_tag
+
+Check 25: tag::encode_tag.assertion.13
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/tag.rs:96:9 in function tag::encode_tag
+
+Check 26: tag::encode_tag.assertion.14
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:97:9 in function tag::encode_tag
+
+Check 27: tag::encode_tag.assertion.15
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:99:11 in function tag::encode_tag
+
+Check 28: kani::mem::cbmc::same_allocation.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "Kani does not support reasoning about pointer to unallocated memory"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::mem::cbmc::same_allocation
+
+Check 29: memcmp.precondition.1
+	 - Status: SUCCESS
+	 - Description: "memcmp region 1 readable"
+	 - Location: <builtin-library-memcmp>:19 in function memcmp
+
+Check 30: memcmp.precondition.2
+	 - Status: SUCCESS
+	 - Description: "memcpy region 2 readable"
+	 - Location: <builtin-library-memcmp>:21 in function memcmp
+
+Check 31: core::slice::index::slice_index_fail::do_panic::runtime.assertion.2
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:68:5 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 32: core::num::<impl usize>::checked_sub.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:812:31 in function core::num::<impl usize>::checked_sub
+
+Check 33: tag::proofs::decode_tag_accepts_only_canonical.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/tag.rs:214:5 in function tag::proofs::decode_tag_accepts_only_canonical
+
+Check 34: tag::proofs::decode_tag_accepts_only_canonical.assertion.1
+	 - Status: FAILURE
+	 - Description: "assertion failed: relen == used"
+	 - Location: der-verified/src/tag.rs:218:13 in function tag::proofs::decode_tag_accepts_only_canonical
+
+Check 35: tag::proofs::decode_tag_accepts_only_canonical.assertion.2
+	 - Status: SUCCESS
+	 - Description: "assertion failed: re[..relen] == buf[..used]"
+	 - Location: der-verified/src/tag.rs:219:13 in function tag::proofs::decode_tag_accepts_only_canonical
+
+Check 36: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:435:5 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 37: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:441:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 38: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:441:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 39: core::slice::index::slice_index_fail::do_panic::runtime.assertion.3
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:40:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 40: core::slice::index::slice_index_fail::do_panic::runtime.assertion.4
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:49:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 41: <usize as kani::rustc_intrinsics::ToISize>::to_isize.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani_core/src/models.rs:176:17 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 42: <usize as kani::rustc_intrinsics::ToISize>::to_isize.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset value overflows isize"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 43: <usize as kani::rustc_intrinsics::ToISize>::to_isize.assertion.1
+	 - Status: SUCCESS
+	 - Description: "internal error: entered unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 44: <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch
+
+Check 45: <usize as std::slice::SliceIndex<[u8]>>::get.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:223:13 in function <usize as std::slice::SliceIndex<[u8]>>::get
+
+Check 46: memcmp.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 47: memcmp.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 48: memcmp.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 49: memcmp.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 50: memcmp.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 51: memcmp.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 52: memcmp.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 53: memcmp.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 54: memcmp.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 55: memcmp.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 56: memcmp.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 57: memcmp.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 58: core::slice::<impl [u8]>::first.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/mod.rs:155:58 in function core::slice::<impl [u8]>::first
+
+Check 59: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tag::TagError>>>::from_residual.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2189:23 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tag::TagError>>>::from_residual
+
+Check 60: tag::decode_tag.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:107:23 in function tag::decode_tag
+
+Check 61: tag::decode_tag.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 62: tag::decode_tag.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 63: tag::decode_tag.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 64: tag::decode_tag.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 65: tag::decode_tag.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 66: tag::decode_tag.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 67: tag::decode_tag.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:138:26 in function tag::decode_tag
+
+Check 68: tag::decode_tag.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 69: tag::decode_tag.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 70: tag::decode_tag.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 71: tag::decode_tag.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 72: tag::decode_tag.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 73: tag::decode_tag.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 74: tag::decode_tag.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:109:24 in function tag::decode_tag
+
+Check 75: tag::encode_tag.array_bounds.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/tag.rs:78:9 in function tag::encode_tag
+
+Check 76: tag::encode_tag.array_bounds.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/tag.rs:81:5 in function tag::encode_tag
+
+Check 77: tag::encode_tag.array_bounds.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/tag.rs:96:9 in function tag::encode_tag
+
+Check 78: tag::proofs::decode_tag_accepts_only_canonical.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:216:34 in function tag::proofs::decode_tag_accepts_only_canonical
+
+Check 79: tag::encode_tag.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: der-verified/src/tag.rs:85:5 in function tag::encode_tag
+
+Check 80: memcmp.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: <builtin-library-memcmp>:25 in function memcmp
+
+
+SUMMARY:
+ ** 1 of 80 failed
+Failed Checks: assertion failed: relen == used
+ File: "der-verified/src/tag.rs", line 218, in tag::proofs::decode_tag_accepts_only_canonical
+
+VERIFICATION:- FAILED
+Verification Time: 0.3217971s
+
+Manual Harness Summary:
+Verification failed for - tag::proofs::decode_tag_accepts_only_canonical
+Complete - 0 successfully verified harnesses, 1 failures, 1 total.

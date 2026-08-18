@@ -1,0 +1,494 @@
+Running as unit: run-p48283-i14991.scope; invocation ID: 29644f0cf9b24911a565cc7b1ae42f64
+Kani Rust Verifier 0.67.0 (cargo plugin)
+   Compiling der-verified v0.1.1 (/home/ivo/repo/rs-verified-der/der-verified)
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.60s
+Checking harness integer::proofs::decode_accepts_only_minimal...
+CBMC 6.8.0 (cbmc-6.8.0)
+CBMC version 6.8.0 (cbmc-6.8.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/ivo/repo/rs-verified-der/target/kani/x86_64-unknown-linux-gnu/debug/deps/der_verified-e4f4df1a308b47c7__RNvNtNtCs8Uhk9se0wUe_12der_verified7integer6proofs27decode_accepts_only_minimal.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 1 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 2 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 3 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 4 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 5 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 6 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 7 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 8 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 9 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 10 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 11 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+Not unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14decode_integer.0 iteration 12 file der-verified/src/integer.rs line 88 column 5 function integer::decode_integer thread 0
+aborting path on assume(false) at file der-verified/src/integer.rs line 131 column 5 function integer::proofs::decode_accepts_only_minimal thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.0 iteration 1 file der-verified/src/integer.rs line 48 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.0 iteration 2 file der-verified/src/integer.rs line 48 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.0 iteration 3 file der-verified/src/integer.rs line 48 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.0 iteration 4 file der-verified/src/integer.rs line 48 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.0 iteration 5 file der-verified/src/integer.rs line 48 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.0 iteration 6 file der-verified/src/integer.rs line 48 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.0 iteration 7 file der-verified/src/integer.rs line 48 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.1 iteration 1 file der-verified/src/integer.rs line 53 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.1 iteration 2 file der-verified/src/integer.rs line 53 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.1 iteration 3 file der-verified/src/integer.rs line 53 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.1 iteration 4 file der-verified/src/integer.rs line 53 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.1 iteration 5 file der-verified/src/integer.rs line 53 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.1 iteration 6 file der-verified/src/integer.rs line 53 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.1 iteration 7 file der-verified/src/integer.rs line 53 column 9 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 1 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 2 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 3 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 4 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 5 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 6 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 7 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified7integer14encode_integer.2 iteration 8 file der-verified/src/integer.rs line 60 column 5 function integer::encode_integer thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 23 column 13 function kani::rustc_intrinsics::size_of_val_raw::<[u8]> thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::rustc_intrinsics::size_of_val_raw::<[u8]> thread 0
+Unwinding loop memcmp.0 iteration 1 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 2 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 3 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 4 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 5 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 6 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 7 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 8 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 9 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 10 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Unwinding loop memcmp.0 iteration 11 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Not unwinding loop memcmp.0 iteration 12 file <builtin-library-memcmp> line 25 function memcmp thread 0
+Runtime Symex: 0.0829357s
+size of program expression: 8163 steps
+slicing removed 5432 assignments
+Generated 554 VCC(s), 202 remaining after simplification
+Runtime Postprocess Equation: 0.000779224s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.00851282s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 3.73e-06s
+Solving with CaDiCaL 2.0.0
+20166 variables, 43977 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.00125911s
+Runtime decision procedure: 0.0100945s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+20167 variables, 43978 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.00228517s
+Runtime decision procedure: 0.00235107s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+20168 variables, 43979 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0108401s
+Runtime decision procedure: 0.010913s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+20169 variables, 43980 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 0.0471567s
+Runtime decision procedure: 0.0471933s
+
+RESULTS:
+Check 1: memcmp.precondition.1
+	 - Status: SUCCESS
+	 - Description: "memcmp region 1 readable"
+	 - Location: <builtin-library-memcmp>:19 in function memcmp
+
+Check 2: memcmp.precondition.2
+	 - Status: SUCCESS
+	 - Description: "memcpy region 2 readable"
+	 - Location: <builtin-library-memcmp>:21 in function memcmp
+
+Check 3: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset in bytes overflows isize"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 4: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "Offset result and original pointer must point to the same allocation"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 5: core::slice::index::slice_index_fail::do_panic::runtime.assertion.1
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:40:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 6: integer::proofs::decode_accepts_only_minimal.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/integer.rs:131:5 in function integer::proofs::decode_accepts_only_minimal
+
+Check 7: integer::proofs::decode_accepts_only_minimal.assertion.1
+	 - Status: FAILURE
+	 - Description: "assertion failed: relen == n"
+	 - Location: der-verified/src/integer.rs:137:13 in function integer::proofs::decode_accepts_only_minimal
+
+Check 8: integer::proofs::decode_accepts_only_minimal.assertion.2
+	 - Status: SUCCESS
+	 - Description: "assertion failed: re[..relen] == buf[..n]"
+	 - Location: der-verified/src/integer.rs:138:13 in function integer::proofs::decode_accepts_only_minimal
+
+Check 9: core::slice::index::slice_index_fail::do_panic::runtime.assertion.2
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:68:5 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 10: <usize as kani::rustc_intrinsics::ToISize>::to_isize.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani_core/src/models.rs:176:17 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 11: <usize as kani::rustc_intrinsics::ToISize>::to_isize.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset value overflows isize"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 12: <usize as kani::rustc_intrinsics::ToISize>::to_isize.assertion.1
+	 - Status: SUCCESS
+	 - Description: "internal error: entered unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 13: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:435:5 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 14: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:441:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 15: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:441:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 16: kani::mem::cbmc::same_allocation.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "Kani does not support reasoning about pointer to unallocated memory"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::mem::cbmc::same_allocation
+
+Check 17: kani::rustc_intrinsics::size_of_val_raw::<[u8]>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani_core/src/models.rs:23:13 in function kani::rustc_intrinsics::size_of_val_raw::<[u8]>
+
+Check 18: kani::rustc_intrinsics::size_of_val_raw::<[u8]>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "failed to compute `size_of_val`"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::size_of_val_raw::<[u8]>
+
+Check 19: kani::rustc_intrinsics::size_of_val_raw::<[u8]>.assertion.1
+	 - Status: SUCCESS
+	 - Description: "cannot compute `size_of_val` for extern types"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::size_of_val_raw::<[u8]>
+
+Check 20: core::slice::index::slice_index_fail::do_panic::runtime.assertion.3
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:49:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 21: integer::decode_integer.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:85:16 in function integer::decode_integer
+
+Check 22: integer::decode_integer.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: der-verified/src/integer.rs:89:15 in function integer::decode_integer
+
+Check 23: integer::decode_integer.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:89:28 in function integer::decode_integer
+
+Check 24: integer::decode_integer.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/integer.rs:90:9 in function integer::decode_integer
+
+Check 25: integer::encode_integer.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:48:28 in function integer::encode_integer
+
+Check 26: integer::encode_integer.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/integer.rs:48:53 in function integer::encode_integer
+
+Check 27: integer::encode_integer.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:48:50 in function integer::encode_integer
+
+Check 28: integer::encode_integer.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/integer.rs:49:13 in function integer::encode_integer
+
+Check 29: integer::encode_integer.assertion.5
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:53:28 in function integer::encode_integer
+
+Check 30: integer::encode_integer.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/integer.rs:53:53 in function integer::encode_integer
+
+Check 31: integer::encode_integer.assertion.7
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:53:50 in function integer::encode_integer
+
+Check 32: integer::encode_integer.assertion.8
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/integer.rs:54:13 in function integer::encode_integer
+
+Check 33: integer::encode_integer.assertion.9
+	 - Status: SUCCESS
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/integer.rs:57:13 in function integer::encode_integer
+
+Check 34: integer::encode_integer.assertion.10
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/integer.rs:61:21 in function integer::encode_integer
+
+Check 35: integer::encode_integer.assertion.11
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:61:18 in function integer::encode_integer
+
+Check 36: integer::encode_integer.assertion.12
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:61:9 in function integer::encode_integer
+
+Check 37: integer::encode_integer.assertion.13
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/integer.rs:62:9 in function integer::encode_integer
+
+Check 38: core::num::<impl usize>::checked_sub.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:812:31 in function core::num::<impl usize>::checked_sub
+
+Check 39: core::slice::index::slice_index_fail::do_panic::runtime.assertion.4
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:58:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 40: memcmp.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 41: memcmp.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 42: memcmp.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 43: memcmp.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 44: memcmp.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 45: memcmp.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 46: memcmp.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 47: memcmp.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 48: memcmp.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 49: memcmp.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 50: memcmp.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 51: memcmp.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: <builtin-library-memcmp>:27 in function memcmp
+
+Check 52: integer::encode_integer.array_bounds.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:48:28 in function integer::encode_integer
+
+Check 53: integer::encode_integer.array_bounds.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:48:50 in function integer::encode_integer
+
+Check 54: integer::encode_integer.array_bounds.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:53:28 in function integer::encode_integer
+
+Check 55: integer::encode_integer.array_bounds.4
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:53:50 in function integer::encode_integer
+
+Check 56: integer::encode_integer.array_bounds.5
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:61:18 in function integer::encode_integer
+
+Check 57: integer::encode_integer.array_bounds.6
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/integer.rs:61:9 in function integer::encode_integer
+
+Check 58: integer::decode_integer.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/integer.rs:85:16 in function integer::decode_integer
+
+Check 59: integer::decode_integer.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/integer.rs:85:16 in function integer::decode_integer
+
+Check 60: integer::decode_integer.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/integer.rs:85:16 in function integer::decode_integer
+
+Check 61: integer::decode_integer.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/integer.rs:85:16 in function integer::decode_integer
+
+Check 62: integer::decode_integer.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/integer.rs:85:16 in function integer::decode_integer
+
+Check 63: integer::decode_integer.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/integer.rs:85:16 in function integer::decode_integer
+
+Check 64: integer::decode_integer.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/integer.rs:89:28 in function integer::decode_integer
+
+Check 65: integer::decode_integer.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/integer.rs:89:28 in function integer::decode_integer
+
+Check 66: integer::decode_integer.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/integer.rs:89:28 in function integer::decode_integer
+
+Check 67: integer::decode_integer.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/integer.rs:89:28 in function integer::decode_integer
+
+Check 68: integer::decode_integer.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/integer.rs:89:28 in function integer::decode_integer
+
+Check 69: integer::decode_integer.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/integer.rs:89:28 in function integer::decode_integer
+
+Check 70: integer::decode_integer.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: der-verified/src/integer.rs:88:5 in function integer::decode_integer
+
+Check 71: memcmp.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: <builtin-library-memcmp>:25 in function memcmp
+
+
+SUMMARY:
+ ** 1 of 71 failed
+Failed Checks: assertion failed: relen == n
+ File: "der-verified/src/integer.rs", line 137, in integer::proofs::decode_accepts_only_minimal
+
+VERIFICATION:- FAILED
+Verification Time: 0.30733356s
+
+Manual Harness Summary:
+Verification failed for - integer::proofs::decode_accepts_only_minimal
+Complete - 0 successfully verified harnesses, 1 failures, 1 total.

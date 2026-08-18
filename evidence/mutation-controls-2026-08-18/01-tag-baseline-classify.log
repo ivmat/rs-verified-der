@@ -1,0 +1,761 @@
+Running as unit: run-p45264-i60619.scope; invocation ID: 8c6b4a9486b64bfaac7ebfc20a79df1f
+Kani Rust Verifier 0.67.0 (cargo plugin)
+   Compiling der-verified v0.1.1 (/home/ivo/repo/rs-verified-der/der-verified)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.41s
+Checking harness tag::proofs::high_tag_of_small_number_is_non_minimal...
+CBMC 6.8.0 (cbmc-6.8.0)
+CBMC version 6.8.0 (cbmc-6.8.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/ivo/repo/rs-verified-der/target/kani/x86_64-unknown-linux-gnu/debug/deps/der_verified-b5b5294bac262c11__RNvNtNtCs8Uhk9se0wUe_12der_verified3tag6proofs39high_tag_of_small_number_is_non_minimal.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3tag10decode_tag.0 iteration 1 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tag::decode_tag thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq thread 0
+Runtime Symex: 0.0232256s
+size of program expression: 1894 steps
+slicing removed 1400 assignments
+Generated 87 VCC(s), 10 remaining after simplification
+Runtime Postprocess Equation: 0.000158631s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.00126324s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 3.44e-06s
+Solving with CaDiCaL 2.0.0
+3313 variables, 5208 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.000143241s
+Runtime decision procedure: 0.00146184s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+3314 variables, 5209 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 5.4081e-05s
+Runtime decision procedure: 6.7051e-05s
+
+RESULTS:
+Check 1: tag::decode_tag.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:111:23 in function tag::decode_tag
+
+Check 2: tag::decode_tag.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:145:21 in function tag::decode_tag
+
+Check 3: tag::decode_tag.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: der-verified/src/tag.rs:148:18 in function tag::decode_tag
+
+Check 4: tag::decode_tag.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:149:9 in function tag::decode_tag
+
+Check 5: tag::decode_tag.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:150:9 in function tag::decode_tag
+
+Check 6: tag::decode_tag.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function tag::decode_tag
+
+Check 7: tag::proofs::high_tag_of_small_number_is_non_minimal.assertion.1
+	 - Status: SUCCESS
+	 - Description: "assertion failed: decode_tag(&[first, v]) == Err(TagError::NonMinimal)"
+	 - Location: der-verified/src/tag.rs:231:9 in function tag::proofs::high_tag_of_small_number_is_non_minimal
+
+Check 8: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 9: <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch
+
+Check 10: <usize as std::slice::SliceIndex<[u8]>>::get.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:223:13 in function <usize as std::slice::SliceIndex<[u8]>>::get
+
+Check 11: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tag::TagError>>>::from_residual.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2189:23 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tag::TagError>>>::from_residual
+
+Check 12: core::slice::<impl [u8]>::first.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/mod.rs:155:58 in function core::slice::<impl [u8]>::first
+
+Check 13: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 14: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 15: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 16: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 17: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 18: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 19: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 20: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 21: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 22: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 23: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 24: std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &(tag::Tag, usize)>::eq
+
+Check 25: tag::decode_tag.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:107:23 in function tag::decode_tag
+
+Check 26: tag::decode_tag.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 27: tag::decode_tag.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 28: tag::decode_tag.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 29: tag::decode_tag.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 30: tag::decode_tag.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 31: tag::decode_tag.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 32: tag::decode_tag.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:138:26 in function tag::decode_tag
+
+Check 33: tag::decode_tag.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 34: tag::decode_tag.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 35: tag::decode_tag.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 36: tag::decode_tag.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 37: tag::decode_tag.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 38: tag::decode_tag.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 39: tag::decode_tag.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:157:16 in function tag::decode_tag
+
+Check 40: tag::decode_tag.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:109:24 in function tag::decode_tag
+
+Check 41: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 42: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 43: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 44: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 45: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 46: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 47: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 48: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 49: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 50: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 51: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 52: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 53: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 54: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 55: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 56: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 57: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 58: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 59: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 60: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 61: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 62: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 63: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 64: <tag::TagError as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:50:17 in function <tag::TagError as std::cmp::PartialEq>::eq
+
+Check 65: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 66: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 67: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 68: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 69: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 70: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 71: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 72: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 73: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 74: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 75: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 76: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:44:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 77: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 78: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 79: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 80: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 81: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 82: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 83: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 84: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 85: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 86: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 87: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 88: <tag::Tag as std::cmp::PartialEq>::eq.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:46:5 in function <tag::Tag as std::cmp::PartialEq>::eq
+
+Check 89: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:54 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 90: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:54 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 91: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:54 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 92: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:54 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 93: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:54 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 94: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:54 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 95: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:63 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 96: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:63 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 97: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:63 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 98: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:63 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 99: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:63 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 100: std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:1865:63 in function std::cmp::impls::<impl std::cmp::PartialEq for usize>::eq
+
+Check 101: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 102: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 103: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 104: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 105: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 106: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 107: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 108: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 109: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 110: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 111: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 112: std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &tag::TagError>::eq
+
+Check 113: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 114: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 115: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 116: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 117: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 118: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 119: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 120: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 121: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 122: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 123: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 124: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 125: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 126: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 127: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 128: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 129: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 130: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 131: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 132: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 133: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 134: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 135: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 136: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 137: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 138: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 139: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 140: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 141: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+Check 142: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::cmp::PartialEq>::eq
+
+
+SUMMARY:
+ ** 0 of 142 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.045513786s
+
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
