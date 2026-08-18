@@ -468,10 +468,14 @@ fn parse_fields(outer_content: &[u8]) -> Result<RsaPrivateKey<'_>, RsaPrivateKey
 /// trailing `otherPrimeInfos` SEQUENCE — requiring the fields to exactly tile the SEQUENCE's
 /// content, and enforcing RFC 8017's `version` ↔ `otherPrimeInfos` cross-field rule.
 ///
-/// Never panics on any input **up to the harness's 20-octet symbolic bound** (proven by
-/// `parse_never_panics`); larger inputs — the full field set, the cross-field check, and
-/// `otherPrimeInfos` member validation — are exercised by the concrete `parse_ok_*_witnessed`
-/// harnesses and the `#[cfg(test)]` tests (see the Kani sizing comment below). Returns a classified
+/// Never panics on any input **≤ 20 bytes** (proven by `parse_never_panics`). **A real
+/// two-prime `RSAPrivateKey` is far larger** (~317 bytes for a 512-bit modulus; the module doc's
+/// own fixture is 317 bytes) — panic-freedom on inputs beyond the 20-byte bound is **not
+/// machine-checked** here: it rests on an un-machine-checked compositional argument (each field's
+/// own decoder — `decode_sequence_tlv`, `big_integer::validate_integer_content`, the
+/// `otherPrimeInfos` walk — is separately proven panic-free on its own, modularly), plus a single
+/// concrete 317-byte accept-path witness (`parse_ok_2prime_witnessed`, a fixture, not a symbolic
+/// proof) and `#[cfg(test)]` examples (see the Kani sizing comment below). Returns a classified
 /// [`RsaPrivateKeyError`] on any structural deviation.
 pub fn parse_rsa_private_key(input: &[u8]) -> Result<(RsaPrivateKey<'_>, usize), RsaPrivateKeyError> {
     let (outer_content, used) =
@@ -489,10 +493,11 @@ pub fn parse_rsa_private_key(input: &[u8]) -> Result<(RsaPrivateKey<'_>, usize),
 /// deliberately ignores trailing bytes so it can compose inside a larger structure, which is unsafe
 /// for a top-level object (the classic trailing-data parser differential).
 ///
-/// Never panics on any input **up to the harness's 20-octet symbolic bound** (proven by
-/// `parse_strict_never_panics`); larger inputs — the full field set, the cross-field check, and
-/// `otherPrimeInfos` member validation — are exercised by the concrete `parse_ok_*_witnessed`
-/// harnesses and the `#[cfg(test)]` tests (see the Kani sizing comment below).
+/// Never panics on any input **≤ 20 bytes** (proven by `parse_strict_never_panics`). As with
+/// [`parse_rsa_private_key`], a real key is far larger (~317 bytes) and panic-freedom beyond the
+/// 20-byte bound is **not machine-checked** — it rests on the same un-machine-checked
+/// compositional argument, a single concrete witness fixture, and `#[cfg(test)]` examples (see
+/// [`parse_rsa_private_key`]'s doc for the full statement, and the Kani sizing comment below).
 pub fn parse_rsa_private_key_strict(input: &[u8]) -> Result<RsaPrivateKey<'_>, RsaPrivateKeyError> {
     let outer_content = decode_sequence_tlv_strict(input).map_err(RsaPrivateKeyError::BadOuterSeq)?;
     parse_fields(outer_content)

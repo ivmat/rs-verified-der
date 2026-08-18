@@ -165,9 +165,16 @@ pub enum CertificateError {
 /// [`decode_bit_string`] — mirroring [`crate::x509_tbs_certificate::parse_tbs_certificate`]'s
 /// offset-walk idiom.
 ///
-/// Never panics on any input **up to the harness's 12-octet symbolic bound** (proven, with the tbs sub-parser modularly stubbed, by the
-/// `parse_certificate_never_panics` Kani harness below — see its comment for the modular-stubbing
-/// rationale); returns a classified [`CertificateError`] on any structural deviation.
+/// Never panics on any input **≤ 12 bytes** (proven, with the tbs sub-parser modularly stubbed, by
+/// the `parse_certificate_never_panics` Kani harness below — see its comment for the
+/// modular-stubbing rationale). **A real certificate is far larger** (this module's own test
+/// fixture is 170 bytes); panic-freedom on inputs beyond the 12-byte bound is **not
+/// machine-checked at this composition** — it rests on an un-machine-checked compositional
+/// argument (`decode_tlv`'s proven no-over-read contract keeps every span slice in-bounds
+/// regardless of `content`'s length, and each delegated sub-parser — `parse_tbs_certificate`,
+/// `parse_algorithm_identifier`, `decode_bit_string` — is separately proven panic-free on its own,
+/// modularly, at its own harness), not a symbolic proof over the real-size domain. Returns a
+/// classified [`CertificateError`] on any structural deviation.
 pub fn parse_certificate(input: &[u8]) -> Result<Certificate<'_>, CertificateError> {
     // 1. Outer SEQUENCE: must consume the whole input (top-level anti-trailing-data).
     let content = decode_sequence_tlv_strict(input).map_err(CertificateError::BadOuterSeq)?;

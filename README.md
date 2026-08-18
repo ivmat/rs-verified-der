@@ -13,7 +13,10 @@ evidence is **re-runnable from a fresh clone**: the proofs are the product, not 
   of malformed/non-canonical encodings).
 - **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
-  ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free.
+  ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free. **Residual:**
+  for `tag`, only totality and the consumption bound are lifted to ∀-length; minimal-encoding
+  *rejection* (the canonicality property) is proven only Kani-bounded, at a 7-byte buffer — see
+  `PROOF_MANIFEST.md` §6.2.
 - **472** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
@@ -31,7 +34,13 @@ the canonical content codecs: `BOOLEAN`, `INTEGER` (`i64` and arbitrary-magnitud
 (`AlgorithmIdentifier`, `SubjectPublicKeyInfo`, `Name`, `Validity`, `Extension`/`Extensions`,
 `TBSCertificate`, `Certificate`) by composing the verified codecs. They interpret **no**
 algorithm/key/signature/certificate semantics — a demonstration that the verified core is usable
-downstream, inside the same fence.
+downstream, inside the same fence. **Two of these compositions' panic-freedom bounds are small
+relative to a real object, and that gap is not machine-checked away:** `x509_certificate` proves
+panic-freedom **≤ 12 bytes** (a real certificate is ~170 bytes) and `rsa_private_key` proves it
+**≤ 20 bytes** (a real two-prime key is ~317 bytes); for both, panic-freedom on the larger, real
+size rests on an **un-machine-checked compositional argument** (each delegated sub-parser is
+separately proven panic-free on its own) plus one concrete witness fixture, not a symbolic proof
+over the real-size domain — see `PROOF_MANIFEST.md` §6.2 for the exact statement of each.
 
 **Signature-container framing (Kani-proven, no Lean lid):** the [`ecdsa_sig_value`] module parses the
 ASN.1 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480) — `SEQUENCE { r INTEGER, s INTEGER }` — composing

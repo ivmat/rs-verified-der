@@ -481,7 +481,7 @@ This is the list that decides whether the rest of the document is worth anything
 
 | Module | Not proven (beyond the crate-wide items above) |
 |---|---|
-| `tag` | ∀-length totality and consumption bounds are proven in Lean; the *canonicality/minimality* rejection properties are Kani-bounded only |
+| `tag` | ∀-length totality and consumption bounds are proven in Lean; the *canonicality/minimality* rejection properties are Kani-bounded only, at a **7-byte** symbolic buffer (`decode_tag_accepts_only_canonical`/`high_tag_of_small_number_is_non_minimal` et al., §4's `tag` row) — non-minimal high-tag encodings beyond that bound are not covered by the ∀-length Lean lid |
 | `length` | fully lifted to ∀-length in Lean; no known residual beyond the Aeneas trust boundary |
 | `tlv` | structural correctness is ∀-length; the strict (anti-trailing-data) variant's rejection classification is Kani-bounded only |
 | `context_tag` | bounded only; only the explicit-context form is addressed — implicit tagging is not modelled |
@@ -501,12 +501,13 @@ This is the list that decides whether the rest of the document is worth anything
 | `set_of` | bounded only. `SET OF` member-ordering (§11.6) is validated; **general `SET` (§10.3) is out of scope** (§9) |
 | `x509_algorithm_identifier` | bounded, structural only: frames the object; interprets no algorithm semantics and no parameters |
 | `ecdsa_sig_value` | bounded, structural only: DER framing and canonicality of `SEQUENCE { r INTEGER, s INTEGER }`. **No curve-order range check** (`1 <= r,s <= n-1` needs a curve identifier this container does not carry), **no low-S policy** (protocol profile, not DER validity), **no cryptographic interpretation** |
+| `rsa_private_key` | panic-freedom is proven **≤ 20 bytes** (`parse_never_panics`/`parse_strict_never_panics`); a real two-prime `RSAPrivateKey` is **~317 bytes** — panic-freedom beyond 20 bytes is **not machine-checked**: it rests on an un-machine-checked compositional argument (each field decoder proven panic-free on its own) plus a single concrete 317-byte fixture (`parse_ok_2prime_witnessed`) and `#[cfg(test)]` examples, not a symbolic proof over the real-size domain. No RSA arithmetic (`n = p*q`, CRT-parameter consistency, primality) is checked — every key-material INTEGER is opaque, comparison-only content |
 | `x509_spki` | bounded, structural only: no key parsing, no key validity, no algorithm/key agreement check |
 | `x509_name` | bounded, structural only. The composition proof is **modular** (`validate_rdn` stubbed — §8.4). No name-constraint semantics, no string canonicalisation/comparison rules |
 | `x509_validity` | bounded, structural only: no comparison against a clock. Its `parse_never_panics` cover is **known-unsatisfiable at `[u8; 16]`** and disclosed (§8.2) |
 | `x509_extension` | bounded, structural only: extension *contents* are never interpreted, and `critical` is peeked, not acted on. `validate_extensions` is proven at a reduced `[u8; 13]`; its cover is **known-unsatisfiable at that bound** and disclosed (§8.2) |
 | `x509_tbs_certificate` | bounded, structural only, and **modular** (two stubs; three in the witness harness — §8.4). Its `never_panics` cover is **known-unsatisfiable at `[u8; 10]`** and disclosed (§8.2). No cross-field RFC 5280 rule is checked here — that is `profile`'s job |
-| `x509_certificate` | bounded, structural only, and **modular** (`parse_tbs_certificate` stubbed — §8.4). No signature check, no path building |
+| `x509_certificate` | panic-freedom is proven **≤ 12 bytes** (`parse_certificate_never_panics`, **modular** — `parse_tbs_certificate` stubbed, §8.4); a real certificate is **~170 bytes** (this module's own test fixture) — panic-freedom beyond 12 bytes is **not machine-checked at this composition**: it rests on an un-machine-checked compositional argument (`decode_tlv`'s proven no-over-read contract plus each delegated sub-parser's own separate panic-freedom proof), not a symbolic proof over the real-size domain. No signature check, no path building |
 | `profile` | bounded, and over symbolic *field values* rather than symbolic DER bytes — it decodes nothing (§7). Each of the three RFC 5280 cross-field rules is proven as a biconditional, plus their precedence and totality. No Lean lid, so no ∀-length statement |
 
 ## 7. `profile` — proven, at value level and without a Lean lid
