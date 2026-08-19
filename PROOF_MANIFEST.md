@@ -504,7 +504,7 @@ This is the list that decides whether the rest of the document is worth anything
 |---|---|
 | `tag` | ∀-length totality and consumption bounds are proven in Lean; the *canonicality/minimality* rejection properties are Kani-bounded only, at a **7-byte** symbolic buffer (`decode_tag_accepts_only_canonical`/`high_tag_of_small_number_is_non_minimal` et al., §4's `tag` row) — non-minimal high-tag encodings beyond that bound are not covered by the ∀-length Lean lid |
 | `length` | fully lifted to ∀-length in Lean; no known residual beyond the Aeneas trust boundary |
-| `tlv` | structural correctness is ∀-length; the strict (anti-trailing-data) variant's rejection classification is Kani-bounded only |
+| `tlv` | **no over-read is proven, and this row names it because nothing else in the module's own clause did**: an accepted TLV consumes `used ≤ input.len()` and its value borrow is exactly `input[header..used]` — Kani-bounded at a 16-byte buffer (`decode_tlv_structure`) *and* ∀-length in Lean (§3.2's `tlv` row). Not proven: the strict (anti-trailing-data) variant's rejection classification, which is Kani-bounded only |
 | `context_tag` | bounded only; only the explicit-context form is addressed — implicit tagging is not modelled |
 | `boolean` | nothing outstanding: the 1-octet input space is characterised exhaustively |
 | `integer` | values are capped at `i64` by design (see §9); `big_integer` is the arbitrary-magnitude complement. Bounded only |
@@ -834,6 +834,18 @@ What mitigates this, and what does not:
 - **`utf8_string` additionally checks against `core::str::from_utf8`**, a genuinely external oracle.
   Note the direction: `from_utf8` is used as a differential *comparison*, never as an input
   constructor — the deliberately sound direction.
+- **`tlv`'s no-over-read oracle is INLINE, so the generated table above cannot see it — and it is
+  the crate's clearest anti-cast-mirroring case.** `decode_tlv_structure` re-derives the header from
+  the same bytes and states the consumption and value-length facts against the *declared* length
+  widened losslessly to `u64` (`used as u64 == header as u64 + len_u32 as u64`), never re-using the
+  implementation's own `as usize` cast. Asserting `== len as usize` would be tautological: a
+  truncating `len_u32 as usize` inside `decode_tlv` — a known seeded-defect class — would be mirrored
+  by the identical cast in the assertion and stay invisible. `sequence`'s `no_over_read` and
+  `ok_implies_exact_tiling` are the same discipline one level up: an independent *index* walk with no
+  pointer arithmetic, so the property cannot be vacuously true under address wraparound. The
+  derivation that builds the table finds oracles by looking for hand-written helper `fn`s inside
+  `mod proofs`; an oracle written inline in a harness body is invisible to it. That is a limit of the
+  table, not of the proof, and it is why this bullet exists.
 - **What does not mitigate it:** nothing gates oracle fidelity, no oracle is derived from the
   standard text mechanically, and the standard itself is not machine-readable. Each oracle's
   justification is prose in its docstring, checked by review against X.690/RFC 5280.
