@@ -25,9 +25,10 @@ evidence is **re-runnable from a fresh clone**: the proofs are the product, not 
 >
 > **And read [`ASSUMPTIONS.md`](ASSUMPTIONS.md) for what all of it stands on.** The trusted base,
 > stated loudly and in one place: Kani/CBMC/SAT soundness, the Lean kernel, the *Aeneas extraction's
-> fidelity* (the lids prove a Lean model of the shipped Rust, not the Rust), the six lids' 17
-> declared axioms — of which **2 are assumptions about this crate's own code that are proven
-> nowhere** — the toolchain pins, "bounded means bounded", and the three disclosed-unsatisfiable
+> fidelity* (the lids prove a Lean model of the shipped Rust, not the Rust), the six lids' 13
+> declared axioms — **all specs for upstream `core` primitives since 2026-08-19; none is an
+> assumption about this crate's own code any more** (the four that were became theorems that day) —
+> the toolchain pins, "bounded means bounded", and the three disclosed-unsatisfiable
 > covers. Every entry names how it could fail and what leans on it.
 
 ## Scope — proven vs. tested vs. out of scope
