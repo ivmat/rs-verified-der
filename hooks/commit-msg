@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Commit-msg gate — scans the COMMIT MESSAGE itself for content leaks (credentials, absolute
+# machine paths, private vocabulary) via gates/check_content_leaks.py --message. Exists because
+# message content otherwise never passes through any gate: pre-commit sees the tree, pre-push
+# sees the destination, and neither reads what the message says. A red result blocks the commit.
+#
+# Same git-hook-env strip as hooks/pre-commit (defensive; the scan itself doesn't touch git).
+root="$(git rev-parse --show-toplevel)"
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX GIT_COMMON_DIR GIT_INTERNAL_SUPER_PREFIX
+exec python3 "$root/gates/check_content_leaks.py" --message "$1"

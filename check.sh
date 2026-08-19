@@ -5,6 +5,12 @@ set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo "== hygiene gate (doc links; pure stdlib) =="
 python3 "$ROOT/gates/check_links.py"
+echo "== content-leak gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_check_content_leaks.py"
+echo "== content-leak gate (credentials / absolute paths / private vocabulary in tracked files; pure stdlib) =="
+# Also present in check_fast.sh (runs on every commit); repeated here so the release path's own
+# record is complete without leaning on the fast layer having run.
+python3 "$ROOT/gates/check_content_leaks.py"
 echo "== proof-manifest gate: self-test (the gate's own gate; pure stdlib) =="
 # Runs BEFORE the gate it tests. Both directions are covered: the gate must not fail an honest
 # third party whose toolchain differs from ours, and must still fail on a drifted count or pin.
