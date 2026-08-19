@@ -485,6 +485,14 @@ info: SequenceProofs.lean:865:0: 'DerVerified.Sequence.decode_sequence_structure
 confirmation that the axiom was *replaced*, not paralleled. (Line wrapping is this file's; the log
 prints one axiom per line.)
 
+*Applicability of the new log, held to the same standard this audit held the old one to:* one later
+commit (`f1ab219`) edits the three lids again — docstrings only, no proof text, no statement, no
+`#print axioms` line. That still changes the files, so rather than assert equivalence, it was
+checked: a fresh `check_lean.sh` run's `info:`/`warning:` lines were diffed against this log's,
+normalising `file.lean:LINE:COL` to `file.lean:L:C`, and the two are **identical** — same
+disclosures, same dependency sets, only the docstring-induced line shift. Any *further* lid edit
+voids that, and the next re-audit should re-run rather than trust this paragraph.
+
 **Verification of this addendum's claims:** `bash lean/check_lean.sh` green (re-extraction +
 model-drift diff + `lake build DerVerified` + sorry-gate), archived as
 `evidence/lean-lid-7eb8b26.log`; no `der-verified/src` file touched; and the three new statements
