@@ -396,7 +396,8 @@ the generator scanned free functions only and silently missed four of them, and 
 `Iterator::next` on `Elements` as well (a trait-impl method carries no `pub` keyword). The counts in
 §1 and in the table above are the corrected ones.
 
-Honest classification of that list — four kinds, only one of which is a real gap:
+Honest classification of that list — three kinds, none of which is now a real gap, and one
+correction stated rather than quietly edited away:
 
 1. **Eight `restricted_string` per-charset wrappers** (`decode_printable_string`,
    `decode_ia5_string`, `decode_numeric_string`, `decode_visible_string`, and the four
@@ -420,13 +421,22 @@ Honest classification of that list — four kinds, only one of which is a real g
    `wrong_tag_is_classified_*` harnesses call `identifier()` for all four charsets, so `tag_number`
    is symbolically executed under Kani in those four harnesses. This is the clearest illustration of
    why "named by a harness" is only a syntactic proxy — here it undercounts.
-4. **`profile::validate_profile`** — a genuine gap, and the largest single one in the crate. It has
-   no Kani harness and no Lean lid; see §7.
+**The correction.** Until this revision a fourth item sat here calling `profile::validate_profile`
+"a genuine gap, and the largest single one in the crate ... no Kani harness and no Lean lid". That
+stopped being true when the `profile` harnesses landed: §5's generated property list names
+`validate_profile_never_panics`, §7 describes six harnesses over that module, and the generated
+list above — which is derived from the source, not typed — has never contained `profile`. So the
+generated regions agreed with each other and with §1's count of eleven, while the prose beside them
+did not. **This is the failure mode this document warns about in its own opening section**: the half
+a gate cannot check is exactly where a claim rots, and here it rotted in the *pessimistic* direction
+(a gap disclosed that no longer existed), which is the only reason it was survivable. `validate_profile`
+still has **no Lean lid** — that residual is real and is stated in §6.2 and §7, where it belongs.
 
 **No entry point in this crate is claimed to be proven where it is not.** If you need a
-machine-checked guarantee on one of the eleven above: for the nine delegating wrappers and
-accessors, call the harnessed delegate directly; for `profile::validate_profile` there is no delegate
-to fall back to, so the only options are to ask for a harness or to treat it as tested-only.
+machine-checked guarantee on one of the eleven above: for the ten delegating wrappers and accessors,
+call the harnessed delegate directly (each one's body is a single delegation, and the delegate is
+harnessed); `Charset::tag_number` needs nothing further — it is symbolically executed inside the four
+`wrong_tag_is_classified_*` harnesses, it is simply not *named* by one.
 
 ## 5. Properties proven — per module
 

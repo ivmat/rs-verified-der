@@ -220,12 +220,12 @@ and discharged nowhere**. They are named in §2 in as many words, not softened.
   **load-bearing-for:** everything in `PROOF_MANIFEST.md`, `README.md` and this file that a gate
   does not re-derive — including this list's own accuracy.
 
-- **A12 · The eleven unharnessed entry points are total by inspection.** Nine delegating wrappers
-  and accessors plus `profile::validate_profile` carry no Kani harness. For the wrappers the
-  argument is a one-line body delegating to a harnessed function — a human argument, recorded as
-  one (`PROOF_MANIFEST.md` §4.1). A transposed constant in a wrapper (`decode_ia5_string`
-  delegating with the wrong `Charset`) would satisfy every proof cited and is covered by `#[test]`
-  cases only.
+- **A12 · The eleven unharnessed entry points are total by inspection.** Ten delegating wrappers and
+  accessors carry no Kani harness of their own (the eleventh, `Charset::tag_number`, is symbolically
+  executed inside harnesses that do not name it). For the wrappers the argument is a one-line body
+  delegating to a harnessed function — a human argument, recorded as one (`PROOF_MANIFEST.md` §4.1).
+  A transposed constant in a wrapper (`decode_ia5_string` delegating with the wrong `Charset`) would
+  satisfy every proof cited and is covered by `#[test]` cases only.
   **fails-if:** a defect found in a wrapper by test or by use.
   **load-bearing-for:** any reading of "this crate's public API is proven panic-free" that includes
   those eleven names. The manifest declines that reading explicitly.
