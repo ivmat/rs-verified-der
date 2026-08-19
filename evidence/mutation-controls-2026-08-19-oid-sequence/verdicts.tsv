@@ -1,0 +1,17 @@
+run_id	mutation	harness	predicted	observed	log
+00-base-oid-leading	none	oid::proofs::leading_0x80_is_non_minimal	GREEN	GREEN	logs/00-base-oid-leading.log
+01-base-oid-later	none	oid::proofs::later_0x80_is_non_minimal	GREEN	GREEN	logs/01-base-oid-later.log
+02-base-seq-tiling	none	sequence::proofs::ok_implies_exact_tiling	GREEN	GREEN	logs/02-base-seq-tiling.log
+03-base-seq-roundtrip	none	sequence::proofs::roundtrip_two_children	GREEN	GREEN	logs/03-base-seq-roundtrip.log
+04-oidA-leading	OID-A	oid::proofs::leading_0x80_is_non_minimal	RED	RED	logs/04-oidA-leading.log
+05-oidA-later	OID-A	oid::proofs::later_0x80_is_non_minimal	RED	RED	logs/05-oidA-later.log
+06-oidA-reverted	OID-A-reverted	oid::proofs::leading_0x80_is_non_minimal	GREEN	GREEN	logs/06-oidA-reverted.log
+07-oidB-later	OID-B	oid::proofs::later_0x80_is_non_minimal	RED	RED	logs/07-oidB-later.log
+08-oidB-leading	OID-B	oid::proofs::leading_0x80_is_non_minimal	GREEN	GREEN	logs/08-oidB-leading.log
+09-oidB-reverted	OID-B-reverted	oid::proofs::later_0x80_is_non_minimal	GREEN	GREEN	logs/09-oidB-reverted.log
+10-seqA-tiling	SEQ-A	sequence::proofs::ok_implies_exact_tiling	RED	RED	logs/10-seqA-tiling.log
+11-seqA-roundtrip	SEQ-A	sequence::proofs::roundtrip_two_children	RED	RED	logs/11-seqA-roundtrip.log
+12-seqA-reverted	SEQ-A-reverted	sequence::proofs::ok_implies_exact_tiling	GREEN	GREEN	logs/12-seqA-reverted.log
+13-seqB-tiling	SEQ-B	sequence::proofs::ok_implies_exact_tiling	RED	RED	logs/13-seqB-tiling.log
+14-seqB-roundtrip	SEQ-B	sequence::proofs::roundtrip_two_children	GREEN	GREEN	logs/14-seqB-roundtrip.log
+15-seqB-reverted	SEQ-B-reverted	sequence::proofs::ok_implies_exact_tiling	GREEN	GREEN	logs/15-seqB-reverted.log

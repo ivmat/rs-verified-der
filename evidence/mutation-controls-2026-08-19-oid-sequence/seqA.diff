@@ -1,0 +1,13 @@
+diff --git a/der-verified/src/sequence.rs b/der-verified/src/sequence.rs
+index 1ee97ef..a6790f3 100644
+--- a/der-verified/src/sequence.rs
++++ b/der-verified/src/sequence.rs
+@@ -134,7 +134,7 @@ pub fn decode_sequence(content: &[u8]) -> Result<usize, SequenceError> {
+             Err(e) => return Err(SequenceError::Element(e)),
+         }
+     }
+-    Ok(count)
++    Ok(count + 1)
+ }
+ 
+ /// Decode a complete DER SEQUENCE from the front of `input`, returning the SEQUENCE **content**

@@ -334,10 +334,15 @@ share, not a substitute for the full gate.
 
 **Negative controls — the evidence that these oracles can go RED at all.** A green run is only as
 meaningful as the oracle's ability to fail, and a suite nobody has watched fail is a suite whose
-green is unmeasured. Three campaigns are recorded, and each says in its own words what it does *not*
+green is unmeasured. Four campaigns are recorded, and each says in its own words what it does *not*
 cover: `evidence/MUTATION-CONTROLS-2026-08-18.md` (a planted defect in each of `length`, `tag`,
 `tlv`, `integer` and `big_integer`, each caught by the harness whose documented job is to catch it,
-each reverted byte-identically and re-run green); `evidence/PLANTED-SATISFIED-TWINS-2026-08-18.md`
+each reverted byte-identically and re-run green);
+`evidence/MUTATION-CONTROLS-2026-08-19-oid-sequence.md` (the same protocol extended to `oid` and
+`sequence` — the two remaining ∀-length-lidded DER base codecs — run on a disposable host from a
+fresh clone of the published commit, and carrying two deliberately **predicted-GREEN** runs that
+identify which harness in each pair is actually load-bearing);
+`evidence/PLANTED-SATISFIED-TWINS-2026-08-18.md`
 (for the three disclosed-unsatisfiable covers of §8.2, a twin that *is* satisfiable at the same
 bound, so "unsatisfiable" is distinguished from "cover never fires here"); and
 `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (for the L4 lineage: one mutation per lid — four

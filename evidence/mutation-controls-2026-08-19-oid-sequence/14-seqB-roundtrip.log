@@ -1,0 +1,17 @@
+# DISTILLED from the raw run log; the complete raw log is beside this file as 14-seqB-roundtrip.log.gz
+# raw bytes: 622690 ; raw sha256: 848afc2b2855f9fb38a98de6636454444082adbcb02decf8d0ca28b8e2e08088
+# distillation: grep -nE '^\$ |Kani Rust Verifier|^CBMC |Checking harness|VERIFICATION:- |^SUMMARY:|Failed Checks:|^ \*\* |Verification Time|Complete - |cover|Elapsed \(wall clock\)|Maximum resident' <raw>
+# (the raw log is CBMC's full per-property output, ~0.6-0.8 MB; the crate commits it gzipped
+#  so the distillation stays checkable rather than trusted — same split as evidence/check-*.log)
+#
+1:Kani Rust Verifier 0.67.0 (cargo plugin)
+11:Checking harness sequence::proofs::roundtrip_two_children...
+12:CBMC 6.8.0 (cbmc-6.8.0)
+13:CBMC version 6.8.0 (cbmc-6.8.0) 64-bit x86_64 linux
+4617:SUMMARY:
+4618: ** 0 of 476 failed (38 unreachable)
+4620:VERIFICATION:- SUCCESSFUL
+4621:Verification Time: 77.184845s
+4624:Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+4629:	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:20.39
+4634:	Maximum resident set size (kbytes): 2659020

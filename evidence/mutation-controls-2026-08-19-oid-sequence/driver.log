@@ -1,0 +1,66 @@
+[dermut] run begin Wed Aug 19 09:30:11 UTC 2026
+fc0dc5fd82d8d10652806b56ab8f5cf4d6c2eb47
+cargo-kani 0.67.0
+6.8.0 (cbmc-6.8.0)
+baseline sha256 oid.rs      252d5f61c7a125342388e09a923095aa294d22c45e74fd19f07497fae073cfa0
+baseline sha256 sequence.rs c81cca7bf4fafbee5f625d005cd2e93eca097dff5b93849e8ed2e9777839a48c
+== [00-base-oid-leading] mutation=none harness=oid::proofs::leading_0x80_is_non_minimal predicted=GREEN ==
+== [00-base-oid-leading] observed=GREEN (predicted=GREEN) ==
+== [01-base-oid-later] mutation=none harness=oid::proofs::later_0x80_is_non_minimal predicted=GREEN ==
+== [01-base-oid-later] observed=GREEN (predicted=GREEN) ==
+== [02-base-seq-tiling] mutation=none harness=sequence::proofs::ok_implies_exact_tiling predicted=GREEN ==
+== [02-base-seq-tiling] observed=GREEN (predicted=GREEN) ==
+== [03-base-seq-roundtrip] mutation=none harness=sequence::proofs::roundtrip_two_children predicted=GREEN ==
+== [03-base-seq-roundtrip] observed=GREEN (predicted=GREEN) ==
+mutation applied to /root/der/der-verified/src/oid.rs
+== [04-oidA-leading] mutation=OID-A harness=oid::proofs::leading_0x80_is_non_minimal predicted=RED ==
+== [04-oidA-leading] observed=RED (predicted=RED) ==
+== [05-oidA-later] mutation=OID-A harness=oid::proofs::later_0x80_is_non_minimal predicted=RED ==
+== [05-oidA-later] observed=RED (predicted=RED) ==
+== revert der-verified/src/oid.rs: sha256 byte-identical to baseline (252d5f61c7a125342388e09a923095aa294d22c45e74fd19f07497fae073cfa0) ==
+== [06-oidA-reverted] mutation=OID-A-reverted harness=oid::proofs::leading_0x80_is_non_minimal predicted=GREEN ==
+== [06-oidA-reverted] observed=GREEN (predicted=GREEN) ==
+mutation applied to /root/der/der-verified/src/oid.rs
+== [07-oidB-later] mutation=OID-B harness=oid::proofs::later_0x80_is_non_minimal predicted=RED ==
+== [07-oidB-later] observed=RED (predicted=RED) ==
+== [08-oidB-leading] mutation=OID-B harness=oid::proofs::leading_0x80_is_non_minimal predicted=GREEN ==
+== [08-oidB-leading] observed=GREEN (predicted=GREEN) ==
+== revert der-verified/src/oid.rs: sha256 byte-identical to baseline (252d5f61c7a125342388e09a923095aa294d22c45e74fd19f07497fae073cfa0) ==
+== [09-oidB-reverted] mutation=OID-B-reverted harness=oid::proofs::later_0x80_is_non_minimal predicted=GREEN ==
+== [09-oidB-reverted] observed=GREEN (predicted=GREEN) ==
+mutation applied to /root/der/der-verified/src/sequence.rs
+== [10-seqA-tiling] mutation=SEQ-A harness=sequence::proofs::ok_implies_exact_tiling predicted=RED ==
+== [10-seqA-tiling] observed=RED (predicted=RED) ==
+== [11-seqA-roundtrip] mutation=SEQ-A harness=sequence::proofs::roundtrip_two_children predicted=RED ==
+== [11-seqA-roundtrip] observed=RED (predicted=RED) ==
+== revert der-verified/src/sequence.rs: sha256 byte-identical to baseline (c81cca7bf4fafbee5f625d005cd2e93eca097dff5b93849e8ed2e9777839a48c) ==
+== [12-seqA-reverted] mutation=SEQ-A-reverted harness=sequence::proofs::ok_implies_exact_tiling predicted=GREEN ==
+== [12-seqA-reverted] observed=GREEN (predicted=GREEN) ==
+mutation applied to /root/der/der-verified/src/sequence.rs
+== [13-seqB-tiling] mutation=SEQ-B harness=sequence::proofs::ok_implies_exact_tiling predicted=RED ==
+== [13-seqB-tiling] observed=RED (predicted=RED) ==
+== [14-seqB-roundtrip] mutation=SEQ-B harness=sequence::proofs::roundtrip_two_children predicted=GREEN ==
+== [14-seqB-roundtrip] observed=GREEN (predicted=GREEN) ==
+== revert der-verified/src/sequence.rs: sha256 byte-identical to baseline (c81cca7bf4fafbee5f625d005cd2e93eca097dff5b93849e8ed2e9777839a48c) ==
+== [15-seqB-reverted] mutation=SEQ-B-reverted harness=sequence::proofs::ok_implies_exact_tiling predicted=GREEN ==
+== [15-seqB-reverted] observed=GREEN (predicted=GREEN) ==
+252d5f61c7a125342388e09a923095aa294d22c45e74fd19f07497fae073cfa0  /root/der/der-verified/src/oid.rs
+c81cca7bf4fafbee5f625d005cd2e93eca097dff5b93849e8ed2e9777839a48c  /root/der/der-verified/src/sequence.rs
+[dermut] run complete Wed Aug 19 09:52:28 UTC 2026
+run_id                 mutation        harness                                    predicted  observed  log
+00-base-oid-leading    none            oid::proofs::leading_0x80_is_non_minimal   GREEN      GREEN     logs/00-base-oid-leading.log
+01-base-oid-later      none            oid::proofs::later_0x80_is_non_minimal     GREEN      GREEN     logs/01-base-oid-later.log
+02-base-seq-tiling     none            sequence::proofs::ok_implies_exact_tiling  GREEN      GREEN     logs/02-base-seq-tiling.log
+03-base-seq-roundtrip  none            sequence::proofs::roundtrip_two_children   GREEN      GREEN     logs/03-base-seq-roundtrip.log
+04-oidA-leading        OID-A           oid::proofs::leading_0x80_is_non_minimal   RED        RED       logs/04-oidA-leading.log
+05-oidA-later          OID-A           oid::proofs::later_0x80_is_non_minimal     RED        RED       logs/05-oidA-later.log
+06-oidA-reverted       OID-A-reverted  oid::proofs::leading_0x80_is_non_minimal   GREEN      GREEN     logs/06-oidA-reverted.log
+07-oidB-later          OID-B           oid::proofs::later_0x80_is_non_minimal     RED        RED       logs/07-oidB-later.log
+08-oidB-leading        OID-B           oid::proofs::leading_0x80_is_non_minimal   GREEN      GREEN     logs/08-oidB-leading.log
+09-oidB-reverted       OID-B-reverted  oid::proofs::later_0x80_is_non_minimal     GREEN      GREEN     logs/09-oidB-reverted.log
+10-seqA-tiling         SEQ-A           sequence::proofs::ok_implies_exact_tiling  RED        RED       logs/10-seqA-tiling.log
+11-seqA-roundtrip      SEQ-A           sequence::proofs::roundtrip_two_children   RED        RED       logs/11-seqA-roundtrip.log
+12-seqA-reverted       SEQ-A-reverted  sequence::proofs::ok_implies_exact_tiling  GREEN      GREEN     logs/12-seqA-reverted.log
+13-seqB-tiling         SEQ-B           sequence::proofs::ok_implies_exact_tiling  RED        RED       logs/13-seqB-tiling.log
+14-seqB-roundtrip      SEQ-B           sequence::proofs::roundtrip_two_children   GREEN      GREEN     logs/14-seqB-roundtrip.log
+15-seqB-reverted       SEQ-B-reverted  sequence::proofs::ok_implies_exact_tiling  GREEN      GREEN     logs/15-seqB-reverted.log

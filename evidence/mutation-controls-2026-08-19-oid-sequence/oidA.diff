@@ -1,0 +1,17 @@
+diff --git a/der-verified/src/oid.rs b/der-verified/src/oid.rs
+index e9f15c1..38d4a58 100644
+--- a/der-verified/src/oid.rs
++++ b/der-verified/src/oid.rs
+@@ -61,9 +61,9 @@ pub fn validate_oid(content: &[u8]) -> Result<(), OidError> {
+     while i < content.len() {
+         let b = content[i];
+         // Minimality (§8.19): a subidentifier's leading octet must not be a redundant `0x80` group.
+-        if at_subid_start && b == 0x80 {
+-            return Err(OidError::NonMinimalSubid);
+-        }
++        // if at_subid_start && b == 0x80 {
++        //     return Err(OidError::NonMinimalSubid);
++        // }
+         // An octet with bit 8 clear terminates the current subidentifier; the next octet starts one.
+         at_subid_start = b & 0x80 == 0;
+         i += 1;

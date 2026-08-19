@@ -1,0 +1,491 @@
+Kani Rust Verifier 0.67.0 (cargo plugin)
+   Compiling der-verified v0.1.1 (/root/der/der-verified)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.08s
+Checking harness oid::proofs::later_0x80_is_non_minimal...
+CBMC 6.8.0 (cbmc-6.8.0)
+CBMC version 6.8.0 (cbmc-6.8.0) 64-bit x86_64 linux
+Reading GOTO program from file /root/der/target/kani/x86_64-unknown-linux-gnu/debug/deps/der_verified-f9786c6575ad4313__RNvNtNtCs8Uhk9se0wUe_12der_verified3oid6proofs25later_0x80_is_non_minimal.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3oid12validate_oid.0 iteration 1 file der-verified/src/oid.rs line 61 column 5 function oid::validate_oid thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3oid12validate_oid.0 iteration 2 file der-verified/src/oid.rs line 61 column 5 function oid::validate_oid thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3oid12validate_oid.0 iteration 3 file der-verified/src/oid.rs line 61 column 5 function oid::validate_oid thread 0
+Unwinding loop _RNvNtCs8Uhk9se0wUe_12der_verified3oid12validate_oid.0 iteration 4 file der-verified/src/oid.rs line 61 column 5 function oid::validate_oid thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq thread 0
+Runtime Symex: 0.021505s
+size of program expression: 704 steps
+slicing removed 496 assignments
+Generated 104 VCC(s), 13 remaining after simplification
+Runtime Postprocess Equation: 0.00024616s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.00118999s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 6.93e-06s
+Solving with CaDiCaL 2.0.0
+795 variables, 1021 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 9.741e-05s
+Runtime decision procedure: 0.00137285s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+796 variables, 1022 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 5.442e-05s
+Runtime decision procedure: 8.391e-05s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+797 variables, 1023 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 3.994e-05s
+Runtime decision procedure: 6.4769e-05s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+798 variables, 1024 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 3.148e-05s
+Runtime decision procedure: 5.774e-05s
+
+RESULTS:
+Check 1: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 2: oid::validate_oid.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/oid.rs:62:17 in function oid::validate_oid
+
+Check 3: oid::validate_oid.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/oid.rs:69:9 in function oid::validate_oid
+
+Check 4: oid::proofs::later_0x80_is_non_minimal.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/oid.rs:127:22 in function oid::proofs::later_0x80_is_non_minimal
+
+Check 5: oid::proofs::later_0x80_is_non_minimal.assertion.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/oid.rs:128:22 in function oid::proofs::later_0x80_is_non_minimal
+
+Check 6: oid::proofs::later_0x80_is_non_minimal.assertion.3
+	 - Status: SUCCESS
+	 - Description: "assertion failed: validate_oid(&buf) == Err(OidError::NonMinimalSubid)"
+	 - Location: der-verified/src/oid.rs:129:9 in function oid::proofs::later_0x80_is_non_minimal
+
+Check 7: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 8: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 9: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 10: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 11: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 12: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 13: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 14: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 15: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 16: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 17: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 18: std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &()>::eq
+
+Check 19: oid::validate_oid.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/oid.rs:62:17 in function oid::validate_oid
+
+Check 20: oid::validate_oid.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/oid.rs:62:17 in function oid::validate_oid
+
+Check 21: oid::validate_oid.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/oid.rs:62:17 in function oid::validate_oid
+
+Check 22: oid::validate_oid.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/oid.rs:62:17 in function oid::validate_oid
+
+Check 23: oid::validate_oid.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/oid.rs:62:17 in function oid::validate_oid
+
+Check 24: oid::validate_oid.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/oid.rs:62:17 in function oid::validate_oid
+
+Check 25: oid::validate_oid.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/oid.rs:76:5 in function oid::validate_oid
+
+Check 26: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 27: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 28: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 29: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 30: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 31: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:27 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 32: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 33: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 34: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 35: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 36: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 37: std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:2090:34 in function std::cmp::impls::<impl std::cmp::PartialEq for &oid::OidError>::eq
+
+Check 38: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 39: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 40: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 41: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 42: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 43: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 44: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 45: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 46: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 47: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 48: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 49: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 50: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 51: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 52: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 53: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 54: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 55: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 56: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 57: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 58: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 59: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 60: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 61: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 62: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 63: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 64: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 65: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 66: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 67: <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:553:16 in function <std::result::Result<(), oid::OidError> as std::cmp::PartialEq>::eq
+
+Check 68: oid::proofs::later_0x80_is_non_minimal.array_bounds.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/oid.rs:127:22 in function oid::proofs::later_0x80_is_non_minimal
+
+Check 69: oid::proofs::later_0x80_is_non_minimal.array_bounds.2
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/oid.rs:128:22 in function oid::proofs::later_0x80_is_non_minimal
+
+Check 70: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 71: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 72: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 73: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 74: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 75: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 76: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 77: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 78: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 79: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 80: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+Check 81: <oid::OidError as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/oid.rs:36:17 in function <oid::OidError as std::cmp::PartialEq>::eq
+
+
+SUMMARY:
+ ** 0 of 81 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.064747475s
+
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "cargo kani --manifest-path der-verified/Cargo.toml --harness oid::proofs::later_0x80_is_non_minimal --exact -Z stubbing"
+	User time (seconds): 1.15
+	System time (seconds): 0.20
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.34
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 193468
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 46543
+	Voluntary context switches: 286
+	Involuntary context switches: 9
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 34184
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

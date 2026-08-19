@@ -1,0 +1,13 @@
+diff --git a/der-verified/src/sequence.rs b/der-verified/src/sequence.rs
+index 1ee97ef..72503c2 100644
+--- a/der-verified/src/sequence.rs
++++ b/der-verified/src/sequence.rs
+@@ -131,7 +131,7 @@ pub fn decode_sequence(content: &[u8]) -> Result<usize, SequenceError> {
+     for child in Elements::new(content) {
+         match child {
+             Ok(_) => count += 1,
+-            Err(e) => return Err(SequenceError::Element(e)),
++            Err(_e) => break,
+         }
+     }
+     Ok(count)
