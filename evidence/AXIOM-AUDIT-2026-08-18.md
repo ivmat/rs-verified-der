@@ -375,3 +375,92 @@ extract axioms**, per §1 and §2 above.
 * Archived disclosure: `evidence/lean-lid-ea8dad4.log` (added in `151c826`; no lid/extract `.lean`
   change since — applicable to HEAD)
 * Manifest text audited: `PROOF_MANIFEST.md` §3.2
+
+---
+
+## Addendum — 2026-08-19: axioms 16 and 17 are discharged
+
+**Appended, not merged.** Everything above is the audit as it stood on 2026-08-18 and is left
+exactly as written, including its counts and its verdict. This section records what changed
+afterwards; where the two disagree, the audit is the earlier state and this addendum is the later.
+
+**What changed.** §2.7's recommendation was carried out. `LengthProofs.lean` now proves
+
+```lean
+theorem decode_length_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
+    length.decode_length s = ok (core.result.Result.Ok (v, l_used)) →
+      l_used.val ≤ s.val.length
+```
+
+— the *exact* statement axioms 16 and 17 asserted, coercion shape included — and the same proof,
+character-for-character, now stands in `TlvProofs.lean` and `SequenceProofs.lean` **in place of**
+those two `axiom` declarations. They are theorems there now, with the same names and signatures, so
+no consuming proof changed.
+
+**How.** A branch walk over `decode_length`, in the shape §2.7 predicted, supported by two small
+lemmas that are also reproduced in each lid:
+
+| declaration | what it does |
+|---|---|
+| `low7_eq_mod` | `n &&& 0x7f = n % 0x80` on `Nat` — the bit-mask step `omega`/`scalar_tac` cannot take, reduced to a `%` they can (used to see that a `0x81..0xFE` initial octet declares ≥ 1 length octet, which is what keeps `octets[0]` in bounds) |
+| `decode_length_loop_total` | the weakest fact about `decode_length_loop` a consumption bound needs: from an in-range index it terminates and returns `ok`, given the octet window is exactly `n` long |
+| `decode_length_used_le_spec` | the bound as an Aeneas triple: every reject branch is vacuous against an `Ok` conclusion; the short form returns `1` and only fires when `first` returned `some`; the long form returns `1 + n` only past the `input.len() < 1 + n` guard |
+| `decode_length_used_le` | the equation form above, read off the triple by `WP.spec_ok` |
+
+Deliberately **not** used: the existing `decode_length_loop_spec` (its big-endian value invariant is
+irrelevant to a consumption bound and carries a `bv_decide` certificate axiom) and
+`u8_high_bit_decomp` (same, for the mask fact). The result is that all three copies disclose
+
+```
+[propext, Classical.choice, Quot.sound, first_spec, core.slice.Slice.first]
+```
+
+— the same base as this lid's other `first_spec`-only theorems: no SAT certificate, no `sorryAx`,
+and no crate-code assumption.
+
+**Why three copies rather than one import.** §2.6's residual is unchanged and is the reason: Aeneas
+gives each extraction pass its own namespace, so `der_length_extract.length.decode_length`,
+`der_tlv_extract.length.decode_length` and `der_sequence_extract.length.decode_length` are three
+distinct constants and a theorem about one is not a theorem about another. The audit's own
+mechanical check (§2.6.4: the `length.*` declarations are identical across the three extracts once
+the namespace token is normalised) is what makes the reproduction sound, and the fact that the three
+proof texts are byte-identical modulo that token is what makes it *checkable* — by `diff`, where an
+import would have been checked by the kernel. That is weaker than an import and is stated as such.
+
+**Revised census** (this addendum's state, superseding §1's and §3's counts):
+
+| classification | 2026-08-18 | 2026-08-19 |
+|---|---:|---:|
+| UPSTREAM-PRIMITIVE-SPEC (verified faithful against rustc source) | 13 | **13** |
+| SMUGGLED — asserts a property of this crate's own translated code | 4 | **2** |
+| — of those, discharged by a sorry-free proof elsewhere (`length_decode_total` ×2) | 2 | **2** |
+| — of those, **no Lean proof anywhere** (`length_decode_used_le` ×2) | 2 | **0** |
+| **total declared lid axioms** | **17** | **15** |
+
+Per lid: `TlvProofs.lean` 6 → **5**, `SequenceProofs.lean` 6 → **5**; the other four are unchanged
+(`BigIntProofs` 3, `LengthProofs` 1, `TagProofs` 1, `OidProofs` 0). `PROOF_MANIFEST.md` §3.2's
+generated table and `ASSUMPTIONS.md` A6 (plus its new §T tombstone) carry the same numbers.
+
+The honest one-line statement of the ∀-length trust base becomes:
+*13 upstream-primitive specs (verified faithful), and 2 crate-code facts proved sorry-free in a
+sibling lid and re-asserted across an extraction-namespace boundary.* The third clause — *2
+crate-code facts warranted by source reading and bounded Kani only* — is gone.
+
+**What this does not change.** The blast-radius finding in §2.7 stands: these two facts were, and
+their theorem versions still are, consumed at exactly one place each, to discharge the
+overflow-freedom side condition of `decode_tlv`'s header arithmetic. The security-critical
+no-over-read conclusion the `tlv`/`sequence` headlines sell still comes from `decode_tlv`'s own
+runtime guard. This closed an *assumption*, not a hole in a headline claim.
+
+**Still open from this audit:** §4's mechanical census gate (`gates/check_axiom_census.py`) is not
+built. If it is, its expectation file starts at **15 lid axioms (13 UPSTREAM, 2 CRATE — both
+discharged, 0 UNPROVEN) and 25 extract axioms**, and its `discharge:` column no longer needs the
+literal `UNPROVEN`. And `length_decode_total` ×2 is now discharged the same way its former companion
+was: `decode_length_used_le_spec` is unhypothesised, so `∃ r, decode_length s = ok r` follows from
+it in three lines *inside each lid's own namespace* — which would close §2.6's hand-argument
+transfer too. That was outside the scope of this change and is recorded rather than done.
+
+**Verification of this addendum's claims:** `bash lean/check_lean.sh` green (re-extraction +
+model-drift diff + `lake build DerVerified` + sorry-gate), no `der-verified/src` file touched, and
+the three new statements negative-controlled by planted mutation — see
+`evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (M7–M9).

@@ -21,8 +21,11 @@ mode, and each names it:
 2. **This list is incomplete, and A0 says so inside the list rather than around it.** No claim of
    the form "these are all the assumptions" is made anywhere in this crate.
 
-Two of the entries below (**A6**) are assumptions about *this crate's own code* that are **assumed
-and discharged nowhere**. They are named in §2 in as many words, not softened.
+Two of the entries below (**A6**) are assumptions about *this crate's own code*. Since 2026-08-19
+neither is un-discharged — both are entailed by a sorry-free proof in a sibling lid — but the
+transfer across Aeneas's per-extraction namespaces is still a **hand argument, not an import**, and
+§2 says so in as many words rather than softening it. The pair that really was *proven nowhere*
+(`length_decode_used_le` ×2) was discharged by proof on that date and is tombstoned in §T.
 
 ---
 
@@ -115,36 +118,36 @@ and discharged nowhere**. They are named in §2 in as many words, not softened.
 ## 2. The crate's own assumptions — the ones that are ours, not the tools'
 
 - **A6 · The lids' declared axioms are what they claim to be — and two of them are assumptions about
-  this crate's own code that are proven nowhere.** The six lids declare 17 `axiom`s. They were
+  this crate's own code, discharged by a proof in a sibling lid rather than by an import.** The six
+  lids declare **15** `axiom`s (17 until 2026-08-19; see the tombstone below). They were
   audited once, by hand, against upstream sources
   (`evidence/AXIOM-AUDIT-2026-08-18.md`), with this result:
   - **13 are upstream-primitive specs** — characterisations of rustc `core` functions Aeneas does
     not model (`<[T]>::first`, `Option::is_some_and`, `Result::map_err`,
     `<usize as TryFrom<u32>>::try_from`, `&u8 & u8`), each verified faithful against the actual
     `core` source at the extraction toolchain's pinned nightly.
-  - **4 are assumptions about `der-verified`'s own translated code**, not about Aeneas's Std library
+  - **2 are assumptions about `der-verified`'s own translated code**, not about Aeneas's Std library
     — which is *not* what `PROOF_MANIFEST.md` §3.2's generated column heading says, and the audit
     says so.
-    - `length_decode_total` ×2 — **discharged elsewhere**: entailed by `LengthProofs.lean`'s
-      unhypothesised, sorry-free `decode_accepts_only_canonical`, transferred across an
-      extraction-namespace boundary **by a hand argument**, not by an import.
-    - **`length_decode_used_le` ×2 — ASSUMED, AND DISCHARGED NOWHERE.** No Lean proof of it exists
-      in this repository. Its warrant is a reading of `der-verified/src/length.rs:74-109` (both
-      accept paths are guarded, so the bound holds of the shipped source) plus bounded Kani. It is
-      true of the code as written; it is simply **not machine-checked**, and it is load-bearing in
-      the `tlv` and `sequence` lids' proofs.
-  Blast radius of the two unproven ones, stated precisely because it is narrow: each is consumed at
-  exactly one place, to establish the *overflow-freedom side condition* of `decode_tlv`'s header
-  arithmetic. The security-relevant conclusion those lids sell — `used ≤ input.length`, no over-read
-  — is derived from `decode_tlv`'s own runtime guard, not from these axioms. A falsehood here would
-  break an arithmetic side condition, not the headline.
-  **fails-if:** the recommended `decode_length_used_le` theorem (audit §2.7) turns out not to be
-  provable from the existing lemmas; an audit of a *new* axiom finds a genuinely false assertion;
-  the census gate the audit proposes (§4) is built and disagrees with the 13/4 split.
+    - `length_decode_total` ×2 (`TlvProofs.lean`, `SequenceProofs.lean`) — **discharged elsewhere**:
+      entailed by `LengthProofs.lean`'s unhypothesised, sorry-free
+      `decode_accepts_only_canonical`, transferred across an extraction-namespace boundary **by a
+      hand argument**, not by an import. That transfer is the assumption; the fact itself is proved.
+  Blast radius, stated precisely because it is narrow: each is consumed to obtain the `ok` shape of
+  `decode_length` before the composition proof continues. A falsehood would make the `tlv`/`sequence`
+  ∀-length triples unprovable rather than silently wrong — but it would not be *noticed* by any gate,
+  which is why it is an assumption and not a proof.
+  **fails-if:** the two extraction passes' `length.decode_length` turn out not to be the same
+  function (the audit checked this mechanically, by normalising the namespace token and diffing all
+  `length.*` declarations across the three extracts); an audit of a *new* axiom finds a genuinely
+  false assertion; the census gate the audit proposes (§4) is built and disagrees with the 13/2 split.
   **load-bearing-for:** the `tlv` and `sequence` ∀-length theorems in full; the honest one-line
   statement of the ∀-length trust base.
-  **Named follow-up:** prove `decode_length_used_le` in `LengthProofs.lean` and move A6's second
-  half to §T. Nothing in this crate is waiting on anything else to do that.
+  **Named follow-up:** `length_decode_total` ×2 is now discharged the same way its former companion
+  was — `LengthProofs.lean`'s `decode_length_used_le_spec` is unhypothesised, so
+  `∃ r, decode_length s = ok r` follows from it in three lines *inside each lid's own namespace*,
+  which would close the hand-argument transfer as well. Not done here: it was outside the scope of
+  the 2026-08-19 change, and it is recorded so the next session does not have to rediscover it.
   *Not gated:* a declared axiom characterising an upstream primitive and a bespoke assumption about
   this crate's code are syntactically identical. Nothing mechanically distinguishes them today —
   the discriminator exists (Aeneas's `@[rust_fun]` attribute and `Source:` docstring) and the gate
@@ -249,7 +252,30 @@ is itself an assumption.
 
 ## §T Tombstones — assumptions that were discharged
 
-None yet. An entry arrives here only with the artifact that closed it named; that is what makes the
+- **A6a · `length_decode_used_le` ×2 — the two lid axioms that were assumed and discharged nowhere.**
+  *Was:* half of A6. `TlvProofs.lean` and `SequenceProofs.lean` each DECLARED, as an `axiom`, that an
+  accepted `length.decode_length` never reports consuming more bytes than its input holds
+  (`decode_length s = ok (.Ok (v, l_used)) → l_used.val ≤ s.val.length`). Its warrant was a reading
+  of `der-verified/src/length.rs:74-109` plus bounded Kani — true of the shipped code, but not
+  machine-checked. `evidence/AXIOM-AUDIT-2026-08-18.md` §2.7 named it the audit's one real residual.
+  **Discharged 2026-08-19 by proof.** `LengthProofs.lean`'s `decode_length_used_le` (with
+  `decode_length_used_le_spec`, `decode_length_loop_total`, `low7_eq_mod`) proves it as a branch walk
+  over `decode_length`; the same proof, character-for-character, now stands in `TlvProofs.lean` and
+  `SequenceProofs.lean` in place of the two axioms, because Aeneas's per-pass namespaces make the
+  theorem un-importable across lids (the copies are `diff`-checkable, which is what replaces the
+  import). The three theorems' disclosed axiom set is
+  `[propext, Classical.choice, Quot.sound, first_spec, core.slice.Slice.first]` — no `bv_decide`
+  certificate, no `sorryAx`, and no crate-code assumption.
+  **Artifacts:** `lean/LengthProofs.lean` (§"The consumption bound"), the corresponding sections of
+  `lean/TlvProofs.lean` / `lean/SequenceProofs.lean`; a green `lean/check_lean.sh` (re-extraction +
+  drift + sorry-gate); the discharge addendum in `evidence/AXIOM-AUDIT-2026-08-18.md`; and the
+  three planted-mutation negative controls in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md`
+  (M7–M9), which confirm the new statements are load-bearing rather than vacuous.
+  **What did NOT change:** the security-relevant `used ≤ input.length` conclusion the `tlv`/`sequence`
+  lids sell still comes from `decode_tlv`'s own runtime guard, exactly as before. This closed an
+  assumption, not a gap in a headline.
+
+An entry arrives here only with the artifact that closed it named; that is what makes the
 list above shrinkable without making it quietly editable.
 
 ---

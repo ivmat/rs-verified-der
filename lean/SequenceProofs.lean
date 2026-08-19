@@ -60,10 +60,12 @@ same D25-style refactor now applied to `tag.rs` (see `tag.rs`'s own doc comment 
 makes `decode_tag` extract WITH A BODY in this pass too, so `tag_decode_used_bounds` /
 `tag_decode_total` below are proven as THEOREMS (restated from `TagProofs.lean`'s own proof of the
 same facts, over the same source — this pass's own namespace is distinct, so the proof is
-duplicated rather than imported), not assumed. The five remaining axioms below are restated,
+duplicated rather than imported), not assumed. The four remaining axioms below are restated,
 byte-for-byte the same justification as `TlvProofs.lean`'s (see that file's module doc for the
 full accounting) — not new trust, the same duplicate-extraction-namespace workaround D27 already
-used for `length`'s two axioms. `tag.encode_tag`/`tlv.encode_tlv_into` are marked `--opaque` (same
+used for `length`'s two axioms. A fifth, `length_decode_used_le`, was such an axiom until
+2026-08-19 and is now a **THEOREM** proved in this file: the namespace clash forces the *proof* to
+be reproduced here (character-for-character `LengthProofs.lean`'s), but no longer the assumption. `tag.encode_tag`/`tlv.encode_tlv_into` are marked `--opaque` (same
 parameter-shadowing workaround as D27, not needed for this lid's scope — `decode_sequence`/
 `Elements::next` never call either).
 
@@ -75,7 +77,7 @@ constructor name under Aeneas's naming scheme. Fixed identically: rewritten as t
 21 `sequence`-module tests plus the crate's 295-test suite pass unchanged after the edit (this lid
 does not touch `decode_sequence`/`Elements`, the functions actually proved below, at all).
 
-`#print axioms` at the bottom shows the resulting theorems depend on exactly the five remaining
+`#print axioms` at the bottom shows the resulting theorems depend on exactly the four remaining
 disclosed axioms (the same as `TlvProofs.lean`'s, minus `tag_decode_used_bounds`/`tag_decode_total`
 — now theorems) plus the three standard Lean axioms (`propext`, `Classical.choice`, `Quot.sound`)
 plus the underlying opaque Aeneas primitives they characterize. No `sorryAx`.
@@ -362,11 +364,138 @@ axiom try_from_u32_usize_spec (i : U32) (h32 : 32 ≤ Usize.numBits) :
 axiom length_decode_total (s : Slice U8) :
     ∃ r : core.result.Result (U32 × Usize) length.LengthError, length.decode_length s = ok r
 
-/-- **Assumed no-over-read bound** for `length.decode_length` (this pass's own copy). See
-    `TlvProofs.lean`'s `length_decode_used_le`. -/
-axiom length_decode_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
+/-! ## `decode_length`'s no-over-read bound — proved in this pass's own namespace
+
+    Until 2026-08-19 the bound below was DECLARED as an axiom here (and identically in
+    `TlvProofs.lean`), and `evidence/AXIOM-AUDIT-2026-08-18.md` §2.7 classified those two
+    declarations as the audit's one real residual: assumptions about `der-verified`'s own
+    translated code with no Lean proof anywhere in the repository. They are now theorems.
+
+    The three lemmas and the theorem below are **character-for-character the same proof** as
+    `LengthProofs.lean`'s `low7_eq_mod` / `decode_length_loop_total` /
+    `decode_length_used_le_spec` / `decode_length_used_le`; only the ambient
+    `open der_sequence_extract` differs. That reproduction is not laziness — it is the *only* way to
+    state the fact about the `length.decode_length` **this** extraction pass emitted. Aeneas gives
+    each pass its own namespace (`lean/extract-sequence` re-extracts the same shipped `length.rs`
+    because `sequence.rs` needs `length` as a sibling module), so `LengthProofs.lean`'s theorem is a
+    statement about a *different constant* and cannot be imported. Being able to `diff` the three
+    copies is what replaces the import.
+
+    Their combined trust surface is this lid's already-declared `first_spec` and nothing else,
+    as the axiom-disclosure block at the bottom of this file reports. -/
+
+/-- `x &&& 0x7f = x % 0x80` on `Nat` — the mask fact `omega` cannot derive itself, reduced to a
+    `%` it can. (Same lemma as `LengthProofs.lean`'s.) -/
+theorem low7_eq_mod (n : Nat) : n &&& 127 = n % 128 := by
+  have h := Nat.and_two_pow_sub_one_eq_mod n 7
+  norm_num at h
+  exact h
+
+/-- **Loop totality** for `decode_length_loop` — the weakest fact a consumption bound needs: from
+    an in-range index it terminates and returns `ok`, given only that the octet window is exactly
+    `n` long. (Same lemma as `LengthProofs.lean`'s.) -/
+theorem decode_length_loop_total (n : Usize) (octets : Slice U8)
+    (hlen : octets.val.length = n.val) (val : U32) (i : Usize) (hi : i.val ≤ n.val) :
+    length.decode_length_loop n octets val i ⦃ (_ : U32) => True ⦄ := by
+  unfold length.decode_length_loop
+  apply loop.spec_decr_nat
+    (measure := fun vi => n.val - vi.2.val)
+    (inv := fun vi => vi.2.val ≤ n.val)
+  · rintro ⟨val1, i1⟩ hile
+    simp only [length.decode_length_loop.body]
+    split
+    · rename_i hlt
+      step as ⟨a1, ha1, ha1bv⟩
+      step as ⟨a2, ha2⟩
+      step as ⟨a3, ha3⟩
+      step as ⟨a4, ha4, ha4bv⟩
+      step as ⟨a5, ha5⟩
+      exact ⟨by scalar_tac, by scalar_tac⟩
+    · rename_i hge
+      simp only [WP.spec_ok]
+  · exact hi
+
+/-- **No over-read, as a triple** (∀-length): whenever `decode_length` accepts, the reported
+    `used` never exceeds the input's length. Every reject branch is vacuous; the short-form accept
+    returns `1` and is reachable only when `first` saw a byte; the long-form accept returns
+    `1 + n` past the explicit `input.len() < 1 + n` truncation guard.
+    (Same proof as `LengthProofs.lean`'s `decode_length_used_le_spec`.) -/
+theorem decode_length_used_le_spec (s : Slice U8) :
+    length.decode_length s ⦃ r => ∀ (v : U32) (used : Usize),
+        r = core.result.Result.Ok (v, used) → used.val ≤ s.val.length ⦄ := by
+  unfold length.decode_length
+  simp only [first_spec]
+  obtain hb | ⟨b, hb⟩ : s.val[0]? = none ∨ ∃ b, s.val[0]? = some b := by
+    cases s.val[0]? <;> simp
+  · -- empty ⇒ Truncated: vacuous
+    simp only [hb, bind_tc_ok, WP.spec_ok]
+    intro v used heq; simp at heq
+  · simp only [hb, bind_tc_ok]
+    have hpos : 0 < s.val.length := by
+      obtain ⟨h0, -⟩ := List.getElem?_eq_some_iff.mp hb; omega
+    by_cases hlt : b.val < 128
+    · -- short-form accept: used = 1, and the input holds at least the byte `first` returned
+      rw [if_pos (show b < 128#u8 by scalar_tac)]
+      step as ⟨i, hi⟩
+      intro v used heq
+      obtain ⟨rfl, rfl⟩ : i = v ∧ 1#usize = used := by
+        simp only [core.result.Result.Ok.injEq, Prod.mk.injEq] at heq; exact heq
+      simpa using hpos
+    · rw [if_neg (show ¬ (b < 128#u8) by scalar_tac)]
+      by_cases h128 : b = 128#u8
+      · rw [if_pos h128]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+      · rw [if_neg h128]
+        by_cases h255 : b = 255#u8
+        · rw [if_pos h255]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+        · rw [if_neg h255]
+          step as ⟨i, hi⟩        -- i  = b & 0x7f
+          step as ⟨nn, hnn⟩      -- nn = i as usize
+          step as ⟨i2, hi2⟩      -- i2 = 1 + nn
+          have hbrange : 128 < b.val ∧ b.val < 255 := by scalar_tac
+          have hnnval : nn.val = b.val &&& 127 := by scalar_tac
+          have hnn1 : 1 ≤ nn.val := by
+            rw [hnnval, low7_eq_mod]; omega
+          by_cases htrunc : s.len < i2
+          · rw [if_pos htrunc]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+          · -- past the truncation guard: the declared field fits, so `1 + nn ≤ s.length`
+            rw [if_neg htrunc]
+            have henough : i2.val ≤ s.val.length := by scalar_tac
+            step as ⟨octets, hoct⟩
+            step as ⟨i3, hi3⟩
+            by_cases hz : i3 = 0#u8
+            · rw [if_pos hz]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+            · rw [if_neg hz]
+              by_cases hn4 : nn.val > 4
+              · rw [if_pos (show nn > 4#usize by scalar_tac)]
+                simp only [WP.spec_ok]; intro v used heq; simp at heq
+              · rw [if_neg (show ¬ (nn > 4#usize) by scalar_tac)]
+                have hlen_oct : octets.val.length = nn.val := by rw [hoct]; scalar_tac
+                step with decode_length_loop_total as ⟨val⟩
+                by_cases hvlt : val.val < 128
+                · rw [if_pos (show val < 128#u32 by scalar_tac)]
+                  simp only [WP.spec_ok]; intro v used heq; simp at heq
+                · -- long-form accept: used = 1 + nn = i2 ≤ s.length
+                  rw [if_neg (show ¬ (val < 128#u32) by scalar_tac)]
+                  step as ⟨i4, hi4⟩
+                  intro v used heq
+                  obtain ⟨rfl, rfl⟩ : val = v ∧ i4 = used := by
+                    simp only [core.result.Result.Ok.injEq, Prod.mk.injEq] at heq; exact heq
+                  scalar_tac
+
+/-- **No-over-read bound** for `length.decode_length` (the copy embedded in *this* extraction
+    crate) — now a THEOREM, in the equation form the composition proof below consumes: an accepted
+    decode never consumes more bytes than its input holds. Kept the SAME name and signature as the
+    axiom this section used to declare, so the composition proofs need no edits. Used only to
+    discharge the overflow-freedom side-condition of `t_used + l_used` (`decode_tlv`'s own `header`
+    computation) — the no-over-read claim `decode_tlv_progress` itself sells comes from
+    `decode_tlv`'s own runtime guard, not from here. -/
+theorem length_decode_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
     length.decode_length s = ok (core.result.Result.Ok (v, l_used)) →
-      l_used.val ≤ s.val.length
+      l_used.val ≤ s.val.length := by
+  intro heq
+  have hspec := decode_length_used_le_spec s
+  rw [heq, WP.spec_ok] at hspec
+  exact hspec v l_used rfl
 
 /-! ## Layer 1: `decode_tlv`'s no-over-read + progress bound (the composition D27 already proved
     in full; here only the minimal corollary `decode_sequence`'s walk needs). -/
@@ -729,6 +858,7 @@ theorem decode_sequence_structure (content : Slice U8) (h32 : 32 ≤ Usize.numBi
       ≤ content.val.length := by simp
   exact decode_sequence_loop_spec content h32 0#usize { rest := content, done := false } hsuf hdone hcount
 
+#print axioms length_decode_used_le
 #print axioms decode_tlv_progress
 #print axioms elements_next_progress
 #print axioms decode_sequence_loop_spec

@@ -38,7 +38,11 @@ length:
   * `decode_long_form_accept`          — canonical accept ⇒ `Ok(beVal ws, 1+n)`
   * `decode_long_form_nonminimal_value`— `beVal < 0x80` ⇒ `NonMinimal` (e.g. `[0x81, 0x01]`)
 
-With these, every branch of `decode_length` is proven ∀-length. The headline **round-trip
+With these, every branch of `decode_length` is proven ∀-length. A separate branch walk proves the
+**consumption bound** `decode_length_used_le` (no over-read: an accepted decode never reports
+consuming more bytes than the input holds) — added 2026-08-19 to discharge the two
+`length_decode_used_le` axioms the `tlv`/`sequence` lids used to declare
+(`evidence/AXIOM-AUDIT-2026-08-18.md` §2.7). The headline **round-trip
 canonicality** (`decode_accepts_only_canonical`, below) — a *different* theorem additionally
 needing `encode_length`'s two loops (encode is the inverse direction) — **is also proven**, so
 this file machine-checks the length-codec L4 lid **complete end-to-end** (decode branches +
@@ -387,6 +391,146 @@ theorem decode_long_form_nonminimal_value (s : Slice U8) (b : U8) (ws : List U8)
   have hvlt : val.val < 128 := by scalar_tac   -- val = beVal ws < 0x80
   rw [if_pos hvlt]
   simp only [WP.spec_ok]
+
+/-! ## The consumption bound (`decode_length_used_le`)
+
+    `decode_length` never reports consuming more bytes than its input holds. Both accept paths
+    carry the bound already — the short form consumes `1` and only fires when `first` returned
+    `some` (so the input is non-empty), and the long form consumes `1 + n` only past the guard
+    `if input.len() < 1 + n { Truncated }` — so the theorem is the branch walk that collects
+    them, with every reject branch vacuous against an `Ok` conclusion.
+
+    **Why this exists as a named theorem.** `TlvProofs.lean` and `SequenceProofs.lean` need this
+    fact about their *own* extraction pass's copy of `decode_length` (to discharge the
+    overflow-freedom side condition of `decode_tlv`'s header arithmetic); until 2026-08-19 both
+    DECLARED it as an axiom, and `evidence/AXIOM-AUDIT-2026-08-18.md` §2.7 classified those two
+    axioms as the audit's one real residual — assumptions about this crate's own translated code
+    with no Lean proof anywhere. The proof below discharges them. Aeneas gives each extraction
+    pass its own namespace, so the theorem cannot be *imported* into those lids; instead the
+    proof text below is reproduced there **character-for-character** (only the surrounding
+    `open der_*_extract` differs), which is what makes the three copies auditable by `diff`.
+
+    Two deliberate weaknesses, both to keep the copies cheap and their trust surface minimal:
+    * `decode_length_loop_total` is used instead of the stronger `decode_length_loop_spec` above
+      — the value the loop computes is irrelevant to a consumption bound, and the weaker lemma
+      needs no `bv_decide`, so the theorem's axiom set stays exactly
+      `[propext, Classical.choice, Quot.sound, first_spec, core.slice.Slice.first]`;
+    * `low7_eq_mod` replaces `u8_high_bit_decomp` (below) for the same reason: it is the same
+      bit-mask fact `scalar_tac`/`omega` cannot do on their own, proved from a `Nat` library
+      lemma rather than a SAT certificate. -/
+
+/-- `x &&& 0x7f = x % 0x80` on `Nat` — the mask fact `omega` cannot derive itself (it has no
+    bit-wise reasoning), reduced to a `%` it can. Used to see that a long-form initial octet
+    `0x81..0xFE` declares at least one length octet. -/
+theorem low7_eq_mod (n : Nat) : n &&& 127 = n % 128 := by
+  have h := Nat.and_two_pow_sub_one_eq_mod n 7
+  norm_num at h
+  exact h
+
+/-- **Loop totality** — the weakest fact about `decode_length_loop` a consumption bound needs:
+    from any in-range index it terminates and returns `ok`, given only that the octet window is
+    exactly `n` long (which is what keeps every `octets[i]` read in bounds). Same `loop.spec_decr_nat`
+    shape as `decode_length_loop_spec`, with the value invariant dropped. -/
+theorem decode_length_loop_total (n : Usize) (octets : Slice U8)
+    (hlen : octets.val.length = n.val) (val : U32) (i : Usize) (hi : i.val ≤ n.val) :
+    length.decode_length_loop n octets val i ⦃ (_ : U32) => True ⦄ := by
+  unfold length.decode_length_loop
+  apply loop.spec_decr_nat
+    (measure := fun vi => n.val - vi.2.val)
+    (inv := fun vi => vi.2.val ≤ n.val)
+  · rintro ⟨val1, i1⟩ hile
+    simp only [length.decode_length_loop.body]
+    split
+    · rename_i hlt
+      step as ⟨a1, ha1, ha1bv⟩
+      step as ⟨a2, ha2⟩
+      step as ⟨a3, ha3⟩
+      step as ⟨a4, ha4, ha4bv⟩
+      step as ⟨a5, ha5⟩
+      exact ⟨by scalar_tac, by scalar_tac⟩
+    · rename_i hge
+      simp only [WP.spec_ok]
+  · exact hi
+
+/-- **No over-read, as a triple** (∀-length): whenever `decode_length` accepts, the reported
+    `used` never exceeds the input's length. Proved by walking every branch of `decode_length`:
+    the six reject branches are vacuous (`.Err ≠ .Ok`), the short-form accept returns `1` and is
+    reachable only when `first` saw a byte, and the long-form accept returns `1 + n` past the
+    explicit `input.len() < 1 + n` truncation guard. -/
+theorem decode_length_used_le_spec (s : Slice U8) :
+    length.decode_length s ⦃ r => ∀ (v : U32) (used : Usize),
+        r = core.result.Result.Ok (v, used) → used.val ≤ s.val.length ⦄ := by
+  unfold length.decode_length
+  simp only [first_spec]
+  obtain hb | ⟨b, hb⟩ : s.val[0]? = none ∨ ∃ b, s.val[0]? = some b := by
+    cases s.val[0]? <;> simp
+  · -- empty ⇒ Truncated: vacuous
+    simp only [hb, bind_tc_ok, WP.spec_ok]
+    intro v used heq; simp at heq
+  · simp only [hb, bind_tc_ok]
+    have hpos : 0 < s.val.length := by
+      obtain ⟨h0, -⟩ := List.getElem?_eq_some_iff.mp hb; omega
+    by_cases hlt : b.val < 128
+    · -- short-form accept: used = 1, and the input holds at least the byte `first` returned
+      rw [if_pos (show b < 128#u8 by scalar_tac)]
+      step as ⟨i, hi⟩
+      intro v used heq
+      obtain ⟨rfl, rfl⟩ : i = v ∧ 1#usize = used := by
+        simp only [core.result.Result.Ok.injEq, Prod.mk.injEq] at heq; exact heq
+      simpa using hpos
+    · rw [if_neg (show ¬ (b < 128#u8) by scalar_tac)]
+      by_cases h128 : b = 128#u8
+      · rw [if_pos h128]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+      · rw [if_neg h128]
+        by_cases h255 : b = 255#u8
+        · rw [if_pos h255]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+        · rw [if_neg h255]
+          step as ⟨i, hi⟩        -- i  = b & 0x7f
+          step as ⟨nn, hnn⟩      -- nn = i as usize
+          step as ⟨i2, hi2⟩      -- i2 = 1 + nn
+          have hbrange : 128 < b.val ∧ b.val < 255 := by scalar_tac
+          have hnnval : nn.val = b.val &&& 127 := by scalar_tac
+          have hnn1 : 1 ≤ nn.val := by
+            rw [hnnval, low7_eq_mod]; omega
+          by_cases htrunc : s.len < i2
+          · rw [if_pos htrunc]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+          · -- past the truncation guard: the declared field fits, so `1 + nn ≤ s.length`
+            rw [if_neg htrunc]
+            have henough : i2.val ≤ s.val.length := by scalar_tac
+            step as ⟨octets, hoct⟩
+            step as ⟨i3, hi3⟩
+            by_cases hz : i3 = 0#u8
+            · rw [if_pos hz]; simp only [WP.spec_ok]; intro v used heq; simp at heq
+            · rw [if_neg hz]
+              by_cases hn4 : nn.val > 4
+              · rw [if_pos (show nn > 4#usize by scalar_tac)]
+                simp only [WP.spec_ok]; intro v used heq; simp at heq
+              · rw [if_neg (show ¬ (nn > 4#usize) by scalar_tac)]
+                have hlen_oct : octets.val.length = nn.val := by rw [hoct]; scalar_tac
+                step with decode_length_loop_total as ⟨val⟩
+                by_cases hvlt : val.val < 128
+                · rw [if_pos (show val < 128#u32 by scalar_tac)]
+                  simp only [WP.spec_ok]; intro v used heq; simp at heq
+                · -- long-form accept: used = 1 + nn = i2 ≤ s.length
+                  rw [if_neg (show ¬ (val < 128#u32) by scalar_tac)]
+                  step as ⟨i4, hi4⟩
+                  intro v used heq
+                  obtain ⟨rfl, rfl⟩ : val = v ∧ i4 = used := by
+                    simp only [core.result.Result.Ok.injEq, Prod.mk.injEq] at heq; exact heq
+                  scalar_tac
+
+/-- **`decode_length`'s consumption bound, ∀-length** — the equation form, stated exactly as the
+    `length_decode_used_le` axioms in `TlvProofs.lean` / `SequenceProofs.lean` stated it, so those
+    two can be replaced by this theorem's copy rather than merely paralleled by it: an accepted
+    decode never claims more bytes than the input holds (no over-read). Discharges
+    `evidence/AXIOM-AUDIT-2026-08-18.md` §2.7. -/
+theorem decode_length_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
+    length.decode_length s = ok (core.result.Result.Ok (v, l_used)) →
+      l_used.val ≤ s.val.length := by
+  intro heq
+  have hspec := decode_length_used_le_spec s
+  rw [heq, WP.spec_ok] at hspec
+  exact hspec v l_used rfl
 
 /-! ## Encode-side loop invariants (toward round-trip canonicality `decode_accepts_only_canonical`)
 
@@ -881,6 +1025,8 @@ theorem decode_accepts_only_canonical (s : Slice U8) :
 #print axioms decode_length_loop_spec
 #print axioms decode_long_form_accept
 #print axioms decode_long_form_nonminimal_value
+#print axioms decode_length_loop_total
+#print axioms decode_length_used_le
 #print axioms encode_length_loop0_spec
 #print axioms encode_length_loop1_spec
 #print axioms to_be_bytes_significant
