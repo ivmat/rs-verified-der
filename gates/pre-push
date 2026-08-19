@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+# gates/pre-push — the PUSH-boundary gate for der-verified. Installed as .git/hooks/pre-push by
+# ../install_hooks.sh (hooks are machine-local and cannot travel in a commit; THIS file is the
+# committed one and the installer symlinks to it).
+#
+# WHY A PUSH GATE, given hooks/pre-commit already runs check_fast.sh. The commit hook runs against
+# the WORKING TREE. "The tree was green when I committed" is a weaker claim than "the bytes being
+# pushed are green": the tree can be dirty, one push can carry several refs and several commits, and
+# an amend or rebase produces a sha no hook ever saw. This hook runs at each PUSHED SHA instead.
+#
+# WHAT THIS REPO IS. der-verified is PUBLIC, and its product is the evidence, not the code. So the
+# push boundary is where the crate's central claim — "a committed full-suite run speaks for HEAD" —
+# is either true or a lie, and this gate is what makes publishing that claim deliberate.
+#
+# THREE RULES, all fail-closed:
+#
+#   1. remote-verification trap — this repo may push only to $ALLOWED_SLUG. A payload gate that
+#      ignores the destination is walked around by adding a remote.
+#
+#   2. document gates at the pushed sha — check_links.py, gen_proof_manifest.py --check and
+#      gen_verification_map.py --check, run in a DETACHED WORKTREE at each pushed sha. These are
+#      pure-stdlib and take seconds; they take no FV slot and run neither kani nor cbmc, so a green
+#      push says NOTHING about whether any proof holds. What they do catch is the amended-sha case:
+#      docs that drifted from the source they describe, in the bytes that would actually land.
+#
+#   3. full-suite receipt, when the destination is PUBLIC — a receipt at
+#      evidence/push-receipts/<sha>.receipt containing 'full-suite: GREEN @ <sha>', with an mtime
+#      NEWER than that commit. Receipts are deliberately NOT tracked (see that directory's README):
+#      committing one would change the sha it certifies. Visibility is resolved LIVE via `gh`
+#      precisely so that a private->public flip cannot happen without this gate noticing; when `gh`
+#      cannot answer, the DECLARED visibility below is used, and it is 'public' — the strict side.
+#
+# SELF-CONTAINED ON PURPOSE. This repo is public: this file sources no private library, names no
+# machine-specific path, and hard-codes nothing but its own destination slug.
+set -u
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX GIT_COMMON_DIR GIT_OBJECT_DIRECTORY 2>/dev/null || true
+
+LABEL="der-verified"
+ALLOWED_SLUG="ivmat/rs-verified-der"
+DECLARED_VISIBILITY="public"       # recorded 2026-08-19; consulted only when `gh` cannot answer
+
+ROOT="$(git rev-parse --show-toplevel)" || exit 2
+cd "$ROOT" || exit 2
+
+remote_name="${1:-}"
+remote_url="${2:-}"
+zero="0000000000000000000000000000000000000000"
+msgs=()
+
+store="$ROOT/evidence/push-receipts"
+
+slug_of() {
+    local url="$1"
+    url="${url%.git}"; url="${url%/}"
+    case "$url" in
+        *github.com*) url="${url##*github.com}"; url="${url#:}"; url="${url#/}" ;;
+    esac
+    printf '%s\n' "$url"
+}
+
+block() {
+    echo ""
+    echo "=============================================================================="
+    echo " PUSH REFUSED — $LABEL push gate"
+    echo "=============================================================================="
+    local m
+    for m in "$@"; do echo "  BLOCKED: $m"; done
+    echo ""
+    if [ "${FV_PUSH_GATE_OVERRIDE:-0}" = "1" ]; then
+        mkdir -p "$store" 2>/dev/null || true
+        echo "$(date -Is) OVERRIDE label=$LABEL remote=$remote_url :: $*" >> "$store/overrides.log" 2>/dev/null \
+            && echo "  OVERRIDE USED — logged to evidence/push-receipts/overrides.log" \
+            || echo "  OVERRIDE USED — NOT logged (could not write the override log)"
+        echo "  (The session that produced the work must not override its own gate.)"
+        echo ""
+        return 0
+    fi
+    # Only the remedy that matches the failure — a remedy that does not fit the refusal teaches
+    # people to ignore the refusal.
+    case "$*" in
+        *"remote-verification trap"*)
+            echo "  TO CLEAR THIS: push to the declared destination. If a NEW destination is genuinely"
+            echo "  wanted, edit ALLOWED_SLUG in gates/pre-push deliberately — do not add a remote to"
+            echo "  get around this, and do not reach for the override."
+            ;;
+        *receipt*)
+            echo "  TO CLEAR THIS:"
+            echo "    1. run ./check.sh at the exact sha you intend to push (Kani floor + Lean lids +"
+            echo "       gates), and commit its distilled log the way evidence/check-*.log headers do;"
+            echo "    2. as the LAST act before pushing, write the receipt for the FINAL sha:"
+            echo "         sha=\$(git rev-parse HEAD)"
+            echo "         printf 'full-suite: GREEN @ %s\\n' \"\$sha\" > evidence/push-receipts/\$sha.receipt"
+            echo "    3. push, and do NOT amend afterwards — an amend changes the sha and voids the receipt."
+            ;;
+        *)
+            echo "  TO CLEAR THIS: fix the failure above AT THE PUSHED SHA (this gate ran against the"
+            echo "  bytes that would land, not against your working tree), commit, and push again."
+            ;;
+    esac
+    echo ""
+    echo "  Visible, logged override (not for the session that produced the work):"
+    echo "    FV_PUSH_GATE_OVERRIDE=1 git push ..."
+    echo "=============================================================================="
+    return 1
+}
+
+# --- rule 1: destination ------------------------------------------------------------------------
+slug="$(slug_of "$remote_url")"
+if [ "$slug" != "$ALLOWED_SLUG" ]; then
+    block "remote-verification trap: this repo may only push to $ALLOWED_SLUG" \
+          "attempted destination: remote '$remote_name' -> $remote_url (parsed as '$slug')"
+    exit $?
+fi
+
+# --- the pushed shas ----------------------------------------------------------------------------
+# stdin: "<local ref> <local sha> <remote ref> <remote sha>" per ref. Deletions carry no payload.
+shas=""
+saw_ref_line=0
+if [ ! -t 0 ]; then
+    while read -r _local_ref local_sha _remote_ref _remote_sha; do
+        [ -z "${local_sha:-}" ] && continue
+        saw_ref_line=1
+        [ "$local_sha" = "$zero" ] && continue
+        case " $shas " in
+            *" $local_sha "*) ;;
+            *) shas="$shas $local_sha" ;;
+        esac
+    done
+fi
+if [ -z "$shas" ]; then
+    # git always passes <remote> <url>; args plus zero ref lines is the up-to-date no-op push.
+    if [ "$#" -ge 2 ] && [ "$saw_ref_line" -eq 0 ]; then
+        exit 0
+    fi
+    shas="$(git rev-parse HEAD)"     # deletions-only push, or a direct invocation: gate HEAD
+fi
+
+# --- rule 2: document gates at each pushed sha ---------------------------------------------------
+for sha in $shas; do
+    echo "== $LABEL push gate: document gates @ $sha =="
+    # A HIDDEN SIBLING of the repo root, not a /tmp dir: curated docs can carry relative links, and
+    # a checkout somewhere with no siblings can fail a gate on a commit that is green in place — a
+    # false refusal erodes a gate as fast as a false pass does.
+    wt="$(mktemp -d "$(dirname "$ROOT")/.der-prepush-XXXXXX" 2>/dev/null)" \
+        || wt="$(mktemp -d "${TMPDIR:-/tmp}/der-prepush-XXXXXX")" \
+        || { msgs+=("could not create a temp worktree dir"); break; }
+    if git worktree add --detach --quiet "$wt" "$sha" >/dev/null 2>&1; then
+        (
+            cd "$wt" \
+            && python3 gates/check_links.py \
+            && python3 gates/gen_proof_manifest.py --check \
+            && python3 gates/gen_verification_map.py --check
+        ) || msgs+=("$sha: document gates FAILED at the pushed sha")
+        git worktree remove --force "$wt" >/dev/null 2>&1 || rm -rf "$wt"
+    else
+        rmdir "$wt" 2>/dev/null || true
+        msgs+=("$sha: could not create a detached worktree — the gate could not run, so it refuses")
+    fi
+    git worktree prune >/dev/null 2>&1 || true
+done
+
+# --- rule 3: full-suite receipt, if the destination is public ------------------------------------
+visibility="$DECLARED_VISIBILITY"
+if command -v gh >/dev/null 2>&1; then
+    v="$(timeout 20 gh repo view "$slug" --json visibility -q .visibility 2>/dev/null | tr -d '[:space:]')"
+    case "$v" in
+        PUBLIC|INTERNAL) visibility="public" ;;
+        PRIVATE)         visibility="private" ;;
+        *) echo "  NOTE: could not verify $slug visibility live; using declared '$DECLARED_VISIBILITY'" >&2 ;;
+    esac
+else
+    echo "  NOTE: gh not installed; using declared visibility '$DECLARED_VISIBILITY'" >&2
+fi
+
+if [ "$visibility" = "public" ]; then
+    for sha in $shas; do
+        rec="$store/$sha.receipt"
+        if [ ! -f "$rec" ]; then
+            msgs+=("$sha: no full-suite receipt at evidence/push-receipts/$sha.receipt")
+        elif ! grep -qF "full-suite: GREEN @ $sha" "$rec"; then
+            msgs+=("$sha: evidence/push-receipts/$sha.receipt does not contain the line 'full-suite: GREEN @ $sha'")
+        else
+            c_ts="$(git show -s --format=%ct "$sha" 2>/dev/null || echo 0)"
+            r_ts="$(stat -c %Y "$rec" 2>/dev/null || stat -f %m "$rec" 2>/dev/null || echo 0)"
+            if [ "${r_ts:-0}" -lt "${c_ts:-0}" ]; then
+                msgs+=("$sha: the receipt is OLDER than the commit — it must be the LAST act before the push; an amend or rebase voids it")
+            fi
+        fi
+    done
+fi
+
+if [ "${#msgs[@]}" -gt 0 ]; then
+    block "push to $slug (visibility: $visibility) does not clear the gate" "${msgs[@]}"
+    exit $?
+fi
+
+echo "$LABEL push gate: OK — $slug ($visibility), document gates green at:$shas"
+exit 0

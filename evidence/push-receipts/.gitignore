@@ -1,0 +1,4 @@
+# Receipts certify a sha; committing one would change that sha (see README.md). They are local
+# machine-side artifacts by design — the committed evidence is ../check-*.log.
+*.receipt
+overrides.log
