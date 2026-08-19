@@ -244,6 +244,7 @@ module (§7) they are the *only* evidence that exists.
 <!-- BEGIN GENERATED:evidence (gates/gen_proof_manifest.py) -->
 | Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an unsatisfied cover |
 |---|---|---:|---:|---:|
+| `evidence/check-24ddb69.log` | `24ddb69` | 191 | 0 | 3 |
 | `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
 | `evidence/check-461f751.log` | `461f751` | 171 | 0 | 3 |
 | `evidence/check-69bbc9f.log` | `69bbc9f` | 191 | 0 | 3 |
@@ -258,7 +259,7 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
+**`evidence/check-24ddb69.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff 24ddb69..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-69bbc9f.log` (at `69bbc9f`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -274,10 +275,22 @@ The precise provenance of the L3 verdict, stated plainly because "the proofs pas
 in this document a reader cannot check from the source alone:
 
 - **The verdict is now read off a committed artifact, not transcribed.** The current run is
-  **2026-08-11 at commit `ffcea81`** (`evidence/check-ffcea81.log`) — `191 successfully verified
-  harnesses, 0 failures`, `cargo test` green, the L4 Lean gate `PASS (sorry-free)`, and the
-  lid-staleness gate green in the same pass, ~63m wall (3755s) at a measured 21.0 GB peak under a
-  fixed `MemoryMax=22G` scope. The three unsatisfied covers are again exactly the three §8.2 discloses. The first such run, described
+  **2026-08-19 at commit `24ddb69`** (`evidence/check-24ddb69.log`) — `Complete - 191 successfully
+  verified harnesses, 0 failures, 191 total.`, `cargo test` green (472 + 33), every document gate
+  and the strict lid-staleness gate green in the same pass, `check.sh exit: 0`, 2h49m50s wall at a
+  20.03 GiB peak. The three unsatisfied covers are again exactly the three §8.2 discloses.
+  **Two things about this run are different from every earlier one, and both are stated in its own
+  header rather than left to be noticed.** (1) It ran on a **disposable cloud VM from a fresh clone
+  of a bundle at that commit**, not on the maintainer's machine, and dirtiness was sampled *before*
+  the run as well as after — 0 both times. (2) It **did not run the L4 Lean stage**: that VM had no
+  Aeneas/Charon/Lean stack, so the guarded lid printed `SKIP`. The L4 evidence for the identical lid
+  sources is `evidence/lean-lid-b1cdbef.log` (a full green `check_lean.sh`: re-extraction,
+  model-drift diff, `lake build`, sorry-gate, all six lids force re-elaborated from source), and
+  `git diff b1cdbef..24ddb69 -- lean` is empty. So the current L3 and L4 verdicts come from two
+  artifacts over the same bytes, not from one run — a weaker arrangement than a single end-to-end
+  green, and named as such. The previous single-process run covering both was **2026-08-11 at
+  `ffcea81`** (`evidence/check-ffcea81.log`, 191/191 with `lean lid: PASS (sorry-free)` in the same
+  pass, ~63m at 21.0 GB under `MemoryMax=22G`). The first such run, described
   below, was `./check.sh`
   end-to-end on **2026-07-30** at commit `b355f76` — `cargo kani -Z stubbing` over all 164 harnesses
   **sequentially** (no `-j`; parallel harnesses multiply peak RSS), inside a `MemoryMax=22G`
