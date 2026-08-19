@@ -392,3 +392,105 @@ with their build artifacts deleted, and all three rebuilt green
 rather than a sweep, still says nothing about a *weaker* restatement, and still says nothing about
 extraction fidelity (`ASSUMPTIONS.md` A4). What it does retire is that list's own third bullet:
 there is no longer an UNPROVEN lid assumption for a control to be unable to reach.
+
+---
+
+## Addendum 2 — 2026-08-19 (later still): controls for the `length_decode_total` corollaries
+
+**Why this section exists.** The addendum above closed the two lid axioms that were *proven
+nowhere*. The two that remained — `length_decode_total` in `TlvProofs.lean` and
+`SequenceProofs.lean` — were a different class: the fact was proved sorry-free in
+`LengthProofs.lean` and only the *transfer* across Aeneas's namespaces was assumed
+(`evidence/AXIOM-AUDIT-2026-08-18.md` §2.6). Those two are now three-line corollaries of
+`decode_length_used_le_spec` inside each lid's own namespace (that audit's second discharge
+addendum). Same rule as before: a statement that used to be an axiom — un-falsifiable by a build —
+is now a theorem, so it gets a planted mutation like every other lid claim.
+
+**Method — identical protocol.** One mutation per lid carrying the new corollary, `lake build
+DerVerified` from `lean/`, revert with `git checkout --`, sha256 byte-identity check, rebuild.
+Driver: `evidence/lid-mutation-controls-2026-08-19/driver-total.py`; raw logs, diffs and
+`results-total.json` beside it. **Two for two went RED; the STOP protocol was not triggered.**
+
+**The mutation, and why it is the interesting one.** Totality says the *Result monad* succeeds:
+`∃ r, decode_length s = ok r`, where `r` may still be `.Err`. One step past it sits the statement a
+reader is most likely to think they are being sold — that the decode always **accepts**:
+
+```diff
+ theorem length_decode_total (s : Slice U8) :
+-    ∃ r : core.result.Result (U32 × Usize) length.LengthError, length.decode_length s = ok r := by
++    ∃ (v : U32) (used : Usize), length.decode_length s = ok (core.result.Result.Ok (v, used)) := by
+   obtain ⟨r, heq, -⟩ := WP.spec_imp_exists (decode_length_used_le_spec s)
+   exact ⟨r, heq⟩
+```
+
+That is **false**, and the smallest witness is the empty slice: `decode_length []` returns
+`ok (.Err Truncated)` — well-defined, and not an accept. A `decode_length` for which the mutated
+statement held would be a length decoder that rejects nothing, i.e. the whole codec's rejection
+behaviour gone. It is also exactly the overclaim a totality axiom invites, which is why this is the
+mutation planted rather than a comparison flip: there is no comparison in the statement to flip.
+
+| Lid | Kind | Planted mutation | Build | First error, verbatim |
+|---|---|---|---|---|
+| `TlvProofs.lean` | statement | `length_decode_total`: totality → acceptance (`∃ r, … = ok r` → `∃ v used, … = ok (.Ok (v, used))`) | **FAILED** | `TlvProofs.lean:542:9: Application type mismatch: The argument r` |
+| `SequenceProofs.lean` | statement | same strengthening in this pass's copy | **FAILED** | `SequenceProofs.lean:535:9: Application type mismatch: The argument r` |
+
+Reverted byte-identical (sha256): `TlvProofs.lean` `331b137f…a339e721`, `SequenceProofs.lean`
+`2c1930fd…7da7deb0`.
+
+### 10–11. Where the mutation breaks, and what that shows
+
+**At the corollary itself** (`M10-tlv-total-mutated.log`; `M11` is character-identical modulo the
+file name and line):
+
+```
+error: TlvProofs.lean:542:9: Application type mismatch: The argument
+  r
+has type
+  core.result.Result (U32 × Usize) length.LengthError
+but is expected to have type
+  U32
+in the application
+  Exists.intro r
+```
+
+Read it precisely: the witness the *triple* supplies is a `Result` — the object `decode_length`
+actually returns, `.Ok` or `.Err` — and the mutated statement demands a `U32` value, i.e. an accept.
+The proof cannot supply one because the triple does not contain one. `WP.spec_imp_exists` gives
+exactly totality and not one step more, which is the property this control exists to test.
+
+**At the three consumption sites**, a second and independent failure. The composition proofs
+destructure the corollary as `obtain ⟨lres, hlen⟩ := length_decode_total s` and then `rcases lres`
+on `.Ok`/`.Err`; with the mutated shape there is no `lres` to case on, so:
+
+```
+error: TlvProofs.lean:588:20: Unknown identifier `l_used.val`
+error: TlvProofs.lean:593:10: Invalid rewrite argument: Expected an equality or iff proof or
+ definition name, but `hlen` is a proof of
+  ∃ used, length.decode_length s = ok (core.result.Result.Ok ({ toFin := ⟨0, isLt✝⟩ }#uscalar, used))
+```
+
+(and at `SequenceProofs.lean:563`/`:568` and again at `:658`/`:663`, the lid's two consumption
+sites). So the corollary is load-bearing at exactly the places the axiom occupied — the replacement
+is not a decoration parked beside the proofs that need it — and the composition proofs demonstrably
+consume *totality*, not acceptance.
+
+**As in M3 and M8–M9**, the mutated builds' `#print axioms` lines report `sorryAx` for
+`length_decode_total` and for the headline theorem downstream of it, so `check_lean.sh`'s sorry-gate
+would catch these independently. Recorded as an observation, not claimed as a designed defence.
+
+**Forced re-elaboration, same honesty note as the campaign above.** The per-lid revert build is a
+`lake` trace check against a cached `.olean`, not a re-elaboration. Both lids were therefore force
+re-elaborated from source with their `.olean`/`.ilean`/`.trace` deleted, and both rebuilt green
+(`ZZ3-forced-reelaboration-total-restored.log`, exit 0):
+
+```
+⚠ [1702/1704] Built TlvProofs (3.0s)
+⚠ [1703/1704] Built SequenceProofs (3.2s)
+```
+
+**What this adds to the campaign's ledger.** Eleven planted mutations across six lids, eleven RED.
+The "does not establish" bullets are unchanged and still bind: a sample rather than a sweep, silent
+about *weaker* restatements, silent about extraction fidelity (`ASSUMPTIONS.md` A4). One thing is
+now true of the whole lid layer rather than of a subset: **every claim the six lids make is a
+theorem with a planted-mutation control behind it, and none of them is an axiom about this crate's
+own code** — there is no longer any lid statement that a build could not, in principle, falsify.

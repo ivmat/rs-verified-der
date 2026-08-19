@@ -1,0 +1,30 @@
+[
+ {
+  "id": "M10-tlv-total",
+  "file": "TlvProofs.lean",
+  "kind": "statement",
+  "desc": "strengthen length_decode_total from totality (the Result monad succeeds) to acceptance (the decode always returns Ok) -- false for the empty slice, which returns Err Truncated",
+  "baseline_sha256": "331b137f016f23c431f1ec1a020d221d28fbc15d02c8abcfff66e521a339e721",
+  "restored_sha256": "331b137f016f23c431f1ec1a020d221d28fbc15d02c8abcfff66e521a339e721",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.2,
+  "reverted_rc": 0,
+  "reverted_wall": 3.3,
+  "observed": "RED"
+ },
+ {
+  "id": "M11-sequence-total",
+  "file": "SequenceProofs.lean",
+  "kind": "statement",
+  "desc": "same strengthening in this pass's copy",
+  "baseline_sha256": "2c1930fd5211f742145eb0dd46cb48bc6e79fc64f5d8f4fbc67678487da7deb0",
+  "restored_sha256": "2c1930fd5211f742145eb0dd46cb48bc6e79fc64f5d8f4fbc67678487da7deb0",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.3,
+  "reverted_rc": 0,
+  "reverted_wall": 3.5,
+  "observed": "RED"
+ }
+]

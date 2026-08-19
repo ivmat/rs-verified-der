@@ -1,0 +1,13 @@
+diff --git a/lean/TlvProofs.lean b/lean/TlvProofs.lean
+index 702449c..379f7b2 100644
+--- a/lean/TlvProofs.lean
++++ b/lean/TlvProofs.lean
+@@ -537,7 +537,7 @@ theorem length_decode_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
+     transfer is what stops being trusted here: the fact is now proved about the constant it is used
+     about. -/
+ theorem length_decode_total (s : Slice U8) :
+-    ∃ r : core.result.Result (U32 × Usize) length.LengthError, length.decode_length s = ok r := by
++    ∃ (v : U32) (used : Usize), length.decode_length s = ok (core.result.Result.Ok (v, used)) := by
+   obtain ⟨r, heq, -⟩ := WP.spec_imp_exists (decode_length_used_le_spec s)
+   exact ⟨r, heq⟩
+ 

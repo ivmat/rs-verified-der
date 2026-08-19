@@ -1,0 +1,361 @@
+⚠ [1512/1704] Replayed Aeneas.Std.Slice
+warning: Aeneas/Std/Slice.lean:363:4: declaration uses `sorry`
+warning: Aeneas/Std/Slice.lean:586:8: declaration uses `sorry`
+⚠ [1591/1704] Replayed Aeneas.Std.StringIter
+warning: Aeneas/Std/StringIter.lean:13:4: declaration uses `sorry`
+⚠ [1693/1704] Replayed LengthProofs
+warning: LengthProofs.lean:221:8: `List.take_succ` has been deprecated: Use `List.take_add_one` instead
+warning: LengthProofs.lean:967:31: 'simp' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: LengthProofs.lean:967:31: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: LengthProofs.lean:1021:39: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+info: LengthProofs.lean:1023:0: 'DerVerified.Length.decode_indefinite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1024:0: 'DerVerified.Length.decode_short_form' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1025:0: 'DerVerified.Length.decode_truncated_long' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1026:0: 'DerVerified.Length.decode_nonminimal_leading_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1027:0: 'DerVerified.Length.decode_toolarge' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1028:0: 'DerVerified.Length.decode_length_loop_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ shl8_or_bv._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1029:0: 'DerVerified.Length.decode_long_form_accept' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ shl8_or_bv._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1030:0: 'DerVerified.Length.decode_long_form_nonminimal_value' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ shl8_or_bv._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1031:0: 'DerVerified.Length.decode_length_loop_total' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1032:0: 'DerVerified.Length.decode_length_used_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1033:0: 'DerVerified.Length.encode_length_loop0_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1034:0: 'DerVerified.Length.encode_length_loop1_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1035:0: 'DerVerified.Length.to_be_bytes_significant' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1036:0: 'DerVerified.Length.encode_length_long_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv_or_0x80._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1037:0: 'DerVerified.Length.encode_length_short_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1038:0: 'DerVerified.Length.roundtrip_long' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv_or_0x80._native.bv_decide.ax_1_5,
+ u8_high_bit_decomp._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1039:0: 'DerVerified.Length.roundtrip_short' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1040:0: 'DerVerified.Length.decode_accepts_only_canonical' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ bv_or_0x80._native.bv_decide.ax_1_5,
+ shl8_or_bv._native.bv_decide.ax_1_5,
+ u8_high_bit_decomp._native.bv_decide.ax_1_5]
+⚠ [1695/1704] Replayed BigIntProofs
+warning: BigIntProofs.lean:139:23: This simp argument is unused:
+  ↓reduceIte
+
+Hint: Omit it from the simp argument list.
+  simp only [hempty,̵ ̵↓̵r̵e̵d̵u̵c̵e̵I̵t̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: BigIntProofs.lean:186:0: 'DerVerified.BigInteger.is_negative_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bitand_spec,
+ first_spec,
+ is_some_and_spec,
+ Shared0U8.Insts.CoreOpsBitBitAndU8U8.bitand,
+ core.option.Option.is_some_and,
+ core.slice.Slice.first,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:187:0: 'DerVerified.BigInteger.validate_iff_minimal' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:342:0: 'DerVerified.BigInteger.encode_minimal_integer_into_loop_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:391:0: 'DerVerified.BigInteger.encode_minimal_integer_into_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:413:0: 'DerVerified.BigInteger.encode_minimal_integer_into_roundtrip' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:518:0: 'DerVerified.BigInteger.encode_minimal_integer_into_loop_fixed_point' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:572:0: 'DerVerified.BigInteger.encode_minimal_integer_into_exact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:603:0: 'DerVerified.BigInteger.encode_minimal_integer_into_succeeds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:640:0: 'DerVerified.BigInteger.IsMinimalDer_two_case' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [1697/1704] Replayed OidProofs
+info: OidProofs.lean:258:0: 'DerVerified.Oid.validate_oid_loop_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: OidProofs.lean:300:0: 'DerVerified.Oid.validate_iff_canonical' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+⚠ [1701/1704] Replayed TagProofs
+warning: TagProofs.lean:118:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: TagProofs.lean:96:5: unused variable `hi1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: TagProofs.lean:112:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵e̵q̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: TagProofs.lean:124:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵e̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:185:0: 'DerVerified.Tag.decode_tag_loop_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+warning: TagProofs.lean:217:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:257:0: 'DerVerified.Tag.tag_decode_total' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+warning: TagProofs.lean:343:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:370:0: 'DerVerified.Tag.tag_decode_used_bounds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+⚠ [1702/1704] Built TlvProofs (3.0s)
+warning: TlvProofs.lean:130:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: TlvProofs.lean:110:5: unused variable `hi1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: TlvProofs.lean:125:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵e̵q̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: TlvProofs.lean:136:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵e̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: TlvProofs.lean:217:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: TlvProofs.lean:329:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TlvProofs.lean:671:0: 'DerVerified.Tlv.length_decode_used_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TlvProofs.lean:672:0: 'DerVerified.Tlv.length_decode_total' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TlvProofs.lean:673:0: 'DerVerified.Tlv.decode_tlv_structure' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+⚠ [1703/1704] Built SequenceProofs (3.2s)
+warning: SequenceProofs.lean:137:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: SequenceProofs.lean:117:5: unused variable `hi1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: SequenceProofs.lean:132:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵e̵q̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:143:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵e̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:223:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:334:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:835:17: This simp argument is unused:
+  ho
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:844:17: This simp argument is unused:
+  ho
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:865:17: This simp argument is unused:
+  ho
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: SequenceProofs.lean:898:0: 'DerVerified.Sequence.length_decode_used_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:899:0: 'DerVerified.Sequence.length_decode_total' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:900:0: 'DerVerified.Sequence.decode_tlv_progress' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:901:0: 'DerVerified.Sequence.elements_next_progress' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:902:0: 'DerVerified.Sequence.decode_sequence_loop_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:903:0: 'DerVerified.Sequence.decode_sequence_structure' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+Build completed successfully (1704 jobs).
