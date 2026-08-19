@@ -48,23 +48,11 @@ below are consequently proven as THEOREMS (restated from `TagProofs.lean`'s own 
 facts, over the same source — this pass's own namespace, `der_tlv_extract.tag`, is distinct from
 `TagProofs.lean`'s `der_tag_extract.tag`, so the proof is duplicated rather than imported), not
 assumed. `usize::try_from(u32)` still extracts as an **unmodelled axiom** (a stdlib `TryFrom` impl
-Aeneas's Std library hasn't (yet) covered for this direction). This file adds four remaining
+Aeneas's Std library hasn't (yet) covered for this direction). This file adds three remaining
 small, documented, disclosed assumed specs — each the `first_spec` pattern from
 `LengthProofs.lean` (a minimal, honest characterization of an otherwise fully-opaque primitive),
 never a re-statement of `decode_tlv`'s own logic:
 
-* **`length_decode_total`** — the same fact `tag_decode_total` proves for `decode_tag`, restated as
-  an AXIOM for `length.decode_length`.
-  Unlike `decode_tag`, `decode_length` is fully-defined (not opaque) in this extraction, and
-  `LengthProofs.lean`'s own `decode_accepts_only_canonical` already proves totality **sorry-free**
-  over the byte-identical `length.rs` source — but `lean/extract-tlv` runs its own independent
-  Charon/Aeneas pass (needed since `tlv.rs` requires `length` as a sibling module), producing a
-  Lean namespace that collides with `lean/extract`'s own `DerLengthExtract` if both are imported
-  together. This axiom is a namespace-workaround, not new unverified trust — see the
-  docstring for the precise justification.
-  Its former companion **`length_decode_used_le`** was an axiom of the same kind until 2026-08-19
-  and is now a **THEOREM** proved in this file (see the section before the headline theorem): the
-  namespace clash forces the *proof* to be reproduced here, but no longer the assumption.
 * **`result_map_err_ok_spec`** / **`result_map_err_err_spec`** — `Result::map_err`'s textbook
   semantics (`Ok v ↦ Ok v`, `Err e ↦ Err (f e)`, the latter conditioned on `call_once` succeeding
   — always true for `decode_tlv`'s two concrete closures); Aeneas extracts
@@ -75,14 +63,25 @@ never a re-statement of `decode_tlv`'s own logic:
   Unreachable on 32/64-bit"), the same assumption Kani's harnesses make (Kani models `usize` as
   64-bit).
 
-None of these four axioms is der-specific trust beyond what `LengthProofs.lean` has already proved
-(sorry-free, over the identical source) or what the Rust standard library guarantees — all are
-disclosed here, and `#print axioms` at the bottom shows the resulting theorem depends on exactly
-these four plus the standard Lean axioms (`propext`, `Classical.choice`, `Quot.sound`) plus the two
+None of these three axioms is der-specific trust beyond what the Rust standard library guarantees
+— all are disclosed here, and `#print axioms` at the bottom shows the resulting theorem depends on
+exactly these three plus the standard Lean axioms (`propext`, `Classical.choice`, `Quot.sound`)
+plus the two
 underlying opaque Aeneas primitives they characterize
 (`Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from`, `core.result.Result.map_err`) and the
 one `LengthProofs.lean` already trusts (`core.slice.Slice.first`). No `sorryAx`. (`tag.decode_tag`
 itself — now defined, not opaque — no longer appears in the axiom list at all.)
+
+**Two axioms about `length.decode_length` used to sit in that list and no longer do.** Until
+2026-08-19 this file DECLARED both `length_decode_used_le` (a consumption bound) and
+`length_decode_total` (totality) as `axiom`s — assumptions about *this crate's own* translated
+code, not about an upstream primitive, which is what
+`evidence/AXIOM-AUDIT-2026-08-18.md` §§2.6-2.7 found and named. Both are now **THEOREMS proved in
+this file** (see the section before the headline theorem): the consumption bound as a branch walk
+over `decode_length` reproduced character-for-character from `LengthProofs.lean`, and totality as a
+three-line corollary of that walk's triple. The duplicate-extraction namespace clash still forces
+the *proof* to be reproduced here rather than imported — but no longer the *assumption*. This lid
+now declares **no** axiom about `der-verified`'s own code.
 -/
 
 open Aeneas Aeneas.Std Result
@@ -375,28 +374,22 @@ axiom try_from_u32_usize_spec (i : U32) (h32 : 32 ≤ Usize.numBits) :
     ∃ l : Usize, Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from i
         = ok (core.result.Result.Ok l) ∧ l.val = i.val
 
-/-- **Assumed totality** of `length.decode_length` (the copy embedded in *this* extraction crate
-    — `lean/extract-tlv` runs its own independent Charon/Aeneas pass over the same shipped
-    `length.rs`, since `tlv.rs` needs `length` as a sibling module; that produces a Lean namespace
-    structurally identical to, but distinct from, `lean/extract`'s own `DerLengthExtract`/
-    `LengthProofs.lean`, so the two files cannot be imported together — a naming collision, not a
-    semantic gap). This is NOT blind trust: `LengthProofs.lean`'s `decode_accepts_only_canonical`
-    already proves this exact fact **sorry-free**, unconditionally for every `s : Slice U8` (by
-    `WP.spec_fail`/`spec_div` reducing an unprovable `⦃⦄` triple to `False`, a proved triple with
-    no vacuous hypotheses forces the underlying `Result` to be `ok _`) — over the byte-identical
-    `length.rs` source. Restated here as a disclosed axiom purely to work around the duplicate-
-    extraction namespace clash, not because the fact is unverified. -/
-axiom length_decode_total (s : Slice U8) :
-    ∃ r : core.result.Result (U32 × Usize) length.LengthError, length.decode_length s = ok r
-
-/-! ## `decode_length`'s no-over-read bound — proved in this pass's own namespace
+/-! ## `decode_length`'s no-over-read bound and totality — proved in this pass's own namespace
 
     Until 2026-08-19 the bound below was DECLARED as an axiom here (and identically in
     `SequenceProofs.lean`), and `evidence/AXIOM-AUDIT-2026-08-18.md` §2.7 classified those two
     declarations as the audit's one real residual: assumptions about `der-verified`'s own
     translated code with no Lean proof anywhere in the repository. They are now theorems.
 
-    The three lemmas and the theorem below are **character-for-character the same 95 lines** as
+    `length_decode_total` — the *other* crate-code axiom this file used to declare (audit §2.6:
+    proved sorry-free in `LengthProofs.lean`, but transferred here across the namespace boundary
+    by a hand argument) — closes the same day, and closes as a **corollary of the bound below**:
+    `decode_length_used_le_spec` is an unhypothesised triple about the `decode_length` **this**
+    pass emitted, and `WP.spec_imp_exists` reads the `ok` witness straight off it. It is stated
+    at the end of this section, after the triple it depends on, rather than beside the other
+    assumed specs where the axiom used to live.
+
+    The three lemmas and the first theorem below are **character-for-character the same 95 lines** as
     `LengthProofs.lean`'s `low7_eq_mod` / `decode_length_loop_total` /
     `decode_length_used_le_spec` / `decode_length_used_le`, with exactly two differences: the
     ambient `open` of this pass's namespace, and the last theorem's NAME — it keeps the name and
@@ -405,7 +398,9 @@ axiom length_decode_total (s : Slice U8) :
     each pass its own namespace (`lean/extract-tlv` re-extracts the same shipped `length.rs`
     because `tlv.rs` needs `length` as a sibling module), so `LengthProofs.lean`'s theorem is a
     statement about a *different constant* and cannot be imported. Being able to `diff` the three
-    copies is what replaces the import.
+    copies is what replaces the import. (The `length_decode_total` corollary that closes the
+    section is NOT part of that reproduction: it is three lines with no counterpart in
+    `LengthProofs.lean`, which needs no such corollary because nothing there consumes one.)
 
     Their combined trust surface is this lid's already-declared `first_spec` and nothing else,
     as the axiom-disclosure block at the bottom of this file reports. -/
@@ -523,6 +518,29 @@ theorem length_decode_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
   rw [heq, WP.spec_ok] at hspec
   exact hspec v l_used rfl
 
+/-- **Totality** of `length.decode_length` (the copy embedded in *this* extraction crate) — now a
+    THEOREM, and the shape the composition proof below consumes: the decode always returns some
+    `ok r`, never `fail` and never `div`. Kept the SAME name and signature as the axiom this file
+    used to declare, so the composition proof needed no edits — only the *placement* moved, down
+    here after the triple it is read off.
+
+    Three lines, because `decode_length_used_le_spec` above is an **unhypothesised** Aeneas triple
+    about this pass's own `length.decode_length`: `WP.spec_imp_exists` turns any proved triple into
+    the witness `∃ r, … = ok r` (an unprovable triple would have reduced to `False` — that is the
+    same `WP.spec_fail`/`spec_div` argument the discharged axiom's docstring used to make in prose,
+    now made by the kernel).
+
+    What this retires, precisely: `evidence/AXIOM-AUDIT-2026-08-18.md` §2.6 classified the former
+    axiom as a crate-code assumption that was *discharged elsewhere* — the fact itself was proved
+    sorry-free in `LengthProofs.lean`, and the transfer to **this** pass's distinct constant was a
+    hand argument (namespace-normalised `diff` of the extracts) rather than an import. That
+    transfer is what stops being trusted here: the fact is now proved about the constant it is used
+    about. -/
+theorem length_decode_total (s : Slice U8) :
+    ∃ r : core.result.Result (U32 × Usize) length.LengthError, length.decode_length s = ok r := by
+  obtain ⟨r, heq, -⟩ := WP.spec_imp_exists (decode_length_used_le_spec s)
+  exact ⟨r, heq⟩
+
 /-! ## The headline theorem -/
 
 /-- **`decode_tlv`'s structural correctness, ∀-length** (the unbounded companion to
@@ -561,8 +579,9 @@ theorem decode_tlv_structure (input : Slice U8) (h32 : 32 ≤ Usize.numBits) :
     step as ⟨cf, hcf⟩
     simp only [hcf]
     step as ⟨s, hs⟩
-    -- `decode_length` is fully-defined (not opaque): `length_decode_total` (derived above from
-    -- `LengthProofs.lean`) gives its `ok` shape directly, mirroring the `decode_tag` handling.
+    -- `decode_length` is fully-defined (not opaque): `length_decode_total` (proved above, as a
+    -- corollary of this pass's own `decode_length_used_le_spec`) gives its `ok` shape directly,
+    -- mirroring the `decode_tag` handling.
     obtain ⟨lres, hlen⟩ := length_decode_total s
     rcases lres with ⟨len_u32, l_used⟩ | lerr
     · -- decode_length succeeded: Ok (len_u32, l_used). Continue the live accept path.
@@ -650,6 +669,7 @@ theorem decode_tlv_structure (input : Slice U8) (h32 : 32 ≤ Usize.numBits) :
     exact absurd heq (by simp)
 
 #print axioms length_decode_used_le
+#print axioms length_decode_total
 #print axioms decode_tlv_structure
 
 end DerVerified.Tlv

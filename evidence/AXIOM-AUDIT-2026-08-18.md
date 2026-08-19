@@ -498,3 +498,86 @@ model-drift diff + `lake build DerVerified` + sorry-gate), archived as
 `evidence/lean-lid-7eb8b26.log`; no `der-verified/src` file touched; and the three new statements
 negative-controlled by planted mutation — see `evidence/LID-MUTATION-CONTROLS-2026-08-19.md`
 (M7–M9).
+
+---
+
+## Addendum 2 — 2026-08-19 (later still): axioms 14 and 15 discharged; the crate-code class is empty
+
+**Appended, not merged**, on the same rule as the first addendum: §§1-3 are the audit as it stood on
+2026-08-18, the first addendum is the state after `length_decode_used_le` was proved, and this is the
+state after `length_decode_total` was. Where they disagree, the later section is the later state.
+
+**What changed.** The first addendum's own "still open" paragraph is carried out. `TlvProofs.lean`
+and `SequenceProofs.lean` each now prove
+
+```lean
+theorem length_decode_total (s : Slice U8) :
+    ∃ r : core.result.Result (U32 × Usize) length.LengthError, length.decode_length s = ok r := by
+  obtain ⟨r, heq, -⟩ := WP.spec_imp_exists (decode_length_used_le_spec s)
+  exact ⟨r, heq⟩
+```
+
+in place of the `axiom` of the same name and signature. Three lines, exactly as predicted, and the
+prediction's reasoning is what makes them work: `decode_length_used_le_spec` — the triple A6a's
+discharge planted in each lid — is **unhypothesised**, and `Aeneas/Std/WP.lean`'s `spec_imp_exists`
+turns any proved triple into the `ok` witness (an unprovable one would have reduced to `False` via
+`spec_fail`/`spec_div`, §2.6's own argument). The consuming proofs did not change: the name, the
+signature and the `obtain ⟨lres, hlen⟩ := length_decode_total s` call sites are untouched; only the
+declaration's **placement** moved, from beside the assumed specs to the end of the consumption-bound
+section, after the triple it now depends on.
+
+**Why this is a real discharge and not a re-labelling.** §2.6 was careful that the *fact* was never
+in doubt — `LengthProofs.lean` proves it sorry-free — and that what was assumed was the **transfer**
+across Aeneas's per-pass namespaces, warranted by this audit's own normalised `diff` of the three
+extracts rather than by the kernel. That is precisely what ends. `der_tlv_extract.length.decode_length`
+and `der_sequence_extract.length.decode_length` are now the subjects of theorems in their own
+namespaces; the `diff` is no longer load-bearing for *this* fact. (It remains load-bearing for the
+reproduced 95-line proof text, which is A6a's residual, unchanged.)
+
+**Revised census** (this addendum's state, superseding §1's, §3's and the first addendum's counts):
+
+| classification | 2026-08-18 | 2026-08-19 (A6a) | 2026-08-19 (A6b) |
+|---|---:|---:|---:|
+| UPSTREAM-PRIMITIVE-SPEC (verified faithful against rustc source) | 13 | 13 | **13** |
+| SMUGGLED — asserts a property of this crate's own translated code | 4 | 2 | **0** |
+| — of those, discharged by a sorry-free proof elsewhere | 2 | 2 | **0** |
+| — of those, no Lean proof anywhere | 2 | 0 | **0** |
+| **total declared lid axioms** | **17** | **15** | **13** |
+
+Per lid: `TlvProofs.lean` 5 → **4**, `SequenceProofs.lean` 5 → **4**; the other four unchanged
+(`BigIntProofs` 3, `LengthProofs` 1, `TagProofs` 1, `OidProofs` 0). `PROOF_MANIFEST.md` §3.2's
+generated table and `ASSUMPTIONS.md` A6 (with the second §T tombstone, A6b) carry the same numbers.
+
+The honest one-line statement of the ∀-length trust base becomes, finally:
+*13 upstream-primitive specs, verified faithful against the rustc `core` source at the pinned
+extraction nightly — and nothing else declared about `der-verified`'s own code.* Both crate-code
+clauses are gone.
+
+**This is the finding F4 asked about, closed by construction rather than by review.** F4's hazard was
+that "a declared axiom characterising an Aeneas-Std primitive and a bespoke crate-specific assumption
+are syntactically identical", so a smuggled crate property could sit unnoticed among upstream specs.
+There is now **no crate-code axiom in any lid** for a new one to hide beside: any future one would be
+the first, and would show up as a change to the 13/0 split this file and `ASSUMPTIONS.md` A6 both
+state. That is a weaker guarantee than the §4 census gate (still unbuilt) and is stated as such — an
+empty class is easier to audit than a populated one, not self-enforcing.
+
+**Still open, unchanged:** §4's `gates/check_axiom_census.py`. Its expectation file would now start
+at **13 lid axioms (13 UPSTREAM, 0 CRATE) and 25 extract axioms**, and its `discharge:` column would
+have no rows at all. §1b's opaque-surface census and the hollow-claim check are also still by hand.
+
+**Verification of this addendum's claims:** `bash lean/check_lean.sh` green (re-extraction +
+model-drift diff + `lake build DerVerified` + sorry-gate); no `der-verified/src` file touched; the
+two new theorems disclose
+
+```
+info: TlvProofs.lean:672:0: 'DerVerified.Tlv.length_decode_total' depends on axioms: [propext,
+ Classical.choice, Quot.sound, first_spec, core.slice.Slice.first]
+info: SequenceProofs.lean:899:0: 'DerVerified.Sequence.length_decode_total' depends on axioms: [propext,
+ Classical.choice, Quot.sound, first_spec, core.slice.Slice.first]
+```
+
+— no crate-code axiom, no `sorryAx`, no `bv_decide` certificate — and `length_decode_total` is gone
+from `decode_tlv_structure`'s and `decode_sequence_structure`'s dependency sets, which is the
+mechanical confirmation that the axiom was replaced rather than paralleled. (Line wrapping is this
+file's; the log prints one axiom per line.) The two new statements are negative-controlled by planted
+mutation — see `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (M10–M11).

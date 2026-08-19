@@ -18,9 +18,9 @@ they are being offered, and where the guarantee stops.
 >
 > **`ASSUMPTIONS.md` is this document's companion, and should be read with it.** Everything below
 > is machine-checked *given* a trusted base — Kani, CBMC and its SAT backend, the Lean kernel, the
-> fidelity of the Aeneas extraction, the toolchain pins, the lids' declared axioms (two of which are
-> assumptions about this crate's own code — proved sorry-free in a sibling lid, then transferred
-> across Aeneas's per-extraction namespaces by a hand argument), the meaning of "bounded", and
+> fidelity of the Aeneas extraction, the toolchain pins, the lids' 13 declared axioms (all of them
+> specs for upstream `core` primitives since 2026-08-19 — none is an assumption about this crate's
+> own code any more), the meaning of "bounded", and
 > the three disclosed-unsatisfiable covers. That base is enumerated in one place, each entry with
 > its failure mode and what leans on it, in [`ASSUMPTIONS.md`](ASSUMPTIONS.md). This document says
 > what is proven; that one says what has to be true for "proven" to mean what it looks like.
@@ -172,11 +172,11 @@ canonicality classifications of these same six remain Kani-bounded; §6.2 says w
 | `lean/BigIntProofs.lean` | `bigint` | 16 | 3 |
 | `lean/LengthProofs.lean` | `length` | 46 | 1 |
 | `lean/OidProofs.lean` | `oid` | 5 | 0 |
-| `lean/SequenceProofs.lean` | `sequence` | 17 | 5 |
+| `lean/SequenceProofs.lean` | `sequence` | 18 | 4 |
 | `lean/TagProofs.lean` | `tag` | 7 | 1 |
-| `lean/TlvProofs.lean` | `tlv` | 12 | 5 |
+| `lean/TlvProofs.lean` | `tlv` | 13 | 4 |
 
-The `axiom` column counts the *assumed Aeneas-Std specs declared in the lid file itself* — the trust surface a reader can audit by opening the file. It excludes Lean's own `propext`/`Classical.choice`/`Quot.sound` and `bv_decide`'s certificate axiom. Separately, the lids carry 47 `#print axioms` commands: that is a count of *audit commands* (roughly one per theorem whose dependency set is disclosed at build time), **not** a count of axioms — do not compare it with the column.
+The `axiom` column counts the *assumed Aeneas-Std specs declared in the lid file itself* — the trust surface a reader can audit by opening the file. It excludes Lean's own `propext`/`Classical.choice`/`Quot.sound` and `bv_decide`'s certificate axiom. Separately, the lids carry 49 `#print axioms` commands: that is a count of *audit commands* (roughly one per theorem whose dependency set is disclosed at build time), **not** a count of axioms — do not compare it with the column.
 
 One limitation to name explicitly: a declared `axiom` characterising an Aeneas-Std primitive and a bespoke assumption about this crate's own code are syntactically identical, and the latter would be an unsound hole. Nothing in this repository mechanically distinguishes them — the argument that each is an upstream-primitive spec is made in the lid docstrings and rests on review, not on a gate.
 <!-- END GENERATED:l4 -->
@@ -188,7 +188,7 @@ file disagree, the Lean file is right.
 
 | Codec | Unbounded property |
 |---|---|
-| `length` (X.690 §8.1.3) | every branch of `decode_length` ∀-length, and round-trip canonicality — Lean theorem `decode_accepts_only_canonical`, whose proof also covers both loops of `encode_length` (`encode_length_loop0_spec`, `encode_length_loop1_spec`); plus the consumption bound `decode_length_used_le` (an accepted decode never reports consuming more bytes than the input holds — added 2026-08-19, and reproduced inside the `tlv`/`sequence` lids' own namespaces, where it replaced two declared axioms) |
+| `length` (X.690 §8.1.3) | every branch of `decode_length` ∀-length, and round-trip canonicality — Lean theorem `decode_accepts_only_canonical`, whose proof also covers both loops of `encode_length` (`encode_length_loop0_spec`, `encode_length_loop1_spec`); plus the consumption bound `decode_length_used_le` (an accepted decode never reports consuming more bytes than the input holds — added 2026-08-19, and reproduced inside the `tlv`/`sequence` lids' own namespaces, where it replaced two declared axioms — and where a three-line corollary of its triple, `length_decode_total`, replaced the other two on the same date) |
 | `big_integer` (X.690 §8.3) | the minimality biconditional on the validate side (`validate_iff_minimal`) and encode-side round-trip/canonicality (`encode_minimal_integer_into_roundtrip`), ∀-length |
 | `oid` (X.690 §8.19) | the OID canonical-form biconditional on the validate side (`validate_iff_canonical`), ∀-length |
 | `tag` (X.690 §8.1.2) | `decode_tag`'s totality and consumption bound ∀-length (`tag_decode_total`, `tag_decode_used_bounds`): it never fails to terminate, and an accepted decode consumes `1..=input.length` bytes. Required a behaviour-preserving refactor of the high-tag loop (`return`-inside-loop → break-with-`Result`) to make Aeneas extraction produce a body rather than a bodyless axiom |
@@ -200,11 +200,16 @@ Rust code. The Rust → LLBC → Lean translation is not itself formally verifie
 semantics; this is the standard Aeneas assurance boundary. On top of that, each lid assumes a small
 number of *Aeneas-Std specs* as `axiom`s — the count is in the table above, the full non-standard
 axiom set of every proof is disclosed by `#print axioms` in the sources, and each lid's docstring
-explains its own trust surface. Two of the 15 are **not** Aeneas-Std specs at all but assumptions
-about this crate's own translated code (`length_decode_total`, in the `tlv` and `sequence` lids);
-`evidence/AXIOM-AUDIT-2026-08-18.md` audited all of them against upstream sources and
-`ASSUMPTIONS.md` A6 carries the split. Two more of that kind (`length_decode_used_le`) were
-**replaced by proofs on 2026-08-19** — see that audit's discharge addendum.
+explains its own trust surface. **All 13 are specs for upstream `core` primitives Aeneas does not
+model** (`<[T]>::first`, `Option::is_some_and`, `Result::map_err`, `<usize as TryFrom<u32>>::try_from`,
+`&u8 & u8`), each read against the actual rustc source at the extraction toolchain's pinned nightly
+by `evidence/AXIOM-AUDIT-2026-08-18.md`. **No lid declares an axiom about `der-verified`'s own code.**
+That was not true until 2026-08-19: four such axioms existed (`length_decode_used_le` ×2,
+`length_decode_total` ×2, in the `tlv` and `sequence` lids), and all four were replaced by proofs
+that day — see the audit's two discharge addenda, and `ASSUMPTIONS.md` §T for the tombstones. The
+syntactic limitation the generated note above states is unchanged: nothing *mechanically* keeps a
+crate-code assumption out of a future lid, so the property "13 upstream, 0 crate-code" is a
+reviewed fact about today's sources, not a gated one.
 
 All L4 proofs are **`sorry`-free, and that is a gate, not an eyeball check**: `lean/check_lean.sh`
 fails closed if `sorryAx` or a `declaration uses 'sorry'` warning appears, and it was negative-tested

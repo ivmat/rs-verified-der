@@ -21,11 +21,12 @@ mode, and each names it:
 2. **This list is incomplete, and A0 says so inside the list rather than around it.** No claim of
    the form "these are all the assumptions" is made anywhere in this crate.
 
-Two of the entries below (**A6**) are assumptions about *this crate's own code*. Since 2026-08-19
-neither is un-discharged — both are entailed by a sorry-free proof in a sibling lid — but the
-transfer across Aeneas's per-extraction namespaces is still a **hand argument, not an import**, and
-§2 says so in as many words rather than softening it. The pair that really was *proven nowhere*
-(`length_decode_used_le` ×2) was discharged by proof on that date and is tombstoned in §T.
+**No entry below is an assumption about this crate's own code any more.** Until 2026-08-19 **A6**
+carried four — two that were *proven nowhere* (`length_decode_used_le` ×2) and two whose fact was
+proved in a sibling lid but *transferred* across Aeneas's per-extraction namespaces by a hand
+argument (`length_decode_total` ×2). All four were discharged by proof on that date, in two steps,
+and both steps are tombstoned in §T with their artifacts. What remains in A6 is a claim about
+axioms characterising *upstream* primitives — the tools' surface, not ours.
 
 ---
 
@@ -118,41 +119,31 @@ transfer across Aeneas's per-extraction namespaces is still a **hand argument, n
 
 ## 2. The crate's own assumptions — the ones that are ours, not the tools'
 
-- **A6 · The lids' declared axioms are what they claim to be — and two of them are assumptions about
-  this crate's own code, discharged by a proof in a sibling lid rather than by an import.** The six
-  lids declare **15** `axiom`s (17 until 2026-08-19; see the tombstone below). They were
-  audited once, by hand, against upstream sources
-  (`evidence/AXIOM-AUDIT-2026-08-18.md`), with this result:
+- **A6 · The lids' declared axioms are what they claim to be: 13 characterisations of upstream
+  `core` primitives, and nothing about this crate's own code.** The six lids declare **13** `axiom`s
+  (17 until 2026-08-19; see the two tombstones below). They were audited once, by hand, against
+  upstream sources (`evidence/AXIOM-AUDIT-2026-08-18.md`), with this result:
   - **13 are upstream-primitive specs** — characterisations of rustc `core` functions Aeneas does
     not model (`<[T]>::first`, `Option::is_some_and`, `Result::map_err`,
     `<usize as TryFrom<u32>>::try_from`, `&u8 & u8`), each verified faithful against the actual
     `core` source at the extraction toolchain's pinned nightly.
-  - **2 are assumptions about `der-verified`'s own translated code**, not about Aeneas's Std library
-    — which is *not* what `PROOF_MANIFEST.md` §3.2's generated column heading says, and the audit
-    says so.
-    - `length_decode_total` ×2 (`TlvProofs.lean`, `SequenceProofs.lean`) — **discharged elsewhere**:
-      entailed by `LengthProofs.lean`'s unhypothesised, sorry-free
-      `decode_accepts_only_canonical`, transferred across an extraction-namespace boundary **by a
-      hand argument**, not by an import. That transfer is the assumption; the fact itself is proved.
-  Blast radius, stated precisely because it is narrow: each is consumed to obtain the `ok` shape of
-  `decode_length` before the composition proof continues. A falsehood would make the `tlv`/`sequence`
-  ∀-length triples unprovable rather than silently wrong — but it would not be *noticed* by any gate,
-  which is why it is an assumption and not a proof.
-  **fails-if:** the two extraction passes' `length.decode_length` turn out not to be the same
-  function (the audit checked this mechanically, by normalising the namespace token and diffing all
-  `length.*` declarations across the three extracts); an audit of a *new* axiom finds a genuinely
-  false assertion; the census gate the audit proposes (§4) is built and disagrees with the 13/2 split.
-  **load-bearing-for:** the `tlv` and `sequence` ∀-length theorems in full; the honest one-line
-  statement of the ∀-length trust base.
-  **Named follow-up:** `length_decode_total` ×2 is now discharged the same way its former companion
-  was — `LengthProofs.lean`'s `decode_length_used_le_spec` is unhypothesised, so
-  `∃ r, decode_length s = ok r` follows from it in three lines *inside each lid's own namespace*,
-  which would close the hand-argument transfer as well. Not done here: it was outside the scope of
-  the 2026-08-19 change, and it is recorded so the next session does not have to rediscover it.
+  - **0 are assumptions about `der-verified`'s own translated code.** Four were, when the audit ran;
+    all four are now theorems in the lids that used to declare them (§T, A6a and A6b).
+  What the assumption therefore *is*, now that it is only about upstream specs: that each of the 13
+  says no more than the primitive it names actually guarantees, and that Aeneas genuinely has no
+  model for that primitive (an axiom shadowing a modelled function would be a hole). Both were
+  checked by reading, once, per axiom.
+  **fails-if:** a re-read of an axiom against its `core` source finds it stronger than the upstream
+  body (the audit's own method, re-run); an axiom whose target turns out to be modelled by Aeneas
+  after all; an audit of a *new* axiom finds a genuinely false assertion; the census gate the audit
+  proposes (§4) is built and disagrees with the 13/0 split.
+  **load-bearing-for:** every ∀-length theorem in `PROOF_MANIFEST.md` §3.2 — all six lids' headline
+  claims, and the honest one-line statement of the ∀-length trust base.
   *Not gated:* a declared axiom characterising an upstream primitive and a bespoke assumption about
   this crate's code are syntactically identical. Nothing mechanically distinguishes them today —
   the discriminator exists (Aeneas's `@[rust_fun]` attribute and `Source:` docstring) and the gate
-  that would use it is designed but not built.
+  that would use it is designed but not built. **So "0 crate-code axioms" is a fact about today's
+  sources that a reviewer re-establishes by reading, not one a green gate re-establishes.**
 
 - **A7 · "Bounded" means bounded — a Kani harness says nothing whatsoever about inputs outside its
   domain.** Every L3 property is proven over a fixed-width symbolic buffer with a stated
@@ -275,6 +266,38 @@ is itself an assumption.
   **What did NOT change:** the security-relevant `used ≤ input.length` conclusion the `tlv`/`sequence`
   lids sell still comes from `decode_tlv`'s own runtime guard, exactly as before. This closed an
   assumption, not a gap in a headline.
+
+- **A6b · `length_decode_total` ×2 — the two lid axioms whose fact was proved, but in the wrong
+  namespace.** *Was:* the other half of A6, and the last crate-code assumption in the crate.
+  `TlvProofs.lean` and `SequenceProofs.lean` each DECLARED, as an `axiom`, that
+  `length.decode_length` is total (`∃ r, decode_length s = ok r`) — never `fail`, never `div`. The
+  fact itself was never in doubt: `LengthProofs.lean` proves it sorry-free. What was assumed was the
+  **transfer**. Aeneas gives each extraction pass its own namespace, so
+  `der_length_extract.length.decode_length`, `der_tlv_extract.…` and `der_sequence_extract.…` are
+  three distinct constants; the argument that a theorem about the first is a theorem about the other
+  two was a hand argument backed by a namespace-normalised `diff` of the extracts
+  (`evidence/AXIOM-AUDIT-2026-08-18.md` §2.6), not by the kernel.
+  **Discharged 2026-08-19 by proof, in each lid's own namespace.** A6a's discharge left
+  `decode_length_used_le_spec` — an **unhypothesised** Aeneas triple about *this* pass's
+  `decode_length` — standing in every lid that carries a `length` extract (`LengthProofs`,
+  `TlvProofs`, `SequenceProofs`). Totality follows from it in three lines
+  (`WP.spec_imp_exists` reads the `ok` witness off any proved triple), so each lid's
+  `length_decode_total` is now a corollary *of a theorem about the constant it is used about*. The
+  axiom's name and signature are unchanged, so the composition proofs needed no edits; only the
+  declaration's placement moved, after the triple it depends on. Both theorems disclose
+  `[propext, Classical.choice, Quot.sound, first_spec, core.slice.Slice.first]` — no `sorryAx`, no
+  crate-code assumption. With this, the lid axiom count is **13, all upstream-primitive specs**.
+  **Artifacts:** the `length_decode_total` theorems at the end of the consumption-bound section of
+  `lean/TlvProofs.lean` and `lean/SequenceProofs.lean`, each with its own `#print axioms` line; a
+  green `lean/check_lean.sh` (re-extraction + drift + `lake build` + sorry-gate) archived in
+  `evidence/`; the second discharge addendum in `evidence/AXIOM-AUDIT-2026-08-18.md`; and the two
+  planted-mutation negative controls in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (M10-M11),
+  which confirm the corollary is load-bearing and cannot be strengthened into the false "always
+  accepts" statement.
+  **What did NOT change:** the fact was already proved, so no ∀-length claim got stronger. What
+  ended is a *transfer* a reader had to take on trust — and, with it, the last syntactic
+  indistinguishability hazard the audit's F4 finding was about: there is now no crate-code axiom in
+  the lids for a future one to hide beside.
 
 An entry arrives here only with the artifact that closed it named; that is what makes the
 list above shrinkable without making it quietly editable.
