@@ -371,10 +371,11 @@ axiom length_decode_total (s : Slice U8) :
     declarations as the audit's one real residual: assumptions about `der-verified`'s own
     translated code with no Lean proof anywhere in the repository. They are now theorems.
 
-    The three lemmas and the theorem below are **character-for-character the same proof** as
+    The three lemmas and the theorem below are **character-for-character the same 95 lines** as
     `LengthProofs.lean`'s `low7_eq_mod` / `decode_length_loop_total` /
-    `decode_length_used_le_spec` / `decode_length_used_le`; only the ambient
-    `open der_sequence_extract` differs. That reproduction is not laziness — it is the *only* way to
+    `decode_length_used_le_spec` / `decode_length_used_le`, with exactly two differences: the
+    ambient `open` of this pass's namespace, and the last theorem's NAME — it keeps the name and
+    signature of the axiom it replaces, so no consuming proof below had to change. That reproduction is not laziness — it is the *only* way to
     state the fact about the `length.decode_length` **this** extraction pass emitted. Aeneas gives
     each pass its own namespace (`lean/extract-sequence` re-extracts the same shipped `length.rs`
     because `sequence.rs` needs `length` as a sibling module), so `LengthProofs.lean`'s theorem is a

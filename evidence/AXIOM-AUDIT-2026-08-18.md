@@ -392,10 +392,11 @@ theorem decode_length_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
       l_used.val ≤ s.val.length
 ```
 
-— the *exact* statement axioms 16 and 17 asserted, coercion shape included — and the same proof,
-character-for-character, now stands in `TlvProofs.lean` and `SequenceProofs.lean` **in place of**
-those two `axiom` declarations. They are theorems there now, with the same names and signatures, so
-no consuming proof changed.
+— the *exact* statement axioms 16 and 17 asserted, coercion shape included — and the same 95 lines
+of proof now stand in `TlvProofs.lean` and `SequenceProofs.lean` **in place of** those two `axiom`
+declarations. The three copies are character-for-character identical with exactly two differences:
+the ambient `open` of each pass's namespace, and the last theorem's name (the two lids keep the
+axiom's name `length_decode_used_le`, so no consuming proof changed).
 
 **How.** A branch walk over `decode_length`, in the shape §2.7 predicted, supported by two small
 lemmas that are also reproduced in each lid:

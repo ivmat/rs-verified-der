@@ -407,8 +407,11 @@ theorem decode_long_form_nonminimal_value (s : Slice U8) (b : U8) (ws : List U8)
     axioms as the audit's one real residual — assumptions about this crate's own translated code
     with no Lean proof anywhere. The proof below discharges them. Aeneas gives each extraction
     pass its own namespace, so the theorem cannot be *imported* into those lids; instead the
-    proof text below is reproduced there **character-for-character** (only the surrounding
-    `open der_*_extract` differs), which is what makes the three copies auditable by `diff`.
+    95 lines below are reproduced there **character-for-character**, with exactly two differences:
+    the ambient `open der_tlv_extract` / `open der_sequence_extract`, and the last theorem's NAME
+    (it keeps the axiom's name, `length_decode_used_le`, so no consuming proof had to change).
+    That is what makes the three copies auditable by `diff` — a weaker check than an import, and
+    named as such.
 
     Two deliberate weaknesses, both to keep the copies cheap and their trust surface minimal:
     * `decode_length_loop_total` is used instead of the stronger `decode_length_loop_spec` above
