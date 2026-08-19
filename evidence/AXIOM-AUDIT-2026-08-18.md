@@ -460,7 +460,32 @@ was: `decode_length_used_le_spec` is unhypothesised, so `∃ r, decode_length s 
 it in three lines *inside each lid's own namespace* — which would close §2.6's hand-argument
 transfer too. That was outside the scope of this change and is recorded rather than done.
 
+**The archived disclosure this audit used is now superseded.** The preamble's "Applicability of
+the archived log" paragraph turned on `git diff 151c826 HEAD -- lean/` touching no lid or extract
+`.lean` file. Three lid files changed on 2026-08-19, so `evidence/lean-lid-ea8dad4.log` no longer
+describes HEAD's lid sources. A fresh full-gate run is archived as
+**`evidence/lean-lid-7eb8b26.log`** (same script, same pins, exit 0), and it is what a re-audit
+should read. The two disclosure lines this change is about, quoted from it verbatim:
+
+```
+info: TlvProofs.lean:652:0: 'DerVerified.Tlv.decode_tlv_structure' depends on axioms: [propext,
+ Classical.choice, Quot.sound, first_spec, length_decode_total, result_map_err_err_spec,
+ result_map_err_ok_spec, try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from, core.result.Result.map_err,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:865:0: 'DerVerified.Sequence.decode_sequence_structure' depends on axioms:
+ [propext, Classical.choice, Quot.sound, first_spec, length_decode_total,
+ result_map_err_err_spec, result_map_err_ok_spec, try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from, core.result.Result.map_err,
+ core.slice.Slice.first]
+```
+
+`length_decode_used_le` is gone from both headline theorems' dependency sets — the mechanical
+confirmation that the axiom was *replaced*, not paralleled. (Line wrapping is this file's; the log
+prints one axiom per line.)
+
 **Verification of this addendum's claims:** `bash lean/check_lean.sh` green (re-extraction +
-model-drift diff + `lake build DerVerified` + sorry-gate), no `der-verified/src` file touched, and
-the three new statements negative-controlled by planted mutation — see
-`evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (M7–M9).
+model-drift diff + `lake build DerVerified` + sorry-gate), archived as
+`evidence/lean-lid-7eb8b26.log`; no `der-verified/src` file touched; and the three new statements
+negative-controlled by planted mutation — see `evidence/LID-MUTATION-CONTROLS-2026-08-19.md`
+(M7–M9).
