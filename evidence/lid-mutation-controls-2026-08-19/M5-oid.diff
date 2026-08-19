@@ -1,0 +1,13 @@
+diff --git a/lean/OidProofs.lean b/lean/OidProofs.lean
+index c4e820e..1066289 100644
+--- a/lean/OidProofs.lean
++++ b/lean/OidProofs.lean
+@@ -127,7 +127,7 @@ theorem IsStart_succ {xs : List U8} {j : Nat} (hj : j + 1 ≤ xs.length) :
+     truncated mid-subidentifier). -/
+ def IsCanonicalOid (xs : List U8) : Prop :=
+   xs ≠ [] ∧
+-  (∀ p, p < xs.length → IsStart xs p → xs[p]!.val ≠ 128) ∧
++  (∀ p, p < xs.length → IsStart xs p → xs[p]!.val ≠ 129) ∧
+   IsTerm xs[xs.length - 1]!
+ 
+ /-! ## The loop invariant -/

@@ -1,0 +1,13 @@
+diff --git a/lean/BigIntProofs.lean b/lean/BigIntProofs.lean
+index 2c184d5..352d665 100644
+--- a/lean/BigIntProofs.lean
++++ b/lean/BigIntProofs.lean
+@@ -120,7 +120,7 @@ def IsMinimalDer (l : List U8) : Prop :=
+   match l with
+   | [] => False
+   | [_] => True
+-  | l0 :: l1 :: _ => l0 ≠ (if l1.val < 128 then 0#u8 else 255#u8)
++  | l0 :: l1 :: _ => l0 ≠ (if l1.val < 128 then 255#u8 else 0#u8)
+ 
+ /-- **The headline biconditional (validate-only slice).** `validate_integer_content`
+     accepts (`Ok ()`) exactly when the content is minimal per the independent

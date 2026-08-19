@@ -332,6 +332,19 @@ harnesses, not the two heavy ones; a harness reporting an unsatisfied `cover` pa
 passes locally (§6.1); and it never runs the L4 lids. CI is a floor under regressions in the tractable
 share, not a substitute for the full gate.
 
+**Negative controls — the evidence that these oracles can go RED at all.** A green run is only as
+meaningful as the oracle's ability to fail, and a suite nobody has watched fail is a suite whose
+green is unmeasured. Three campaigns are recorded, and each says in its own words what it does *not*
+cover: `evidence/MUTATION-CONTROLS-2026-08-18.md` (a planted defect in each of `length`, `tag`,
+`tlv`, `integer` and `big_integer`, each caught by the harness whose documented job is to catch it,
+each reverted byte-identically and re-run green); `evidence/PLANTED-SATISFIED-TWINS-2026-08-18.md`
+(for the three disclosed-unsatisfiable covers of §8.2, a twin that *is* satisfiable at the same
+bound, so "unsatisfiable" is distinguished from "cover never fires here"); and
+`evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (for the L4 lineage: one mutation per lid — four
+theorem statements, two independent oracle predicates — each confirmed to fail `lake build`, each
+reverted byte-identically, with all six lids force re-elaborated green afterwards). These are
+samples, not sweeps: no automated mutation tooling is wired into this repository, in either lineage.
+
 **What is not recorded anywhere, and would be worth recording.** The exact Kani version and flags of
 the 2026-07-21/22 full-suite run; whether that run's per-harness `cover` satisfaction was captured
 rather than just `SUCCESSFUL`; and whether the post-refactor `tag` re-run recorded cover satisfaction.

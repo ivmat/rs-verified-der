@@ -1,0 +1,13 @@
+diff --git a/lean/TlvProofs.lean b/lean/TlvProofs.lean
+index ca5ca3b..ab0d0bf 100644
+--- a/lean/TlvProofs.lean
++++ b/lean/TlvProofs.lean
+@@ -423,7 +423,7 @@ theorem decode_tlv_structure (input : Slice U8) (h32 : 32 ≤ Usize.numBits) :
+           tag.decode_tag input = ok (core.result.Result.Ok (t.tag, t_used)) ∧
+           length.decode_length (input.drop t_used) = ok (core.result.Result.Ok (len, l_used)) ∧
+           used.val = t_used.val + l_used.val + len.val ∧
+-          used.val ≤ input.val.length ∧
++          used.val < input.val.length ∧
+           t.value.val = input.val.slice (t_used.val + l_used.val) used.val ⦄ := by
+   unfold tlv.decode_tlv
+   obtain ⟨tres, htag⟩ := tag_decode_total input

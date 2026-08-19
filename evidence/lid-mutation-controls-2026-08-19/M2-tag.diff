@@ -1,0 +1,13 @@
+diff --git a/lean/TagProofs.lean b/lean/TagProofs.lean
+index 14cc62d..b61215e 100644
+--- a/lean/TagProofs.lean
++++ b/lean/TagProofs.lean
+@@ -361,7 +361,7 @@ theorem tag_decode_used_bounds_spec (input : Slice U8) :
+     Direct corollary of `tag_decode_used_bounds_spec`. -/
+ theorem tag_decode_used_bounds (input : Slice U8) (t : tag.Tag) (used : Usize) :
+     tag.decode_tag input = ok (core.result.Result.Ok (t, used)) →
+-      1 ≤ used.val ∧ used.val ≤ input.val.length := by
++      2 ≤ used.val ∧ used.val ≤ input.val.length := by
+   intro heq
+   have hspec := tag_decode_used_bounds_spec input
+   rw [heq, WP.spec_ok] at hspec

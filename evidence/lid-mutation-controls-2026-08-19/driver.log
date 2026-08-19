@@ -1,0 +1,104 @@
+M1-length mutated: rc=1 (7s)
+M1-length reverted: sha256 IDENTICAL
+M1-length reverted build: rc=0 (4s)
+M2-tag mutated: rc=1 (4s)
+M2-tag reverted: sha256 IDENTICAL
+M2-tag reverted build: rc=0 (4s)
+M3-tlv mutated: rc=1 (3s)
+M3-tlv reverted: sha256 IDENTICAL
+M3-tlv reverted build: rc=0 (3s)
+M4-sequence mutated: rc=1 (3s)
+M4-sequence reverted: sha256 IDENTICAL
+M4-sequence reverted build: rc=0 (3s)
+M5-oid mutated: rc=1 (2s)
+M5-oid reverted: sha256 IDENTICAL
+M5-oid reverted build: rc=0 (2s)
+M6-bigint mutated: rc=1 (3s)
+M6-bigint reverted: sha256 IDENTICAL
+M6-bigint reverted build: rc=0 (4s)
+[
+ {
+  "id": "M1-length",
+  "file": "LengthProofs.lean",
+  "kind": "statement",
+  "desc": "off-by-one the re-encoded consumption in decode_accepts_only_canonical's postcondition",
+  "baseline_sha256": "4165c46b1c914c661aafa0dd837a7f88aea5ab330b5e8faf57a6b5c72b14fe5b",
+  "restored_sha256": "4165c46b1c914c661aafa0dd837a7f88aea5ab330b5e8faf57a6b5c72b14fe5b",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 6.7,
+  "reverted_rc": 0,
+  "reverted_wall": 3.7,
+  "observed": "RED"
+ },
+ {
+  "id": "M2-tag",
+  "file": "TagProofs.lean",
+  "kind": "statement",
+  "desc": "raise tag_decode_used_bounds's lower consumption bound from 1 to 2 (a low-tag decode consumes 1)",
+  "baseline_sha256": "54d720b121ee8529b8b103966d777bfccbb137b55f548f0dba2ee1ee6c3f20e8",
+  "restored_sha256": "54d720b121ee8529b8b103966d777bfccbb137b55f548f0dba2ee1ee6c3f20e8",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.7,
+  "reverted_rc": 0,
+  "reverted_wall": 3.8,
+  "observed": "RED"
+ },
+ {
+  "id": "M3-tlv",
+  "file": "TlvProofs.lean",
+  "kind": "statement",
+  "desc": "strengthen decode_tlv_structure's no-over-read conjunct from <= to < (false when the TLV exactly fills the input)",
+  "baseline_sha256": "1770fa6c529c44ea8b9d2ef5a7c5a97f926d69154c5464d72136054c51d9c8c4",
+  "restored_sha256": "1770fa6c529c44ea8b9d2ef5a7c5a97f926d69154c5464d72136054c51d9c8c4",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.2,
+  "reverted_rc": 0,
+  "reverted_wall": 3.2,
+  "observed": "RED"
+ },
+ {
+  "id": "M4-sequence",
+  "file": "SequenceProofs.lean",
+  "kind": "statement",
+  "desc": "swap drop for take in decode_sequence_structure's exhausted-suffix conjunct",
+  "baseline_sha256": "946d9bf87eebfe2cf1c568b2ef7f732724926bf5adc59968aa8a7c01df8ba7ba",
+  "restored_sha256": "946d9bf87eebfe2cf1c568b2ef7f732724926bf5adc59968aa8a7c01df8ba7ba",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.4,
+  "reverted_rc": 0,
+  "reverted_wall": 3.5,
+  "observed": "RED"
+ },
+ {
+  "id": "M5-oid",
+  "file": "OidProofs.lean",
+  "kind": "oracle",
+  "desc": "wrong forbidden octet in IsCanonicalOid's minimality clause: 0x80 -> 0x81",
+  "baseline_sha256": "d9f4544be2c94ed33375709d4e738a7c3c815098a8904a154420b77321bcb388",
+  "restored_sha256": "d9f4544be2c94ed33375709d4e738a7c3c815098a8904a154420b77321bcb388",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 2.3,
+  "reverted_rc": 0,
+  "reverted_wall": 2.3,
+  "observed": "RED"
+ },
+ {
+  "id": "M6-bigint",
+  "file": "BigIntProofs.lean",
+  "kind": "oracle",
+  "desc": "swap the two redundant-padding octets in IsMinimalDer (0x00 <-> 0xFF branches)",
+  "baseline_sha256": "6becbea1bab6a6d88cf0e3411738703092ce8c9e8b47368451ee83c2ea8e065f",
+  "restored_sha256": "6becbea1bab6a6d88cf0e3411738703092ce8c9e8b47368451ee83c2ea8e065f",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.5,
+  "reverted_rc": 0,
+  "reverted_wall": 3.6,
+  "observed": "RED"
+ }
+]

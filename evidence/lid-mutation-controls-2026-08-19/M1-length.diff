@@ -1,0 +1,13 @@
+diff --git a/lean/LengthProofs.lean b/lean/LengthProofs.lean
+index eb7e1fc..0ed8428 100644
+--- a/lean/LengthProofs.lean
++++ b/lean/LengthProofs.lean
+@@ -799,7 +799,7 @@ theorem roundtrip_short (s : Slice U8) (b : U8) (v : U32)
+ theorem decode_accepts_only_canonical (s : Slice U8) :
+     length.decode_length s ⦃ r => ∀ (v : U32) (used : Usize), r = .Ok (v, used) →
+         length.encode_length v ⦃ (re, relen) =>
+-          relen.val = used.val ∧ ∀ i, i < used.val → re.val[i]! = s.val[i]! ⦄ ⦄ := by
++          relen.val = used.val + 1 ∧ ∀ i, i < used.val → re.val[i]! = s.val[i]! ⦄ ⦄ := by
+   unfold length.decode_length
+   simp only [first_spec]
+   obtain hb | ⟨b, hb⟩ : s.val[0]? = none ∨ ∃ b, s.val[0]? = some b := by

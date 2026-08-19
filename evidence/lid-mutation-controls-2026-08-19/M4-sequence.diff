@@ -1,0 +1,13 @@
+diff --git a/lean/SequenceProofs.lean b/lean/SequenceProofs.lean
+index b0dfe16..ff6706d 100644
+--- a/lean/SequenceProofs.lean
++++ b/lean/SequenceProofs.lean
+@@ -714,7 +714,7 @@ theorem decode_sequence_structure (content : Slice U8) (h32 : 32 ≤ Usize.numBi
+       match r with
+       | core.result.Result.Ok _ =>
+         ∃ finalRest : Slice U8,
+-          finalRest.val = content.val.drop (content.val.length - finalRest.val.length) ∧
++          finalRest.val = content.val.take (content.val.length - finalRest.val.length) ∧
+           finalRest.val.length = 0
+       | core.result.Result.Err _ => True ⦄ := by
+   unfold sequence.decode_sequence sequence.Elements.new

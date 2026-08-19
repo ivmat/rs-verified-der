@@ -70,9 +70,9 @@ and discharged nowhere**. They are named in §2 in as many words, not softened.
   lids are `lake build`-checked Lean developments; a kernel bug, or an unsound bit-blasting
   certificate accepted by `bv_decide`, would let a false theorem elaborate.
   **fails-if:** an upstream Lean/`bv_decide` soundness report at `leanprover/lean4:v4.30.0-rc2`;
-  a lid theorem that still builds after its statement is mutated into a false one (that is a probe
-  of the *lid's* oracle, and only incidentally of the kernel — the crate's negative control for the
-  lid lineage lives in `evidence/`).
+  a lid theorem that still builds after its statement is mutated into a false one — measured for all
+  six lids in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (six for six went RED), which is a probe
+  of the *lid's* oracle and only incidentally of the kernel.
   **load-bearing-for:** every ∀-length claim in `PROOF_MANIFEST.md` §3.2 — the six codecs' unbounded
   properties, which are the crate's strongest claims.
 
