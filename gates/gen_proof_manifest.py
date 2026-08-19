@@ -1213,7 +1213,12 @@ WORDNUM = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6,
 # DER-REMAINING-WORK.md are dated, append-only, point-in-time records: a historical count in
 # them is correct *as history* and must not be rewritten.
 GUARDED_DOCS = ['PROOF_MANIFEST.md', 'README.md', 'der-verified/README.md',
-                'docs/why-verified.md', 'docs/verification-cost.md', 'der-verified/src/lib.rs']
+                'docs/why-verified.md', 'docs/verification-cost.md', 'der-verified/src/lib.rs',
+                # ASSUMPTIONS.md states the trusted base and repeats crate totals while doing it
+                # ("all 191 proof harnesses", "six codecs", "472 unit and regression tests"). A
+                # stale count in the file whose whole job is to be believed is the worst place for
+                # one, so it is guarded like the rest.
+                'ASSUMPTIONS.md']
 
 # A count, numeric or spelled. The lookbehind matters: without it, "X.509 harnesses" reads as
 # the number 509 and the guard fires on a phantom drift.

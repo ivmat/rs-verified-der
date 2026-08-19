@@ -14,6 +14,16 @@ they are being offered, and where the guarantee stops.
 > as evidence, never in place of them. Where a claim would be stronger than the evidence, the
 > evidence wins and the claim is narrowed.
 
+> ## What all of this stands on
+>
+> **`ASSUMPTIONS.md` is this document's companion, and should be read with it.** Everything below
+> is machine-checked *given* a trusted base — Kani, CBMC and its SAT backend, the Lean kernel, the
+> fidelity of the Aeneas extraction, the toolchain pins, the lids' declared axioms (two of which are
+> assumptions about this crate's own code that are proven nowhere), the meaning of "bounded", and
+> the three disclosed-unsatisfiable covers. That base is enumerated in one place, each entry with
+> its failure mode and what leans on it, in [`ASSUMPTIONS.md`](ASSUMPTIONS.md). This document says
+> what is proven; that one says what has to be true for "proven" to mean what it looks like.
+
 ## How this document is produced (and why that matters)
 
 Every number **inside a `<!-- BEGIN GENERATED -->` region** is derived from the source tree by a
