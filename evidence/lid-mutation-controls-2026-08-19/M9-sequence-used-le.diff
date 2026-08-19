@@ -1,0 +1,22 @@
+diff --git a/lean/SequenceProofs.lean b/lean/SequenceProofs.lean
+index f804ede..1dfcf64 100644
+--- a/lean/SequenceProofs.lean
++++ b/lean/SequenceProofs.lean
+@@ -422,7 +422,7 @@ theorem decode_length_loop_total (n : Usize) (octets : Slice U8)
+     (Same proof as `LengthProofs.lean`'s `decode_length_used_le_spec`.) -/
+ theorem decode_length_used_le_spec (s : Slice U8) :
+     length.decode_length s ⦃ r => ∀ (v : U32) (used : Usize),
+-        r = core.result.Result.Ok (v, used) → used.val ≤ s.val.length ⦄ := by
++        r = core.result.Result.Ok (v, used) → used.val < s.val.length ⦄ := by
+   unfold length.decode_length
+   simp only [first_spec]
+   obtain hb | ⟨b, hb⟩ : s.val[0]? = none ∨ ∃ b, s.val[0]? = some b := by
+@@ -491,7 +491,7 @@ theorem decode_length_used_le_spec (s : Slice U8) :
+     `decode_tlv`'s own runtime guard, not from here. -/
+ theorem length_decode_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
+     length.decode_length s = ok (core.result.Result.Ok (v, l_used)) →
+-      l_used.val ≤ s.val.length := by
++      l_used.val < s.val.length := by
+   intro heq
+   have hspec := decode_length_used_le_spec s
+   rw [heq, WP.spec_ok] at hspec

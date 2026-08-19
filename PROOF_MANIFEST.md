@@ -351,9 +351,11 @@ identify which harness in each pair is actually load-bearing);
 `evidence/PLANTED-SATISFIED-TWINS-2026-08-18.md`
 (for the three disclosed-unsatisfiable covers of §8.2, a twin that *is* satisfiable at the same
 bound, so "unsatisfiable" is distinguished from "cover never fires here"); and
-`evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (for the L4 lineage: one mutation per lid — four
-theorem statements, two independent oracle predicates — each confirmed to fail `lake build`, each
-reverted byte-identically, with all six lids force re-elaborated green afterwards). These are
+`evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (for the L4 lineage: **nine** mutations across the
+six lids — six theorem statements, two independent oracle predicates, and, in that file's dated
+addendum, the three copies of the new `decode_length_used_le` consumption bound that replaced the
+lids' last two crate-code axioms — each confirmed to fail `lake build`, each reverted
+byte-identically, with the affected lids force re-elaborated green afterwards). These are
 samples, not sweeps: no automated mutation tooling is wired into this repository, in either lineage.
 
 **What is not recorded anywhere, and would be worth recording.** The exact Kani version and flags of

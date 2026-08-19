@@ -1,0 +1,22 @@
+diff --git a/lean/LengthProofs.lean b/lean/LengthProofs.lean
+index 514fcaf..fe2ac33 100644
+--- a/lean/LengthProofs.lean
++++ b/lean/LengthProofs.lean
+@@ -459,7 +459,7 @@ theorem decode_length_loop_total (n : Usize) (octets : Slice U8)
+     explicit `input.len() < 1 + n` truncation guard. -/
+ theorem decode_length_used_le_spec (s : Slice U8) :
+     length.decode_length s ⦃ r => ∀ (v : U32) (used : Usize),
+-        r = core.result.Result.Ok (v, used) → used.val ≤ s.val.length ⦄ := by
++        r = core.result.Result.Ok (v, used) → used.val < s.val.length ⦄ := by
+   unfold length.decode_length
+   simp only [first_spec]
+   obtain hb | ⟨b, hb⟩ : s.val[0]? = none ∨ ∃ b, s.val[0]? = some b := by
+@@ -526,7 +526,7 @@ theorem decode_length_used_le_spec (s : Slice U8) :
+     `evidence/AXIOM-AUDIT-2026-08-18.md` §2.7. -/
+ theorem decode_length_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
+     length.decode_length s = ok (core.result.Result.Ok (v, l_used)) →
+-      l_used.val ≤ s.val.length := by
++      l_used.val < s.val.length := by
+   intro heq
+   have hspec := decode_length_used_le_spec s
+   rw [heq, WP.spec_ok] at hspec

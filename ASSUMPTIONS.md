@@ -74,8 +74,9 @@ transfer across Aeneas's per-extraction namespaces is still a **hand argument, n
   certificate accepted by `bv_decide`, would let a false theorem elaborate.
   **fails-if:** an upstream Lean/`bv_decide` soundness report at `leanprover/lean4:v4.30.0-rc2`;
   a lid theorem that still builds after its statement is mutated into a false one — measured for all
-  six lids in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (six for six went RED), which is a probe
-  of the *lid's* oracle and only incidentally of the kernel.
+  six lids in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (nine planted mutations, nine RED:
+  six in the original campaign, three more in its addendum for the `decode_length_used_le` copies),
+  which is a probe of the *lid's* oracle and only incidentally of the kernel.
   **load-bearing-for:** every ∀-length claim in `PROOF_MANIFEST.md` §3.2 — the six codecs' unbounded
   properties, which are the crate's strongest claims.
 

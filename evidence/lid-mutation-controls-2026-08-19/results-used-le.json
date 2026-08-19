@@ -1,0 +1,44 @@
+[
+ {
+  "id": "M7-length-used-le",
+  "file": "LengthProofs.lean",
+  "kind": "statement",
+  "desc": "flip the no-over-read comparison in decode_length_used_le(_spec) from <= to < (false whenever a decode consumes the whole input, e.g. the 1-byte short form)",
+  "baseline_sha256": "27cb915e422509880f89603b66f97a3f913e9f36d516c3e5bc1c2e2b7834f828",
+  "restored_sha256": "27cb915e422509880f89603b66f97a3f913e9f36d516c3e5bc1c2e2b7834f828",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 4.7,
+  "reverted_rc": 0,
+  "reverted_wall": 3.9,
+  "observed": "RED"
+ },
+ {
+  "id": "M8-tlv-used-le",
+  "file": "TlvProofs.lean",
+  "kind": "statement",
+  "desc": "same flip in this pass's length_decode_used_le / decode_length_used_le_spec",
+  "baseline_sha256": "408e6ff17d1266fcaf6a2c8875b33deb5bcb54faa4c8a2e2d8a2fd3bf33969df",
+  "restored_sha256": "408e6ff17d1266fcaf6a2c8875b33deb5bcb54faa4c8a2e2d8a2fd3bf33969df",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.2,
+  "reverted_rc": 0,
+  "reverted_wall": 3.3,
+  "observed": "RED"
+ },
+ {
+  "id": "M9-sequence-used-le",
+  "file": "SequenceProofs.lean",
+  "kind": "statement",
+  "desc": "same flip in this pass's length_decode_used_le / decode_length_used_le_spec",
+  "baseline_sha256": "c086eb1fe3fd6d2e22b72bbbf2bec47aab720697c6c52e3c8566391da47b3e72",
+  "restored_sha256": "c086eb1fe3fd6d2e22b72bbbf2bec47aab720697c6c52e3c8566391da47b3e72",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 3.5,
+  "reverted_rc": 0,
+  "reverted_wall": 3.7,
+  "observed": "RED"
+ }
+]

@@ -281,3 +281,114 @@ cannot supply it. Two further branches fail the same way (`:163:8`, `:170:10`). 
 - **Final state:** all six lid files confirmed byte-identical to their pre-mutation content;
   `git diff` over `lean/` empty; raw build logs, per-mutation diffs and the machine-readable
   `results.json` in `evidence/lid-mutation-controls-2026-08-19/`.
+
+---
+
+## Addendum — 2026-08-19 (later): controls for the new `decode_length_used_le` theorems
+
+**Why this section exists.** The campaign above says, in "What this does not establish", that it
+says *nothing* about the two assumptions the axiom audit flagged as UNPROVEN
+(`length_decode_used_le` ×2) — "an axiom cannot be falsified by a build, which is exactly why it is
+an axiom". Those two axioms were replaced by proofs on the same date
+(`evidence/AXIOM-AUDIT-2026-08-18.md`, discharge addendum). A statement that used to be un-checkable
+by a build now *is* checkable by one, so it gets the same treatment as the other six: plant a
+mutation that makes it FALSE and watch the build go red. Nothing above is rewritten; the earlier
+bullet is accurate about the state it described.
+
+**Method — identical protocol.** One mutation per lid carrying the new theorem, `lake build
+DerVerified` from `lean/`, revert with `git checkout --`, sha256 byte-identity check, rebuild. The
+mutation is the same in all three: flip the no-over-read comparison `≤` → `<`, **in both** the
+triple (`decode_length_used_le_spec`) and the equation form (`decode_length_used_le` /
+`length_decode_used_le`), so that what is planted is a coherent — and false — statement of the
+property rather than a mismatch the last derivation line alone would reject. `<` is false for every
+decode that consumes its whole input: the one-byte short form `[0x01]` on a one-byte slice is the
+smallest witness. Driver: `evidence/lid-mutation-controls-2026-08-19/driver-used-le.py`; raw logs,
+diffs and `results-used-le.json` beside it. **Three for three went RED; the STOP protocol was not
+triggered.**
+
+| Lid | Kind | Planted mutation | Build | First error, verbatim |
+|---|---|---|---|---|
+| `LengthProofs.lean` | statement | `decode_length_used_le(_spec)`: `used.val ≤ s.val.length` → `<` | **FAILED** | `LengthProofs.lean:480:6: Type mismatch: After simplification, term hpos` |
+| `TlvProofs.lean` | statement | same flip in this pass's copy | **FAILED** | `TlvProofs.lean:468:6: Type mismatch: After simplification, term hpos` |
+| `SequenceProofs.lean` | statement | same flip in this pass's copy | **FAILED** | `SequenceProofs.lean:443:6: Type mismatch: After simplification, term hpos` |
+
+Reverted byte-identical (sha256): `LengthProofs.lean` `27cb915e…7834f828`, `TlvProofs.lean`
+`408e6ff1…f33969df`, `SequenceProofs.lean` `c086eb1f…a47b3e72`.
+
+### 7–9. The mutation, and why both accept branches reject it independently
+
+```diff
+ theorem decode_length_used_le_spec (s : Slice U8) :
+     length.decode_length s ⦃ r => ∀ (v : U32) (used : Usize),
+-        r = core.result.Result.Ok (v, used) → used.val ≤ s.val.length ⦄ := by
++        r = core.result.Result.Ok (v, used) → used.val < s.val.length ⦄ := by
+ …
+ theorem decode_length_used_le (s : Slice U8) (v : U32) (l_used : Usize) :
+     length.decode_length s = ok (core.result.Result.Ok (v, l_used)) →
+-      l_used.val ≤ s.val.length := by
++      l_used.val < s.val.length := by
+```
+
+**Short-form accept — the bound comes from `first` having returned a byte, and gives exactly `1 ≤`:**
+
+```
+error: LengthProofs.lean:480:6: Type mismatch: After simplification, term
+  hpos
+ has type
+  0 < (↑s).length
+but is expected to have type
+  1 < (↑s).length
+```
+
+**Long-form accept — a second, independent failure, from the truncation guard:**
+
+```
+error: LengthProofs.lean:520:18: scalar_tac failed to prove the goal below.
+…
+hi2 : ↑i2 = 1 + ↑nn
+htrunc : ¬s.len < i2
+henough : ↑i2 ≤ (↑s).length
+…
+hi4 : ↑i4 = 1 + ↑nn
+⊢ ↑i4 < (↑s).length
+```
+
+Read the two together: the proof's consumption bound is exactly what `decode_length`'s **own**
+guards supply — `1 ≤ length` from the byte `first` returned, and `1 + n ≤ length` from
+`if input.len() < 1 + n { Truncated }` — and neither can be nudged one further. That is the
+property this control exists to test: the theorem's `≤` is the strongest true statement the code
+supports, not a value chosen to make a proof close.
+
+**A third failure the `tlv`/`sequence` copies add, worth recording:** the mutated statement also
+breaks at the *consumption* sites, e.g.
+
+```
+error: TlvProofs.lean:568:49: Type mismatch
+  length_decode_used_le s len_u32 l_used hlen
+has type
+  ↑l_used < (↑s).length
+but is expected to have type
+  ↑l_used ≤ (↑s).length
+```
+
+(and twice in `SequenceProofs.lean`, at `:526:49` and `:621:49`). So the new theorems are load-
+bearing in the composition proofs at exactly the sites the axioms occupied — the replacement is
+not a decoration parked beside the proof that needs it. As in M3, the mutated build's
+`#print axioms` line also reports `sorryAx`, so the sorry-gate would catch these independently.
+
+**Forced re-elaboration, same honesty note as above.** The per-lid revert builds are lake trace
+checks against a cached `.olean`. The three lids were therefore force re-elaborated from source
+with their build artifacts deleted, and all three rebuilt green
+(`ZZ2-forced-reelaboration-used-le-restored.log`, exit 0):
+
+```
+⚠ [1701/1704] Built TlvProofs (3.8s)
+⚠ [1702/1704] Built SequenceProofs (4.2s)
+⚠ [1703/1704] Built LengthProofs (4.2s)
+```
+
+**What this adds to the campaign's ledger.** Nine planted mutations across six lids, nine RED. The
+"does not establish" bullets above are otherwise unchanged — in particular this is still a sample
+rather than a sweep, still says nothing about a *weaker* restatement, and still says nothing about
+extraction fidelity (`ASSUMPTIONS.md` A4). What it does retire is that list's own third bullet:
+there is no longer an UNPROVEN lid assumption for a control to be unable to reach.
