@@ -9,7 +9,13 @@ re-builds.
 """
 import hashlib, json, os, shutil, subprocess, time
 
-ROOT = "/home/ivo/repo/rs-verified-der"
+# Repo root: this file lives at <root>/evidence/lid-mutation-controls-2026-08-19/, so the default
+# is derived from its own location. Override with DER_ROOT if it is run from elsewhere. Committed
+# tooling in this repo carries no absolute path.
+ROOT = os.environ.get(
+    "DER_ROOT",
+    os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")),
+)
 OUT = os.path.join(ROOT, "evidence/lid-mutation-controls-2026-08-19")
 LEAN = os.path.join(ROOT, "lean")
 

@@ -4,8 +4,8 @@ type: reference
 
 # Mutation controls on the primitive oracles — `length`/`tag`/`tlv`/`integer`/`big_integer`, 2026-08-18
 
-**Task:** the 2026-08-16 rigor re-review's F1 (`autonomous-run/REVIEW-QUEUE/_RIGOR-REREVIEW-der-2026-08-16.md`
-§5), implementing mutation-control review lens 2: *"Plant a subtly-wrong implementation ... and
+**Task:** finding **F1** of the external rigor re-review of this crate (2026-08-16), §5,
+implementing mutation-control review lens 2: *"Plant a subtly-wrong implementation ... and
 confirm the oracle FAILS it. Confirm a correct implementation PASSES. If the oracle cannot
 distinguish, it is wrong — regardless of a green run."*
 

@@ -4,8 +4,8 @@ type: reference
 
 # Planted-satisfied twins for the 3 disclosed-UNSAT covers — 2026-08-18
 
-**Task:** the 2026-08-16 rigor re-review's F2 (`autonomous-run/REVIEW-QUEUE/_RIGOR-REREVIEW-der-2026-08-16.md`
-§5), a vacuity/reachability review lens: *"for each UNSAT-means-good cover ... find its exact
+**Task:** finding **F2** of the external rigor re-review of this crate (2026-08-16), §5,
+a vacuity/reachability review lens: *"for each UNSAT-means-good cover ... find its exact
 planted-satisfied twin — inject the defect the cover denies and confirm the cover flips to
 SATISFIED. A missing twin = vacuity risk; an UNSAT cover proves nothing on its own."*
 
