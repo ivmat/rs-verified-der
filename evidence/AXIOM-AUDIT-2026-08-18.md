@@ -566,7 +566,12 @@ at **13 lid axioms (13 UPSTREAM, 0 CRATE) and 25 extract axioms**, and its `disc
 have no rows at all. §1b's opaque-surface census and the hollow-claim check are also still by hand.
 
 **Verification of this addendum's claims:** `bash lean/check_lean.sh` green (re-extraction +
-model-drift diff + `lake build DerVerified` + sorry-gate); no `der-verified/src` file touched; the
+model-drift diff + `lake build DerVerified` + sorry-gate), archived as
+**`evidence/lean-lid-b1cdbef.log`** — the log a re-audit should read, superseding
+`evidence/lean-lid-7eb8b26.log`, whose applicability paragraph above lapsed the moment these two
+lids changed again. All six lids were force re-elaborated from source for that run (build artifacts
+deleted first), so every disclosure in it was emitted by a real elaboration rather than replayed
+from a cache. No `der-verified/src` file touched; the
 two new theorems disclose
 
 ```
