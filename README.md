@@ -93,6 +93,21 @@ trust validation; full X.509/RFC 5280 profile semantics beyond the three `profil
 leap-second rejection, range caps, primitive-form-only rules) are design decisions recorded in
 [`DECISIONS.md`](DECISIONS.md).
 
+> **Framing is not validity — a named residual, not a bug.** `tlv::decode_tlv` (and the `sequence`
+> child walk over it) decides **structural framing**: well-formed identifier octets, a canonical
+> definite length, and the declared value present inside the input. It decides **nothing about
+> whether the identifier it parsed is a legal identifier for a DER value.** Two consequences,
+> confirmed by differential fuzzing against an independent DER implementation (2026-08) and named
+> rather than fixed: the framing layer accepts **constructed encodings of primitive-only universal
+> types** (e.g. `21 00` for BOOLEAN, `26 01 39` for OBJECT IDENTIFIER — X.690 requires the primitive
+> form) and the **reserved EOC identifier** (`00 00`, BER's indefinite-length marker, never legal in
+> DER). Those rules are enforced in **no verified layer of this crate**. Where a *typed* parser
+> exists it does check its own tag and form — `octet_string` rejects the constructed form, the
+> `pkcs8`/`x509_*` parsers check every field's identifier — but that is a property of those call
+> sites, not of the framing layer. **Do not read `decode_tlv` acceptance as "this is valid DER".**
+> A strict mode may be added later; there is none today. Full statement, with the repro bytes and
+> the third (comparison-capacity) class: [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) §6.3.
+
 ## Verification map
 
 A picture of the same scope section above, coloured by evidence grade and regenerated from

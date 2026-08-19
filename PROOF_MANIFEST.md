@@ -20,7 +20,8 @@ they are being offered, and where the guarantee stops.
 > is machine-checked *given* a trusted base — Kani, CBMC and its SAT backend, the Lean kernel, the
 > fidelity of the Aeneas extraction, the toolchain pins, the lids' 13 declared axioms (all of them
 > specs for upstream `core` primitives since 2026-08-19 — none is an assumption about this crate's
-> own code any more), the meaning of "bounded", and
+> own code any more), the meaning of "bounded", the framing layer's named residual (§6.3: a
+> well-formed TLV is not a valid DER value encoding, and nothing here decides the difference), and
 > the three disclosed-unsatisfiable covers. That base is enumerated in one place, each entry with
 > its failure mode and what leans on it, in [`ASSUMPTIONS.md`](ASSUMPTIONS.md). This document says
 > what is proven; that one says what has to be true for "proven" to mean what it looks like.
@@ -536,7 +537,7 @@ This is the list that decides whether the rest of the document is worth anything
 |---|---|
 | `tag` | ∀-length totality and consumption bounds are proven in Lean; the *canonicality/minimality* rejection properties are Kani-bounded only, at a **7-byte** symbolic buffer (`decode_tag_accepts_only_canonical`/`high_tag_of_small_number_is_non_minimal` et al., §4's `tag` row) — non-minimal high-tag encodings beyond that bound are not covered by the ∀-length Lean lid |
 | `length` | fully lifted to ∀-length in Lean; no known residual beyond the Aeneas trust boundary |
-| `tlv` | **no over-read is proven, and this row names it because nothing else in the module's own clause did**: an accepted TLV consumes `used ≤ input.len()` and its value borrow is exactly `input[header..used]` — Kani-bounded at a 16-byte buffer (`decode_tlv_structure`) *and* ∀-length in Lean (§3.2's `tlv` row). Not proven: the strict (anti-trailing-data) variant's rejection classification, which is Kani-bounded only |
+| `tlv` | **no over-read is proven, and this row names it because nothing else in the module's own clause did**: an accepted TLV consumes `used ≤ input.len()` and its value borrow is exactly `input[header..used]` — Kani-bounded at a 16-byte buffer (`decode_tlv_structure`) *and* ∀-length in Lean (§3.2's `tlv` row). Not proven: the strict (anti-trailing-data) variant's rejection classification, which is Kani-bounded only. **Also not proven, because it is not implemented:** any judgement that the parsed identifier is a *legal DER identifier for a value* — the primitive/constructed form rules and the EOC exclusion live in no layer of this crate (§6.3, a named residual) |
 | `context_tag` | bounded only; only the explicit-context form is addressed — implicit tagging is not modelled |
 | `boolean` | nothing outstanding: the 1-octet input space is characterised exhaustively |
 | `integer` | values are capped at `i64` by design (see §9); `big_integer` is the arbitrary-magnitude complement. Bounded only |
@@ -550,7 +551,7 @@ This is the list that decides whether the rest of the document is worth anything
 | `utf8_string` | bounded only; equivalence with `core::str::from_utf8` is proven as a *differential oracle* over the bounded domain, not ∀-length. `decode_utf8_str` is unharnessed (§4.1) |
 | `utc_time` | bounded only. Single-field range validation only — **no calendar validity** (day-of-month against month, leap years); leap-second `SS=60` is rejected by design (§9) |
 | `generalized_time` | bounded only. Same calendar-validity and leap-second fences; `require_no_fraction` is unharnessed (§4.1) |
-| `sequence` | structural child-walk correctness is ∀-length and ∀-children; the strict variants' rejection classification is Kani-bounded only |
+| `sequence` | structural child-walk correctness is ∀-length and ∀-children; the strict variants' rejection classification is Kani-bounded only. The walk inherits `tlv`'s residual: it judges each child's *framing*, never whether the child's identifier is a legal DER identifier (§6.3) |
 | `set_of` | bounded only. `SET OF` member-ordering (§11.6) is validated; **general `SET` (§10.3) is out of scope** (§9) |
 | `x509_algorithm_identifier` | bounded, structural only: frames the object; interprets no algorithm semantics and no parameters |
 | `ecdsa_sig_value` | bounded, structural only: DER framing and canonicality of `SEQUENCE { r INTEGER, s INTEGER }`. **No curve-order range check** (`1 <= r,s <= n-1` needs a curve identifier this container does not carry), **no low-S policy** (protocol profile, not DER validity), **no cryptographic interpretation** |
@@ -562,6 +563,63 @@ This is the list that decides whether the rest of the document is worth anything
 | `x509_tbs_certificate` | bounded, structural only, and **modular** (two stubs; three in the witness harness — §8.4). Its `never_panics` cover is **known-unsatisfiable at `[u8; 10]`** and disclosed (§8.2). No cross-field RFC 5280 rule is checked here — that is `profile`'s job |
 | `x509_certificate` | panic-freedom is proven **≤ 12 bytes** (`parse_certificate_never_panics`, **modular** — `parse_tbs_certificate` stubbed, §8.4); a real certificate is **~170 bytes** (this module's own test fixture) — panic-freedom beyond 12 bytes is **not machine-checked at this composition**: it rests on an un-machine-checked compositional argument (`decode_tlv`'s proven no-over-read contract plus each delegated sub-parser's own separate panic-freedom proof), not a symbolic proof over the real-size domain. No signature check, no path building |
 | `profile` | bounded, and over symbolic *field values* rather than symbolic DER bytes — it decodes nothing (§7). Each of the three RFC 5280 cross-field rules is proven as a biconditional, plus their precedence and totality. No Lean lid, so no ∀-length statement |
+
+### 6.3 Named residual — what the TLV framing accepts that a DER *validator* rejects
+
+**Disposition: named, not fixed.** A strict mode may be added later; nothing in this crate implements
+one today, and this section exists so no reader has to discover that empirically.
+
+Differential fuzzing against an independent DER implementation (2026-08) compared this crate's TLV
+framing with that library's tag layer over a multi-hour campaign. It found **no defect in what this
+crate claims** — no panic, no over-read, no round-trip or canonical-stability failure — and it found
+three classes of input where the two implementations disagree because they are answering **different
+questions**. Two of those classes are a real residual of this crate's scope and are named here.
+
+**The claim `decode_tlv` makes, stated so the residual is legible.** `tlv::decode_tlv` decides
+*structural framing*: the identifier octets are well-formed (`tag::decode_tag`, including the
+minimal-high-tag rule), the length is a canonical definite length (`length::decode_length`), and the
+declared value is present inside the input (§3.2's ∀-length theorem). It decides **nothing about
+whether the tag it just parsed is a legal identifier for a DER value.** It is a framing reader, not
+a validator, and "`decode_tlv` returned `Ok`" means "these bytes are a well-formed TLV", **not**
+"these bytes are valid DER".
+
+| Class | What our framing does | What a DER validator does | Repro (hex) |
+|---|---|---|---|
+| **(a) Constructed form of a primitive-only universal type.** X.690 requires the primitive form for these types; bit 6 of the identifier is nevertheless set. | accepts — `decode_tag` reports `constructed: true`, and the framing layer does not judge the combination | rejects at the tag layer | `21 00` (BOOLEAN), `26 01 39` (OBJECT IDENTIFIER), `27 02 04 04` (ObjectDescriptor), `29 00` (REAL), `2A 01 4A` (ENUMERATED), `2C 01 01` (UTF8String), `33 01 00` (PrintableString), `3E 00` (BMPString) |
+| **(b) The reserved EOC identifier `0x00`.** Universal 0 is BER's end-of-contents marker for indefinite-length encodings; it is never a legal DER identifier. | accepts — it is a syntactically valid identifier octet with a valid length | rejects | `00 00` |
+| **(c) Universal tags the comparison library does not model** (primitive ObjectDescriptor, EXTERNAL). | accepts — correctly: these are legal DER | rejects, for lack of a model | `07 01 4A`, `28 02 01 30` |
+
+**(c) is not a residual of this crate** — it is a capacity limit of the comparison, the same family
+as the documented `TagNumber > 255` guard, and it is listed only so the three-way split is not
+silently collapsed into "we accept things others reject".
+
+**(a) and (b) are a residual, and this is exactly where they sit.** The primitive/constructed form
+rules and the EOC exclusion are enforced in **no verified layer of this crate**:
+
+- `tag::decode_tag` parses the identifier — class, constructed bit, number — and validates the
+  *encoding* of the number (minimal high-tag form). It attaches no meaning to the combination.
+- `tlv::decode_tlv` and `sequence`'s child walk pass the parsed `Tag` through untouched. Their
+  proofs — bounded and ∀-length alike — are about consumption and windowing, not about tag legality.
+- Where a **typed** parser exists it does check: `octet_string::decode_octet_string` rejects the
+  constructed form explicitly (§9), and the `pkcs8` / `x509_*` parsers check tag identity and, where
+  DER requires it, the constructed flag, at every field. Those checks are per-call-site, not a
+  property of the framing layer.
+- The content-level codecs (`decode_bool`, `decode_integer`, `validate_oid`, the string validators …)
+  take **content**, never an identifier octet: the caller has already decided which codec to invoke,
+  so a mismatched form cannot be caught there even in principle.
+
+**What a consumer must therefore not do:** treat `decode_tlv`/`decode_sequence` acceptance as a
+DER-validity decision for a value of a *known type*. A generic walk over untrusted bytes that
+accepts whatever tags it finds will accept the (a) and (b) inputs above. The supported way to reject
+them today is to check the `Tag` yourself at each site — `tlv.tag.constructed`, `tlv.tag.number`,
+`tlv.tag.class` are all public and exact — or to use the typed parser for the type you expect.
+
+**Evidence class, stated honestly:** this residual was found by *differential fuzzing against an
+independent implementation*, which is `ASSUMPTIONS.md` A10's own named falsifier. It is a
+disagreement of scope rather than a disagreement about a property either side claims: nothing in
+`PROOF_MANIFEST.md` was falsified, and no harness or lid changed as a result. What changed is that
+this document now names the gap instead of leaving it to be inferred from the absence of a claim.
+`ASSUMPTIONS.md` A16 carries it as a trust-base entry with its failure mode.
 
 ## 7. `profile` — proven, at value level and without a Lean lid
 
@@ -989,6 +1047,12 @@ decision recorded in `DECISIONS.md`, not a defect:
 **Reviewed 2026-07-30: this deviations list is complete to the best of the maintainer's knowledge,
 and non-empty by nature — a narrowed profile is the design.** "Reviewed", not "verified": completeness
 of a prose list is not the kind of thing this crate's tools can check.
+
+**Not on this list, deliberately: the framing layer's named residual (§6.3).** The two rules there —
+primitive form for primitive-only universal types, and the EOC exclusion — are not *narrowings* of
+DER that this crate chose; they are DER rules that no layer here decides either way, at a layer that
+never claimed to. They are recorded as a residual with their repro bytes rather than as a deviation,
+because calling them a design decision would imply a decision was made.
 
 ## 10. Reproduce
 

@@ -21,7 +21,10 @@ mode, and each names it:
 2. **This list is incomplete, and A0 says so inside the list rather than around it.** No claim of
    the form "these are all the assumptions" is made anywhere in this crate.
 
-**No entry below is an assumption about this crate's own code any more.** Until 2026-08-19 **A6**
+**No entry below is an assumption about this crate's own *translated* code any more** — i.e. no lid
+declares an axiom asserting a property of `der-verified`'s own functions. (Entries about the crate's
+*scope* and *reach*, such as A7's bounds and A16's framing residual, are a different thing and are
+very much still here.) Until 2026-08-19 **A6**
 carried four — two that were *proven nowhere* (`length_decode_used_le` ×2) and two whose fact was
 proved in a sibling lid but *transferred* across Aeneas's per-extraction namespaces by a hand
 argument (`length_decode_total` ×2). All four were discharged by proof on that date, in two steps,
@@ -199,6 +202,12 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   erratum; a reviewer reading the oracle back against the text. The specific hazard is a *shared*
   misreading: an oracle shaped like the implementation would agree with it and both be wrong, which
   is why `big_integer`'s oracle is independently phrased (`PROOF_MANIFEST.md` §8.3).
+  *Status of the first falsifier, since it has now been run:* a differential campaign against an
+  independent DER implementation (2026-08) produced **no disagreement about any property this crate
+  claims** — the disagreements it did produce are about rules no layer here decides, and are named
+  as a residual in A16 / `PROOF_MANIFEST.md` §6.3. That is one campaign against one implementation
+  at the framing layer; it lowers the probability of a shared misreading in the codecs it exercised
+  and establishes nothing about the ones it did not.
   **load-bearing-for:** every canonicality, minimality and classification claim — i.e. the
   parser-differential value the crate exists for.
 
@@ -225,6 +234,31 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   **fails-if:** a defect found in a wrapper by test or by use.
   **load-bearing-for:** any reading of "this crate's public API is proven panic-free" that includes
   those eleven names. The manifest declines that reading explicitly.
+
+- **A16 · Consumers read `decode_tlv` acceptance as "well-formed TLV", not as "valid DER".** (Ids
+  are assigned on arrival and never reused, so §2's newest entry outranks §3's older ones
+  numerically; the sections are the grouping, the number is only identity.) The framing layer
+  decides three things — well-formed identifier octets, a canonical definite length, and the
+  declared value present inside the input — and it decides **nothing about whether the identifier it
+  parsed is legal for a DER value**. Two rules a DER validator applies are therefore enforced in
+  **no verified layer of this crate**: the *primitive-form requirement* for primitive-only universal
+  types (X.690 mandates the primitive form; `21 00`, `26 01 39` and their siblings set the
+  constructed bit and are accepted here), and the *EOC exclusion* (universal 0, `00 00`, BER's
+  indefinite-length marker, never legal in DER, accepted here as a well-formed TLV).
+  `PROOF_MANIFEST.md` §6.3 states the residual in full, with the repro bytes. This is a **scope**
+  assumption, not a defect claim: every property this crate proves about those inputs is true of
+  them; the assumption is that whoever calls the framing layer knows it is a framing layer.
+  **fails-if:** a consumer treats generic TLV acceptance as an admission decision for untrusted
+  bytes of a known type — which is not observable from inside this repository, and is why the
+  fence is stated on the front page as well as here. The residual itself was found the only way it
+  could be: **differential fuzzing against an independent DER implementation (2026-08)**, which is
+  A10's own named falsifier, run deliberately.
+  **load-bearing-for:** any use of `tlv::decode_tlv` / `sequence`'s child walk as a validity gate;
+  the honest reading of the ∀-length `tlv`/`sequence` theorems, which are about consumption and
+  windowing and say nothing about tag legality.
+  *Disposition (2026-08):* **named, not fixed.** A strict mode — a primitive-form and EOC check at
+  the framing layer — is a possible future change; nothing in this crate implements one today, and
+  this entry exists so that absence is stated rather than inferred.
 
 ## 3. Out of focus — parked, not gone
 
