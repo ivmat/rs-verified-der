@@ -97,6 +97,10 @@ mod proofs {
 
     /// Robustness: `decode_octet_string` never panics or overflows on *any* input.
     ///
+    /// Robustness: `decode_octet_string` never panics on any input **of any length up to 16
+    /// octets** -- the buffer AND its length are both symbolic, so this is a bounded claim over the
+    /// whole `0..=16`-octet domain, not just the single 16-octet length.
+    ///
     /// Cover (T6 primary rule): witnesses the Ok tail is reached with a genuine non-empty value
     /// (the TLV envelope, tag check, and constructed-flag check all pass on real content), not
     /// merely that malformed inputs are rejected. Would NOT be SAT if `decode_octet_string`'s body
@@ -105,7 +109,12 @@ mod proofs {
     #[kani::unwind(16)]
     fn decode_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = decode_octet_string(&buf);
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `ecdsa_sig_value.rs`): so the "any input up to 16 octets"
+        // claim above holds at every length in the domain, not just the single length 16.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let result = decode_octet_string(&buf[..len]);
         kani::cover(result.is_ok(), "a well-formed OCTET STRING reaches decode_octet_string's Ok tail");
         if let Ok((content, _used)) = result {
             kani::cover(!content.is_empty(), "a non-empty OCTET STRING value is accepted");

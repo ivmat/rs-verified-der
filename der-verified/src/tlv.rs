@@ -141,9 +141,13 @@ mod proofs {
         }
     }
 
-    /// Robustness: `decode_tlv` never panics or overflows on *any* input. The 16-byte buffer
-    /// covers the maximal header (6-byte high-tag + 5-byte long length = 11) plus value octets,
-    /// so every header construct is exercised (the review's HIGH bounds-gap fix).
+    /// Robustness: `decode_tlv` never panics or overflows on any input **of any length up to 16
+    /// octets** -- the buffer AND its length are both symbolic, so this is a bounded claim over the
+    /// whole `0..=16`-octet domain, not just the single 16-octet length. The 16-byte buffer covers
+    /// the maximal header (6-byte high-tag + 5-byte long length = 11) plus value octets, so every
+    /// header construct is exercised (the review's HIGH bounds-gap fix); the symbolic length then
+    /// also exercises every truncation of that domain -- exactly the suffix slices `decode_tlv`
+    /// sees when called as `decode_tlv(&content[off..])` during a SEQUENCE/SET walk.
     ///
     /// Cover (T6 primary rule): witnesses the Ok tail is reached with a non-empty value AND,
     /// separately, that a genuine multi-octet header (tag+length together > 2 bytes) is decoded —
@@ -154,7 +158,12 @@ mod proofs {
     #[kani::unwind(16)]
     fn decode_tlv_never_panics() {
         let buf: [u8; 16] = kani::any();
-        let result = decode_tlv(&buf);
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `ecdsa_sig_value.rs`): so the "any input up to 16 octets"
+        // claim above holds at every length in the domain, not just the single length 16.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let result = decode_tlv(&buf[..len]);
         kani::cover(result.is_ok(), "a well-formed TLV reaches decode_tlv's Ok tail");
         if let Ok((tlv, used)) = result {
             kani::cover(!tlv.value.is_empty(), "a non-empty TLV value is accepted");

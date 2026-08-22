@@ -210,7 +210,9 @@ mod proofs {
 
     /// Robustness: iterating `Elements` (and thus `decode_sequence`) over *arbitrary* content
     /// never panics or overflows, and the iterator always terminates within the unwind bound
-    /// (each accepted child consumes `>= 2` bytes, so `rest` strictly shrinks).
+    /// (each accepted child consumes `>= 2` bytes, so `rest` strictly shrinks). The content buffer
+    /// AND its length are both symbolic, so this is a bounded claim over the whole `0..=8`-octet
+    /// domain, not just the single 8-octet length.
     ///
     /// Cover (T6 primary rule): witnesses the `Ok` tail is reached with at least two children (the
     /// walk loop genuinely iterates more than once, not just the trivial 0- or 1-child case) AND,
@@ -221,7 +223,12 @@ mod proofs {
     #[kani::unwind(16)]
     fn iterate_never_panics() {
         let content: [u8; 8] = kani::any();
-        let result = decode_sequence(&content);
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `ecdsa_sig_value.rs`): so the "arbitrary content up to 8
+        // octets" claim above holds at every length in the domain, not just the single length 8.
+        let len: usize = kani::any();
+        kani::assume(len <= content.len());
+        let result = decode_sequence(&content[..len]);
         kani::cover(result == Ok(2), "the walk genuinely takes a second iteration (2 children tiled)");
         kani::cover(
             matches!(result, Err(SequenceError::Element(_))),

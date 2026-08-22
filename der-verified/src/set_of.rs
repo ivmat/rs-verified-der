@@ -264,7 +264,9 @@ mod proofs {
         Ordering::Equal
     }
 
-    /// Robustness: `decode_set_of` on any `[u8; 8]` content never panics.
+    /// Robustness: `decode_set_of` on any content **of any length up to 8 octets** never panics --
+    /// the content buffer AND its length are both symbolic, so this is a bounded claim over the
+    /// whole `0..=8`-octet domain, not just the single 8-octet length.
     ///
     /// Cover (T6 primary rule): witnesses the `Ok` tail with at least two children (the walk loop
     /// genuinely iterates and the `cmp_padded` ordering check actually runs on a real adjacent
@@ -275,7 +277,12 @@ mod proofs {
     #[kani::unwind(16)]
     fn iterate_never_panics() {
         let content: [u8; 8] = kani::any();
-        let result = decode_set_of(&content);
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `ecdsa_sig_value.rs`): so the "any content up to 8 octets"
+        // claim above holds at every length in the domain, not just the single length 8.
+        let len: usize = kani::any();
+        kani::assume(len <= content.len());
+        let result = decode_set_of(&content[..len]);
         kani::cover(result == Ok(2), "the walk genuinely takes a second iteration, exercising cmp_padded on a real adjacent pair");
         kani::cover(matches!(result, Err(SetOfError::Unsorted { .. })), "the §11.6 ordering check actually rejects a real unsorted pair");
         let _ = result;

@@ -377,6 +377,10 @@ mod proofs {
 
     /// Robustness: `decode_utf8_string` never panics on *any* input.
     ///
+    /// Robustness: `decode_utf8_string` never panics on any input **of any length up to 8 octets**
+    /// -- the buffer AND its length are both symbolic, so this is a bounded claim over the whole
+    /// `0..=8`-octet domain, not just the single 8-octet length.
+    ///
     /// Cover (T6 primary rule): witnesses the Ok tail is reached AND, separately, that a genuine
     /// non-empty (well-formed UTF-8) value is accepted -- so the TLV envelope, tag check, and the
     /// `validate_utf8` content walk all pass on real content, not merely on the trivial empty
@@ -385,7 +389,12 @@ mod proofs {
     #[kani::unwind(16)]
     fn decode_never_panics() {
         let buf: [u8; 8] = kani::any();
-        let result = decode_utf8_string(&buf);
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `ecdsa_sig_value.rs`): so the "any input up to 8 octets"
+        // claim above holds at every length in the domain, not just the single length 8.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let result = decode_utf8_string(&buf[..len]);
         kani::cover(result.is_ok(), "a well-formed UTF8String reaches decode_utf8_string's Ok tail");
         if let Ok((content, _used)) = result {
             kani::cover(!content.is_empty(), "a non-empty well-formed UTF-8 value is accepted");

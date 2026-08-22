@@ -410,6 +410,10 @@ mod proofs {
     // 4. Robustness: decode never panics, for any input and any charset.
     // -----------------------------------------------------------------------
 
+    /// Robustness: `decode_restricted_string` never panics on any input **of any length up to 16
+    /// octets** -- the buffer AND its length are both symbolic, so this is a bounded claim over the
+    /// whole `0..=16`-octet domain, not just the single 16-octet length.
+    ///
     /// Cover (T6 primary rule): witnesses the Ok tail is reached for EACH of the four charsets
     /// individually (not merely "some charset, some input") -- so the per-charset `contains`
     /// dispatch and the TLV/tag-number wiring are each independently exercised on real content,
@@ -419,13 +423,18 @@ mod proofs {
     #[kani::unwind(16)]
     fn decode_never_panics() {
         let buf: [u8; 16] = kani::any();
+        // Symbolic input length, matching the crate's established convention (see
+        // `x509_tbs_certificate.rs`, `ecdsa_sig_value.rs`): so the "any input up to 16 octets"
+        // claim above holds at every length in the domain, not just the single length 16.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
         let charset: Charset = match kani::any::<u8>() % 4 {
             0 => Charset::Printable,
             1 => Charset::Ia5,
             2 => Charset::Numeric,
             _ => Charset::Visible,
         };
-        let result = decode_restricted_string(&buf, charset);
+        let result = decode_restricted_string(&buf[..len], charset);
         kani::cover(
             result.is_ok() && charset == Charset::Printable,
             "a well-formed PrintableString reaches the Ok tail",
