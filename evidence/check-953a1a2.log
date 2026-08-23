@@ -1,0 +1,1088 @@
+# der-verified full-gate run (./check.sh)
+# commit: 953a1a2
+# dirty-tracked-paths-at-launch: 0  (`git status --porcelain` immediately AFTER checkout, BEFORE
+#   the run)
+# dirty-tracked-paths-at-completion: 0 (`git status --porcelain` immediately after the run)
+# WHERE THIS RAN, AND WHY IT MATTERS: a disposable cloud VM (GCE n2d-standard-16, on-demand,
+#   Ubuntu 22.04), from a FRESH CLONE of a git bundle of this repository at the commit above —
+#   not the maintainer's working machine. A bundle clone is clean by construction, and the
+#   checkout was asserted equal to the pinned sha before anything ran.
+# host: Linux 6.8.0-1066-gcp x86_64, 16 cores, 62 GB RAM
+# memory cap: MemoryMax=48G MemorySwapMax=0 (systemd-run --unit, transient SERVICE — a scope dies
+#   with its parent shell and the death masquerades as an OOM)
+# cbmc    : 6.8.0 (cbmc-6.8.0) [kani-0.67.0 BUNDLED, and separately installed system-wide so the
+#           version is legible here]
+# kani    : cargo-kani 0.67.0
+# cargo   : cargo 1.98.0 (797e8a9bc 2026-08-05)
+# rustc   : rustc 1.98.0 (88d9e12ae 2026-08-18)  — NOTE: the crate pins the `stable` CHANNEL, not a
+#           version (PROOF_MANIFEST.md §2, ASSUMPTIONS.md A5). Same source, different compiler than
+#           earlier runs: the disclosed consequence of a floating pin. `cargo test` (not the Kani
+#           harnesses, which use Kani's own toolchain) is what it touches.
+# NOTE: kani harnesses run SEQUENTIALLY (no -j) — parallel harnesses multiply peak RSS.
+#
+# check.sh exit: 0
+# wall-clock: 9607s (2h40m07s) ; peak memory: 22820756 KB (21.76 GiB), read from
+#   `/usr/bin/time -v` Maximum resident set size. THIS IS NOT THE SAME MEASURE the cgroup
+#   `memory.peak` reports (whole process tree); this is the largest single waited-for process
+#   (cbmc, in practice), because systemd 249 on this image does not expose MemoryPeak.
+#
+# WHAT THIS RUN CONFIRMS, AND THE ONE STAGE IT DID NOT RUN.
+#   Confirms, at this commit: the doc-link, content-leak (+ self-test), proof-manifest (+ self-test),
+#   verification-map (+ self-test), doctest-count (+ self-test), tier-parity and strict lid-staleness
+#   gates; 472 unit/regression tests and 33 doctests; and the full L3 floor — 191 of 191 harnesses
+#   SUCCESSFUL, 0 FAILED, with exactly the three disclosed-unsatisfied covers of PROOF_MANIFEST.md
+#   §8.2 and no others.
+#   DID NOT RUN: the L4 Lean lid. `lean/check_lean.sh` is guarded and no-ops when the
+#   Aeneas/Charon/Lean stack is absent; this VM was provisioned for the Kani floor only, so the log
+#   below carries `== lean lid: SKIP ... ==` rather than a PASS. That is a real gap in THIS artifact
+#   and is not papered over: the L4 evidence for the same lid sources is `evidence/lean-lid-953a1a2.log`,
+#   a full green `check_lean.sh` (re-extraction + model-drift diff + lake build + sorry-gate) taken on
+#   the machine that owns that toolchain, at THIS commit — `git diff 953a1a2..953a1a2 -- lean` is empty
+#   by construction. Two artifacts, one claim each; neither is asked to speak for the other.
+#
+# ---- THIS FILE IS A DISTILLATION, NOT THE RAW LOG ----
+# The complete raw log is committed alongside it, gzipped, at evidence/raw/check-953a1a2.log.gz
+# (raw: 35783956 bytes, 326422 lines, sha256 333dba7f2598ba440f556fb8fcb55875806539856bd2383ce3bc71e922afaa8b).
+# This file is exactly that log passed through:
+#     grep -E "^(Checking harness|VERIFICATION:|Verification Time:|Manual Harness Summary|Complete - |== |SUMMARY:|test result:|running [0-9]+ test|PASS|FAIL|error)|^ +\*\* [0-9]+ of [0-9]+ (failed|cover propert)"
+# Nothing is edited, reordered or summarised by hand: every line below appears verbatim in the raw log.
+#
+== hygiene gate (doc links; pure stdlib) ==
+PASS check_links: 25 curated doc files, all relative links resolve
+== content-leak gate: self-test (the gate's own gate; pure stdlib) ==
+== content-leak gate (credentials / absolute paths / private vocabulary in tracked files; pure stdlib) ==
+PASS check_content_leaks: 244 tracked files scanned (credentials+vocabulary everywhere; paths exempt under evidence/)
+== proof-manifest gate: self-test (the gate's own gate; pure stdlib) ==
+== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) ==
+== proof-manifest gate: PASS (generated regions + 7 guarded count-claims current) ==
+== verification-map gate: self-test (the gate's own gate; pure stdlib) ==
+== verification-map gate (README.md's mermaid map vs source; pure stdlib) ==
+== verification-map gate: PASS (README.md verification map current) ==
+== cargo test (workspace) ==
+running 472 tests
+test result: ok. 472 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+running 33 tests
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+== doctest-count gate: self-test (the gate's own gate; pure stdlib except its own two real-cargo tests) ==
+== doctest-count gate (gen_proof_manifest.py's static scan vs cargo's own count — structural backstop against any doc-attribute shape the static regexes don't recognise) ==
+PASS check_doctest_count: static scan (33) matches cargo's own doctest count (ground truth, via `cargo test --doc -p der-verified -- --list`)
+== tier-parity gate (+ its self-test): the LIGHT/HEAVY split is data, so gate it ==
+== cargo kani :: der-verified (L3 proof floor) ==
+Checking harness big_integer::proofs::strips_redundant_padding...
+SUMMARY:
+ ** 0 of 214 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.9875999s
+Checking harness big_integer::proofs::is_negative_matches_sign_bit...
+SUMMARY:
+ ** 0 of 27 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.1960374s
+Checking harness big_integer::proofs::redundant_negative_padding_is_non_minimal_at_length...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.056021985s
+Checking harness big_integer::proofs::redundant_positive_padding_is_non_minimal_at_length...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.052218683s
+Checking harness big_integer::proofs::redundant_negative_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 83 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.042533968s
+Checking harness big_integer::proofs::redundant_positive_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 83 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.04312325s
+Checking harness big_integer::proofs::empty_is_empty...
+SUMMARY:
+ ** 0 of 184 failed (15 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.17241211s
+Checking harness big_integer::proofs::encode_never_panics...
+SUMMARY:
+ ** 0 of 80 failed (4 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.0795776s
+Checking harness big_integer::proofs::validate_never_panics...
+SUMMARY:
+ ** 0 of 35 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.211536s
+Checking harness big_integer::proofs::minimality_is_local...
+SUMMARY:
+ ** 0 of 105 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.28680506s
+Checking harness big_integer::proofs::minimizer_output_is_always_minimal...
+SUMMARY:
+ ** 0 of 96 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.1629341s
+Checking harness big_integer::proofs::accepted_is_fixed_point_of_minimizer...
+SUMMARY:
+ ** 0 of 145 failed (6 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.3960985s
+Checking harness big_integer::proofs::validate_iff_minimal_oracle...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.20386831s
+Checking harness bit_string::proofs::octet_aligned_iff_unused_zero...
+SUMMARY:
+ ** 0 of 74 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.36928892s
+Checking harness bit_string::proofs::empty_nonzero_unused_is_classified...
+SUMMARY:
+ ** 0 of 132 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.06129131s
+Checking harness bit_string::proofs::nonzero_padding_is_classified...
+SUMMARY:
+ ** 0 of 134 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.0832785s
+Checking harness bit_string::proofs::unused_too_large_is_classified...
+SUMMARY:
+ ** 0 of 133 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.08857491s
+Checking harness bit_string::proofs::empty_is_classified...
+SUMMARY:
+ ** 0 of 132 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.053460322s
+Checking harness bit_string::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 101 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.67104s
+Checking harness bit_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 45 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.28494143s
+Checking harness bit_string::proofs::roundtrip_canonical...
+SUMMARY:
+ ** 0 of 119 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.801764s
+Checking harness boolean::proofs::wrong_length_is_bad_length...
+SUMMARY:
+ ** 0 of 89 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.05676189s
+Checking harness boolean::proofs::roundtrip...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.048610028s
+Checking harness boolean::proofs::one_octet_is_canonical...
+SUMMARY:
+ ** 0 of 23 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.03997132s
+Checking harness context_tag::proofs::decode_explicit_context_never_panics...
+SUMMARY:
+ ** 0 of 123 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 3.6594849s
+Checking harness ec_private_key::proofs::parse_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 374 failed (13 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 45.611675s
+Checking harness ec_private_key::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 307 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 84.046936s
+Checking harness ec_private_key::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 989 failed
+ ** 17 of 17 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 108.597084s
+Checking harness ecdsa_sig_value::proofs::parse_strict_ok_path_witnessed_high_bit_r...
+SUMMARY:
+ ** 0 of 193 failed (11 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 9.27283s
+Checking harness ecdsa_sig_value::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 195 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 21.200268s
+Checking harness ecdsa_sig_value::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 668 failed
+ ** 15 of 15 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 29.13337s
+Checking harness encrypted_private_key_info::proofs::parse_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 250 failed (11 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 20.452784s
+Checking harness encrypted_private_key_info::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 227 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 110.12205s
+Checking harness encrypted_private_key_info::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 678 failed
+ ** 9 of 9 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 46.833344s
+Checking harness enumerated::proofs::roundtrip...
+SUMMARY:
+ ** 0 of 144 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.451752s
+Checking harness enumerated::proofs::encode_delegates_to_integer...
+SUMMARY:
+ ** 0 of 48 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.5858904s
+Checking harness enumerated::proofs::decode_delegates_to_integer...
+SUMMARY:
+ ** 0 of 138 failed
+ ** 7 of 7 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.6886257s
+Checking harness generalized_time::proofs::fraction_non_digit_is_classified...
+SUMMARY:
+ ** 0 of 257 failed (3 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3238412s
+Checking harness generalized_time::proofs::fraction_trailing_zero_is_classified...
+SUMMARY:
+ ** 0 of 257 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.36824864s
+Checking harness generalized_time::proofs::fraction_empty_is_classified...
+SUMMARY:
+ ** 0 of 255 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.28775176s
+Checking harness generalized_time::proofs::bad_fraction_separator_is_classified...
+SUMMARY:
+ ** 0 of 257 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.30696857s
+Checking harness generalized_time::proofs::second_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3522877s
+Checking harness generalized_time::proofs::minute_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.35213196s
+Checking harness generalized_time::proofs::hour_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.35366017s
+Checking harness generalized_time::proofs::day_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3587873s
+Checking harness generalized_time::proofs::month_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.34731904s
+Checking harness generalized_time::proofs::not_zulu_is_classified...
+SUMMARY:
+ ** 0 of 257 failed (14 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.26575732s
+Checking harness generalized_time::proofs::non_digit_is_classified...
+SUMMARY:
+ ** 0 of 263 failed (16 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3494205s
+Checking harness generalized_time::proofs::short_length_is_bad_length...
+SUMMARY:
+ ** 0 of 256 failed (18 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.6423507s
+Checking harness generalized_time::proofs::accepted_iff_canonical_oracle...
+SUMMARY:
+ ** 0 of 238 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 3.4449828s
+Checking harness generalized_time::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 367 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 4.7427692s
+Checking harness generalized_time::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 95 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.2141402s
+Checking harness generalized_time::proofs::roundtrip_all_fields...
+SUMMARY:
+ ** 0 of 456 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 3.7817845s
+Checking harness integer::proofs::nine_octets_is_too_large...
+SUMMARY:
+ ** 0 of 126 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.053341538s
+Checking harness integer::proofs::redundant_negative_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 110 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.05281669s
+Checking harness integer::proofs::redundant_positive_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 110 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.049104687s
+Checking harness integer::proofs::empty_is_classified...
+SUMMARY:
+ ** 0 of 110 failed (6 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.041233934s
+Checking harness integer::proofs::decode_accepts_only_minimal...
+SUMMARY:
+ ** 0 of 85 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.94103396s
+Checking harness integer::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 51 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.27265528s
+Checking harness integer::proofs::roundtrip_all_i64...
+SUMMARY:
+ ** 0 of 144 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.45293272s
+Checking harness length::proofs::too_large_is_classified...
+SUMMARY:
+ ** 0 of 134 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.17678615s
+Checking harness length::proofs::truncated_long_form_is_classified...
+SUMMARY:
+ ** 0 of 135 failed (6 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.2532525s
+Checking harness length::proofs::long_form_of_short_value_is_non_minimal...
+SUMMARY:
+ ** 0 of 134 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.19177894s
+Checking harness length::proofs::leading_zero_is_non_minimal...
+SUMMARY:
+ ** 0 of 141 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.30412367s
+Checking harness length::proofs::reserved_is_classified...
+SUMMARY:
+ ** 0 of 137 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.26465905s
+Checking harness length::proofs::indefinite_is_classified...
+SUMMARY:
+ ** 0 of 137 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.2679449s
+Checking harness length::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 80 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.65271s
+Checking harness length::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 49 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3015834s
+Checking harness length::proofs::roundtrip_all_u32...
+SUMMARY:
+ ** 0 of 151 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.48566398s
+Checking harness null::proofs::only_empty_is_valid...
+SUMMARY:
+ ** 0 of 59 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.06257918s
+Checking harness octet_string::proofs::accepted_identifier_is_canonical_0x04...
+SUMMARY:
+ ** 0 of 121 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.8058993s
+Checking harness octet_string::proofs::non_octet_string_tag_is_wrong_tag...
+SUMMARY:
+ ** 0 of 347 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.92515093s
+Checking harness octet_string::proofs::constructed_form_is_rejected...
+SUMMARY:
+ ** 0 of 347 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.85637105s
+Checking harness octet_string::proofs::accepted_content_is_the_tlv_value...
+SUMMARY:
+ ** 0 of 151 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 4.2057624s
+Checking harness octet_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 121 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.9562366s
+Checking harness octet_string::proofs::roundtrip_small...
+SUMMARY:
+ ** 0 of 210 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 3.3049774s
+Checking harness oid::proofs::unterminated_is_truncated...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.070569694s
+Checking harness oid::proofs::later_0x80_is_non_minimal...
+SUMMARY:
+ ** 0 of 81 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.057908542s
+Checking harness oid::proofs::leading_0x80_is_non_minimal...
+SUMMARY:
+ ** 0 of 79 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.057827055s
+Checking harness oid::proofs::empty_is_classified...
+SUMMARY:
+ ** 0 of 77 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.036226846s
+Checking harness oid::proofs::validate_never_panics...
+SUMMARY:
+ ** 0 of 89 failed (1 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.34586278s
+Checking harness pkcs8::proofs::parse_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 318 failed (13 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 38.5675s
+Checking harness pkcs8::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 294 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 209.9457s
+Checking harness pkcs8::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 911 failed
+ ** 16 of 16 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 94.05032s
+Checking harness profile::proofs::validate_profile_never_panics...
+SUMMARY:
+ ** 0 of 92 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.2541769s
+Checking harness profile::proofs::error_precedence_follows_declaration_order...
+SUMMARY:
+ ** 0 of 160 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.29446137s
+Checking harness profile::proofs::rule3_generalized_too_early_iff_year_le_2049...
+SUMMARY:
+ ** 0 of 161 failed
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.29327926s
+Checking harness profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3...
+SUMMARY:
+ ** 0 of 159 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.16219948s
+Checking harness profile::proofs::rule1_mismatch_iff_algorithms_differ...
+SUMMARY:
+ ** 0 of 159 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3046611s
+Checking harness profile::proofs::utc_time_can_never_denote_2050_or_later...
+SUMMARY:
+ ** 0 of 22 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.040021736s
+Checking harness restricted_string::proofs::wrong_tag_is_classified_visible...
+SUMMARY:
+ ** 0 of 483 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.1848911s
+Checking harness restricted_string::proofs::wrong_tag_is_classified_numeric...
+SUMMARY:
+ ** 0 of 428 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.1881924s
+Checking harness restricted_string::proofs::wrong_tag_is_classified_ia5...
+SUMMARY:
+ ** 0 of 428 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.167475s
+Checking harness restricted_string::proofs::wrong_tag_is_classified_printable...
+SUMMARY:
+ ** 0 of 428 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.2859454s
+Checking harness restricted_string::proofs::out_of_charset_reports_position...
+SUMMARY:
+ ** 0 of 186 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.74257267s
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_visible...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.42314s
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_numeric...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.4455268s
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_ia5...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.3738787s
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_printable...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.4311156s
+Checking harness restricted_string::proofs::constructed_form_is_rejected_visible...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.0859005s
+Checking harness restricted_string::proofs::constructed_form_is_rejected_numeric...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.0882251s
+Checking harness restricted_string::proofs::constructed_form_is_rejected_ia5...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.0509908s
+Checking harness restricted_string::proofs::constructed_form_is_rejected_printable...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.1341761s
+Checking harness restricted_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 195 failed
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 4.2601867s
+Checking harness restricted_string::proofs::roundtrip_visible...
+SUMMARY:
+ ** 0 of 418 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 5.7305126s
+Checking harness restricted_string::proofs::roundtrip_numeric...
+SUMMARY:
+ ** 0 of 363 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 5.3392687s
+Checking harness restricted_string::proofs::roundtrip_ia5...
+SUMMARY:
+ ** 0 of 363 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 4.871488s
+Checking harness restricted_string::proofs::roundtrip_printable...
+SUMMARY:
+ ** 0 of 363 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 5.842327s
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_visible...
+SUMMARY:
+ ** 0 of 223 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.5198619s
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_numeric...
+SUMMARY:
+ ** 0 of 168 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.42132708s
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_ia5...
+SUMMARY:
+ ** 0 of 168 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.3851378s
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_printable...
+SUMMARY:
+ ** 0 of 168 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.5180994s
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_visible...
+SUMMARY:
+ ** 0 of 105 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.041958906s
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_numeric...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.027919156s
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_ia5...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.029881356s
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_printable...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.041787285s
+Checking harness rsa_private_key::proofs::validate_other_prime_info_never_panics...
+SUMMARY:
+ ** 0 of 583 failed (1 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 16.133818s
+Checking harness rsa_private_key::proofs::validate_other_prime_infos_never_panics...
+SUMMARY:
+ ** 0 of 141 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 177.28265s
+Checking harness rsa_private_key::proofs::parse_ok_2prime_witnessed...
+SUMMARY:
+ ** 0 of 305 failed (5 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 95.38947s
+Checking harness rsa_private_key::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 245 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 132.40433s
+Checking harness rsa_private_key::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 850 failed
+ ** 11 of 11 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 166.05415s
+Checking harness rsa_public_key::proofs::parse_strict_ok_path_witnessed_rsa_2048_shaped...
+SUMMARY:
+ ** 0 of 218 failed (4 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 10.520745s
+Checking harness rsa_public_key::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 195 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 22.528276s
+Checking harness rsa_public_key::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 668 failed
+ ** 15 of 15 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 30.257448s
+Checking harness sequence::proofs::strict_rejects_trailing...
+SUMMARY:
+ ** 0 of 322 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.99375784s
+Checking harness sequence::proofs::accepted_identifier_is_canonical_0x30...
+SUMMARY:
+ ** 0 of 119 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.866441s
+Checking harness sequence::proofs::tag_correctness...
+SUMMARY:
+ ** 0 of 330 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.900131s
+Checking harness sequence::proofs::roundtrip_two_children...
+SUMMARY:
+ ** 0 of 476 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 82.38231s
+Checking harness sequence::proofs::ok_implies_exact_tiling...
+SUMMARY:
+ ** 0 of 144 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 177.97148s
+Checking harness sequence::proofs::no_over_read...
+SUMMARY:
+ ** 0 of 96 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 72.218376s
+Checking harness sequence::proofs::iterate_never_panics...
+SUMMARY:
+ ** 0 of 321 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 101.96582s
+Checking harness set_of::proofs::roundtrip_two_sorted_children...
+SUMMARY:
+ ** 0 of 482 failed (41 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 312.6748s
+Checking harness set_of::proofs::strict_rejects_trailing...
+SUMMARY:
+ ** 0 of 431 failed (22 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 106.161674s
+Checking harness set_of::proofs::accepted_identifier_is_canonical_0x31...
+SUMMARY:
+ ** 0 of 200 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 496.36655s
+Checking harness set_of::proofs::tag_correctness...
+SUMMARY:
+ ** 0 of 429 failed (19 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 408.32068s
+Checking harness set_of::proofs::duplicate_adjacent_encodings_are_accepted...
+SUMMARY:
+ ** 0 of 361 failed (16 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 92.76465s
+Checking harness set_of::proofs::unsorted_reports_first_violation_index_depth_four...
+SUMMARY:
+ ** 0 of 361 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 115.75009s
+Checking harness set_of::proofs::unsorted_reports_first_violation_index...
+SUMMARY:
+ ** 0 of 361 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 119.648796s
+Checking harness set_of::proofs::unsorted_children_are_rejected...
+SUMMARY:
+ ** 0 of 361 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 94.32766s
+Checking harness set_of::proofs::cmp_padded_matches_oracle...
+SUMMARY:
+ ** 0 of 106 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.9729971s
+Checking harness set_of::proofs::ordering_iff_oracle...
+SUMMARY:
+ ** 0 of 202 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 135.06223s
+Checking harness set_of::proofs::ok_implies_exact_tiling...
+SUMMARY:
+ ** 0 of 179 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 488.34717s
+Checking harness set_of::proofs::no_over_read...
+SUMMARY:
+ ** 0 of 96 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 81.689926s
+Checking harness set_of::proofs::iterate_never_panics...
+SUMMARY:
+ ** 0 of 362 failed (2 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 252.93436s
+Checking harness tag::proofs::too_large_tag_is_classified...
+SUMMARY:
+ ** 0 of 142 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.098093025s
+Checking harness tag::proofs::truncated_high_tag_is_classified...
+SUMMARY:
+ ** 0 of 142 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.074280195s
+Checking harness tag::proofs::leading_zero_high_tag_is_non_minimal...
+SUMMARY:
+ ** 0 of 142 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.07448776s
+Checking harness tag::proofs::high_tag_of_small_number_is_non_minimal...
+SUMMARY:
+ ** 0 of 142 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.11115424s
+Checking harness tag::proofs::decode_tag_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 81 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.78451264s
+Checking harness tag::proofs::decode_tag_never_panics...
+SUMMARY:
+ ** 0 of 34 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.1927382s
+Checking harness tag::proofs::roundtrip_all_tags...
+SUMMARY:
+ ** 0 of 176 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.1598077s
+Checking harness tlv::proofs::strict_rejects_trailing...
+SUMMARY:
+ ** 0 of 293 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.7742003s
+Checking harness tlv::proofs::tlv_truncated_value_is_classified...
+SUMMARY:
+ ** 0 of 298 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.70303804s
+Checking harness tlv::proofs::tlv_roundtrip_small...
+SUMMARY:
+ ** 0 of 223 failed (21 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 5.248628s
+Checking harness tlv::proofs::decode_tlv_structure...
+SUMMARY:
+ ** 0 of 129 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 6.2514453s
+Checking harness tlv::proofs::decode_tlv_never_panics...
+SUMMARY:
+ ** 0 of 96 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 2.8212206s
+Checking harness utc_time::proofs::full_year_pivot_is_correct...
+SUMMARY:
+ ** 0 of 24 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.036785997s
+Checking harness utc_time::proofs::decode_postcondition_fields_in_range...
+SUMMARY:
+ ** 0 of 104 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.8265467s
+Checking harness utc_time::proofs::second_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.15182763s
+Checking harness utc_time::proofs::minute_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.15439343s
+Checking harness utc_time::proofs::hour_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.15400957s
+Checking harness utc_time::proofs::day_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.15572365s
+Checking harness utc_time::proofs::month_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.15588965s
+Checking harness utc_time::proofs::not_zulu_is_classified...
+SUMMARY:
+ ** 0 of 182 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.1029731s
+Checking harness utc_time::proofs::non_digit_is_classified...
+SUMMARY:
+ ** 0 of 188 failed (8 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.14231607s
+Checking harness utc_time::proofs::wrong_length_is_bad_length...
+SUMMARY:
+ ** 0 of 194 failed (10 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.29927847s
+Checking harness utc_time::proofs::accepted_iff_canonical_oracle...
+SUMMARY:
+ ** 0 of 173 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1.5143378s
+Checking harness utc_time::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 189 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.91059214s
+Checking harness utc_time::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 60 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.41811052s
+Checking harness utc_time::proofs::roundtrip_all_fields...
+SUMMARY:
+ ** 0 of 309 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.60726726s
+Checking harness utf8_string::proofs::ill_formed_reports_position...
+SUMMARY:
+ ** 0 of 216 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 82.59347s
+Checking harness utf8_string::proofs::wrong_tag_is_classified...
+SUMMARY:
+ ** 0 of 422 failed (19 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 36.49341s
+Checking harness utf8_string::proofs::accepted_identifier_is_canonical...
+SUMMARY:
+ ** 0 of 202 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 67.327805s
+Checking harness utf8_string::proofs::constructed_form_is_rejected...
+SUMMARY:
+ ** 0 of 422 failed (19 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 35.36858s
+Checking harness utf8_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 202 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 58.86445s
+Checking harness utf8_string::proofs::roundtrip...
+SUMMARY:
+ ** 0 of 413 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 268.20242s
+Checking harness utf8_string::proofs::validate_iff_std...
+SUMMARY:
+ ** 0 of 233 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 11.449232s
+Checking harness utf8_string::proofs::validate_iff_oracle_multi...
+SUMMARY:
+ ** 0 of 216 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 36.867855s
+Checking harness utf8_string::proofs::validate_iff_oracle...
+SUMMARY:
+ ** 0 of 216 failed
+VERIFICATION:- SUCCESSFUL
+Verification Time: 20.384117s
+Checking harness x509_algorithm_identifier::proofs::parse_algorithm_identifier_never_panics...
+SUMMARY:
+ ** 0 of 175 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 22.168356s
+Checking harness x509_certificate::proofs::parse_certificate_never_panics...
+SUMMARY:
+ ** 0 of 253 failed (4 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 112.84011s
+Checking harness x509_extension::proofs::validate_extensions_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 245 failed (12 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 510.37045s
+Checking harness x509_extension::proofs::validate_extensions_never_panics...
+SUMMARY:
+ ** 0 of 254 failed
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1207.9122s
+Checking harness x509_extension::proofs::parse_extension_never_panics...
+SUMMARY:
+ ** 0 of 218 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 33.606968s
+Checking harness x509_name::proofs::validate_never_panics...
+SUMMARY:
+ ** 0 of 138 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 15.369028s
+Checking harness x509_name::proofs::validate_rdn_never_panics...
+SUMMARY:
+ ** 0 of 299 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Verification Time: 1347.9208s
+Checking harness x509_spki::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 240 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 49.082577s
+Checking harness x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 411 failed (14 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 462.29242s
+Checking harness x509_tbs_certificate::proofs::parse_tbs_certificate_never_panics...
+SUMMARY:
+ ** 0 of 550 failed (41 unreachable)
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 231.31253s
+Checking harness x509_validity::proofs::parse_validity_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 265 failed (29 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 15.771688s
+Checking harness x509_validity::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 265 failed (28 unreachable)
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Verification Time: 24.822441s
+Manual Harness Summary:
+Complete - 191 successfully verified harnesses, 0 failures, 191 total.
+== lean lid :: der-verified length/big_integer/oid codecs (L4, unbounded; guarded) ==
+== lean lid: SKIP (Aeneas/Lean toolchain absent; the L3 Kani floor is the gate) ==
+== lid-staleness gate: self-test (the gate's own gate; pure stdlib) ==
+== lid-staleness gate --strict (after the Lean gate, which just refreshed the state on green) ==
+PASS check_lid_staleness: 6 lid-covered source(s) match the recorded state
+== check.sh: PASS ==
