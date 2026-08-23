@@ -128,10 +128,15 @@ mod proofs {
     #[kani::unwind(16)]
     fn accepted_content_is_the_tlv_value() {
         let buf: [u8; 16] = kani::any();
-        if let Ok((dec, used)) = decode_octet_string(&buf) {
-            let (tlv, tused) = decode_tlv(&buf).unwrap();
+        // Symbolic input length (same idiom as decode_never_panics above): the no-over-read claim
+        // must hold at every length in the domain, not just the full buffer.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        if let Ok((dec, used)) = decode_octet_string(input) {
+            let (tlv, tused) = decode_tlv(input).unwrap();
             assert!(used == tused);
-            assert!(used <= buf.len());
+            assert!(used <= input.len());
             assert!(dec.len() == tlv.value.len());
             assert!(dec == tlv.value);
         }
@@ -171,8 +176,13 @@ mod proofs {
     #[kani::unwind(16)]
     fn accepted_identifier_is_canonical_0x04() {
         let buf: [u8; 16] = kani::any();
-        if decode_octet_string(&buf).is_ok() {
-            assert!(buf[0] == 0x04);
+        // Symbolic input length (same idiom as decode_never_panics above): the canonicality claim
+        // must hold at every length in the domain, not just the full buffer.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        if decode_octet_string(input).is_ok() {
+            assert!(input[0] == 0x04);
         }
     }
 }
