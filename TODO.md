@@ -311,14 +311,20 @@ scope boundary referenced below.
         each module got exactly one widened harness above except the five no-ops. See
         `953a1a2`'s commit message for the full per-harness cover counts.
 
-- [ ] **Structural/property siblings still on the old fixed-buffer pattern** (named follow-up from
+- [x] **Structural/property siblings still on the old fixed-buffer pattern** (named follow-up from
       the sweep above; not covered by `953a1a2` because those harnesses assert *structural*
       properties, not bare panic-freedom, so widening them needs the same per-module care, not a
-      mechanical copy): `tlv::decode_tlv_structure`, `octet_string::accepted_content_is_the_tlv_value`,
+      mechanical copy). **Done 2026-08-23** (`3e31ac9`, `fb77513`, `82e2c79`, `6068a75`): all seven
+      widened to the symbolic-length idiom and re-verified SUCCESSFUL —
+      `tlv::decode_tlv_structure`, `octet_string::accepted_content_is_the_tlv_value`,
       `octet_string::accepted_identifier_is_canonical_0x04`, `sequence::no_over_read`,
       `sequence::accepted_identifier_is_canonical_0x30`, `set_of::no_over_read`,
-      `set_of::accepted_identifier_is_canonical_0x31`. `sequence`/`set_of` are HEAVY tier (systemd
-      service + fv_slot).
+      `set_of::accepted_identifier_is_canonical_0x31`. `sequence`/`set_of` ran HEAVY tier (detached
+      `systemd-run --user` scope under the R-0009 fv_slot). One non-vacuity negative control per
+      module (`kani::assume(len == 0)` flips the module's `iterate_never_panics`/
+      `decode_*_never_panics` Ok cover UNSATISFIABLE — watched RED, reverted byte-identical, then
+      GREEN again): `tlv` already covered by `953a1a2`; `octet_string`, `sequence`, `set_of` each
+      freshly negative-controlled this session.
 
 ## SCOPING NOTE (not a build): what a `profile` Lean lid would need
 
