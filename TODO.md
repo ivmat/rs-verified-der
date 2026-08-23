@@ -319,3 +319,51 @@ scope boundary referenced below.
       `sequence::accepted_identifier_is_canonical_0x30`, `set_of::no_over_read`,
       `set_of::accepted_identifier_is_canonical_0x31`. `sequence`/`set_of` are HEAVY tier (systemd
       service + fv_slot).
+
+## SCOPING NOTE (not a build): what a `profile` Lean lid would need
+
+`profile` is the only harnessed module with **no Lean lid** (PROOF_MANIFEST.md §7): its six
+harnesses are bounded proofs over already-materialized *values* (an `AlgorithmIdentifier` pair, a
+`version: u8`, an `Option` of extension bytes, two `Time` CHOICE arms and their years), not
+∀-length statements over raw DER bytes, so it does not carry the L4/L5 grade the six lidded codecs
+(`length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence`) do. This is a **scoping note only** —
+estimating what a value-bounded lid would cost, not building one.
+
+- **The value-level framing is only skin-deep.** `AlgorithmIdentifier<'a>` carries
+  `algorithm_oid: &'a [u8]` and `parameters: Option<&'a [u8]>`; `Time<'a>`'s `Generalized` arm
+  carries a borrowed fraction-digit slice (`x509_algorithm_identifier.rs`, `x509_validity.rs`).
+  `validate_profile`'s rule 1 (`Certificate.signatureAlgorithm == tbsCertificate.signature`) is a
+  derived `PartialEq` over those slices, so an unbounded Lean statement about it still bottoms out
+  in **unbounded byte-slice equality** — exactly the object D27/D28 already built machinery for.
+  A "value-bounded" lid is not a smaller problem than D27/D28's byte-level ones; it is the *same*
+  problem (slice equality, `Option` matching, enum-tag comparison) with the DER-decoding steps
+  already discharged elsewhere and out of scope.
+- **D27/D28-pattern refactor this would need, concretely:**
+  1. Extract `AlgorithmIdentifier`, `Time`, `Validity` and `validate_profile` itself through
+     Charon → Aeneas (new namespace, likely `der_profile_extract`, mirroring D28's
+     `der_sequence_extract` workaround for the duplicate-extraction-namespace issue D27 first hit).
+  2. Expect the **same `map_err` point-free name-clash fix** D27 and D28 both needed
+     (`decode_sequence_tlv`'s `.map_err(SequenceError::…)` pattern broke extraction identically in
+     both prior lids) — `validate_profile`'s own error-construction call sites should be audited
+     for the same point-free shape before extraction is attempted, not discovered mid-lid.
+  3. State the six existing Kani biconditionals as unbounded Lean theorems over the *value* domain
+     (no `∀`-length quantifier over a byte buffer is needed for `version`/`extensions`-presence/
+     precedence — those are already exhaustive over their finite domains) **plus** a genuinely new
+     `∀`-length statement over `algorithm_oid`/`parameters`/fraction-digit slice equality, which is
+     where the D27/D28-style unbounded reasoning actually lives.
+- **Expected assumed-spec count.** D27's `tlv` lid and D28's `sequence` lid each disclosed the
+  **same 7 assumed specs** (the crate-code axioms were later discharged in `d27e344`/`6f85e13`, but
+  the *specs-for-upstream-`core`-primitives* count is the relevant precedent here). A `profile` lid
+  does no byte-level decoding of its own, so it needs **no new specs for `decode_tag`/
+  `decode_length`/`decode_tlv`-class primitives** — those are already covered by the tlv/sequence
+  lids' trust base and profile only consumes their *output values*. The likely net-new surface is
+  narrower: specs for slice `PartialEq`/`Eq` (if Aeneas's derived-equality extraction needs one,
+  which D27/D28 did not require for the primitives they touched — this is the open question) plus
+  whatever `Option`/enum-tag comparison needs. **Best estimate: 0–2 net-new assumed specs**, not
+  the 7 D27/D28 each disclosed — most of the trust base D27/D28 built is reusable here, unlike a
+  from-scratch lid.
+- **Not scoped here:** which Lean file the extraction would land in, unwind/recursion-limit
+  choices for the `∀`-length slice-equality lemma, or whether `AlgorithmIdentifier`'s `Copy` +
+  lifetime shape extracts cleanly through Charon on the first attempt (D26/D27/D28 each hit at
+  least one extraction surprise; assume this one will too, and do not schedule it as a fixed-cost
+  item on that basis).
