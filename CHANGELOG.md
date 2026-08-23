@@ -6,6 +6,46 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+Proof-envelope hardening and hygiene since 0.1.1, no functional/API change: the harness count is
+unchanged at 191 (the widening below changes *domains*, not counts) and the crate re-verifies
+end-to-end (`evidence/check-953a1a2.log`: 191/191 harnesses SUCCESSFUL, 472 tests, 33 doctests,
+sorry-free Lean lid).
+
+### Changed
+- **Widened six `never_panics` harnesses to the crate's symbolic-input-length idiom** (`let len:
+  usize = kani::any(); kani::assume(len <= buf.len());` before parsing, instead of a fixed-size
+  buffer proving only its own length): `tlv::decode_tlv_never_panics`,
+  `restricted_string::decode_never_panics`, `octet_string::decode_never_panics`,
+  `utf8_string::decode_never_panics`, `sequence::iterate_never_panics`,
+  `set_of::iterate_never_panics`. Each holds at every length in its domain now, not just the one
+  fixed length, matching the suffix slices these decoders see composed inside a TLV walk. Every
+  cover stays SATISFIED; non-vacuity negative-controlled on `tlv::decode_tlv_never_panics`
+  (`kani::assume(len == 0)` flips the `Ok` cover UNSATISFIABLE, confirming `len` is load-bearing).
+  Five sibling candidates were triaged and found already on the idiom (recorded, not changed):
+  `x509_algorithm_identifier`, `x509_spki`, `context_tag`, `x509_extension::parse_extension_never_panics`,
+  `x509_validity::parse_never_panics` (keeps its disclosed §8.2 Ok-cover vacuity note).
+
+### Fixed
+- **README's stale axiom count** — corrected to the current 13 declared Lean-lid axioms, none of
+  which is about this crate's own code any more (all 13 are now faithful specs for upstream `core`
+  primitives).
+- **Named the framing residual explicitly** in the proof manifest: a well-formed TLV is not by
+  itself a valid DER *value* encoding — the framing layer and the value-decoder layer are distinct
+  claims, and nothing in the framing proofs decides the difference.
+- **Content-leak gate** — closed the class by scanning both tracked content and the commit message
+  itself, not just tracked content, before a commit lands.
+
+### Added
+- **Push-boundary gate** — traps the push destination, re-runs the doc gates at the pushed sha, and
+  requires a receipt before any push to a public remote.
+- **External rigor re-review cited by name** in the proof manifest, rather than by the reviewer's
+  own internal path.
+- **Two committed full-gate evidence runs**, each superseding the prior one after a source change:
+  `evidence/check-24ddb69.log` (191/191, prior to the widening sweep) and
+  `evidence/check-953a1a2.log` (191/191, current HEAD, includes the widening sweep above); both on
+  a disposable clean-room VM, with the L4 Lean lid evidenced separately (sorry-free, no
+  Aeneas/Charon/Lean stack on the VM).
+
 ## [0.1.1] — 2026-08-11
 
 New formally-verified DER structural parsers over the 0.1.0 primitives — the ECDSA/RSA/PKCS#8
