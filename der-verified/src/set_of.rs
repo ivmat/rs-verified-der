@@ -295,7 +295,12 @@ mod proofs {
     #[kani::proof]
     #[kani::unwind(16)]
     fn no_over_read() {
-        let content: [u8; 8] = kani::any();
+        let buf: [u8; 8] = kani::any();
+        // Symbolic input length (same idiom as iterate_never_panics above): the no-over-read
+        // claim must hold at every length in the domain, not just the full buffer.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let content = &buf[..len];
         let mut off = 0usize;
         while off < content.len() {
             match decode_tlv(&content[off..]) {
@@ -444,8 +449,13 @@ mod proofs {
     #[kani::unwind(16)]
     fn accepted_identifier_is_canonical_0x31() {
         let buf: [u8; 16] = kani::any();
-        if decode_set_of_tlv(&buf).is_ok() {
-            assert!(buf[0] == 0x31);
+        // Symbolic input length (same idiom as iterate_never_panics above): the canonicality
+        // claim must hold at every length in the domain, not just the full buffer.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        if decode_set_of_tlv(input).is_ok() {
+            assert!(input[0] == 0x31);
         }
     }
 
