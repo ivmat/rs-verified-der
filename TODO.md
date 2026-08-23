@@ -283,7 +283,7 @@ scope boundary referenced below.
 
 ## Sweep candidate: leaf-module harnesses predating the symbolic-input-length convention
 
-- [ ] **The crate's heavier modules (`x509_certificate.rs`, `x509_tbs_certificate.rs`,
+- [x] **The crate's heavier modules (`x509_certificate.rs`, `x509_tbs_certificate.rs`,
       `x509_name.rs`, `x509_extension.rs`) already use a symbolic `len: usize = kani::any();
       kani::assume(len <= buf.len()); let input = &buf[..len];` before parsing — so a
       `never_panics`-style harness's "any input up to N octets" claim holds at every length in the
@@ -293,17 +293,29 @@ scope boundary referenced below.
       `der-verified/src` for the *fixed* pattern, checked against whether the crate's established
       `let len: usize = kani::any();`/`kani::assume(len <= buf.len())` idiom appears near each hit
       (confirmed present for the four known-good files above, confirming the grep discriminates),
-      finds the following modules **still on the old, narrower pattern** and not yet swept:
-      `x509_algorithm_identifier.rs` (the crate's other 16-octet-fixed leaf template, explicitly
-      named out of scope for D32), `restricted_string.rs` (5 harnesses), `octet_string.rs` (3),
-      `set_of.rs` (1), `utf8_string.rs` (1), `tlv.rs` (2), `x509_spki.rs` (1), `sequence.rs` (1),
-      `context_tag.rs` (1), and one harness inside `x509_extension.rs` itself
-      (`parse_extension_never_panics` — that module's *other* harness,
-      `validate_extensions_never_panics`, already has the fix). `x509_validity.rs`'s
-      `parse_never_panics` also has the old fixed-buffer shape, but its own disclosed-vacuity note
-      (§8.2) already documents that its `Ok` cover is unsatisfiable past the arithmetic floor at
-      `[u8; 16]`, so widening it to a symbolic length needs the same care D32 gave the two modules
-      here, not a mechanical copy. Not all of the harnesses above necessarily need the fix — some
-      may not have callers that invoke them on a suffix slice the way the stubbed
-      `x509_tbs_certificate`/`x509_certificate` compositions do — so this is a **sweep candidate to
-      triage per-module**, not a blanket TODO; the grep and file list above are the starting point.
+      found the candidate list triaged below. **Done 2026-08-23 (`953a1a2`) — 6 widened, 5 recorded
+      no-ops:**
+      - **Widened** to the symbolic-length idiom, all six re-verified green with covers SATISFIED,
+        non-vacuity negative-controlled on `tlv::decode_tlv_never_panics`
+        (`kani::assume(len == 0)` flips its `Ok` cover UNSATISFIABLE):
+        `tlv::decode_tlv_never_panics`, `restricted_string::decode_never_panics`,
+        `octet_string::decode_never_panics`, `utf8_string::decode_never_panics`,
+        `sequence::iterate_never_panics`, `set_of::iterate_never_panics`.
+      - **Triaged as no-ops** (already on the symbolic-length idiom; recorded, not changed):
+        `x509_algorithm_identifier`, `x509_spki`, `context_tag`,
+        `x509_extension::parse_extension_never_panics`, `x509_validity::parse_never_panics` — the
+        last **keeps its disclosed §8.2 Ok-cover vacuity note as-is**; it is a no-op for this sweep,
+        not a fix.
+      - The candidate list's per-module harness counts (e.g. "`restricted_string.rs` (5
+        harnesses)") turned out to describe the *file*, not all of which were on the old pattern;
+        each module got exactly one widened harness above except the five no-ops. See
+        `953a1a2`'s commit message for the full per-harness cover counts.
+
+- [ ] **Structural/property siblings still on the old fixed-buffer pattern** (named follow-up from
+      the sweep above; not covered by `953a1a2` because those harnesses assert *structural*
+      properties, not bare panic-freedom, so widening them needs the same per-module care, not a
+      mechanical copy): `tlv::decode_tlv_structure`, `octet_string::accepted_content_is_the_tlv_value`,
+      `octet_string::accepted_identifier_is_canonical_0x04`, `sequence::no_over_read`,
+      `sequence::accepted_identifier_is_canonical_0x30`, `set_of::no_over_read`,
+      `set_of::accepted_identifier_is_canonical_0x31`. `sequence`/`set_of` are HEAVY tier (systemd
+      service + fv_slot).
