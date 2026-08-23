@@ -1,0 +1,17 @@
+diff --git a/der-verified/src/utf8_string.rs b/der-verified/src/utf8_string.rs
+index 6950aa6..abad152 100644
+--- a/der-verified/src/utf8_string.rs
++++ b/der-verified/src/utf8_string.rs
+@@ -159,9 +159,9 @@ pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
+         if cp < min_cp {
+             return Err(Utf8Error::IllFormed { position: i });
+         }
+-        if (0xD800..=0xDFFF).contains(&cp) {
+-            return Err(Utf8Error::IllFormed { position: i });
+-        }
++        // if (0xD800..=0xDFFF).contains(&cp) {
++        //     return Err(Utf8Error::IllFormed { position: i });
++        // }
+         if cp > 0x10FFFF {
+             return Err(Utf8Error::IllFormed { position: i });
+         }

@@ -1,0 +1,13 @@
+diff --git a/der-verified/src/restricted_string.rs b/der-verified/src/restricted_string.rs
+index 2f12f67..9f41ba1 100644
+--- a/der-verified/src/restricted_string.rs
++++ b/der-verified/src/restricted_string.rs
+@@ -106,7 +106,7 @@ impl Charset {
+             // NumericString: digits + space only (no hyphen, no colon).
+             Charset::Numeric => b.is_ascii_digit() || b == b' ',
+             // VisibleString: the graphic subset of ASCII, space through tilde.
+-            Charset::Visible => b >= 0x20 && b <= 0x7E,
++            Charset::Visible => b >= 0x20 && b <= 0x7D,
+         }
+     }
+ }

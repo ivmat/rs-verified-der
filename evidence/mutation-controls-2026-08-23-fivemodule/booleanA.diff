@@ -1,0 +1,13 @@
+diff --git a/der-verified/src/boolean.rs b/der-verified/src/boolean.rs
+index 6df830d..b4930c0 100644
+--- a/der-verified/src/boolean.rs
++++ b/der-verified/src/boolean.rs
+@@ -44,7 +44,7 @@ pub fn decode_bool(content: &[u8]) -> Result<bool, BoolError> {
+     }
+     match content[0] {
+         0x00 => Ok(false),
+-        0xFF => Ok(true),
++        0xFF | 0x01 => Ok(true),
+         _ => Err(BoolError::NonCanonical),
+     }
+ }

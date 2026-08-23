@@ -1,0 +1,16 @@
+run_id	mutation	harness	predicted	observed	log
+00-base-octet_string	none	octet_string::proofs::constructed_form_is_rejected	GREEN	GREEN	logs/00-base-octet_string.log
+01-octetA-constructed	OCTET-A	octet_string::proofs::constructed_form_is_rejected	RED	RED	logs/01-octetA-constructed.log
+02-octetA-reverted	OCTET-A-reverted	octet_string::proofs::constructed_form_is_rejected	GREEN	GREEN	logs/02-octetA-reverted.log
+03-base-restricted_string	none	restricted_string::proofs::charset_exactly_matches_oracle_visible	GREEN	GREEN	logs/03-base-restricted_string.log
+04-restrictedA-visible	RESTRICTED-A	restricted_string::proofs::charset_exactly_matches_oracle_visible	RED	RED	logs/04-restrictedA-visible.log
+05-restrictedA-reverted	RESTRICTED-A-reverted	restricted_string::proofs::charset_exactly_matches_oracle_visible	GREEN	GREEN	logs/05-restrictedA-reverted.log
+06-base-utf8_string	none	utf8_string::proofs::validate_iff_std	GREEN	GREEN	logs/06-base-utf8_string.log
+07-utf8A-surrogate	UTF8-A	utf8_string::proofs::validate_iff_std	RED	RED	logs/07-utf8A-surrogate.log
+08-utf8A-reverted	UTF8-A-reverted	utf8_string::proofs::validate_iff_std	GREEN	GREEN	logs/08-utf8A-reverted.log
+09-base-boolean	none	boolean::proofs::one_octet_is_canonical	GREEN	GREEN	logs/09-base-boolean.log
+10-booleanA-noncanonical	BOOLEAN-A	boolean::proofs::one_octet_is_canonical	RED	RED	logs/10-booleanA-noncanonical.log
+11-booleanA-reverted	BOOLEAN-A-reverted	boolean::proofs::one_octet_is_canonical	GREEN	GREEN	logs/11-booleanA-reverted.log
+12-base-set_of	none	set_of::proofs::unsorted_children_are_rejected	GREEN	GREEN	logs/12-base-set_of.log
+13-setofA-unsorted	SET_OF-A	set_of::proofs::unsorted_children_are_rejected	RED	RED	logs/13-setofA-unsorted.log
+14-setofA-reverted	SET_OF-A-reverted	set_of::proofs::unsorted_children_are_rejected	GREEN	GREEN	logs/14-setofA-reverted.log

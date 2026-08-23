@@ -1,0 +1,13 @@
+diff --git a/der-verified/src/set_of.rs b/der-verified/src/set_of.rs
+index b4c8e91..374de21 100644
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -149,7 +149,7 @@ pub fn decode_set_of(content: &[u8]) -> Result<usize, SetOfError> {
+             // Invariant: `prev` is `Some` only after the first iteration has run to completion,
+             // at which point `count` has already been incremented to `1` — so `count >= 1` here,
+             // and `count - 1` (the previous child's index) cannot underflow.
+-            if cmp_padded(p, this) == Ordering::Greater {
++            if false && cmp_padded(p, this) == Ordering::Greater {
+                 return Err(SetOfError::Unsorted { index: count - 1 });
+             }
+         }

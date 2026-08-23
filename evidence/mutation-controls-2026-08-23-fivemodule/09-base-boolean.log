@@ -1,0 +1,192 @@
+Running as unit: run-p72784-i73074.scope; invocation ID: 87c0be4e9f8c45d8ba3883c8fb761796
+Kani Rust Verifier 0.67.0 (cargo plugin)
+   Compiling der-verified v0.1.1 (/home/ivo/repo/rs-verified-der/der-verified)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.44s
+Checking harness boolean::proofs::one_octet_is_canonical...
+CBMC 6.8.0 (cbmc-6.8.0)
+CBMC version 6.8.0 (cbmc-6.8.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/ivo/repo/rs-verified-der/target/kani/x86_64-unknown-linux-gnu/debug/deps/der_verified-7fdfec57197496c7__RNvNtNtCs8Uhk9se0wUe_12der_verified7boolean6proofs22one_octet_is_canonical.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+aborting path on assume(false) at file der-verified/src/boolean.rs line 60 column 15 function boolean::proofs::one_octet_is_canonical thread 0
+Runtime Symex: 0.00461324s
+size of program expression: 584 steps
+slicing removed 350 assignments
+Generated 27 VCC(s), 8 remaining after simplification
+Runtime Postprocess Equation: 3.825e-05s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.000275502s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 3.13e-06s
+Solving with CaDiCaL 2.0.0
+336 variables, 471 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 2.876e-05s
+Runtime decision procedure: 0.000329742s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+337 variables, 472 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 2.389e-05s
+Runtime decision procedure: 3.294e-05s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+338 variables, 473 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 1.339e-05s
+Runtime decision procedure: 1.903e-05s
+
+RESULTS:
+Check 1: boolean::decode_bool.assertion.1
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/boolean.rs:45:11 in function boolean::decode_bool
+
+Check 2: boolean::proofs::one_octet_is_canonical.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/boolean.rs:60:15 in function boolean::proofs::one_octet_is_canonical
+
+Check 3: boolean::proofs::one_octet_is_canonical.assertion.1
+	 - Status: SUCCESS
+	 - Description: "assertion failed: e == BoolError::NonCanonical"
+	 - Location: der-verified/src/boolean.rs:63:17 in function boolean::proofs::one_octet_is_canonical
+
+Check 4: boolean::proofs::one_octet_is_canonical.assertion.2
+	 - Status: SUCCESS
+	 - Description: "assertion failed: b != 0x00 && b != 0xFF"
+	 - Location: der-verified/src/boolean.rs:64:17 in function boolean::proofs::one_octet_is_canonical
+
+Check 5: boolean::proofs::one_octet_is_canonical.assertion.3
+	 - Status: SUCCESS
+	 - Description: "assertion failed: b == encode_bool(v)"
+	 - Location: der-verified/src/boolean.rs:61:22 in function boolean::proofs::one_octet_is_canonical
+
+Check 6: boolean::decode_bool.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/boolean.rs:45:5 in function boolean::decode_bool
+
+Check 7: boolean::decode_bool.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/boolean.rs:45:5 in function boolean::decode_bool
+
+Check 8: boolean::decode_bool.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/boolean.rs:45:5 in function boolean::decode_bool
+
+Check 9: boolean::decode_bool.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/boolean.rs:45:5 in function boolean::decode_bool
+
+Check 10: boolean::decode_bool.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/boolean.rs:45:5 in function boolean::decode_bool
+
+Check 11: boolean::decode_bool.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/boolean.rs:45:5 in function boolean::decode_bool
+
+Check 12: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 13: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 14: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 15: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 16: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 17: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 18: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 19: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 20: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 21: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 22: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+Check 23: <boolean::BoolError as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/boolean.rs:23:17 in function <boolean::BoolError as std::cmp::PartialEq>::eq
+
+
+SUMMARY:
+ ** 0 of 23 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.01526791s
+
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.
+	Command being timed: "cargo kani --manifest-path der-verified/Cargo.toml --harness boolean::proofs::one_octet_is_canonical --exact -Z stubbing"
+	User time (seconds): 0.46
+	System time (seconds): 0.05
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.52
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 187388
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 48167
+	Voluntary context switches: 202
+	Involuntary context switches: 24
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 30208
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
