@@ -179,11 +179,17 @@ mod proofs {
     #[kani::unwind(16)]
     fn decode_tlv_structure() {
         let buf: [u8; 16] = kani::any();
-        if let Ok((tlv, used)) = decode_tlv(&buf) {
+        // Symbolic input length (same idiom as decode_tlv_never_panics above): the structural
+        // claim below must hold at every length in the domain, not just the full buffer -- the
+        // same suffix-slice shape decode_tlv sees during a SEQUENCE/SET walk.
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        if let Ok((tlv, used)) = decode_tlv(input) {
             // Re-derive the header independently; the unwraps hold because decode_tlv only
             // returns Ok after both sub-decodes succeeded on these same bytes.
-            let (_t, t_used) = decode_tag(&buf).unwrap();
-            let (len_u32, l_used) = decode_length(&buf[t_used..]).unwrap();
+            let (_t, t_used) = decode_tag(input).unwrap();
+            let (len_u32, l_used) = decode_length(&input[t_used..]).unwrap();
             let header = t_used + l_used;
             // Oracle stated in SPEC terms: compare the consumed and value-borrow counts against
             // the *declared* length widened losslessly to `u64` — never re-using the impl's own
@@ -194,8 +200,8 @@ mod proofs {
             // proof: Kani models `usize` as 64-bit, so on this host the cast is lossless anyway.
             assert!(used as u64 == header as u64 + len_u32 as u64);
             assert!(tlv.value.len() as u64 == len_u32 as u64);
-            assert!(used <= buf.len());
-            assert!(tlv.value == &buf[header..used]);
+            assert!(used <= input.len());
+            assert!(tlv.value == &input[header..used]);
         }
     }
 

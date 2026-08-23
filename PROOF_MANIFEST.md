@@ -80,7 +80,7 @@ deviations. Read the two differently.
 | …named by at least one Kani harness | 69 |
 | …named by **no** Kani harness | **11** |
 | `#[kani::proof]` harnesses | 191 |
-| `kani::assume` harness preconditions (narrow the proved domain) | 161 |
+| `kani::assume` harness preconditions (narrow the proved domain) | 162 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
 | `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 180 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
@@ -260,11 +260,12 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**`evidence/check-953a1a2.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff 953a1a2..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
+**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
 - `evidence/check-24ddb69.log` (at `24ddb69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-69bbc9f.log` (at `69bbc9f`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-953a1a2.log` (at `953a1a2`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ba40709.log` (at `ba40709`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ea8dad4-remainder.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -418,7 +419,7 @@ carry that.
 | `sequence` | 6 | 6 | 7 | 8..16 | 16 | 1 | 2 | 0 | ✅ |
 | `set_of` | 5 | 5 | 13 | 3..16 | 16 | 3 | 2 | 0 |  |
 | `tag` | 2 | 2 | 7 | 7 | 12 | 5 | 2 | 0 | ✅ |
-| `tlv` | 3 | 3 | 5 | 3..16 | 16 | 1 | 3 | 0 | ✅ |
+| `tlv` | 3 | 3 | 5 | 3..16 | 16 | 2 | 3 | 0 | ✅ |
 | `utc_time` | 3 | 3 | 14 | 14..17 | 14..18 | 15 | 3 | 0 |  |
 | `utf8_string` | 4 | 3 | 9 | 4..16 | 6..16 | 13 | 2 | 0 |  |
 | `x509_algorithm_identifier` | 1 | 1 | 1 | 16 | 20 | 1 | 3 | 0 |  |
@@ -738,16 +739,16 @@ input space. This crate treats that as the default suspicion, and the check is m
 | harnesses | 191 |
 | `kani::cover` witnesses | 180, in 30 of the 32 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **1** |
-| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 83 |
+| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 84 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
 
 Harnesses with implicit checks only — each needs a justification, or a cover:
 
 - `rsa_private_key::parse_strict_never_panics`
 
-What the remaining 83 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
+What the remaining 84 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
-**What the 161 harness assumptions actually restrict.** 117 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
+**What the 162 harness assumptions actually restrict.** 118 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
 Two things to hold in mind reading it. First, the classifier is deliberately conservative: anything it cannot show is a pure size/range bound is listed, so some entries below *are* range constraints in a shape it does not recognise (a negated range such as `!(mo >= 1 && mo <= 12)`, for instance). It errs toward disclosing. Second, content narrowing is usually the **point** of the harness rather than a weakness in it: a rejection-classification harness exists precisely to pin a malformed shape and assert the exact error it must produce, and it must narrow to that shape to do so. What the list gives you is the ability to check that judgement yourself, harness by harness, instead of taking a count on trust.
 
