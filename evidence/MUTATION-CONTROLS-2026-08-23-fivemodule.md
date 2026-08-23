@@ -23,15 +23,29 @@ observe `VERIFICATION:- FAILED`, revert, confirm the source file is byte-identic
 pre-mutation sha256, and re-run to confirm `VERIFICATION:- SUCCESSFUL`. Each run executed inside its
 own `systemd-run --user --scope` unit: LIGHT-tier modules (`octet_string`, `restricted_string`,
 `utf8_string`, `boolean`) capped at `MemoryMax=8G MemoryHigh=7G`; `set_of` (HEAVY tier, per its
-prior structural-sibling-sweep classification) capped at `MemoryMax=20G MemoryHigh=18G`. Predictions
-were recorded before the measurements were read (`verdicts.tsv`'s `predicted` column is authored
-ahead of `observed`).
+prior structural-sibling-sweep classification) capped at `MemoryMax=20G MemoryHigh=18G`. Each
+module's `predicted` verdict was fixed before that module's `mutated`/`reverted` legs were run and
+read (`verdicts.tsv`'s `predicted` column is authored ahead of `observed`, module by module) —
+stated precisely: this is real, but incremental, row-by-row prediction, not a single audited
+pre-commit artifact fixing all five predictions before any run started. Treat it as an honest
+observed control, not a formally preregistered one.
 
-**Result, in one line: fifteen runs (5 modules × baseline/mutated/reverted), fifteen predictions
-matched.** Every predicted-RED run observed `VERIFICATION:- FAILED`, every baseline/reverted leg
+**Result, in one line: fifteen runs — five controlled claims, each run at baseline/mutated/reverted
+(not fifteen independent mutations) — and all fifteen legs matched their prediction.** Every
+predicted-RED `mutated` leg observed `VERIFICATION:- FAILED`, every `baseline`/`reverted` leg
 observed `VERIFICATION:- SUCCESSFUL`, every revert byte-identical by sha256
 (`baseline-sha256.txt` == `final-sha256.txt`, line for line), and the working tree was clean
 (`final-git-status.txt`, `final-git-diff-stat.txt` both empty) at the end.
+
+**Control strength is uneven across the five, stated plainly rather than presented as uniform.**
+`utf8_string`'s surrogate-range mutation and `restricted_string`'s off-by-one bound are demanding
+mutations (narrow, easy for a weak oracle to miss). `octet_string`'s constructed-form check and
+`boolean`'s non-canonical-octet check are straightforward wiring checks (a whole branch commented
+out / a single `|` added to a match arm). `set_of`'s `false &&` short-circuit is a coarse
+kill-switch on the entire ordering comparison, not a demanding comparator/index mutation — it shows
+the check is load-bearing at all, not that it is precise. None of the five is a no-op; all five are
+genuine, logged Kani failures. But "one real defect class per module" should not be read as "five
+mutations of equal rigor."
 
 ## Summary table
 
