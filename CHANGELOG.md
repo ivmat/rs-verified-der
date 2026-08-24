@@ -8,8 +8,13 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 Proof-envelope hardening and hygiene since 0.1.1, no functional/API change: the harness count is
 unchanged at 191 (the widening below changes *domains*, not counts) and the crate re-verifies
-end-to-end (`evidence/check-953a1a2.log`: 191/191 harnesses SUCCESSFUL, 472 tests, 33 doctests,
-sorry-free Lean lid).
+end-to-end (`evidence/check-0e327b7.log`: 191/191 harnesses SUCCESSFUL, 472 tests, 33 doctests,
+sorry-free Lean lid, exactly the three disclosed-unsatisfied covers of `PROOF_MANIFEST.md` §8.2).
+That run is a **single** full-gate pass covering both the L3 Kani floor and the L4 Lean lid at one
+commit — the two preceding runs (`check-24ddb69.log`, `check-953a1a2.log`) ran on clean-room VMs
+with no Aeneas/Charon/Lean stack, so their guarded L4 stage printed SKIP and had to be paired with a
+separate `lean-lid-<sha>.log`. The trade, stated in that log's own header: it ran on the
+maintainer's box rather than from a fresh bundle clone.
 
 ### Changed
 - **Widened six `never_panics` harnesses to the crate's symbolic-input-length idiom** (`let len:
