@@ -288,10 +288,49 @@ mod proofs {
         let _ = result;
     }
 
-    /// **No over-read.** Independent index-walk (own `decode_tlv` loop from raw offsets, exactly
-    /// like `sequence.rs`'s `no_over_read`), regardless of the ordering outcome: from offset 0,
-    /// each accepted child consumes `used >= 2` with `off + used <= content.len()`, and its value
-    /// lies inside that child.
+    /// **No over-read of [`decode_set_of`], in the two senses this walk permits.** Bounded
+    /// memory-safety of the shipped walk, plus an extensional postcondition on what it accepts.
+    ///
+    /// **What drives this proof is load-bearing, and it used to be the wrong thing.** Until
+    /// 2026-08-24 this harness ran its own `decode_tlv` loop from raw offsets — copied from
+    /// `sequence.rs`'s harness, and described as being "exactly like" it. That made it a proof
+    /// about a *copy* of the walk: a regression inside [`decode_set_of`]'s own loop could have
+    /// left it green. It now drives [`decode_set_of`] itself. Two legs carry the claim:
+    ///
+    /// 1. **No out-of-bounds access, over `0..=8` octets.** [`decode_set_of`] indexes
+    ///    `content[off..]` and `content[off..off + used]` directly and the crate forbids `unsafe`,
+    ///    so an over-read inside it is an out-of-bounds slice — a panic — and Kani checks panics
+    ///    on every path. Reaching the `if let` below at all is that claim.
+    /// 2. **On `Ok(k)`, an independent index oracle pins the tiling — at *symbolic* length.** The
+    ///    sibling `ok_implies_exact_tiling` checks the same shape only at the fixed 8-octet
+    ///    length; this covers the whole domain. Index arithmetic only (no pointer /
+    ///    `usize`-address arithmetic, so it is target-width agnostic and cannot be vacuously true
+    ///    under address wraparound). Each child consumes `used >= 2` (DER's two-octet framing
+    ///    floor) without passing `content.len()`, holds its value at its own tail (a **byte**
+    ///    comparison — it says the value matches the octets at that position, not that it is, in
+    ///    the provenance sense, a pointer into them), the children tile the content exactly, and
+    ///    `seen == k`.
+    ///
+    /// **What this does NOT prove, stated because the sibling in `sequence.rs` DOES prove it.**
+    /// The two are not structurally equivalent, and the difference is in the shipped code, not in
+    /// the effort spent: [`crate::sequence::Elements`] carries its cursor in a field its harness
+    /// can read back after every step, so that harness pins the shipped walk's advance
+    /// *per child* against a separately computed oracle. [`decode_set_of`] keeps `off` in a local
+    /// and returns only a count, so nothing here observes its cursor. Consequently this harness
+    /// does not show that the shipped loop used the *same per-child boundaries* as the oracle's
+    /// re-walk, nor that the local cursor never ends up past `content.len()` after the final
+    /// read — a terminal over-advance that reads nothing more would neither panic nor change `k`.
+    /// Leg 2 is an extensional property of the accepted *input*, not a trace of the walk.
+    /// Closing that gap needs the walk itself refactored onto [`crate::sequence::Elements`]
+    /// (which would also retire a duplicated walk in shipped code); it is logged in
+    /// `DER-REMAINING-WORK.md` rather than claimed here.
+    ///
+    /// Covers (T6 primary rule): the walk genuinely takes a second iteration, and the rejection
+    /// path genuinely fires. What a cover buys is narrower than it looks — `kani::cover`
+    /// satisfaction is observed at a run and is not gate-enforced in this repo
+    /// (`PROOF_MANIFEST.md` §8.2), and an always-`Err` body would satisfy every *conditional*
+    /// assertion above while merely leaving the `Ok` cover unsatisfied. These are evidence that
+    /// the paths were reached at this run, not an enforced anti-vacuity guard.
     #[kani::proof]
     #[kani::unwind(16)]
     fn no_over_read() {
@@ -301,18 +340,34 @@ mod proofs {
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
         let content = &buf[..len];
-        let mut off = 0usize;
-        while off < content.len() {
-            match decode_tlv(&content[off..]) {
-                Ok((tlv, used)) => {
-                    assert!(used >= 2);
-                    assert!(off + used <= content.len());
-                    assert!(tlv.value.len() <= used);
-                    off += used;
-                }
-                Err(_) => break,
+
+        // Leg 1: the shipped walk. Reaching the next statement at all is the no-OOB-access claim
+        // -- this call, not a re-implementation of it, is what Kani's panic checks range over.
+        let result = decode_set_of(content);
+
+        // Leg 2: an EXTENSIONAL postcondition on the accepted input. This re-walk observes the
+        // shipped cursor not at all (it is a local); see the doc comment on what that leaves open.
+        if let Ok(k) = result {
+            let mut off = 0usize;
+            let mut seen = 0usize;
+            while off < content.len() {
+                let (tlv, used) = decode_tlv(&content[off..]).unwrap();
+                assert!(used >= 2); // DER's two-octet framing floor
+                assert!(off + used <= content.len()); // never past the content
+                assert!(tlv.value.len() <= used); // the value lies within this child ...
+                // ... and matches the octets at that child's tail (byte comparison).
+                assert!(tlv.value == &content[off + used - tlv.value.len()..off + used]);
+                off += used;
+                seen += 1;
             }
+            assert!(off == content.len()); // exact tiling: no leftover, no over-run
+            assert!(seen == k); // and the reported count matches the independent walk
         }
+        kani::cover(
+            matches!(result, Ok(k) if k >= 2),
+            "the shipped walk genuinely takes a second iteration",
+        );
+        kani::cover(result.is_err(), "the shipped walk's rejection path genuinely fires");
     }
 
     /// **Exact tiling.** `decode_set_of(content) == Ok(k)` implies an independent re-walk of

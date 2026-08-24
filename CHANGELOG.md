@@ -26,6 +26,21 @@ sorry-free Lean lid).
   `x509_validity::parse_never_panics` (keeps its disclosed §8.2 Ok-cover vacuity note).
 
 ### Fixed
+- **`sequence`/`set_of` `no_over_read` proved a DUPLICATED walk, not the shipped one** — the crate's
+  central no-over-read claim pointed at two harnesses that each ran their *own* `decode_tlv` loop
+  from raw offsets instead of the shipped decode path, `sequence`'s describing itself in a comment as
+  "exactly what `Elements::next` does" — an equivalence asserted, never proven. Found by external
+  source-grounded review, confirmed, and corrected **before** these commits were ever published.
+  Both harnesses now execute shipped code, with the oracle kept separate from it: `sequence` drives
+  `Elements` and pins the shipped cursor's advance per child against an independent one-step
+  `decode_tlv` from an offset the harness carries itself. The two modules are deliberately **not**
+  claimed to be equally strong — `decode_set_of` keeps its cursor in a local, so it gets bounded
+  no-out-of-bounds-access plus an extensional `Ok(k)` tiling postcondition (now at symbolic length)
+  and no per-child claim; that residual is stated in the docstring, in `PROOF_MANIFEST.md` §8.3, and
+  in `DER-REMAINING-WORK.md`. Also strengthened: each accepted child's value is now checked against
+  the octets at its own tail, not merely bounded in length. Four `kani::cover` statements added
+  (cover total 180 → 184). No functional or API change; harness count still 191. Full rationale,
+  including the self-referential first attempt that review rejected, in `DECISIONS.md` D33.
 - **README's stale axiom count** — corrected to the current 13 declared Lean-lid axioms, none of
   which is about this crate's own code any more (all 13 are now faithful specs for upstream `core`
   primitives).

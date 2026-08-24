@@ -82,7 +82,7 @@ deviations. Read the two differently.
 | `#[kani::proof]` harnesses | 191 |
 | `kani::assume` harness preconditions (narrow the proved domain) | 168 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 180 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 184 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 11 / 8 |
 | `#[test]` unit + regression tests | 472 |
@@ -123,7 +123,7 @@ Because the rustc pin is a floating channel, **the rustc version is a property o
 <!-- END GENERATED:pins -->
 
 <!-- BEGIN GENERATED:pins-observed (gates/gen_proof_manifest.py) -->
-Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.93.1 (01f6ddf75 2026-02-11) (built from a source tarball)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
+Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.97.0 (2d8144b78 2026-07-07)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
 <!-- END GENERATED:pins-observed -->
 
 Toolchain identity is part of every claim in this document. Two honest qualifications:
@@ -416,8 +416,8 @@ carry that.
 | `restricted_string` | 14 | 5 | 26 | 3..16 | 6..16 | 31 | 4 | 0 |  |
 | `rsa_private_key` | 2 | 2 | 5 | 16..317 | 12..20 | 4 | 18 | 4 |  |
 | `rsa_public_key` | 2 | 2 | 3 | 16..270 | 20 | 2 | 18 | 0 |  |
-| `sequence` | 6 | 6 | 7 | 8..16 | 16 | 3 | 2 | 0 | ✅ |
-| `set_of` | 5 | 5 | 13 | 3..16 | 16 | 5 | 2 | 0 |  |
+| `sequence` | 6 | 6 | 7 | 8..16 | 16 | 3 | 4 | 0 | ✅ |
+| `set_of` | 5 | 5 | 13 | 3..16 | 16 | 5 | 4 | 0 |  |
 | `tag` | 2 | 2 | 7 | 7 | 12 | 5 | 2 | 0 | ✅ |
 | `tlv` | 3 | 3 | 5 | 3..16 | 16 | 2 | 3 | 0 | ✅ |
 | `utc_time` | 3 | 3 | 14 | 14..17 | 14..18 | 15 | 3 | 0 |  |
@@ -737,16 +737,16 @@ input space. This crate treats that as the default suspicion, and the check is m
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
 | harnesses | 191 |
-| `kani::cover` witnesses | 180, in 30 of the 32 modules that have harnesses |
+| `kani::cover` witnesses | 184, in 30 of the 32 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **1** |
-| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 90 |
+| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 88 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
 
 Harnesses with implicit checks only — each needs a justification, or a cover:
 
 - `rsa_private_key::parse_strict_never_panics`
 
-What the remaining 90 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
+What the remaining 88 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
 **What the 168 harness assumptions actually restrict.** 124 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
@@ -946,15 +946,39 @@ What mitigates this, and what does not:
   widened losslessly to `u64` (`used as u64 == header as u64 + len_u32 as u64`), never re-using the
   implementation's own `as usize` cast. Asserting `== len as usize` would be tautological: a
   truncating `len_u32 as usize` inside `decode_tlv` — a known seeded-defect class — would be mirrored
-  by the identical cast in the assertion and stay invisible. `sequence`'s `no_over_read` and
-  `ok_implies_exact_tiling` are the same discipline one level up: an independent *index* walk with no
-  pointer arithmetic, so the property cannot be vacuously true under address wraparound. The
+  by the identical cast in the assertion and stay invisible. `sequence`'s `ok_implies_exact_tiling`
+  is the same discipline one level up: an independent *index* walk with no pointer arithmetic, so
+  the property cannot be vacuously true under address wraparound. The
   derivation that builds the table finds oracles by looking for hand-written helper `fn`s inside
   `mod proofs`; an oracle written inline in a harness body is invisible to it. That is a limit of the
   table, not of the proof, and it is why this bullet exists.
+- **`sequence`/`set_of` `no_over_read`: what DRIVES a proof is a separate question from what
+  ORACLES it, and this crate got that wrong until 2026-08-24.** Both harnesses used to run their own
+  `decode_tlv` loop from raw offsets, `sequence`'s describing itself as "exactly what
+  `Elements::next` does". That equivalence was asserted in a comment and never proven, so what was
+  verified was a faithful-looking *copy* of the shipped walk — an external review named it, and it
+  was correct. A regression in the real walk could have left both harnesses green while the crate's
+  central "no over-read" claim pointed at them. Both now execute shipped code. The oracles stay
+  separate, and the two are **not** equally strong — the difference is in the shipped code, not in
+  the effort spent:
+  - `sequence::no_over_read` drives `Elements` and, per child, pins the shipped cursor's advance
+    against a one-step `decode_tlv` oracle taken from an offset the harness carries itself. Pinning
+    the *advance* is the load-bearing part: an earlier draft of the fix derived the offset from the
+    iterator's own cursor, which a mis-advance can survive whenever a child has an empty value
+    (`value == content[off..off]` holds at every offset). That draft was caught in review, not in a
+    gate.
+  - `set_of::no_over_read` drives `decode_set_of`, which keeps its cursor in a local and returns a
+    count, so nothing can observe its walk. It gets bounded no-out-of-bounds-access (the walk slices
+    directly and the crate forbids `unsafe`, so an over-read is a panic) plus an *extensional* `Ok(k)`
+    tiling postcondition at symbolic length. It does **not** show the shipped loop used the same
+    per-child boundaries as the oracle, nor that its cursor never over-advances past the final read.
+    That residual is real, is recorded in `DER-REMAINING-WORK.md`, and closing it means refactoring
+    the walk onto `sequence::Elements` — which would also retire a duplicated walk in shipped code.
 - **What does not mitigate it:** nothing gates oracle fidelity, no oracle is derived from the
   standard text mechanically, and the standard itself is not machine-readable. Each oracle's
-  justification is prose in its docstring, checked by review against X.690/RFC 5280.
+  justification is prose in its docstring, checked by review against X.690/RFC 5280. Nor does
+  anything gate the driver/oracle distinction above: no check would have caught either the original
+  duplicated walk or the self-referential first fix. Both were found by reading the source.
 
 If you are relying on one of these biconditionals, read the oracle, not just the theorem name.
 

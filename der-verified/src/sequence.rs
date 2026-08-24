@@ -237,12 +237,48 @@ mod proofs {
         let _ = result;
     }
 
-    /// **No over-read.** Walking the content — exactly what [`Elements::next`] does: `decode_tlv`
-    /// then advance by `used` — never advances past `content.len()` and never exposes a value
-    /// beyond it. Proven by an independent *index* walk (no pointer / `usize`-address arithmetic, so
-    /// it is target-width agnostic and cannot be vacuously true under address wraparound): from
-    /// offset 0, each accepted child consumes `used >= 2` with `off + used <= content.len()`, and
-    /// its value lies inside that child (`value.len() <= used`).
+    /// **No over-read, over the SHIPPED walk.** Every child value the crate's own iterator hands
+    /// a caller lies inside that caller's `content` slice, and the walk never advances past
+    /// `content.len()`.
+    ///
+    /// **What drives this proof is load-bearing, and it used to be the wrong thing.** Until
+    /// 2026-08-24 this harness ran its own `decode_tlv` loop from raw offsets and described it as
+    /// "exactly what [`Elements::next`] does". That equivalence was asserted by a comment, never
+    /// proven — so what was verified was a *copy* of the shipped walk, and a regression in the
+    /// real one (a wrong advance, a dropped `used`) could have left this harness green. The walk
+    /// under proof is now [`Elements`] itself, the exact code [`decode_sequence`] and every caller
+    /// run — precisely: this harness executes [`Elements::next`], which is the walk
+    /// [`decode_sequence`] and the public iterator both go through (`decode_sequence`'s own
+    /// `Ok`-tiling postcondition is the separate `ok_implies_exact_tiling`).
+    ///
+    /// **Where the independence actually comes from, and it is NOT the cursor.** An earlier draft
+    /// of this rewrite derived the offset *only* from the iterator's own `rest` cursor — the very
+    /// state under test — and checked the yielded value against a range computed from it. That is
+    /// self-referential, and a wrong advance can survive it: for a child with an empty value,
+    /// `value == content[off..off]` holds at every offset, so a walk that mis-advanced across
+    /// `05 00 05 01 00` (taking `05 00 | 01 00` for `05 00 | 05 01 00`) still yields two children
+    /// and still ends at `content.len()`. The oracle is therefore a **separate one-step decode**,
+    /// `decode_tlv(&content[off..])`, from an offset this harness carries itself; the shipped
+    /// cursor is then required to land exactly on `off + expected_used`. The iterator still drives
+    /// — only the expectation is computed apart from it — so this is not a return to the
+    /// duplicated walk it replaces. Index arithmetic only (no pointer / `usize`-address
+    /// arithmetic, so it is target-width agnostic and cannot be vacuously true under address
+    /// wraparound).
+    ///
+    /// Per accepted child: the oracle's own decode must succeed from `off` (the `unwrap` is a
+    /// check, not a convenience — a mis-advanced cursor desynchronises `off` and fails it), the
+    /// child consumes `expected_used >= 2` (DER's two-octet framing floor, and the termination
+    /// invariant) without passing `content.len()`, the yielded `Tlv` equals the oracle's, the
+    /// shipped cursor lands exactly on `off + expected_used`, and the value occupies the tail of
+    /// that child's octets. That last equality is by **byte comparison**, so it says the value
+    /// matches the octets at that position — not, in the provenance sense, that it is a pointer
+    /// into them.
+    ///
+    /// Covers (T6 primary rule): the walk genuinely takes a second iteration, and the error path
+    /// genuinely fires. Note what a cover can and cannot do here — `kani::cover` satisfaction is
+    /// observed at a run and is not gate-enforced in this repo (`PROOF_MANIFEST.md` §8.2), so the
+    /// covers are evidence that the loop body was reached, not an enforced guard against a future
+    /// implementation that vacuously satisfies the conditional assertions above.
     #[kani::proof]
     #[kani::unwind(16)]
     fn no_over_read() {
@@ -252,18 +288,51 @@ mod proofs {
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
         let content = &buf[..len];
+
+        let mut it = Elements::new(content);
         let mut off = 0usize;
-        while off < content.len() {
-            match decode_tlv(&content[off..]) {
-                Ok((tlv, used)) => {
-                    assert!(used >= 2); // progress lower bound == the termination invariant
-                    assert!(off + used <= content.len()); // never advance past the content
-                    assert!(tlv.value.len() <= used); // the value lies within this child
-                    off += used;
+        let mut children = 0usize;
+        let mut errored = false;
+        loop {
+            match it.next() {
+                None => break,
+                Some(Ok(tlv)) => {
+                    // THE ORACLE, computed apart from the iterator's own state: a fresh one-step
+                    // decode from the offset this harness carries. If the shipped walk ever
+                    // mis-advanced, `off` and the cursor have desynchronised and this `unwrap`
+                    // fails — which is the point of decoding from `off` rather than from `rest`.
+                    let (expected, expected_used) = decode_tlv(&content[off..]).unwrap();
+                    assert!(expected_used >= 2); // DER's two-octet framing floor
+                    assert!(off + expected_used <= content.len()); // never past the content
+                    assert!(tlv == expected); // the shipped walk yielded that very child
+
+                    // `it.rest` IS the shipped cursor — this proof module is a child of
+                    // `sequence`, so the private field is in scope. It must land exactly where the
+                    // oracle says, so a wrong advance cannot hide behind a coincidentally-equal
+                    // child (an empty value matches at every offset).
+                    assert!(it.rest.len() <= content.len()); // the cursor never grows
+                    let new_off = content.len() - it.rest.len();
+                    assert!(new_off == off + expected_used); // the advance is the oracle's
+                    assert!(new_off > off); // strict progress == the termination invariant
+
+                    // The value sits at the tail of this child's octets (byte comparison).
+                    assert!(tlv.value == &content[new_off - tlv.value.len()..new_off]);
+                    off = new_off;
+                    children += 1;
                 }
-                Err(_) => break,
+                Some(Err(_)) => {
+                    errored = true;
+                    break;
+                }
             }
         }
+        // `Elements` can only stop on an empty `rest` or on an error, so a clean run has consumed
+        // the whole slice — the no-leftover half of "never advances past `content.len()`".
+        if !errored {
+            assert!(off == content.len());
+        }
+        kani::cover(children >= 2, "the shipped walk genuinely takes a second iteration");
+        kani::cover(errored, "the shipped walk's error path genuinely fires");
     }
 
     /// **Exact tiling.** `decode_sequence(content) == Ok(k)` implies the `k` children *exactly*

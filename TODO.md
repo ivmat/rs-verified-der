@@ -325,6 +325,25 @@ scope boundary referenced below.
       `decode_*_never_panics` Ok cover UNSATISFIABLE — watched RED, reverted byte-identical, then
       GREEN again): `tlv` already covered by `953a1a2`; `octet_string`, `sequence`, `set_of` each
       freshly negative-controlled this session.
+      - **⚠ Reopened in part, 2026-08-24 (`DECISIONS.md` D33).** External review of this sweep found
+        that two of the seven — `sequence::no_over_read` and `set_of::no_over_read` — proved a
+        **duplicated `decode_tlv` walk**, not the shipped decode path. Confirmed and corrected
+        before publish; both now drive shipped code with a separate oracle. The widening itself was
+        fine; what was wrong predated it. Two residuals stay open, see below.
+
+- [ ] **Covers for the widened structural harnesses** (`DER-REMAINING-WORK.md` UPDATE 2026-08-24,
+      R2). D33 added covers to the two harnesses it rewrote; the other five widened in the sweep
+      above still have none, so nothing witnesses that their widened loops iterate at all. The
+      `len == 0` negative controls do **not** close this — they target the *sibling* harnesses and
+      only force input below DER's two-octet framing floor. A reviewer asked for these before
+      publish; disclosure was chosen instead, deliberately and on the record. One cover per
+      harness, run as its own pass so an UNSATISFIABLE result is investigated, not absorbed.
+
+- [ ] **Refactor `decode_set_of` onto `sequence::Elements`** (`DER-REMAINING-WORK.md`
+      UPDATE 2026-08-24, R1). It currently runs its own inline walk — a duplication in *shipped*
+      code — whose cursor is a local, which is exactly why `set_of::no_over_read` cannot make the
+      per-child claim its `sequence` sibling now makes. Behavioural change to a shipped decoder:
+      needs its own harness pass and its own review, not a bundle with a proof-integrity fix.
 
 ## SCOPING NOTE (not a build): what a `profile` Lean lid would need
 

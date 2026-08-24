@@ -453,3 +453,45 @@ bound before suspecting the solver.
 **Still open for `profile`:** no Lean lid. Its harnesses are bounded proofs over field values, so there
 is no ∀-length statement. Lower value than the codec lids — the module decodes nothing, so "any length"
 is not the axis its correctness turns on — but it is what keeps `profile` below the L4/L5 grade.
+
+## UPDATE 2026-08-24 — §4 reopens with TWO new open residuals, both from the `no_over_read` fix (D33)
+
+§4 said "None open" for cover-vacuity. That is still true of the three historical cover findings, but
+the `sequence`/`set_of` `no_over_read` correction (`DECISIONS.md` D33) leaves two residuals open, and
+they are recorded here rather than left to be rediscovered.
+
+**R1 — `set_of::no_over_read` cannot observe the shipped walk's cursor (proof-strength residual).**
+`decode_set_of` does not use `sequence::Elements`; it runs its own inline walk whose cursor is a
+local and whose only output is a count. So its harness gets bounded no-out-of-bounds-access plus an
+extensional `Ok(k)` tiling postcondition, but **not** the per-child claim its `sequence` sibling now
+carries: nothing shows the shipped loop used the same per-child boundaries as the oracle's re-walk,
+and a terminal over-advance past the final read would neither panic nor change `k`. Not a defect in
+the harness — a limit imposed by the shipped code's shape.
+
+*Fix, when taken:* refactor `decode_set_of` onto `sequence::Elements`. That closes R1 **and** retires
+a duplicated walk in shipped code (the same duplication, one layer down, that D33 removed from the
+proofs). It is a behavioural change to a shipped decoder — it must not be bundled into a
+proof-integrity fix, and it needs its own harness pass and its own review.
+
+**R2 — the widened structural harnesses still carry no covers of their own (anti-vacuity residual).**
+The 2026-08-23 structural-sibling sweep widened seven harnesses to symbolic input length. D33 added
+covers to the two it rewrote; the remainder (`tlv`, `octet_string`, and the other siblings) still
+have none, so nothing witnesses that their widened loops iterate at all. The `len == 0` negative
+controls from that sweep do **not** close this: they target the *sibling* harnesses and merely force
+input below DER's two-octet framing floor, so they negative-control the framing precondition rather
+than the structural assertions.
+
+A second-model review asked for these covers to be added before publish. They were not. The review
+that gated the work offered "add covers **or** disclose their absence"; disclosure was chosen so the
+publish carried a narrow, fully-reviewed proof-integrity change rather than a broader harness sweep
+landed without the same scrutiny. That is a judgement call, recorded as one — the covers are owed.
+
+*Fix, when taken:* one cover per widened harness witnessing a second loop iteration, run as its own
+pass so any that come back UNSATISFIABLE are investigated as findings rather than absorbed into an
+unrelated change. Note the trap: an unsatisfied cover does not fail Kani, so a new UNSAT cover here
+would show up only as a new entry in the run log's disclosed-unsatisfied set (`PROOF_MANIFEST.md`
+§8.2), which currently stands at exactly three.
+
+**What neither residual changes.** No claim in `README.md`, `PROOF_MANIFEST.md` or the module docs
+now rests on the corrected harnesses proving more than they do; the asymmetry between `sequence` and
+`set_of` is stated in both docstrings and in §8.3 rather than smoothed over.

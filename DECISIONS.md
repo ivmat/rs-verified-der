@@ -1943,3 +1943,80 @@ is unchanged. `check_fast.sh` green, `cargo clippy --all-targets -- -D warnings`
 
 **Verdict.** **KEEP, forward-fix.** `ecdsa_sig_value.rs` is already pushed, so this landed as a
 normal forward commit rather than an amend, per the crate's history-append discipline.
+
+## D33 — `sequence`/`set_of` `no_over_read`: the harnesses proved a DUPLICATED walk, not the shipped
+one — driver corrected, oracle kept separate, and the residual asymmetry disclosed  ·  landed (high)
+
+**Call.** An external source-grounded review found that `sequence::proofs::no_over_read` and
+`set_of::proofs::no_over_read` each ran their **own** `decode_tlv` loop from raw offsets rather than
+the shipped decode path. The finding was verified against the source and is correct. Both harnesses
+now execute shipped code; the `no over-read` claim they back is the crate's central
+security property, so this is a proof-integrity correction, not a cleanup.
+
+**Why it mattered more than it looked.** `sequence`'s harness carried the comment "exactly what
+`Elements::next` does". That is an equivalence *asserted by a human and never proven* — the classic
+"proving a copy" pattern. A regression in the real walk (a wrong advance, a dropped `used`) could
+have left both harnesses green while `README.md`, `PROOF_MANIFEST.md` and the module docs pointed at
+them for "no over-read". Nothing in the gate set would have caught it: the manifest gate counts
+harnesses, bounds, stubs and covers, and none of those numbers move when a harness verifies a copy
+of the shipped walk instead of the walk.
+
+**What DRIVES a proof is a separate question from what ORACLES it.** That distinction is the whole
+content of this entry, and the first attempt at the fix got it half right:
+
+1. **First draft (rejected in review).** Drive the shipped `Elements`, and derive the per-step
+   offset from the iterator's own `rest` cursor. This executes shipped code — but the oracle is then
+   built out of the very state under test. A mis-advance survives it whenever a child has an empty
+   value, since `value == content[off..off]` holds at *every* offset: a walk that read
+   `05 00 05 01 00` as `05 00 | 01 00` instead of `05 00 | 05 01 00` still yields two children and
+   still lands on `content.len()`. The sibling `ok_implies_exact_tiling` would not have caught it
+   either — it compares the final offset and the child *count*, never the child boundaries.
+2. **Landed.** The iterator still drives; the oracle is a **separate one-step**
+   `decode_tlv(&content[off..])` taken from an offset the harness carries itself, and the shipped
+   cursor is required to land exactly on `off + expected_used`. Pinning the *advance* is the
+   load-bearing assertion. The oracle's own `unwrap` is a check rather than a convenience: a
+   mis-advanced cursor desynchronises `off` and fails it.
+
+**The two modules are NOT equally strong, and the asymmetry is in the shipped code.** `Elements`
+carries its cursor in a field the harness can read back after every step, so `sequence` gets a
+per-child claim about the shipped walk. `decode_set_of` does not use `Elements` — it has its own
+inline walk (a duplication in *shipped* code, not just in the proofs) whose cursor is a local and
+whose only output is a count. So `set_of::no_over_read` gets two weaker legs: bounded
+no-out-of-bounds-access (the walk slices directly, the crate forbids `unsafe`, so an over-read is a
+panic Kani checks on every path), plus an **extensional** `Ok(k)` tiling postcondition — now at
+*symbolic* length, which `ok_implies_exact_tiling` does only at the fixed 8-octet length. It does
+**not** establish that the shipped loop used the same per-child boundaries as the oracle's re-walk,
+nor that its local cursor never over-advances past the final read (a terminal over-advance that
+reads nothing more would neither panic nor change `k`). Stated in the harness docstring, in
+`PROOF_MANIFEST.md` §8.3, and logged in `DER-REMAINING-WORK.md` — **not** papered over by calling
+both harnesses the same thing. Closing it means refactoring `decode_set_of` onto
+`sequence::Elements`, which retires the shipped-code duplication too; that is a behavioural change
+to a shipped decoder and is deliberately not bundled into a proof-integrity fix.
+
+**Also strengthened.** Each accepted child's value is now checked against the octets at its own tail
+(`value == content[new_off - value.len()..new_off]`), where the harnesses previously checked only
+the length bound `value.len() <= used`. This is a **byte** comparison: it says the value matches the
+octets at that position, not — in the provenance sense — that it is a pointer into them. Four
+`kani::cover` statements added (two per harness: the walk genuinely takes a second iteration; the
+error/rejection path genuinely fires). What a cover buys here is narrower than it looks and the
+docstrings now say so: `kani::cover` satisfaction is observed at a run and is **not** gate-enforced
+(§8.2), and an always-`Err` body would satisfy every *conditional* assertion while merely leaving
+the `Ok` cover unsatisfied.
+
+**Scope deliberately NOT taken.** A second reviewer asked for `kani::cover` statements on the other
+widened structural harnesses (`tlv`, `octet_string`, and the remaining siblings from the
+structural-sibling sweep), which still carry none. The review that gated this work offered "add
+covers **or** disclose their absence" as alternatives; the absence is disclosed in
+`DER-REMAINING-WORK.md` §4 and taken as a named follow-up rather than bundled into a change whose
+whole point is a narrow, reviewable proof-integrity correction on the eve of a publish. Recorded so
+the choice is legible as a choice.
+
+**Verified.** `systemd-run --user --unit=… -p MemoryMax=20G -p MemorySwapMax=0 -- cargo kani -Z
+stubbing --harness sequence::proofs::no_over_read --harness set_of::proofs::no_over_read`, run
+detached under the machine's FV slot. Both `VERIFICATION:- SUCCESSFUL`; all four new covers
+`SATISFIED`. The full `./check.sh` floor was then re-run at the landed commit — see the
+`evidence/check-*.log` for this change.
+
+**Verdict.** **Forward-fix, landed before publish.** The finding was raised against unpushed local
+commits and is fixed in the bytes that go out, so the public history never carries the mislabelled
+claim.
