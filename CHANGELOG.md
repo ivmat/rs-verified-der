@@ -4,7 +4,10 @@ All notable changes to `der-verified` are documented here. The format is based o
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.1] — 2026-08-25
+
+The `0.1.1` version was cut on 2026-08-11 but never published to crates.io; this release therefore
+carries everything since `0.1.0`: the changes below, plus the 2026-08-11 cut further down.
 
 ### Added
 - **`identifier_form` — a new module deciding the two X.690 identifier rules that no layer of this
@@ -50,7 +53,7 @@ All notable changes to `der-verified` are documented here. The format is based o
   (`x509_spki.rs`, `x509_certificate.rs`, `x509_validity.rs`) and, generically, by the new
   `identifier_form`. A direct caller of those content decoders must decide the identifier itself.
 
-Proof-envelope hardening and hygiene since 0.1.1: the harness count moves 191 → 203 (twelve new in
+Proof-envelope hardening and hygiene since the 2026-08-11 cut: the harness count moves 191 → 203 (twelve new in
 `identifier_form`; the widening below changes *domains*, not counts). The crate re-verifies
 end-to-end at `evidence/check-bffab69.log`: **203/203 harnesses SUCCESSFUL, 0 failures**, 485 tests,
 34 doctests, `lean-lid-status: PASS` (sorry-free), and exactly the three disclosed-unsatisfied
@@ -113,13 +116,13 @@ maintainer's box rather than from a fresh bundle clone.
   a disposable clean-room VM, with the L4 Lean lid evidenced separately (sorry-free, no
   Aeneas/Charon/Lean stack on the VM).
 
-## [0.1.1] — 2026-08-11
+### The 2026-08-11 version cut (part of this release)
 
 New formally-verified DER structural parsers over the 0.1.0 primitives — the ECDSA/RSA/PKCS#8
 signature-and-key container line (`ecdsa_sig_value`, `rsa_public_key`, `pkcs8`, `ec_private_key`,
 `rsa_private_key`, `encrypted_private_key_info`) plus the `profile` cross-field-rule slice — together
 with a proof-envelope hardening pass (symbolic-length harness domains, honest bounded-claim wording,
-gate-robustness self-tests, a CI shard rebalance). Crate state at release: **191 Kani harnesses,
+gate-robustness self-tests, a CI shard rebalance). Crate state at the 2026-08-11 cut: **191 Kani harnesses,
 472 unit tests + 33 doctests, 32 harnessed modules**, verified end-to-end by a committed full-gate
 run (`evidence/check-ffcea81.log`: 191/191 harnesses, L4 Lean lids sorry-free).
 
@@ -458,5 +461,6 @@ First functional release.
 
 - Initial name-reservation release on crates.io.
 
+[0.1.1]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.1.0
 [0.0.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.0.0
