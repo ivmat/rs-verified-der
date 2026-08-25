@@ -51,9 +51,12 @@ All notable changes to `der-verified` are documented here. The format is based o
   `identifier_form`. A direct caller of those content decoders must decide the identifier itself.
 
 Proof-envelope hardening and hygiene since 0.1.1: the harness count moves 191 → 203 (twelve new in
-`identifier_form`; the widening below changes *domains*, not counts). The previous full-gate record
-was `evidence/check-0e327b7.log` (191/191 harnesses SUCCESSFUL, 472 tests, 33 doctests,
-sorry-free Lean lid, exactly the three disclosed-unsatisfied covers of `PROOF_MANIFEST.md` §8.2).
+`identifier_form`; the widening below changes *domains*, not counts). The crate re-verifies
+end-to-end at `evidence/check-bffab69.log`: **203/203 harnesses SUCCESSFUL, 0 failures**, 485 tests,
+34 doctests, `lean-lid-status: PASS` (sorry-free), and exactly the three disclosed-unsatisfied
+covers of `PROOF_MANIFEST.md` §8.2 and no others. That run set `DER_REQUIRE_LEAN=1`, so its L4 stage
+could not have silently skipped. It supersedes `evidence/check-0e327b7.log` (191/191 at `0e327b7`),
+which is kept as a dated record.
 That run is a **single** full-gate pass covering both the L3 Kani floor and the L4 Lean lid at one
 commit — the two preceding runs (`check-24ddb69.log`, `check-953a1a2.log`) ran on clean-room VMs
 with no Aeneas/Charon/Lean stack, so their guarded L4 stage printed SKIP and had to be paired with a
