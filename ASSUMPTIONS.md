@@ -55,7 +55,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   defect of the class it exists to catch survives (this is why the mutation controls in
   `evidence/MUTATION-CONTROLS-*.md` exist — they are the cheapest available probe of A1, and they
   sample it rather than establish it).
-  **load-bearing-for:** all 201 proof harnesses — i.e. every bounded claim in `PROOF_MANIFEST.md`
+  **load-bearing-for:** all 203 proof harnesses — i.e. every bounded claim in `PROOF_MANIFEST.md`
   §§3.1, 4, 5, 7.
   *Not enforced by `./check.sh`:* the Kani version is pinned in CI, and a local run with a different
   Kani will not tell you so (`PROOF_MANIFEST.md` §2).
@@ -258,8 +258,8 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   the honest reading of the ∀-length `tlv`/`sequence` theorems, which are about consumption and
   windowing and say nothing about tag legality.
   *Disposition (2026-08-25):* **decided in a new module; the framing layer unchanged.**
-  `identifier_form` implements both rules (`validate_identifier_form` on a `Tag`; `decode_tlv_der` /
-  `decode_tlv_der_strict` composed onto the framing reader), with its own Kani harness set (counted in `PROOF_MANIFEST.md` §4), four of its theorems
+  `identifier_form` implements both rules (`validate_identifier_form` on a `Tag`; `decode_tlv_form_checked` /
+  `decode_tlv_form_checked_strict` composed onto the framing reader), with its own Kani harness set (counted in `PROOF_MANIFEST.md` §4), four of its theorems
   over the complete `u32` × class × form domain. See `DECISIONS.md` D34.
   **The assumption above is NOT retired by that.** It is an assumption about what a consumer reads
   into `decode_tlv` acceptance, and `decode_tlv` still accepts every input named here — deliberately,

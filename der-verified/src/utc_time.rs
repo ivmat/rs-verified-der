@@ -8,14 +8,18 @@
 //!
 //! **The identifier is not enforced upstream.** Of the tag identity and the primitive/definite
 //! form, only the **definite**-length half is enforced by [`crate::tlv`] (it delegates to
-//! [`crate::length`], which rejects the indefinite form). The **primitive**-form half and the
-//! **tag identity** are enforced by neither [`crate::tag`] nor [`crate::tlv`]: `decode_tag`
+//! [`crate::length`], which rejects the indefinite form) — and only if you actually entered through
+//! `tlv`, which this function, taking content octets, cannot tell. The **primitive**-form half and
+//! the **tag identity** are enforced by neither [`crate::tag`] nor [`crate::tlv`]: `decode_tag`
 //! attaches no meaning to the class/constructed combination and `decode_tlv` passes the parsed
-//! `Tag` through untouched. They are decided instead by *particular typed callers* —
-//! `x509_validity.rs`'s `decode_time_tlv` rejects a non-UNIVERSAL class (`WrongTag`) and a
-//! constructed UTCTime (`Constructed`) before dispatching here — or generically by
-//! [`crate::identifier_form`]. **A direct caller of [`decode_utc_time`] must decide the identifier
-//! itself.**
+//! `Tag` through untouched.
+//!
+//! Where each IS decided, and they are **not** the same place: **tag identity (this is UNIVERSAL 23)
+//! is decided only by typed callers** — `x509_validity.rs`'s `decode_time_tlv` rejects a
+//! non-UNIVERSAL class (`WrongTag`) and a constructed UTCTime (`Constructed`) before dispatching
+//! here. The **primitive-form rule** is decided generically by [`crate::identifier_form`], which
+//! decides *form only* and does not know which tag you expected. **A direct caller of [`decode_utc_time`]
+//! must decide the identifier itself.**
 //!
 //! The canonical form, verified against the standards (not merely the folklore):
 //! - **Terminates with `'Z'`** — §11.8 requires the `Z` (Zulu) form; local time and `±HHMM` offsets

@@ -11,10 +11,20 @@ All notable changes to `der-verified` are documented here. The format is based o
   crate previously decided** (`DECISIONS.md` D34, `PROOF_MANIFEST.md` §6.3): the
   primitive/constructed form required of a UNIVERSAL type (§8.1.2, §10.2) and the reserved
   end-of-contents identifier `00 00` (§8.1.5). Public API: `validate_identifier_form` (on a decoded
-  `Tag`), `required_form`, and `decode_tlv_der` / `decode_tlv_der_strict` composed onto the framing
-  reader; plus the `RequiredForm`, `FormError` and `DerTlvError` types. 10 Kani harnesses, four of
-  them over the **complete** input domain (a symbolic `u32` tag number × all four classes × both
-  forms) rather than a bounded buffer.
+  `Tag`), `required_form`, and `decode_tlv_form_checked` / `decode_tlv_form_checked_strict` composed onto the framing
+  reader; plus the `RequiredForm`, `FormError` and `CheckedTlvError` types. Twelve Kani harnesses in
+  that module, four of them over the **complete** input domain (a symbolic `u32` tag number × all
+  four classes × both forms) rather than a bounded buffer.
+
+  **It is not a DER validator, and the name says so deliberately.** It decides framing plus the
+  *form* of one identifier — never content, and never tag *identity*. `decode_tlv_form_checked`
+  accepts `01 01 01` (BOOLEAN `true` must be `0xFF`), `02 02 00 01` (non-minimal INTEGER) and
+  `05 01 00` (NULL must be empty); content canonicality stays with the per-type codecs. It also
+  decides one identifier, not a tree. Both fences are pinned by harnesses and tests.
+
+  Covers X.680's full UNIVERSAL assignment range `1..=36` — including 31..=36 (DATE, TIME-OF-DAY,
+  DATE-TIME, DURATION, OID-IRI, RELATIVE-OID-IRI), which require the high-tag form. Tag 0 is
+  rejected outright; 15 and `>= 37` are unassigned and accepted.
 
   **This is additive and opt-in.** `tag::decode_tag`, `tlv::decode_tlv`, `tlv::decode_tlv_strict`
   and `sequence`'s child walk are **unchanged** and still accept `21 00`, `00 00` and their
@@ -40,9 +50,9 @@ All notable changes to `der-verified` are documented here. The format is based o
   (`x509_spki.rs`, `x509_certificate.rs`, `x509_validity.rs`) and, generically, by the new
   `identifier_form`. A direct caller of those content decoders must decide the identifier itself.
 
-Proof-envelope hardening and hygiene since 0.1.1: the harness count moves 191 → 201 (10 new in
-`identifier_form`; the widening below changes *domains*, not counts) and the crate re-verifies
-end-to-end (`evidence/check-0e327b7.log`: 191/191 harnesses SUCCESSFUL, 472 tests, 33 doctests,
+Proof-envelope hardening and hygiene since 0.1.1: the harness count moves 191 → 203 (twelve new in
+`identifier_form`; the widening below changes *domains*, not counts). The previous full-gate record
+was `evidence/check-0e327b7.log` (191/191 harnesses SUCCESSFUL, 472 tests, 33 doctests,
 sorry-free Lean lid, exactly the three disclosed-unsatisfied covers of `PROOF_MANIFEST.md` §8.2).
 That run is a **single** full-gate pass covering both the L3 Kani floor and the L4 Lean lid at one
 commit — the two preceding runs (`check-24ddb69.log`, `check-953a1a2.log`) ran on clean-room VMs

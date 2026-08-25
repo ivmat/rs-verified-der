@@ -2046,7 +2046,7 @@ considered:
 3. **A new additive module.** Landed. Nothing existing changes behaviour; the Lean lid set
    (`big_integer`, `length`, `oid`, `sequence`, `tag`, `tlv`) is untouched, so no re-extraction and
    no proof repair. The rules become available at `validate_identifier_form` (on a `Tag`) and
-   `decode_tlv_der` / `decode_tlv_der_strict` (composed onto the framing reader).
+   `decode_tlv_form_checked` / `decode_tlv_form_checked_strict` (composed onto the framing reader).
 
 **The honest cost of choosing (3): the default is still permissive.** `decode_tlv` continues to
 accept `21 00` and `00 00`. The residual is not closed for its callers — it is closed for callers
@@ -2075,11 +2075,11 @@ spot-checked against real X.509 identifier octets and the BER constructed spelli
 tests. The module says so in the oracle's own comment. Do not read these as conformance theorems.
 
 **Two harnesses deliberately labelled weaker than they look.**
-`decode_tlv_der_is_decode_tlv_refined_by_the_rule` and
-`decode_tlv_der_strict_requires_full_consumption` are stated *relative to*
+`decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule` and
+`decode_tlv_form_checked_strict_requires_full_consumption` are stated *relative to*
 `validate_identifier_form`, so they hold whatever the rule says. Mutation controls confirmed it:
 both survived all three mutations that broke the rule. They prove the **composition** — that
-`decode_tlv_der` is `decode_tlv` refined by the rule, losing and inventing no framing behaviour —
+`decode_tlv_form_checked` is `decode_tlv` refined by the rule, losing and inventing no framing behaviour —
 and they witness nothing about the rule's content. The rule's content is carried by the four
 domain-complete theorems above.
 
@@ -2108,3 +2108,77 @@ rejection, because it is reserved for a marker DER cannot contain rather than me
 is a real narrowing of the crate's largest disclosed scope gap and is smaller than "DER validation is
 now enforced". Wiring the check into `decode_tlv_strict` remains open and is an owner call, recorded
 in `DER-REMAINING-WORK.md`.
+
+### D34 addendum — what two review seats changed, and why the first version was wrong
+
+D34 above describes the landed design. This addendum records what the second-model reviews caught,
+because the *shape* of what they caught is the reusable lesson: **the proofs were fine on the first
+attempt; the table and the labels were not.** All ten original harnesses verified in ~9 seconds,
+first try. Every defect below was found by reading, not by a solver.
+
+**The first external review (P1, REJECTED on the merits — and it still produced the most serious fix).** It asserted
+UNIVERSAL 14 is unassigned, so treating it as primitive-only was an error. That reflects a pre-2008
+X.680 table; X.680 (2008 and later, including the 2021 edition this crate's spec axis names) assigns
+14 = `TIME`. The second external review adjudicated the same way, independently. The `der` 0.7.10 crate's tag table was
+consulted as a third source: it corroborates every arm it models (1–6, 9, 10, 12, 16–24, 26, 30,
+including 16/17 as constructed) but models neither 14 nor 31..=36 — the same "no model" limit as
+§6.3's class (c). *Recorded because chasing this wrong finding is what surfaced the real one:* the
+same X.680 revision that assigns 14 also assigns **31..=36**, which the table had missed entirely.
+
+**Second review, P1 — the table stopped at 30, and that was a live gap, not prose.** X.680 assigns 31 DATE,
+32 TIME-OF-DAY, 33 DATE-TIME, 34 DURATION, 35 OID-IRI, 36 RELATIVE-OID-IRI, all primitive under DER.
+All six require the **high-tag form**, so the module's own docstring claim that "no UNIVERSAL type
+above 30 is assigned" was false, and `3F 1F 00` — a constructed DATE — was **accepted**. Fixed: the
+table now decides `31..=36`, the oracle masks widened `u32` → `u64`, `MAX_ASSIGNED` introduced, and
+a new harness `high_tag_universal_types_are_form_checked` pins the wire forms.
+
+Mutation M6 (`evidence/MUTATION-CONTROLS-2026-08-25-identifier-form.md`) makes the miss precise and
+is the most useful artifact this change produced: reverting the fix kills the new harness and
+**leaves the specimen harness green**, because every specimen it pins is a low-tag number ≤ 30. The
+pre-review harness set *provably could not* have caught this. A fixture set assembled from a
+disclosed-defect list inherits that list's blind spots.
+
+**Second review, P1 — the API overclaimed DER validity.** `decode_tlv_der` decides framing plus identifier
+form and **never reads content**, yet the docs said "the bytes must be valid DER" and "exactly one
+valid DER object". It accepts `01 01 01` (BOOLEAN `true` must be `0xFF`), `02 02 00 01` (non-minimal
+INTEGER) and `05 01 00` (NULL must be empty). Fixed by renaming rather than by softening prose,
+because a name is what a caller actually reads:
+
+| was | now |
+|---|---|
+| `decode_tlv_der` | `decode_tlv_form_checked` |
+| `decode_tlv_der_strict` | `decode_tlv_form_checked_strict` |
+| `DerTlvError` | `CheckedTlvError` |
+
+The three counterexamples are now pinned by both a harness and a unit test
+(`content_errors_are_deliberately_not_caught`) — the scope fence in executable form, so a future
+change that "helpfully" started rejecting them would fail the gate and force the docs to be revised
+with it.
+
+**Second review, P2 — the corrected content-codec docstrings over-credited this module.** They implied
+`identifier_form` decides tag *identity*. It does not: it decides *form* only and accepts a
+primitive INTEGER identifier as readily as a primitive BIT STRING one. All three now say identity is
+the typed caller's job and always was, and qualify "definite length is enforced upstream" on the
+caller having actually entered through `tlv` — which a function taking content octets cannot know.
+
+**Second review, P2 — a label stated relative to the wrong thing.** `accepts_iff_no_rule_violated_…` was
+described as a "no-false-rejection guarantee", which reads as a claim about X.680. It is a claim
+about the *encoded oracle*. Renamed to
+`accepts_iff_no_encoded_rule_violated_and_never_rejects_non_universal`, and both composition
+harnesses now state their `[u8; 6]` bound in their own docstrings rather than only in the manifest.
+
+**Second review, P3 nits, all folded:** RELATIVE-OID's encoding clause is §8.21, not §8.20; accepting a
+superset of the legal set is an **over-approximation of the legal set** (equivalently
+under-enforcement), not the "under-approximation" the docs said; "the primitive/definite form" was
+described as living in the identifier, when only the primitive half does — the definite half is a
+property of the length field; and the specimen harness named for "five findings" asserted nine, so
+it is now `rejects_every_disclosed_illegal_identifier`.
+
+**The second review confirmed as correct** (recorded so the review's scope is legible, not just its findings): the
+0 / 1–7 / 8 / 9–10 / 11 / 12–14 / 16–17 / 18–28 / 29 / 30 arms; that `oracle_is_well_formed` is
+**not** circular, since it checks disjointness and a coverage invariant and cannot catch a shared
+standards mistake; and that accepting all non-UNIVERSAL classes is right, because even
+explicit-versus-implicit context tagging is not inferable from an identifier.
+
+**Verdict.** **Reworked, then landed.** Both reviews ran against unpushed local commits, so the
+public history never carries the overclaiming names or the incomplete table.

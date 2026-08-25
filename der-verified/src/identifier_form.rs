@@ -17,13 +17,32 @@
 //! | `26 01 39` | OBJECT IDENTIFIER (UNIVERSAL 6) encoded **constructed** |
 //! | `2C 01 01` | UTF8String (UNIVERSAL 12) encoded **constructed** — DER §10.2 forbids the BER segmented form |
 //! | `33 01 00` | PrintableString (UNIVERSAL 19) encoded **constructed** — same rule |
+//! | `3F 1F 00` | DATE (UNIVERSAL 31, high-tag form) encoded **constructed** |
 //! | `00 00` | the reserved **EOC** identifier (UNIVERSAL 0) — §8.1.5 |
 //!
-//! Those five were found by differential fuzzing against an independent implementation. This module
-//! turns them from a disclosed scope gap into a decided rule, and
-//! [`identifier_form_rejects_the_five_fuzzer_findings`](proofs) proves each of the five is now
-//! rejected — **while `decode_tlv` still accepts them**, which is the whole point of the split
-//! described next.
+//! Most of those were found by differential fuzzing against an independent implementation. This
+//! module turns them from a disclosed scope gap into a decided rule, and
+//! `rejects_every_disclosed_illegal_identifier` proves each specimen is now rejected — **while
+//! `decode_tlv` still accepts them**, which is the whole point of the split described next.
+//!
+//! # ⚠ What this module decides, and the two much larger things it does NOT
+//!
+//! **1. It is not a DER validator.** It decides *framing* (via [`crate::tlv`]) plus the *form and
+//! legality of one identifier*. It does **not** look at content octets at all, so
+//! [`decode_tlv_form_checked`] accepts every one of these, all of which are ill-formed DER:
+//!
+//! | bytes | what is wrong with it | which module would catch it |
+//! |---|---|---|
+//! | `01 01 01` | BOOLEAN `true` must be `0xFF`, not `0x01` | [`crate::boolean`] |
+//! | `02 02 00 01` | INTEGER with redundant leading `00` — not minimal | [`crate::integer`] |
+//! | `05 01 00` | NULL content must be empty | [`crate::null`] |
+//!
+//! Content canonicality is the per-type codecs' job, and this module does not compose them in.
+//! The name says `form_checked`, not `der_valid`, for exactly this reason.
+//!
+//! **2. It decides ONE identifier, not a tree.** [`decode_tlv_form_checked`] checks the identifier
+//! of the *one* TLV it decodes. The children of an accepted constructed TLV are **unchecked**. A
+//! recursive DER validator must apply this rule at every level itself.
 //!
 //! # What this module changes, and what it deliberately does not
 //!
@@ -33,9 +52,8 @@
 //! Instead the rules are decided here, and offered in two forms:
 //!
 //! - [`validate_identifier_form`] — the pure decision on an already-decoded [`Tag`];
-//! - [`decode_tlv_der`] / [`decode_tlv_der_strict`] — the composition with [`crate::tlv`], i.e. the
-//!   entry points a caller should use when the bytes must be *valid DER* rather than merely
-//!   well-formed.
+//! - [`decode_tlv_form_checked`] / [`decode_tlv_form_checked_strict`] — the composition with
+//!   [`crate::tlv`], for a caller who wants the framing reader *and* this rule in one call.
 //!
 //! **The permissive entry points remain the default, so this rule is enforced only where a caller
 //! opts in.** Wiring the check into `decode_tlv_strict` itself would be a behavioural change to a
@@ -44,36 +62,43 @@
 //!
 //! # Scope fence — read this before relying on it
 //!
-//! - **One identifier, not a tree.** [`decode_tlv_der`] decides the identifier of the *one* TLV it
-//!   decodes. It does **not** recurse: the children of an accepted constructed TLV are unchecked.
-//!   A recursive DER validator must apply this rule at every level itself.
+//! - **Form, never identity.** This module decides whether an identifier's *form* is legal for the
+//!   UNIVERSAL type its number names. It has no idea which tag *you* expected: it accepts a
+//!   primitive INTEGER identifier exactly as readily as a primitive BIT STRING one. Checking that
+//!   the tag is the one your schema requires remains the typed caller's job, and always was.
 //! - **UNIVERSAL only.** For APPLICATION, CONTEXT-SPECIFIC and PRIVATE classes the required form is
 //!   a property of the *schema*, not of the identifier, and is unknowable from the bytes alone.
-//!   This module accepts all of them ([`RequiredForm::Unspecified`]) rather than guessing. That is a
-//!   deliberate under-approximation: it never rejects a legal encoding.
-//! - **Tag numbers 15 and `>= 31`** are likewise [`RequiredForm::Unspecified`] — 15 is reserved by
-//!   X.680 and unassigned, and no UNIVERSAL type above 30 is assigned. Accepting them is the
-//!   conservative choice; only tag number **0** is rejected outright, because it is not merely
-//!   unassigned but *reserved for a marker DER cannot contain*.
-//! - **Form only.** This module decides the identifier's *form and legality*, never whether the tag
-//!   is the one a particular schema expects. That remains the typed caller's job.
+//!   This module accepts all of them ([`RequiredForm::Unspecified`]) rather than guessing.
+//! - **Tag number 15, and everything `>= 37`,** are likewise [`RequiredForm::Unspecified`]: 15 is
+//!   reserved by X.680 and unassigned, and X.680 assigns no UNIVERSAL type above 36. Accepting them
+//!   is the conservative choice. Only tag number **0** is rejected outright, because it is not
+//!   merely unassigned but *reserved for a marker DER cannot contain*.
+//! - **Accepting more than the standard allows is the direction this errs in.** Every `Unspecified`
+//!   arm makes the accepted set a strict **over-approximation of the legal set** (equivalently:
+//!   under-enforcement). That is deliberate — it can fail to reject an illegal encoding, and it can
+//!   never reject a legal one.
 //!
 //! # Examples
 //!
 //! ```
-//! use der_verified::identifier_form::{decode_tlv_der, DerTlvError, FormError};
+//! use der_verified::identifier_form::{decode_tlv_form_checked, CheckedTlvError, FormError};
 //! use der_verified::tlv::decode_tlv;
 //!
-//! // A constructed BOOLEAN is a well-formed TLV but is NOT valid DER.
+//! // A constructed BOOLEAN is a well-formed TLV but its identifier is not legal DER.
 //! assert!(decode_tlv(&[0x21, 0x00]).is_ok());
-//! assert_eq!(decode_tlv_der(&[0x21, 0x00]), Err(DerTlvError::Form(FormError::MustBePrimitive)));
+//! assert_eq!(
+//!     decode_tlv_form_checked(&[0x21, 0x00]),
+//!     Err(CheckedTlvError::Form(FormError::MustBePrimitive)),
+//! );
 //!
-//! // The reserved end-of-contents identifier is likewise accepted as a TLV, rejected as DER.
-//! assert!(decode_tlv(&[0x00, 0x00]).is_ok());
-//! assert_eq!(decode_tlv_der(&[0x00, 0x00]), Err(DerTlvError::Form(FormError::ReservedIdentifier)));
+//! // The reserved end-of-contents identifier is likewise accepted as a TLV, rejected here.
+//! assert_eq!(
+//!     decode_tlv_form_checked(&[0x00, 0x00]),
+//!     Err(CheckedTlvError::Form(FormError::ReservedIdentifier)),
+//! );
 //!
-//! // A primitive BOOLEAN passes both.
-//! let (tlv, used) = decode_tlv_der(&[0x01, 0x01, 0xFF]).unwrap();
+//! // A primitive BOOLEAN passes -- note this says nothing about its CONTENT being canonical.
+//! let (tlv, used) = decode_tlv_form_checked(&[0x01, 0x01, 0xFF]).unwrap();
 //! assert_eq!(used, 3);
 //! assert_eq!(tlv.value, &[0xFF]);
 //! ```
@@ -94,7 +119,7 @@ pub enum RequiredForm {
     /// types whose values are themselves sequences of components).
     Constructed,
     /// This crate's table does not decide a form for this tag number — either the number is
-    /// unassigned/reserved by X.680 (15, and everything `>= 31`), or the class is not UNIVERSAL so
+    /// unassigned/reserved by X.680 (15, and everything `>= 37`), or the class is not UNIVERSAL so
     /// the form is a property of the schema rather than of the identifier.
     ///
     /// An `Unspecified` identifier is **accepted**. See the module docs' scope fence.
@@ -116,12 +141,14 @@ pub enum FormError {
     MustBeConstructed,
 }
 
-/// Why a TLV is not valid DER: either the framing is malformed, or the identifier is illegal.
+/// Why a TLV failed the framing-plus-identifier-form check.
+///
+/// **Not** "why it is not valid DER" — content is never examined. See the module docs.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum DerTlvError {
+pub enum CheckedTlvError {
     /// The tag/length/value framing itself was rejected by [`crate::tlv::decode_tlv`].
     Tlv(TlvError),
-    /// The framing was well-formed but the identifier is not a legal DER identifier.
+    /// The framing was well-formed but the identifier's form is not legal.
     Form(FormError),
 }
 
@@ -147,7 +174,12 @@ pub fn required_form(number: u32) -> RequiredForm {
         9 | 10 => RequiredForm::Primitive,
         // 11 EMBEDDED PDV (§8.20) — an associated-type SEQUENCE.
         11 => RequiredForm::Constructed,
-        // 12 UTF8String (a string type, DER §10.2), 13 RELATIVE-OID (§8.20), 14 TIME.
+        // 12 UTF8String (a string type, DER §10.2), 13 RELATIVE-OID (§8.21), 14 TIME (§8.26).
+        // NOTE on 14: X.680 (2008 and later, incl. the 2021 edition this crate targets) assigns
+        // UNIVERSAL 14 to TIME. Pre-2008 tables show 14 as reserved; a reviewer working from such a
+        // table will flag this arm. The same revision that assigns 14 assigns 31..=36 below, so the
+        // two are one question. Behavioural stake is small either way: if 14 were unassigned there
+        // would be no legal universal-14 value for this arm to over-reject.
         12..=14 => RequiredForm::Primitive,
         // 15 — reserved by X.680, unassigned. Not decided; see the module docs.
         15 => RequiredForm::Unspecified,
@@ -163,19 +195,26 @@ pub fn required_form(number: u32) -> RequiredForm {
         29 => RequiredForm::Constructed,
         // 30 BMPString — a string type, primitive under DER §10.2.
         30 => RequiredForm::Primitive,
-        // 0, and every number >= 31: no assigned UNIVERSAL type.
+        // 31 DATE, 32 TIME-OF-DAY, 33 DATE-TIME, 34 DURATION (§8.26 time types),
+        // 35 OID-IRI (§8.21), 36 RELATIVE-OID-IRI (§8.22). All simple types, primitive under DER.
+        // These all require the HIGH-TAG form (`1F`-prefixed), since the low-tag form stops at 30 —
+        // so `3F 1F 00` is a constructed DATE, and is rejected.
+        31..=36 => RequiredForm::Primitive,
+        // 0, and every number >= 37: no assigned UNIVERSAL type.
         _ => RequiredForm::Unspecified,
     }
 }
 
-/// Decide whether `tag` is a legal DER identifier (X.690 §8.1.2, §8.1.5, §10.2).
+/// Decide whether `tag`'s **form** is legal for the UNIVERSAL type its number names (X.690 §8.1.2,
+/// §8.1.5, §10.2).
 ///
 /// Enforces exactly two rules, and nothing else:
 /// 1. the reserved end-of-contents identifier (UNIVERSAL 0) is rejected in any position;
 /// 2. a UNIVERSAL type is encoded in the form X.690 requires for it.
 ///
-/// Non-UNIVERSAL classes and unassigned UNIVERSAL numbers are accepted — see the module docs'
-/// scope fence. Total and panic-free; makes no allocation and reads no input.
+/// It does **not** decide whether the tag is the one you expected — see the module docs' scope
+/// fence. Non-UNIVERSAL classes and unassigned UNIVERSAL numbers are accepted. Total and
+/// panic-free; makes no allocation and reads no input.
 pub fn validate_identifier_form(tag: Tag) -> Result<(), FormError> {
     if tag.class != Class::Universal {
         // The required form of an APPLICATION/CONTEXT/PRIVATE type is schema-dependent and is not
@@ -204,35 +243,36 @@ pub fn validate_identifier_form(tag: Tag) -> Result<(), FormError> {
     }
 }
 
-/// Decode one DER TLV from the front of `input`, **also** requiring its identifier to be a legal
-/// DER identifier ([`validate_identifier_form`]).
+/// Decode one TLV from the front of `input`, **also** requiring its identifier's form to be legal
+/// ([`validate_identifier_form`]).
 ///
-/// This is [`crate::tlv::decode_tlv`] plus the two rules this module owns. Like `decode_tlv` it
-/// reads exactly one TLV and **ignores trailing bytes**, so it can drive a recursive parser; use
-/// [`decode_tlv_der_strict`] where the whole input must be one object.
+/// This is [`crate::tlv::decode_tlv`] plus the two rules this module owns — **framing and one
+/// identifier, never content**. `Ok` here does not mean "valid DER": see the module docs for three
+/// ill-formed encodings this function accepts.
 ///
-/// **It does not recurse** — the children of an accepted constructed TLV are not checked. See the
-/// module docs' scope fence.
-pub fn decode_tlv_der(input: &[u8]) -> Result<(Tlv<'_>, usize), DerTlvError> {
+/// Like `decode_tlv` it reads exactly one TLV and **ignores trailing bytes**, so it can drive a
+/// recursive parser; use [`decode_tlv_form_checked_strict`] where the whole input must be one
+/// object. **It does not recurse** — the children of an accepted constructed TLV are not checked.
+pub fn decode_tlv_form_checked(input: &[u8]) -> Result<(Tlv<'_>, usize), CheckedTlvError> {
     let (tlv, used) = match decode_tlv(input) {
         Ok(v) => v,
-        Err(e) => return Err(DerTlvError::Tlv(e)),
+        Err(e) => return Err(CheckedTlvError::Tlv(e)),
     };
     match validate_identifier_form(tlv.tag) {
         Ok(()) => Ok((tlv, used)),
-        Err(e) => Err(DerTlvError::Form(e)),
+        Err(e) => Err(CheckedTlvError::Form(e)),
     }
 }
 
-/// [`decode_tlv_der`], additionally requiring the TLV to consume the *entire* `input`.
+/// [`decode_tlv_form_checked`], additionally requiring the TLV to consume the *entire* `input`.
 ///
 /// The composition of [`crate::tlv::decode_tlv_strict`]'s no-trailing-data rule with this module's
-/// identifier rules — the entry point for "this whole blob must be exactly one valid DER object".
-/// Still does not recurse into a constructed value.
-pub fn decode_tlv_der_strict(input: &[u8]) -> Result<Tlv<'_>, DerTlvError> {
-    let (tlv, used) = decode_tlv_der(input)?;
+/// identifier-form rules — for "this whole blob must be exactly one TLV, whose identifier is
+/// well-formed". Still content-blind, and still does not recurse into a constructed value.
+pub fn decode_tlv_form_checked_strict(input: &[u8]) -> Result<Tlv<'_>, CheckedTlvError> {
+    let (tlv, used) = decode_tlv_form_checked(input)?;
     if used != input.len() {
-        return Err(DerTlvError::Tlv(TlvError::TrailingData));
+        return Err(CheckedTlvError::Tlv(TlvError::TrailingData));
     }
     Ok(tlv)
 }
@@ -265,28 +305,35 @@ mod proofs {
     // `required_form`'s range-`match`, so the biconditionals below compare two independently
     // written encodings of the table rather than a function against itself. Bit `n` is set iff
     // UNIVERSAL tag number `n` requires that form. Bit 0 is clear in both (reserved), as is bit
-    // 15 (unassigned); no bit above 30 is set.
+    // 15 (unassigned); no bit above 36 is set. `u64`, because X.680 assigns through 36.
     //
     // ⚠ HONEST LIMIT OF THIS ORACLE. It establishes that the shipped `match` and this mask agree
     // on all 2^32 tag numbers — a real and complete result, and exactly the property a
-    // transcription slip in a 31-arm `match` would violate. It does NOT establish that either one
-    // is what X.680 says: the two encodings share an author. The table's agreement with the
-    // standard is INSPECTION-ARGUED, per-arm, in `required_form`'s own comments, and spot-checked
-    // against real encodings by the concrete tests below. Do not read these theorems as
-    // "conformant to X.680"; read them as "the table is the table, everywhere".
-    const PRIMITIVE_ONLY_MASK: u32 = 0x5FFC_76FE;
-    const CONSTRUCTED_ONLY_MASK: u32 = 0x2003_0900;
+    // transcription slip in a 37-arm `match` would violate. It does NOT establish that either one
+    // is what X.680 says: the two encodings share an author, so a shared misreading of the
+    // standard survives both. The table's agreement with the standard is INSPECTION-ARGUED,
+    // per-arm, in `required_form`'s own comments, and spot-checked against real encodings by the
+    // concrete tests below. Do not read these theorems as "conformant to X.680"; read them as
+    // "the table is the table, everywhere".
+    const PRIMITIVE_ONLY_MASK: u64 = 0x0000_001F_DFFC_76FE;
+    const CONSTRUCTED_ONLY_MASK: u64 = 0x0000_0000_2003_0900;
+    /// Highest UNIVERSAL tag number X.680 assigns (36 = RELATIVE-OID-IRI).
+    const MAX_ASSIGNED: u32 = 36;
 
     fn oracle_is_primitive_only(number: u32) -> bool {
-        number <= 30 && (PRIMITIVE_ONLY_MASK >> number) & 1 == 1
+        number <= MAX_ASSIGNED && (PRIMITIVE_ONLY_MASK >> number) & 1 == 1
     }
 
     fn oracle_is_constructed_only(number: u32) -> bool {
-        number <= 30 && (CONSTRUCTED_ONLY_MASK >> number) & 1 == 1
+        number <= MAX_ASSIGNED && (CONSTRUCTED_ONLY_MASK >> number) & 1 == 1
     }
 
-    /// The two masks are disjoint and neither claims tag number 0 or 15 — a self-check on the
-    /// oracle itself, so a typo in a mask constant cannot silently weaken every theorem below.
+    /// The two masks are disjoint, neither claims tag number 0 or 15, and together they cover
+    /// exactly `1..=36` minus 15 — a self-check on the oracle itself, so a typo in a mask constant
+    /// cannot silently weaken every theorem below.
+    ///
+    /// Honest limit: this checks *shape*, not *content*. It cannot catch a primitive/constructed
+    /// misclassification, nor a standards mistake shared with `required_form`.
     #[kani::proof]
     fn oracle_is_well_formed() {
         assert!(PRIMITIVE_ONLY_MASK & CONSTRUCTED_ONLY_MASK == 0);
@@ -294,8 +341,11 @@ mod proofs {
         assert!(CONSTRUCTED_ONLY_MASK & 1 == 0);
         assert!((PRIMITIVE_ONLY_MASK >> 15) & 1 == 0);
         assert!((CONSTRUCTED_ONLY_MASK >> 15) & 1 == 0);
-        // Together they cover 1..=30 exactly: bits 0..=30 set, minus bit 0 and bit 15.
-        assert!(PRIMITIVE_ONLY_MASK | CONSTRUCTED_ONLY_MASK == 0x7FFF_FFFF & !1u32 & !(1u32 << 15));
+        // Nothing above the highest assigned number.
+        assert!((PRIMITIVE_ONLY_MASK | CONSTRUCTED_ONLY_MASK) >> (MAX_ASSIGNED + 1) == 0);
+        // Exactly 1..=36, minus the reserved 15.
+        let full = ((1u64 << (MAX_ASSIGNED + 1)) - 1) & !1u64 & !(1u64 << 15);
+        assert!(PRIMITIVE_ONLY_MASK | CONSTRUCTED_ONLY_MASK == full);
     }
 
     /// `required_form` matches the independent mask oracle for **every** `u32` tag number.
@@ -345,12 +395,16 @@ mod proofs {
         );
     }
 
-    /// Totality, and the **no-false-rejection** guarantee that bounds this module's blast radius:
-    /// an identifier is accepted iff it is neither reserved nor a form violation, and **every**
-    /// non-UNIVERSAL identifier is accepted unconditionally. A schema-dependent APPLICATION /
+    /// Totality, plus the property that bounds this module's blast radius: an identifier is
+    /// accepted iff it violates no rule **as the oracle encodes them**, and **every**
+    /// non-UNIVERSAL identifier is accepted unconditionally.
+    ///
+    /// Read the qualifier: this is "no rejection outside the encoded rule", **not** "no legal DER
+    /// encoding is ever rejected". The latter would be a statement about X.680, which no theorem
+    /// here makes. What it does guarantee outright is that a schema-dependent APPLICATION /
     /// CONTEXT / PRIVATE tag can never be rejected by this module.
     #[kani::proof]
-    fn accepts_iff_no_rule_violated_and_never_rejects_non_universal() {
+    fn accepts_iff_no_encoded_rule_violated_and_never_rejects_non_universal() {
         let tag = any_tag();
         let got = validate_identifier_form(tag);
         if tag.class != Class::Universal {
@@ -363,107 +417,134 @@ mod proofs {
         assert!(got.is_ok() == !violates);
     }
 
-    /// Composition, over a symbolic buffer: `decode_tlv_der` accepts exactly when the framing
-    /// layer accepts **and** the identifier is legal, and when it accepts it returns precisely
-    /// what `decode_tlv` returned. So this entry point is `decode_tlv` refined by the rule — it
-    /// neither loses nor invents any framing behaviour.
+    /// Composition, over a symbolic buffer: `decode_tlv_form_checked` accepts exactly when the
+    /// framing layer accepts **and** the identifier's form is legal, and when it accepts it returns
+    /// precisely what `decode_tlv` returned. So this entry point is `decode_tlv` refined by the
+    /// rule — it neither loses nor invents any framing behaviour.
+    ///
+    /// **Bounded at `[u8; 6]`**, unlike the four domain-complete theorems above: this one reaches
+    /// the framing decoder's loops, so it is a statement about six-byte inputs, not all inputs.
     ///
     /// Cover: witnesses that both outcomes are live in the symbolic domain — that the `Ok` tail is
     /// reachable, and that a form rejection is genuinely reachable from raw bytes rather than only
     /// from a hand-built `Tag`.
     #[kani::proof]
     #[kani::unwind(12)]
-    fn decode_tlv_der_is_decode_tlv_refined_by_the_rule() {
+    fn decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule() {
         let buf: [u8; 6] = kani::any();
         let base = decode_tlv(&buf);
-        let refined = decode_tlv_der(&buf);
+        let refined = decode_tlv_form_checked(&buf);
         match base {
             Ok((tlv, used)) => match validate_identifier_form(tlv.tag) {
                 Ok(()) => {
                     assert!(refined == Ok((tlv, used)));
-                    kani::cover(true, "a legal DER identifier reaches decode_tlv_der's Ok tail");
+                    kani::cover(true, "a legal identifier reaches the Ok tail");
                 }
                 Err(e) => {
-                    assert!(refined == Err(DerTlvError::Form(e)));
+                    assert!(refined == Err(CheckedTlvError::Form(e)));
                     kani::cover(true, "a well-formed TLV is rejected by the identifier rule");
                 }
             },
-            Err(e) => assert!(refined == Err(DerTlvError::Tlv(e))),
+            Err(e) => assert!(refined == Err(CheckedTlvError::Tlv(e))),
         }
     }
 
-    /// `decode_tlv_der_strict` accepts iff `decode_tlv_der` accepts *and* the TLV spans the whole
-    /// input — the trailing-data rule composed with the identifier rules, over symbolic bytes.
+    /// `decode_tlv_form_checked_strict` accepts iff `decode_tlv_form_checked` accepts *and* the TLV
+    /// spans the whole input — the trailing-data rule composed with the identifier-form rules.
+    /// **Bounded at `[u8; 6]`**, for the same reason as the harness above.
     #[kani::proof]
     #[kani::unwind(12)]
-    fn decode_tlv_der_strict_requires_full_consumption() {
+    fn decode_tlv_form_checked_strict_requires_full_consumption() {
         let buf: [u8; 6] = kani::any();
-        let strict = decode_tlv_der_strict(&buf);
-        match decode_tlv_der(&buf) {
+        let strict = decode_tlv_form_checked_strict(&buf);
+        match decode_tlv_form_checked(&buf) {
             Ok((tlv, used)) => {
                 if used == buf.len() {
                     assert!(strict == Ok(tlv));
                 } else {
-                    assert!(strict == Err(DerTlvError::Tlv(TlvError::TrailingData)));
+                    assert!(strict == Err(CheckedTlvError::Tlv(TlvError::TrailingData)));
                 }
             }
             Err(e) => assert!(strict == Err(e)),
         }
     }
 
-    /// **The five differential-fuzzing findings, as a regression proof.** Each of the five byte
-    /// strings disclosed in `PROOF_MANIFEST.md` §6.3 is *accepted* by the framing layer and
-    /// *rejected* by this module — so the harness proves both halves at once: that the gap was
-    /// real, and that this entry point closes it.
+    /// **Every illegal identifier this crate has ever disclosed, as a regression proof.** The nine
+    /// specimens are `PROOF_MANIFEST.md` §6.3's class (a) and (b) — eight constructed encodings of
+    /// primitive-only universal types, plus the reserved EOC — and each is *accepted* by the
+    /// framing layer and *rejected* here, so the harness proves both halves at once: that the gap
+    /// was real, and that this entry point closes it.
     ///
-    /// Fixture-shaped by construction (these are five specific encodings), so this harness is a
-    /// PROBE. The unbounded statements are the four theorems above; this one pins the exact
-    /// specimens a future refactor must never start accepting again.
+    /// Fixture-shaped by construction, so this harness is a PROBE. The unbounded statements are the
+    /// four theorems above; this one pins the exact specimens a future refactor must never start
+    /// accepting again.
     #[kani::proof]
     #[kani::unwind(12)]
-    fn identifier_form_rejects_the_five_fuzzer_findings() {
-        // Constructed encodings of primitive-only universal types.
-        assert!(decode_tlv(&[0x21, 0x00]).is_ok());
-        assert!(decode_tlv_der(&[0x21, 0x00]) == Err(DerTlvError::Form(FormError::MustBePrimitive)));
-
-        assert!(decode_tlv(&[0x26, 0x01, 0x39]).is_ok());
+    fn rejects_every_disclosed_illegal_identifier() {
+        // Class (a): constructed encodings of primitive-only universal types.
+        // Low-tag form.
+        assert!(decode_tlv(&[0x21, 0x00]).is_ok()); // BOOLEAN (1)
         assert!(
-            decode_tlv_der(&[0x26, 0x01, 0x39])
-                == Err(DerTlvError::Form(FormError::MustBePrimitive))
+            decode_tlv_form_checked(&[0x21, 0x00])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
         );
-
-        assert!(decode_tlv(&[0x2C, 0x01, 0x01]).is_ok());
+        assert!(decode_tlv(&[0x26, 0x01, 0x39]).is_ok()); // OBJECT IDENTIFIER (6)
         assert!(
-            decode_tlv_der(&[0x2C, 0x01, 0x01])
-                == Err(DerTlvError::Form(FormError::MustBePrimitive))
+            decode_tlv_form_checked(&[0x26, 0x01, 0x39])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
         );
-
-        assert!(decode_tlv(&[0x33, 0x01, 0x00]).is_ok());
+        assert!(decode_tlv(&[0x2C, 0x01, 0x01]).is_ok()); // UTF8String (12)
         assert!(
-            decode_tlv_der(&[0x33, 0x01, 0x00])
-                == Err(DerTlvError::Form(FormError::MustBePrimitive))
+            decode_tlv_form_checked(&[0x2C, 0x01, 0x01])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
         );
-
-        // The remaining class-(a) specimens named in PROOF_MANIFEST.md §6.3, which lists four more
-        // than the envelope's summary does. Each is a constructed encoding of a primitive-only
-        // universal type: ObjectDescriptor (7), REAL (9), ENUMERATED (10), BMPString (30).
+        assert!(decode_tlv(&[0x33, 0x01, 0x00]).is_ok()); // PrintableString (19)
         assert!(
-            decode_tlv_der(&[0x27, 0x02, 0x04, 0x04])
-                == Err(DerTlvError::Form(FormError::MustBePrimitive))
+            decode_tlv_form_checked(&[0x33, 0x01, 0x00])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
         );
-        assert!(decode_tlv_der(&[0x29, 0x00]) == Err(DerTlvError::Form(FormError::MustBePrimitive)));
         assert!(
-            decode_tlv_der(&[0x2A, 0x01, 0x4A])
-                == Err(DerTlvError::Form(FormError::MustBePrimitive))
-        );
-        assert!(decode_tlv_der(&[0x3E, 0x00]) == Err(DerTlvError::Form(FormError::MustBePrimitive)));
+            decode_tlv_form_checked(&[0x27, 0x02, 0x04, 0x04])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        ); // ObjectDescriptor (7)
+        assert!(
+            decode_tlv_form_checked(&[0x29, 0x00])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        ); // REAL (9)
+        assert!(
+            decode_tlv_form_checked(&[0x2A, 0x01, 0x4A])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        ); // ENUMERATED (10)
+        assert!(
+            decode_tlv_form_checked(&[0x3E, 0x00])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        ); // BMPString (30)
 
-        // The reserved end-of-contents identifier.
+        // Class (b): the reserved end-of-contents identifier.
         assert!(decode_tlv(&[0x00, 0x00]).is_ok());
         assert!(
-            decode_tlv_der(&[0x00, 0x00])
-                == Err(DerTlvError::Form(FormError::ReservedIdentifier))
+            decode_tlv_form_checked(&[0x00, 0x00])
+                == Err(CheckedTlvError::Form(FormError::ReservedIdentifier))
         );
+    }
+
+    /// **The HIGH-TAG-FORM arm, which the low-tag specimens above cannot reach.** X.680's
+    /// assignments 31..=36 all require the high-tag form, so a table that stopped at 30 would
+    /// accept a constructed DATE and no fixture above would notice. `3F 1F 00` is exactly that
+    /// input; `1F 1F 00` is its legal primitive counterpart and must still be accepted.
+    #[kani::proof]
+    #[kani::unwind(12)]
+    fn high_tag_universal_types_are_form_checked() {
+        assert!(decode_tlv(&[0x3F, 0x1F, 0x00]).is_ok()); // framing accepts a constructed DATE
+        assert!(
+            decode_tlv_form_checked(&[0x3F, 0x1F, 0x00])
+                == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        );
+        assert!(decode_tlv_form_checked(&[0x1F, 0x1F, 0x00]).is_ok()); // primitive DATE (31)
+        assert!(decode_tlv_form_checked(&[0x1F, 0x24, 0x00]).is_ok()); // primitive RELATIVE-OID-IRI (36)
+        // 37 is unassigned, so BOTH forms are accepted (the conservative arm).
+        assert!(decode_tlv_form_checked(&[0x1F, 0x25, 0x00]).is_ok());
+        assert!(decode_tlv_form_checked(&[0x3F, 0x25, 0x00]).is_ok());
     }
 
     /// **Class (c) of `PROOF_MANIFEST.md` §6.3 must keep being accepted.** Those two encodings are
@@ -473,24 +554,36 @@ mod proofs {
     #[kani::proof]
     #[kani::unwind(12)]
     fn legal_der_the_comparison_library_rejected_is_still_accepted() {
-        assert!(decode_tlv_der(&[0x07, 0x01, 0x4A]).is_ok()); // primitive ObjectDescriptor (7)
-        assert!(decode_tlv_der(&[0x28, 0x02, 0x01, 0x30]).is_ok()); // constructed EXTERNAL (8)
+        assert!(decode_tlv_form_checked(&[0x07, 0x01, 0x4A]).is_ok()); // primitive ObjectDescriptor
+        assert!(decode_tlv_form_checked(&[0x28, 0x02, 0x01, 0x30]).is_ok()); // constructed EXTERNAL
     }
 
     /// The rule does not break the encodings this crate's own X.509 surface depends on: a
     /// primitive INTEGER, a constructed SEQUENCE, a constructed SET, a primitive BIT STRING, a
-    /// primitive UTCTime, and a constructed context-specific `[0]` are all still accepted.
+    /// primitive UTCTime, and both context-specific forms are all still accepted.
     /// A rule that rejected these would be caught here rather than by a distant integration test.
     #[kani::proof]
     #[kani::unwind(12)]
     fn real_x509_identifiers_are_still_accepted() {
-        assert!(decode_tlv_der(&[0x02, 0x01, 0x07]).is_ok()); // INTEGER 7
-        assert!(decode_tlv_der(&[0x30, 0x00]).is_ok()); // SEQUENCE {}
-        assert!(decode_tlv_der(&[0x31, 0x00]).is_ok()); // SET {}
-        assert!(decode_tlv_der(&[0x03, 0x01, 0x00]).is_ok()); // BIT STRING, empty
-        assert!(decode_tlv_der(&[0x05, 0x00]).is_ok()); // NULL
-        assert!(decode_tlv_der(&[0xA0, 0x00]).is_ok()); // [0] EXPLICIT, constructed
-        assert!(decode_tlv_der(&[0x80, 0x00]).is_ok()); // [0] IMPLICIT, primitive — schema-dependent
+        assert!(decode_tlv_form_checked(&[0x02, 0x01, 0x07]).is_ok()); // INTEGER 7
+        assert!(decode_tlv_form_checked(&[0x30, 0x00]).is_ok()); // SEQUENCE {}
+        assert!(decode_tlv_form_checked(&[0x31, 0x00]).is_ok()); // SET {}
+        assert!(decode_tlv_form_checked(&[0x03, 0x01, 0x00]).is_ok()); // BIT STRING, empty
+        assert!(decode_tlv_form_checked(&[0x05, 0x00]).is_ok()); // NULL
+        assert!(decode_tlv_form_checked(&[0xA0, 0x00]).is_ok()); // [0] EXPLICIT, constructed
+        assert!(decode_tlv_form_checked(&[0x80, 0x00]).is_ok()); // [0] IMPLICIT, primitive
+    }
+
+    /// **The scope fence, as a proof: this is NOT a DER validator.** Each of these is ill-formed
+    /// DER that this module deliberately accepts, because it never looks at content. If a future
+    /// change made any of them fail, the docs promising content-blindness would be wrong — and the
+    /// docs are what a consumer relies on to know they still need the typed codecs.
+    #[kani::proof]
+    #[kani::unwind(12)]
+    fn content_errors_are_deliberately_not_caught() {
+        assert!(decode_tlv_form_checked(&[0x01, 0x01, 0x01]).is_ok()); // BOOLEAN true must be 0xFF
+        assert!(decode_tlv_form_checked(&[0x02, 0x02, 0x00, 0x01]).is_ok()); // non-minimal INTEGER
+        assert!(decode_tlv_form_checked(&[0x05, 0x01, 0x00]).is_ok()); // NULL must be empty
     }
 }
 
@@ -516,14 +609,14 @@ mod tests {
             Err(FormError::ReservedIdentifier)
         );
         assert_eq!(
-            decode_tlv_der(&[0x00, 0x00]),
-            Err(DerTlvError::Form(FormError::ReservedIdentifier))
+            decode_tlv_form_checked(&[0x00, 0x00]),
+            Err(CheckedTlvError::Form(FormError::ReservedIdentifier))
         );
     }
 
     #[test]
     fn constructed_primitive_only_types_are_rejected() {
-        for number in [1u32, 2, 3, 4, 5, 6, 10, 12, 19, 23, 24] {
+        for number in [1u32, 2, 3, 4, 5, 6, 10, 12, 19, 23, 24, 31, 34, 36] {
             assert_eq!(
                 validate_identifier_form(universal(number, true)),
                 Err(FormError::MustBePrimitive),
@@ -549,7 +642,6 @@ mod tests {
     /// spot-check that the table is the *standard's* table and not merely self-consistent.
     #[test]
     fn real_world_identifier_octets_are_accepted() {
-        // (bytes, description) — each is the identifier a conforming encoder actually emits.
         for (b, what) in [
             (0x30u8, "SEQUENCE"),
             (0x31, "SET"),
@@ -586,15 +678,43 @@ mod tests {
                 Err(FormError::MustBePrimitive),
                 "{what} ({b:#04x}) must be rejected"
             );
-            }
+        }
+    }
+
+    /// X.680's high-tag assignments (31..=36). A table that stopped at 30 would accept every
+    /// constructed spelling here.
+    #[test]
+    fn high_tag_assignments_are_decided() {
+        for (number, what) in [
+            (31u32, "DATE"),
+            (32, "TIME-OF-DAY"),
+            (33, "DATE-TIME"),
+            (34, "DURATION"),
+            (35, "OID-IRI"),
+            (36, "RELATIVE-OID-IRI"),
+        ] {
+            assert_eq!(required_form(number), RequiredForm::Primitive, "{what}");
+            assert_eq!(validate_identifier_form(universal(number, false)), Ok(()), "{what}");
+            assert_eq!(
+                validate_identifier_form(universal(number, true)),
+                Err(FormError::MustBePrimitive),
+                "constructed {what} must be rejected"
+            );
+        }
+        // The wire form: `3F 1F 00` is a constructed DATE.
+        assert_eq!(
+            decode_tlv_form_checked(&[0x3F, 0x1F, 0x00]),
+            Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        );
+        assert!(decode_tlv_form_checked(&[0x1F, 0x1F, 0x00]).is_ok());
     }
 
     /// A primitive SEQUENCE identifier (`0x10` instead of `0x30`) is rejected.
     #[test]
     fn primitive_sequence_identifier_is_rejected() {
         assert_eq!(
-            decode_tlv_der(&[0x10, 0x00]),
-            Err(DerTlvError::Form(FormError::MustBeConstructed))
+            decode_tlv_form_checked(&[0x10, 0x00]),
+            Err(CheckedTlvError::Form(FormError::MustBeConstructed))
         );
     }
 
@@ -602,7 +722,7 @@ mod tests {
     fn non_universal_classes_are_never_rejected() {
         for class in [Class::Application, Class::ContextSpecific, Class::Private] {
             for constructed in [true, false] {
-                for number in [0u32, 1, 4, 16, 29, 30, 31, 1000, u32::MAX] {
+                for number in [0u32, 1, 4, 16, 29, 30, 31, 36, 37, 1000, u32::MAX] {
                     assert_eq!(
                         validate_identifier_form(Tag { class, constructed, number }),
                         Ok(()),
@@ -615,7 +735,7 @@ mod tests {
 
     #[test]
     fn unassigned_universal_numbers_are_accepted() {
-        for number in [15u32, 31, 32, 100, u32::MAX] {
+        for number in [15u32, 37, 38, 100, u32::MAX] {
             assert_eq!(required_form(number), RequiredForm::Unspecified);
             assert_eq!(validate_identifier_form(universal(number, false)), Ok(()));
             assert_eq!(validate_identifier_form(universal(number, true)), Ok(()));
@@ -624,19 +744,39 @@ mod tests {
 
     #[test]
     fn framing_errors_pass_through_unchanged() {
-        // Truncated value: the framing layer's own error, not a form error.
-        assert_eq!(decode_tlv_der(&[0x02, 0x05, 0x01]), Err(DerTlvError::Tlv(TlvError::Truncated)));
-        // Indefinite length is still rejected by the length codec beneath.
-        assert!(matches!(decode_tlv_der(&[0x30, 0x80]), Err(DerTlvError::Tlv(TlvError::Length(_)))));
+        assert_eq!(
+            decode_tlv_form_checked(&[0x02, 0x05, 0x01]),
+            Err(CheckedTlvError::Tlv(TlvError::Truncated))
+        );
+        assert!(matches!(
+            decode_tlv_form_checked(&[0x30, 0x80]),
+            Err(CheckedTlvError::Tlv(TlvError::Length(_)))
+        ));
     }
 
     #[test]
     fn strict_rejects_trailing_bytes() {
         assert_eq!(
-            decode_tlv_der_strict(&[0x02, 0x01, 0x07, 0xFF]),
-            Err(DerTlvError::Tlv(TlvError::TrailingData))
+            decode_tlv_form_checked_strict(&[0x02, 0x01, 0x07, 0xFF]),
+            Err(CheckedTlvError::Tlv(TlvError::TrailingData))
         );
-        assert!(decode_tlv_der_strict(&[0x02, 0x01, 0x07]).is_ok());
+        assert!(decode_tlv_form_checked_strict(&[0x02, 0x01, 0x07]).is_ok());
+    }
+
+    /// **This module is not a DER validator, and this test is that promise in executable form.**
+    /// Each input is ill-formed DER that is deliberately accepted, because content is never read.
+    #[test]
+    fn content_errors_are_deliberately_not_caught() {
+        for (bytes, what) in [
+            (&[0x01u8, 0x01, 0x01][..], "BOOLEAN true must be encoded 0xFF"),
+            (&[0x02, 0x02, 0x00, 0x01][..], "INTEGER with redundant leading zero"),
+            (&[0x05, 0x01, 0x00][..], "NULL with non-empty content"),
+        ] {
+            assert!(
+                decode_tlv_form_checked(bytes).is_ok(),
+                "content-blind by design, so this must still be accepted: {what}"
+            );
+        }
     }
 
     /// `decode_tlv` must keep its permissive behaviour — this module is additive, and a change
@@ -648,6 +788,7 @@ mod tests {
             &[0x26, 0x01, 0x39][..],
             &[0x2C, 0x01, 0x01][..],
             &[0x33, 0x01, 0x00][..],
+            &[0x3F, 0x1F, 0x00][..],
             &[0x00, 0x00][..],
         ] {
             assert!(

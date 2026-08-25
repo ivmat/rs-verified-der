@@ -14,8 +14,10 @@
 //! - [`identifier_form`] — the two identifier rules neither [`tag`] nor [`tlv`] decides: the
 //!   primitive/constructed form required of a UNIVERSAL type (§8.1.2, §10.2) and the reserved
 //!   end-of-contents identifier (§8.1.5). `decode_tlv` answers *"is this a well-formed TLV?"*;
-//!   this module answers *"is this identifier legal DER?"*, and offers `decode_tlv_der` as the
-//!   composition. Additive and opt-in — `tag`/`tlv` keep their permissive behaviour by design.
+//!   this module answers *"is this identifier's FORM legal for the UNIVERSAL type it names?"*, and
+//!   offers `decode_tlv_form_checked` as the composition. **Not a DER validator** — it never reads
+//!   content octets, so a non-minimal INTEGER passes it. Additive and opt-in: `tag`/`tlv` keep
+//!   their permissive behaviour by design.
 //! - [`context_tag`] — the ASN.1 `[n] EXPLICIT` context-tag wrapper (X.690 §8.14.2): peels one
 //!   context-specific constructed TLV, structurally, to expose the nested inner TLV's bytes to a
 //!   caller-chosen inner decoder. EXPLICIT only, deliberately (IMPLICIT tagging is schema-dependent

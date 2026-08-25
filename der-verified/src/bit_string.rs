@@ -5,26 +5,31 @@
 //! - §11.2.2 — every unused bit shall be **zero** (a non-zero padding bit is a classic parser
 //!   differential: a lax reader ignores it, a strict signer never emits it);
 //! - §11.2.2.1 — an *empty* bit string is exactly `[0x00]` (no value octets, and `u = 0`);
-//! - the primitive/definite form is required (§10.2). That constraint lives in the identifier, and
-//!   **this module does not enforce it.** Read the next paragraph before assuming something else
-//!   does.
+//! - the primitive/definite form is required (§10.2) — the *primitive* half is a constraint on the
+//!   identifier octet, the *definite* half a constraint on the length field. **This module enforces
+//!   neither.** Read the next paragraph before assuming something else does.
 //!
 //! **Who enforces the identifier — precisely.** Like the other content decoders
 //! ([`crate::integer`], [`crate::boolean`]), this module validates only the *content* octets of a
 //! TLV whose tag is UNIVERSAL 3 (`0x03`). It does not look at the identifier at all. Splitting the
 //! §10.2 requirement into its two halves:
-//! - the **definite**-length half *is* enforced upstream: [`crate::tlv`] delegates to
-//!   [`crate::length`], which rejects the indefinite form (`0x80`);
+//! - the **definite**-length half *is* enforced upstream — **but only if you actually came through
+//!   [`crate::tlv`]**, which delegates to [`crate::length`] and so rejects the indefinite form
+//!   (`0x80`). This function takes content octets, so it has no way to know whether you did;
 //! - the **primitive**-form half and the **tag identity** (UNIVERSAL 3) are enforced by *neither*
 //!   [`crate::tag`] nor [`crate::tlv`]. `decode_tag` attaches no meaning to the class/constructed
 //!   combination and `decode_tlv` passes the parsed `Tag` through untouched; neither has so much as
 //!   a "constructed" rejection.
 //!
-//! Those two halves are decided in two other places, and a caller must use one of them:
-//! - **particular typed callers** check the identifier before calling in — `x509_spki.rs`'s
-//!   `decode_public_key_tlv` (wrong tag → `PublicKeyWrongTag`, constructed → `PublicKeyConstructed`)
-//!   and `x509_certificate.rs`'s signatureValue step (→ `SignatureValueWrongTag`);
-//! - **[`crate::identifier_form`]** decides the rule generically, for any identifier.
+//! Where each IS decided — and note the two are **not** decided in the same place:
+//! - **tag identity (this is UNIVERSAL 3, and not something else) is decided ONLY by typed
+//!   callers.** `x509_spki.rs`'s `decode_public_key_tlv` (wrong tag → `PublicKeyWrongTag`,
+//!   constructed → `PublicKeyConstructed`) and `x509_certificate.rs`'s signatureValue step
+//!   (→ `SignatureValueWrongTag`) both check it before calling in.
+//! - **the primitive-form rule is decided generically by [`crate::identifier_form`]** — but that
+//!   module decides *form only*. It has no idea which tag you expected, and will happily accept a
+//!   primitive INTEGER identifier where you wanted a BIT STRING. It is not a substitute for the
+//!   identity check above.
 //!
 //! **So a direct caller of [`decode_bit_string`] must decide the identifier itself.** Handing this
 //! function the content of a constructed `0x23` TLV, or of a TLV that is not UNIVERSAL 3 at all,

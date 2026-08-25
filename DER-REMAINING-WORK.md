@@ -507,7 +507,7 @@ the three mutations kill distinct, predicted subsets.
 **R3 (OPEN, owner call) — should the check be wired into `decode_tlv_strict`?**
 
 The module is additive: `tag`, `tlv`, `sequence` behave exactly as before, so the residual is closed
-only for callers who opt into `decode_tlv_der` / `decode_tlv_der_strict`. Wiring it into
+only for callers who opt into `decode_tlv_form_checked` / `decode_tlv_form_checked_strict`. Wiring it into
 `decode_tlv_strict` is where a consumer would most want it, and is deliberately not done here:
 
 - it is a **behavioural change to a Lean-lidded shipped function** — `tlv.rs` is in the lid set, so
