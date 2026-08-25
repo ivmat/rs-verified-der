@@ -8,7 +8,7 @@ A **formally verified** DER (X.690) encoding/decoding core in Rust — the encod
 X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
 evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
 
-- **L3 — Kani** (bounded model checking): 191 proof harnesses over 32 modules — memory safety, no
+- **L3 — Kani** (bounded model checking): 201 proof harnesses over 33 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
   of malformed/non-canonical encodings).
 - **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
@@ -17,7 +17,7 @@ evidence is **re-runnable from a fresh clone**: the proofs are the product, not 
   for `tag`, only totality and the consumption bound are lifted to ∀-length; minimal-encoding
   *rejection* (the canonicality property) is proven only Kani-bounded, at a 7-byte buffer — see
   `PROOF_MANIFEST.md` §6.2.
-- **472** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
+- **483** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
 
 > **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
 > proof envelope: exactly what is proven, under what bounds and assumptions, what is stubbed, and
@@ -150,7 +150,7 @@ flowchart TB
     subgraph codecs_layer["DER content codecs"]
         direction LR
         codecs_green["big_integer · oid · sequence"]:::green
-        codecs_blue["bit_string · boolean · context_tag · ec_private_key<br/>ecdsa_sig_value · encrypted_private_key_info · enumerated · generalized_time<br/>integer · null · octet_string · pkcs8<br/>restricted_string · rsa_private_key · rsa_public_key · set_of<br/>utc_time · utf8_string"]:::blue
+        codecs_blue["bit_string · boolean · context_tag · ec_private_key<br/>ecdsa_sig_value · encrypted_private_key_info · enumerated · generalized_time<br/>identifier_form · integer · null · octet_string<br/>pkcs8 · restricted_string · rsa_private_key · rsa_public_key<br/>set_of · utc_time · utf8_string"]:::blue
         codecs_gray["General SET (X.690 §10.3)"]:::gray
     end
     subgraph framing_layer["tag / length / TLV framing base"]
@@ -219,12 +219,12 @@ The evidence is re-runnable. From a fresh clone:
 
 ```sh
 # Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 472 tests + 33 doc-tests
+cargo test                                    # 483 tests + 34 doc-tests
 
 # Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
 cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
 cargo kani setup
-cargo kani -Z stubbing                          # 191 proof harnesses
+cargo kani -Z stubbing                          # 201 proof harnesses
 ```
 
 Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
@@ -288,7 +288,7 @@ checked against. For a byte-identical Kani reproduction, install the pinned Kani
 (`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 35-test
 self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
 `cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
-**163** of the 191 harnesses (the shard filters are by module, not a pinned count, so this total is
+**173** of the 201 harnesses (the shard filters are by module, not a pinned count, so this total is
 re-derived from the per-module counts rather than maintained by hand; see
 `.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across four
 parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
@@ -298,7 +298,7 @@ stub in the workflow, on a large-memory runner).
 
 ### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
 
-**All 191 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
+**All 201 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
 harness counts below were re-derived from the current module counts by static count, not a fresh
 timing run — treat the *times themselves* as the prior measurement's indicative, possibly-stale
 numbers, and the counts as current):

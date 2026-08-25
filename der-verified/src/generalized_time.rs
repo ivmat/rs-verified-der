@@ -2,9 +2,20 @@
 //!
 //! DER admits exactly one GeneralizedTime spelling: the ASCII string `YYYYMMDDHHMMSS[.fff]Z` — a
 //! 4-digit year, mandatory seconds, an optional canonical fraction, and the `Z` terminator. This
-//! module validates the *content* octets of a TLV whose tag is UNIVERSAL 24; the tag identity and
-//! primitive/definite form are enforced (and proven) upstream by [`crate::tag`] / [`crate::tlv`], so
-//! — like the other content decoders — this codec carries the *content* canonicality.
+//! module validates the *content* octets of a TLV whose tag is UNIVERSAL 24, and **nothing else** —
+//! like the other content decoders, this codec carries the *content* canonicality and does not look
+//! at the identifier.
+//!
+//! **The identifier is not enforced upstream.** Of the tag identity and the primitive/definite
+//! form, only the **definite**-length half is enforced by [`crate::tlv`] (it delegates to
+//! [`crate::length`], which rejects the indefinite form). The **primitive**-form half and the
+//! **tag identity** are enforced by neither [`crate::tag`] nor [`crate::tlv`]: `decode_tag`
+//! attaches no meaning to the class/constructed combination and `decode_tlv` passes the parsed
+//! `Tag` through untouched. They are decided instead by *particular typed callers* —
+//! `x509_validity.rs`'s `decode_time_tlv` rejects a non-UNIVERSAL class (`WrongTag`) and a
+//! constructed GeneralizedTime (`Constructed`) before dispatching here — or generically by
+//! [`crate::identifier_form`]. **A direct caller of [`decode_generalized_time`] must decide the
+//! identifier itself.**
 //!
 //! The canonical form, verified against the standards:
 //! - **Terminates with `'Z'`** (§11.7) — local time and `±HHMM` offsets are forbidden.

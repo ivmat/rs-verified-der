@@ -19,8 +19,38 @@ AENEAS="$TOOLS/aeneas"
 CHARON_BIN="$AENEAS/charon/bin/charon"
 AENEAS_BIN="$AENEAS/bin/aeneas"
 
+# MACHINE-READABLE OUTCOME (added 2026-08-25). This script has THREE outcomes -- PASS, SKIP and
+# FAIL -- but for its whole life it reported only two exit codes, and SKIP shared exit 0 with PASS.
+# A caller (check.sh) therefore could not tell "the unbounded L4 proofs were machine-checked" from
+# "the toolchain was missing so nothing ran", and printed the same green summary either way. That is
+# a one-way alarm: its silence was being read as a pass. Every exit path now records its outcome,
+# both as a `lean-lid-status: <STATE>` line on stdout and, when the caller sets
+# $DER_LID_STATUS_FILE, in that file -- so the caller can name the state in its own summary rather
+# than infer it from an exit code that cannot carry it.
+#
+# The file is seeded FAIL here, so an abort ANYWHERE below (set -eu, a failed lake build, a smuggled
+# sorry) leaves FAIL behind rather than a stale PASS from a previous run.
+_lid_status() {
+  if [ -n "${DER_LID_STATUS_FILE:-}" ]; then printf '%s\n' "$1" > "$DER_LID_STATUS_FILE"; fi
+  echo "lean-lid-status: $1"
+}
+if [ -n "${DER_LID_STATUS_FILE:-}" ]; then printf '%s\n' "FAIL" > "$DER_LID_STATUS_FILE"; fi
+
 if ! command -v lake >/dev/null 2>&1 || [ ! -x "$AENEAS_BIN" ] || [ ! -x "$CHARON_BIN" ]; then
   echo "== lean lid: SKIP (Aeneas/Lean toolchain absent; the L3 Kani floor is the gate) =="
+  # FAIL-CLOSED SWITCH. Any run whose result will be published, cited as an L4 witness, or minted
+  # into a push receipt must set DER_REQUIRE_LEAN=1, which turns an absent toolchain from a silent
+  # skip into a hard failure. The default stays permissive so an honest third party without the
+  # Aeneas/Lean stack can still run the L3 floor.
+  if [ "${DER_REQUIRE_LEAN:-0}" = "1" ]; then
+    _lid_status FAIL
+    echo "!! lean lid: FAIL - DER_REQUIRE_LEAN=1, but the Aeneas/Lean toolchain is absent, so the" >&2
+    echo "   unbounded L4 proofs could NOT be checked. This run witnesses the L3 Kani floor only" >&2
+    echo "   and must not be cited as evidence for any CONTRACT+L4 claim." >&2
+    echo "   Install the toolchain (see ../README.md, DECISIONS.md D7) or drop DER_REQUIRE_LEAN." >&2
+    exit 1
+  fi
+  _lid_status SKIP
   exit 0
 fi
 
@@ -299,6 +329,11 @@ if printf '%s\n' "$BUILD_OUT" | grep -q "sorryAx"; then
   exit 1
 fi
 echo "== lean lid: PASS (sorry-free) =="
+# The one place this script may record PASS: after extraction, drift check, a green `lake build`,
+# and both sorry gates have all passed. Step 3 below can still fail (and then `set -eu` aborts, and
+# check.sh fails with it) -- but by that point the L4 proofs themselves HAVE been machine-checked,
+# which is exactly what this token claims and all it claims.
+_lid_status PASS
 
 # 3) Refresh the fast gate's staleness tripwire (gates/check_lid_staleness.py, run every commit via
 #    check_fast.sh). Only reached here because `set -eu` already aborted the whole script above on

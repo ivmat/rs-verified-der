@@ -2020,3 +2020,91 @@ detached under the machine's FV slot. Both `VERIFICATION:- SUCCESSFUL`; all four
 **Verdict.** **Forward-fix, landed before publish.** The finding was raised against unpushed local
 commits and is fixed in the bytes that go out, so the public history never carries the mislabelled
 claim.
+
+## D34 — `identifier_form`: the two X.690 identifier rules that no layer decided are now decided, in
+a new additive module — and `tag`/`tlv` deliberately keep their permissive behaviour  ·  landed (high)
+
+**Call.** `PROOF_MANIFEST.md` §6.3 named two DER rules enforced in **no verified layer** of this
+crate: the primitive/constructed form required of a UNIVERSAL type (§8.1.2, §10.2) and the reserved
+end-of-contents identifier `00 00` (§8.1.5). Both are now decided by a new module,
+`identifier_form`, with 10 Kani harnesses. The framing layer is unchanged.
+
+**Where the rules belong, and why not in `tag` or `tlv`.** The rules are properties of the
+*identifier alone* — a decoded `Tag` — so they need no length, no content, and no buffer. That is
+what makes them cheap to prove and what settled the placement question. Three placements were
+considered:
+
+1. **Inside `decode_tag`.** Rejected. `decode_tag` decides the *encoding* of a tag number; making it
+   also decide the tag's *meaning* conflates two questions, and a caller inspecting an identifier
+   before deciding what it means could no longer do so.
+2. **Inside `decode_tlv` / `decode_tlv_strict`.** Rejected *for now*, and this is the live open
+   question. It is where a consumer would most want the check, but it is a behavioural change to
+   Lean-lidded shipped functions: it forces re-extraction of `DerTlvExtract`/`DerSequenceExtract`,
+   risks the `TlvProofs`/`SequenceProofs` developments, and changes what every existing caller
+   accepts. D33's precedent applies directly — a behavioural change to a shipped decoder is not
+   bundled into other work.
+3. **A new additive module.** Landed. Nothing existing changes behaviour; the Lean lid set
+   (`big_integer`, `length`, `oid`, `sequence`, `tag`, `tlv`) is untouched, so no re-extraction and
+   no proof repair. The rules become available at `validate_identifier_form` (on a `Tag`) and
+   `decode_tlv_der` / `decode_tlv_der_strict` (composed onto the framing reader).
+
+**The honest cost of choosing (3): the default is still permissive.** `decode_tlv` continues to
+accept `21 00` and `00 00`. The residual is not closed for its callers — it is closed for callers
+who opt in. §6.3 now says exactly that rather than "no layer decides this". Anyone reading "the
+rules are enforced" without reading "at which entry point" will over-read this change, so both
+halves are stated everywhere the rule is mentioned: the module docs, §6.3, the `tlv` and `sequence`
+clause rows, and the trust-base preamble.
+
+**Strength of the proofs, stated precisely.** Four theorems are over the **complete** input domain —
+a symbolic `u32` tag number and all four classes, decided symbolically by CBMC with no unwinding and
+no bound to exceed. They are not bounded-buffer results:
+
+- `required_form_matches_oracle_on_all_u32` — the shipped 31-arm `match` agrees with an independent
+  bitmask oracle on all 2^32 numbers;
+- `reserved_eoc_rejected_iff_universal_zero` — biconditional, so the rule fires there and *only*
+  there;
+- `constructed_form_rule_matches_oracle_on_all_tags` — biconditional for both form violations;
+- `accepts_iff_no_rule_violated_and_never_rejects_non_universal` — totality plus the
+  no-false-rejection guarantee that bounds the change's blast radius.
+
+**What the oracle does NOT establish, and this is the label that matters.** The oracle is a bitmask
+written by the same author as the `match`. The theorems prove the two encodings agree everywhere —
+exactly what a transcription slip in a 31-arm table would violate — but **not** that either agrees
+with X.680. That is `inspection-argued`, per-arm, in `required_form`'s own comments, and
+spot-checked against real X.509 identifier octets and the BER constructed spellings by concrete
+tests. The module says so in the oracle's own comment. Do not read these as conformance theorems.
+
+**Two harnesses deliberately labelled weaker than they look.**
+`decode_tlv_der_is_decode_tlv_refined_by_the_rule` and
+`decode_tlv_der_strict_requires_full_consumption` are stated *relative to*
+`validate_identifier_form`, so they hold whatever the rule says. Mutation controls confirmed it:
+both survived all three mutations that broke the rule. They prove the **composition** — that
+`decode_tlv_der` is `decode_tlv` refined by the rule, losing and inventing no framing behaviour —
+and they witness nothing about the rule's content. The rule's content is carried by the four
+domain-complete theorems above.
+
+**Mutation controls (the evidence that any of this is non-vacuous).** Three mutations, each killing
+a distinct and *predicted* subset — a discriminating pattern, not merely "something went red":
+
+| mutation | harnesses that failed | correctly unaffected |
+|---|---|---|
+| drop BOOLEAN from the form table | table-vs-oracle, form-rule, accepts-iff, five-findings | EOC rule, oracle self-check |
+| remove the EOC rejection | EOC rule, accepts-iff, five-findings | table-vs-oracle, form-rule |
+| no-op the primitive-form rule | form-rule, accepts-iff, five-findings | table-vs-oracle, EOC rule |
+
+**Both directions are pinned, because a rule that over-rejects is also a defect.** §6.3's class (c) —
+`07 01 4A` (primitive ObjectDescriptor) and `28 02 01 30` (constructed EXTERNAL) — is *legal* DER
+that the fuzzing campaign's comparison library rejected for lack of a model. `identifier_form`
+accepts both, and a harness pins it, alongside one pinning the real X.509 identifiers. The five
+`00`/constructed specimens are pinned as rejected in the same run that pins these as accepted.
+
+**Scope fence.** The module decides ONE identifier, not a tree: the children of an accepted
+constructed TLV are unchecked, so a recursive validator must apply the rule per level. Non-UNIVERSAL
+classes and unassigned numbers (15, and `>= 31`) are accepted rather than guessed at — a deliberate
+under-approximation that never rejects a legal encoding. Tag number 0 is the sole outright
+rejection, because it is reserved for a marker DER cannot contain rather than merely unassigned.
+
+**Verdict.** **Landed.** The rules move from `not-covered` to decided-at-an-opt-in-entry-point, which
+is a real narrowing of the crate's largest disclosed scope gap and is smaller than "DER validation is
+now enforced". Wiring the check into `decode_tlv_strict` remains open and is an owner call, recorded
+in `DER-REMAINING-WORK.md`.

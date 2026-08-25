@@ -49,10 +49,41 @@ echo "== cargo kani :: der-verified (L3 proof floor) =="
 # length), so CBMC can verify the composition glue tractably (see those modules' Kani comments). The
 # flag only enables the feature; harnesses without #[kani::stub] are unaffected.
 cargo kani -Z stubbing --manifest-path "$ROOT/der-verified/Cargo.toml"
+echo "== lean-lid skip-guard gate: self-test (the gate's own gate; pure stdlib) =="
+# Runs BEFORE the lean stage it guards. lean/check_lean.sh is GUARDED: with no Aeneas/Lean
+# toolchain it skips and exits 0, and until 2026-08-25 this script then printed an unqualified
+# `check.sh: PASS` -- so a green gate did not witness that L4 ran at all. This self-test exercises
+# the SKIP and FAIL directions of that guard (the PASS direction is witnessed by the real run
+# below, which now prints its own status token).
+python3 "$ROOT/gates/test_check_lean_skip.py"
 echo "== lean lid :: der-verified length/big_integer/oid codecs (L4, unbounded; guarded) =="
+# Capture the lean stage's OWN verdict rather than inferring it from an exit code that cannot
+# distinguish PASS from SKIP. Not piped: `sh` here has no `pipefail`, so a pipe would hand us tee's
+# exit status and silently swallow a lean-stage failure -- the script writes the token to a file
+# instead, which keeps live progress output AND lets `set -e` propagate a real failure.
+LID_STATUS_FILE="$(mktemp)"
+DER_LID_STATUS_FILE="$LID_STATUS_FILE"
+export DER_LID_STATUS_FILE
 sh "$ROOT/lean/check_lean.sh"
+LID_STATUS="$(cat "$LID_STATUS_FILE" 2>/dev/null || echo UNKNOWN)"
+rm -f "$LID_STATUS_FILE"
+[ -n "$LID_STATUS" ] || LID_STATUS=UNKNOWN
 echo "== lid-staleness gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_check_lid_staleness.py"
 echo "== lid-staleness gate --strict (after the Lean gate, which just refreshed the state on green) =="
 python3 "$ROOT/gates/check_lid_staleness.py" --strict
-echo "== check.sh: PASS =="
+# The summary line NAMES the L4 state instead of hiding it behind a bare PASS. `L4 lean lid: PASS`
+# is the only spelling that witnesses the unbounded Lean proofs; anything else means the L3 Kani
+# floor is all this run establishes, and no CONTRACT+L4 claim may cite it.
+if [ "$LID_STATUS" = "PASS" ]; then
+  echo "== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) =="
+else
+  echo "== !! L4 NOT WITNESSED BY THIS RUN !! ================================================="
+  echo "   The Lean lid reported: $LID_STATUS (not PASS)."
+  echo "   This run establishes the L3 Kani floor ONLY. Every CONTRACT+L4 row in the docs is"
+  echo "   UNSUPPORTED by this run -- do not cite it as an L4 witness, and do not mint a publish"
+  echo "   receipt from it. Re-run with the Aeneas/Lean toolchain installed, and set"
+  echo "   DER_REQUIRE_LEAN=1 to make an absent toolchain a hard failure rather than a skip."
+  echo "   ======================================================================================"
+  echo "== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: $LID_STATUS -- NOT WITNESSED) =="
+fi

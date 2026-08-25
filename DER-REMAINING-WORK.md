@@ -495,3 +495,33 @@ would show up only as a new entry in the run log's disclosed-unsatisfied set (`P
 **What neither residual changes.** No claim in `README.md`, `PROOF_MANIFEST.md` or the module docs
 now rests on the corrected harnesses proving more than they do; the asymmetry between `sequence` and
 `set_of` is stated in both docstrings and in §8.3 rather than smoothed over.
+
+## UPDATE 2026-08-25 — §6.3's two-rule residual is DECIDED (D34), with one open question left behind
+
+`identifier_form` now decides the primitive/constructed-form rule and the EOC exclusion — the two
+X.690 rules `PROOF_MANIFEST.md` §6.3 recorded as enforced in no verified layer. 10 Kani harnesses;
+four are stated over the complete input domain (symbolic `u32` tag number × 4 classes × both forms),
+not a bounded buffer. Mutation controls in `evidence/` confirm each theorem is non-vacuous and that
+the three mutations kill distinct, predicted subsets.
+
+**R3 (OPEN, owner call) — should the check be wired into `decode_tlv_strict`?**
+
+The module is additive: `tag`, `tlv`, `sequence` behave exactly as before, so the residual is closed
+only for callers who opt into `decode_tlv_der` / `decode_tlv_der_strict`. Wiring it into
+`decode_tlv_strict` is where a consumer would most want it, and is deliberately not done here:
+
+- it is a **behavioural change to a Lean-lidded shipped function** — `tlv.rs` is in the lid set, so
+  it forces re-extraction of `DerTlvExtract` and `DerSequenceExtract` and risks the `TlvProofs` /
+  `SequenceProofs` developments;
+- it changes what every existing caller accepts, including the `x509_*` and `pkcs8` parsers, which
+  today do their own per-field tag checks;
+- D33's precedent: a behavioural change to a shipped decoder is not bundled into other work.
+
+Cost if taken: re-extraction + lid repair (unknown, possibly a day), plus a re-run of the full gate
+and a review of every call site. Benefit: the default entry point becomes DER-strict. **Not a
+correctness residual — a product decision.**
+
+**R4 (OPEN, small) — `identifier_form` decides one identifier, not a tree.** The children of an
+accepted constructed TLV are unchecked. A recursive `validate_der_tree` built on `sequence::Elements`
++ `validate_identifier_form` would close that; it needs a recursion/unwind story for the nesting
+depth, so it is a real (if modest) proof-engineering task rather than a wrapper.

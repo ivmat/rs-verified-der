@@ -1,10 +1,21 @@
 //! DER UTCTime content (X.690 §11.8, §8.25; type UNIVERSAL 23 / identifier `0x17`).
 //!
 //! DER (unlike BER) admits exactly **one** UTCTime spelling: the 13-octet ASCII string
-//! `YYMMDDHHMMSSZ`. This module validates the *content* octets of a TLV whose tag is UNIVERSAL 23
-//! — the tag identity and primitive/definite form are enforced (and proven) upstream by
-//! [`crate::tag`] / [`crate::tlv`], so, like the other content decoders ([`crate::integer`],
-//! [`crate::boolean`], [`crate::bit_string`]), this codec carries the *content* canonicality.
+//! `YYMMDDHHMMSSZ`. This module validates the *content* octets of a TLV whose tag is UNIVERSAL 23,
+//! and **nothing else** — like the other content decoders ([`crate::integer`], [`crate::boolean`],
+//! [`crate::bit_string`]), this codec carries the *content* canonicality and does not look at the
+//! identifier.
+//!
+//! **The identifier is not enforced upstream.** Of the tag identity and the primitive/definite
+//! form, only the **definite**-length half is enforced by [`crate::tlv`] (it delegates to
+//! [`crate::length`], which rejects the indefinite form). The **primitive**-form half and the
+//! **tag identity** are enforced by neither [`crate::tag`] nor [`crate::tlv`]: `decode_tag`
+//! attaches no meaning to the class/constructed combination and `decode_tlv` passes the parsed
+//! `Tag` through untouched. They are decided instead by *particular typed callers* —
+//! `x509_validity.rs`'s `decode_time_tlv` rejects a non-UNIVERSAL class (`WrongTag`) and a
+//! constructed UTCTime (`Constructed`) before dispatching here — or generically by
+//! [`crate::identifier_form`]. **A direct caller of [`decode_utc_time`] must decide the identifier
+//! itself.**
 //!
 //! The canonical form, verified against the standards (not merely the folklore):
 //! - **Terminates with `'Z'`** — §11.8 requires the `Z` (Zulu) form; local time and `±HHMM` offsets

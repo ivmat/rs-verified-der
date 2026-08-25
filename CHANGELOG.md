@@ -6,8 +6,42 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
-Proof-envelope hardening and hygiene since 0.1.1, no functional/API change: the harness count is
-unchanged at 191 (the widening below changes *domains*, not counts) and the crate re-verifies
+### Added
+- **`identifier_form` — a new module deciding the two X.690 identifier rules that no layer of this
+  crate previously decided** (`DECISIONS.md` D34, `PROOF_MANIFEST.md` §6.3): the
+  primitive/constructed form required of a UNIVERSAL type (§8.1.2, §10.2) and the reserved
+  end-of-contents identifier `00 00` (§8.1.5). Public API: `validate_identifier_form` (on a decoded
+  `Tag`), `required_form`, and `decode_tlv_der` / `decode_tlv_der_strict` composed onto the framing
+  reader; plus the `RequiredForm`, `FormError` and `DerTlvError` types. 10 Kani harnesses, four of
+  them over the **complete** input domain (a symbolic `u32` tag number × all four classes × both
+  forms) rather than a bounded buffer.
+
+  **This is additive and opt-in.** `tag::decode_tag`, `tlv::decode_tlv`, `tlv::decode_tlv_strict`
+  and `sequence`'s child walk are **unchanged** and still accept `21 00`, `00 00` and their
+  siblings — a permissive framing reader is load-bearing for recursive parsing. The rules are
+  therefore enforced where a caller opts in, and nowhere else. Whether to wire the check into
+  `decode_tlv_strict` itself is open (`DER-REMAINING-WORK.md` R3).
+- **`gates/test_check_lean_skip.py`** — a self-test for `lean/check_lean.sh`'s toolchain guard.
+
+### Fixed
+- **A green `check.sh` no longer hides a Lean stage that never ran.** `lean/check_lean.sh` is
+  guarded: with no Aeneas/Lean toolchain it skipped and exited 0, indistinguishably from a pass, and
+  `check.sh` then printed an unqualified `== check.sh: PASS ==`. The lean stage now reports a
+  machine-readable `lean-lid-status: PASS | SKIP | FAIL` (and writes `$DER_LID_STATUS_FILE`), and
+  `check.sh`'s summary names the state: `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid:
+  PASS) ==`, or a loud NOT-WITNESSED block otherwise. New `DER_REQUIRE_LEAN=1` makes an absent
+  toolchain a hard failure — set it for any run whose result will be published or minted into a
+  receipt.
+- **Three module docstrings attributed a check to a layer that does not perform it.**
+  `bit_string.rs`, `utc_time.rs` and `generalized_time.rs` told the reader that tag identity and the
+  primitive/definite form "are enforced (and proven) upstream by `tag`/`tlv`". Only the *definite*
+  half is true (`tlv` delegates to `length`, which rejects the indefinite form); the *primitive*
+  half and the tag identity are enforced by neither — they are checked by particular typed callers
+  (`x509_spki.rs`, `x509_certificate.rs`, `x509_validity.rs`) and, generically, by the new
+  `identifier_form`. A direct caller of those content decoders must decide the identifier itself.
+
+Proof-envelope hardening and hygiene since 0.1.1: the harness count moves 191 → 201 (10 new in
+`identifier_form`; the widening below changes *domains*, not counts) and the crate re-verifies
 end-to-end (`evidence/check-0e327b7.log`: 191/191 harnesses SUCCESSFUL, 472 tests, 33 doctests,
 sorry-free Lean lid, exactly the three disclosed-unsatisfied covers of `PROOF_MANIFEST.md` §8.2).
 That run is a **single** full-gate pass covering both the L3 Kani floor and the L4 Lean lid at one

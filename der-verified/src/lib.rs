@@ -11,6 +11,11 @@
 //! - [`tag`] — DER identifier octet(s) (X.690 §8.1.2): class, primitive/constructed, tag number.
 //! - [`length`] — DER definite-length field (X.690 §8.1.3, §10.1).
 //! - [`tlv`] — the tag-length-value reader composing the two (the X.690 structural unit).
+//! - [`identifier_form`] — the two identifier rules neither [`tag`] nor [`tlv`] decides: the
+//!   primitive/constructed form required of a UNIVERSAL type (§8.1.2, §10.2) and the reserved
+//!   end-of-contents identifier (§8.1.5). `decode_tlv` answers *"is this a well-formed TLV?"*;
+//!   this module answers *"is this identifier legal DER?"*, and offers `decode_tlv_der` as the
+//!   composition. Additive and opt-in — `tag`/`tlv` keep their permissive behaviour by design.
 //! - [`context_tag`] — the ASN.1 `[n] EXPLICIT` context-tag wrapper (X.690 §8.14.2): peels one
 //!   context-specific constructed TLV, structurally, to expose the nested inner TLV's bytes to a
 //!   caller-chosen inner decoder. EXPLICIT only, deliberately (IMPLICIT tagging is schema-dependent
@@ -184,6 +189,7 @@ pub mod ecdsa_sig_value;
 pub mod encrypted_private_key_info;
 pub mod enumerated;
 pub mod generalized_time;
+pub mod identifier_form;
 pub mod integer;
 pub mod length;
 pub mod null;

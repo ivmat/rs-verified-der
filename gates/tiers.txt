@@ -39,6 +39,7 @@ LIGHT pkcs8
 LIGHT encrypted_private_key_info
 LIGHT profile
 LIGHT utf8_string
+LIGHT identifier_form
 
 HEAVY set_of
 HEAVY sequence

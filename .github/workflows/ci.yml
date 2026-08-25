@@ -93,7 +93,8 @@ jobs:
           - shard: codecs-b
             filters: >-
               --harness bit_string:: --harness tag:: --harness octet_string::
-              --harness tlv:: --harness oid:: --harness enumerated::
+              --harness tlv:: --harness identifier_form:: --harness oid::
+              --harness enumerated::
               --harness boolean:: --harness null:: --harness context_tag::
               --harness x509_algorithm_identifier:: --harness x509_spki::
               --harness x509_validity:: --harness ecdsa_sig_value::

@@ -2,12 +2,12 @@
 
 This is the **honest proof envelope** for this crate: what is machine-checked, over what domain,
 under what assumptions and stubs — and, given equal weight, **what is not**. It exists so that a
-reader who is not going to read 191 proof harnesses and 6 Lean developments can still know what
+reader who is not going to read 201 proof harnesses and 6 Lean developments can still know what
 they are being offered, and where the guarantee stops.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "191 Kani harnesses, 6 Lean lids, 472 tests" describes how
+> **Counts are inventory, not coverage.** "201 Kani harnesses, 6 Lean lids, 483 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -21,7 +21,8 @@ they are being offered, and where the guarantee stops.
 > fidelity of the Aeneas extraction, the toolchain pins, the lids' 13 declared axioms (all of them
 > specs for upstream `core` primitives since 2026-08-19 — none is an assumption about this crate's
 > own code any more), the meaning of "bounded", the framing layer's named residual (§6.3: a
-> well-formed TLV is not a valid DER value encoding, and nothing here decides the difference), and
+> well-formed TLV is not a valid DER value encoding; since 2026-08-25 `identifier_form` decides
+> that difference, but the framing entry points still do not), and
 > the three disclosed-unsatisfiable covers. That base is enumerated in one place, each entry with
 > its failure mode and what leans on it, in [`ASSUMPTIONS.md`](ASSUMPTIONS.md). This document says
 > what is proven; that one says what has to be true for "proven" to mean what it looks like.
@@ -74,19 +75,19 @@ deviations. Read the two differently.
 <!-- BEGIN GENERATED:inventory (gates/gen_proof_manifest.py) -->
 | Inventory (static, derived from `der-verified/src` + `lean/`) | Count |
 |---|---:|
-| source modules (excl. `lib.rs`) | 32 |
-| …of which carry at least one `#[kani::proof]` | 32 |
-| public entry points (free `pub fn`s + public `impl` methods) | 80 |
-| …named by at least one Kani harness | 69 |
+| source modules (excl. `lib.rs`) | 33 |
+| …of which carry at least one `#[kani::proof]` | 33 |
+| public entry points (free `pub fn`s + public `impl` methods) | 84 |
+| …named by at least one Kani harness | 73 |
 | …named by **no** Kani harness | **11** |
-| `#[kani::proof]` harnesses | 191 |
+| `#[kani::proof]` harnesses | 201 |
 | `kani::assume` harness preconditions (narrow the proved domain) | 168 |
-| `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 3 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 184 |
+| `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 4 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 186 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 11 / 8 |
-| `#[test]` unit + regression tests | 472 |
-| crate-doc examples run as doc-tests | 33 |
+| `#[test]` unit + regression tests | 483 |
+| crate-doc examples run as doc-tests | 34 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
 <!-- END GENERATED:inventory -->
@@ -123,7 +124,7 @@ Because the rustc pin is a floating channel, **the rustc version is a property o
 <!-- END GENERATED:pins -->
 
 <!-- BEGIN GENERATED:pins-observed (gates/gen_proof_manifest.py) -->
-Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.97.0 (2d8144b78 2026-07-07)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
+Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.93.1 (01f6ddf75 2026-02-11) (built from a source tarball)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
 <!-- END GENERATED:pins-observed -->
 
 Toolchain identity is part of every claim in this document. Two honest qualifications:
@@ -234,7 +235,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 472 unit and regression tests (plus 33 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 483 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.
@@ -261,7 +262,8 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**`evidence/check-0e327b7.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff 0e327b7..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
+**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
+- `evidence/check-0e327b7.log` (at `0e327b7`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-24ddb69.log` (at `24ddb69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -338,7 +340,7 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — 163 of the 191 harnesses (the shard filters are by module, not a
+  the memory-tractable share — 173 of the 201 harnesses (the shard filters are by module, not a
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
@@ -407,6 +409,7 @@ carry that.
 | `encrypted_private_key_info` | 2 | 2 | 3 | 11..16 | 20 | 2 | 12 | 0 |  |
 | `enumerated` | 2 | 2 | 3 | 9 | 12 | 1 | 10 | 0 |  |
 | `generalized_time` | 3 | 2 | 16 | 3..19 | 16..20 | 20 | 3 | 0 |  |
+| `identifier_form` | 4 | 4 | 10 | 6 | 12 | 0 | 2 | 0 |  |
 | `integer` | 2 | 2 | 7 | 8..10 | 12 | 4 | 2 | 0 |  |
 | `length` | 2 | 2 | 9 | 8 | 10 | 7 | 1 | 0 | ✅ |
 | `null` | 1 | 1 | 1 | — | — | 0 | 0 | 0 |  |
@@ -503,6 +506,7 @@ exact statement, including its `assume` preconditions.
 - **`encrypted_private_key_info`** (3): `parse_never_panics`, `parse_strict_never_panics`, `parse_ok_path_witnessed`
 - **`enumerated`** (3): `decode_delegates_to_integer`, `encode_delegates_to_integer`, `roundtrip`
 - **`generalized_time`** (16): `roundtrip_all_fields`, `decode_never_panics`, `decode_accepts_only_canonical`, `accepted_iff_canonical_oracle`, `short_length_is_bad_length`, `non_digit_is_classified`, `not_zulu_is_classified`, `month_range_is_classified`, `day_range_is_classified`, `hour_range_is_classified`, `minute_range_is_classified`, `second_range_is_classified`, `bad_fraction_separator_is_classified`, `fraction_empty_is_classified`, `fraction_trailing_zero_is_classified`, `fraction_non_digit_is_classified`
+- **`identifier_form`** (10): `oracle_is_well_formed`, `required_form_matches_oracle_on_all_u32`, `reserved_eoc_rejected_iff_universal_zero`, `constructed_form_rule_matches_oracle_on_all_tags`, `accepts_iff_no_rule_violated_and_never_rejects_non_universal`, `decode_tlv_der_is_decode_tlv_refined_by_the_rule`, `decode_tlv_der_strict_requires_full_consumption`, `identifier_form_rejects_the_five_fuzzer_findings`, `legal_der_the_comparison_library_rejected_is_still_accepted`, `real_x509_identifiers_are_still_accepted`
 - **`integer`** (7): `roundtrip_all_i64`, `decode_never_panics`, `decode_accepts_only_minimal`, `empty_is_classified`, `redundant_positive_padding_is_non_minimal`, `redundant_negative_padding_is_non_minimal`, `nine_octets_is_too_large`
 - **`length`** (9): `roundtrip_all_u32`, `decode_never_panics`, `decode_accepts_only_canonical`, `indefinite_is_classified`, `reserved_is_classified`, `leading_zero_is_non_minimal`, `long_form_of_short_value_is_non_minimal`, `truncated_long_form_is_classified`, `too_large_is_classified`
 - **`null`** (1): `only_empty_is_valid`
@@ -554,7 +558,7 @@ This is the list that decides whether the rest of the document is worth anything
 |---|---|
 | `tag` | ∀-length totality and consumption bounds are proven in Lean; the *canonicality/minimality* rejection properties are Kani-bounded only, at a **7-byte** symbolic buffer (`decode_tag_accepts_only_canonical`/`high_tag_of_small_number_is_non_minimal` et al., §4's `tag` row) — non-minimal high-tag encodings beyond that bound are not covered by the ∀-length Lean lid |
 | `length` | fully lifted to ∀-length in Lean; no known residual beyond the Aeneas trust boundary |
-| `tlv` | **no over-read is proven, and this row names it because nothing else in the module's own clause did**: an accepted TLV consumes `used ≤ input.len()` and its value borrow is exactly `input[header..used]` — Kani-bounded at a 16-byte buffer (`decode_tlv_structure`) *and* ∀-length in Lean (§3.2's `tlv` row). Not proven: the strict (anti-trailing-data) variant's rejection classification, which is Kani-bounded only. **Also not proven, because it is not implemented:** any judgement that the parsed identifier is a *legal DER identifier for a value* — the primitive/constructed form rules and the EOC exclusion live in no layer of this crate (§6.3, a named residual) |
+| `tlv` | **no over-read is proven, and this row names it because nothing else in the module's own clause did**: an accepted TLV consumes `used ≤ input.len()` and its value borrow is exactly `input[header..used]` — Kani-bounded at a 16-byte buffer (`decode_tlv_structure`) *and* ∀-length in Lean (§3.2's `tlv` row). Not proven: the strict (anti-trailing-data) variant's rejection classification, which is Kani-bounded only. **Also not proven of `tlv`, deliberately:** any judgement that the parsed identifier is a *legal DER identifier for a value*. Since 2026-08-25 the primitive/constructed form rules and the EOC exclusion ARE decided by `identifier_form`, whose `decode_tlv_der` composes them onto this reader; `decode_tlv` itself keeps its permissive framing-only behaviour by design, so the residual is live for its own callers (§6.3) |
 | `context_tag` | bounded only; only the explicit-context form is addressed — implicit tagging is not modelled |
 | `boolean` | nothing outstanding: the 1-octet input space is characterised exhaustively |
 | `integer` | values are capped at `i64` by design (see §9); `big_integer` is the arbitrary-magnitude complement. Bounded only |
@@ -568,7 +572,7 @@ This is the list that decides whether the rest of the document is worth anything
 | `utf8_string` | bounded only; equivalence with `core::str::from_utf8` is proven as a *differential oracle* over the bounded domain, not ∀-length. `decode_utf8_str` is unharnessed (§4.1) |
 | `utc_time` | bounded only. Single-field range validation only — **no calendar validity** (day-of-month against month, leap years); leap-second `SS=60` is rejected by design (§9) |
 | `generalized_time` | bounded only. Same calendar-validity and leap-second fences; `require_no_fraction` is unharnessed (§4.1) |
-| `sequence` | structural child-walk correctness is ∀-length and ∀-children; the strict variants' rejection classification is Kani-bounded only. The walk inherits `tlv`'s residual: it judges each child's *framing*, never whether the child's identifier is a legal DER identifier (§6.3) |
+| `sequence` | structural child-walk correctness is ∀-length and ∀-children; the strict variants' rejection classification is Kani-bounded only. The walk inherits `tlv`'s residual: it judges each child's *framing*, never whether the child's identifier is a legal DER identifier. `identifier_form` decides that rule but is **not** wired into this walk, and decides one identifier rather than a tree — so a recursive validator must apply it per child itself (§6.3) |
 | `set_of` | bounded only. `SET OF` member-ordering (§11.6) is validated; **general `SET` (§10.3) is out of scope** (§9) |
 | `x509_algorithm_identifier` | bounded, structural only: frames the object; interprets no algorithm semantics and no parameters |
 | `ecdsa_sig_value` | bounded, structural only: DER framing and canonicality of `SEQUENCE { r INTEGER, s INTEGER }`. **No curve-order range check** (`1 <= r,s <= n-1` needs a curve identifier this container does not carry), **no low-S policy** (protocol profile, not DER validity), **no cryptographic interpretation** |
@@ -583,8 +587,30 @@ This is the list that decides whether the rest of the document is worth anything
 
 ### 6.3 Named residual — what the TLV framing accepts that a DER *validator* rejects
 
-**Disposition: named, not fixed.** A strict mode may be added later; nothing in this crate implements
-one today, and this section exists so no reader has to discover that empirically.
+**Disposition (updated 2026-08-25): the rules are now DECIDED, in a new module, and the framing
+layer is deliberately unchanged.** Classes (a) and (b) below are enforced by
+[`identifier_form`](der-verified/src/identifier_form.rs) — `validate_identifier_form` on a decoded
+`Tag`, and `decode_tlv_der` / `decode_tlv_der_strict` as the compositions with `tlv`. The module
+carries its own harness set (counted per-module in §4); four of those theorems are stated over the
+**complete** input domain (a symbolic `u32` tag number and all four classes), not a bounded buffer.
+
+**What that does and does not change, stated exactly:**
+
+- **Decided:** the rules now live in a verified layer of this crate, which is what §6.3 previously
+  said they did not.
+- **Not changed:** `tag::decode_tag`, `tlv::decode_tlv`, `tlv::decode_tlv_strict` and `sequence`'s
+  child walk behave **exactly as before** — they still accept every input in the table below. That
+  is deliberate: `decode_tlv` must keep reading any well-formed TLV to drive recursive parsing, and
+  a caller must be able to inspect an identifier before deciding what it means. So the residual
+  described in the rest of this section is still live *for callers of those entry points*; what has
+  changed is that there is now a verified entry point that closes it, instead of only the
+  hand-written per-call-site checks.
+- **Still open:** whether the check should be wired into `decode_tlv_strict` itself. That is a
+  behavioural change to a Lean-lidded shipped function and is a separate decision, deliberately not
+  bundled here (the same reasoning D33 applied to the `set_of` refactor).
+- **Scope of the new module:** it decides ONE identifier, not a tree — the children of an accepted
+  constructed TLV are unchecked, so a recursive DER validator must apply the rule at each level. It
+  decides form and legality, never whether the tag is the one a schema expects.
 
 Differential fuzzing against an independent DER implementation (2026-08) compared this crate's TLV
 framing with that library's tag layer over a multi-hour campaign. It found **no defect in what this
@@ -610,8 +636,10 @@ a validator, and "`decode_tlv` returned `Ok`" means "these bytes are a well-form
 as the documented `TagNumber > 255` guard, and it is listed only so the three-way split is not
 silently collapsed into "we accept things others reject".
 
-**(a) and (b) are a residual, and this is exactly where they sit.** The primitive/constructed form
-rules and the EOC exclusion are enforced in **no verified layer of this crate**:
+**(a) and (b): where the rules sit, and where they still do not.** Since 2026-08-25 the
+primitive/constructed form rules and the EOC exclusion **are** enforced in a verified layer —
+`identifier_form` — but they remain enforced in none of the layers listed below, which is what a
+caller of those layers experiences:
 
 - `tag::decode_tag` parses the identifier — class, constructed bit, number — and validates the
   *encoding* of the number (minimal high-tag form). It attaches no meaning to the combination.
@@ -627,9 +655,17 @@ rules and the EOC exclusion are enforced in **no verified layer of this crate**:
 
 **What a consumer must therefore not do:** treat `decode_tlv`/`decode_sequence` acceptance as a
 DER-validity decision for a value of a *known type*. A generic walk over untrusted bytes that
-accepts whatever tags it finds will accept the (a) and (b) inputs above. The supported way to reject
-them today is to check the `Tag` yourself at each site — `tlv.tag.constructed`, `tlv.tag.number`,
-`tlv.tag.class` are all public and exact — or to use the typed parser for the type you expect.
+accepts whatever tags it finds will accept the (a) and (b) inputs above. Three supported ways to
+reject them, strongest first: use `identifier_form::decode_tlv_der` (or `decode_tlv_der_strict`) in
+place of `decode_tlv`; call `identifier_form::validate_identifier_form` on a `Tag` you already have;
+or check the `Tag` yourself at each site — `tlv.tag.constructed`, `tlv.tag.number`, `tlv.tag.class`
+are all public and exact — or use the typed parser for the type you expect.
+
+**Cross-check kept honest in both directions.** Class (c) below is *legal* DER that the comparison
+library rejected only for lack of a model, so it is the set most at risk from a rule that
+over-rejects. `identifier_form` accepts both (c) specimens, and a harness
+(`legal_der_the_comparison_library_rejected_is_still_accepted`) pins that, alongside one that pins
+the real X.509 identifiers. The rule buys its rejections without refusing legal input.
 
 **Evidence class, stated honestly:** this residual was found by *differential fuzzing against an
 independent implementation*, which is `ASSUMPTIONS.md` A10's own named falsifier. It is a
@@ -704,16 +740,16 @@ buffer widths and unwind ranges are in §4's table; the crate-wide distribution:
 | 6 | 10 |
 | 8 | 9 |
 | 10 | 10 |
-| 12 | 20 |
+| 12 | 25 |
 | 14 | 12 |
 | 16 | 62 |
 | 18 | 5 |
 | 20 | 30 |
 | 21 | 1 |
 | 22 | 1 |
-| **total bounded** | **172** |
+| **total bounded** | **177** |
 
-19 harnesses declare no `#[kani::unwind]`, so no unwind bound is imposed on them and CBMC must unroll to completion every loop they reach. For those harnesses the loop depth is therefore *not* a limit on the claim: a loop CBMC could not fully unroll would fail an unwinding assertion rather than pass quietly. Their input domains are still bounded by buffer width like every other harness. Listed so a reader can check each one: `big_integer::empty_is_empty`, `big_integer::redundant_positive_padding_is_non_minimal`, `big_integer::redundant_negative_padding_is_non_minimal`, `bit_string::empty_is_classified`, `bit_string::empty_nonzero_unused_is_classified`, `boolean::one_octet_is_canonical`, `boolean::roundtrip`, `boolean::wrong_length_is_bad_length`, `enumerated::encode_delegates_to_integer`, `integer::empty_is_classified`, `integer::redundant_positive_padding_is_non_minimal`, `integer::redundant_negative_padding_is_non_minimal`, `null::only_empty_is_valid`, `oid::empty_is_classified`, `restricted_string::charset_exactly_matches_oracle_printable`, `restricted_string::charset_exactly_matches_oracle_ia5`, `restricted_string::charset_exactly_matches_oracle_numeric`, `restricted_string::charset_exactly_matches_oracle_visible`, `utc_time::full_year_pivot_is_correct`.
+24 harnesses declare no `#[kani::unwind]`, so no unwind bound is imposed on them and CBMC must unroll to completion every loop they reach. For those harnesses the loop depth is therefore *not* a limit on the claim: a loop CBMC could not fully unroll would fail an unwinding assertion rather than pass quietly. Their input domains are still bounded by buffer width like every other harness. Listed so a reader can check each one: `big_integer::empty_is_empty`, `big_integer::redundant_positive_padding_is_non_minimal`, `big_integer::redundant_negative_padding_is_non_minimal`, `bit_string::empty_is_classified`, `bit_string::empty_nonzero_unused_is_classified`, `boolean::one_octet_is_canonical`, `boolean::roundtrip`, `boolean::wrong_length_is_bad_length`, `enumerated::encode_delegates_to_integer`, `identifier_form::oracle_is_well_formed`, `identifier_form::required_form_matches_oracle_on_all_u32`, `identifier_form::reserved_eoc_rejected_iff_universal_zero`, `identifier_form::constructed_form_rule_matches_oracle_on_all_tags`, `identifier_form::accepts_iff_no_rule_violated_and_never_rejects_non_universal`, `integer::empty_is_classified`, `integer::redundant_positive_padding_is_non_minimal`, `integer::redundant_negative_padding_is_non_minimal`, `null::only_empty_is_valid`, `oid::empty_is_classified`, `restricted_string::charset_exactly_matches_oracle_printable`, `restricted_string::charset_exactly_matches_oracle_ia5`, `restricted_string::charset_exactly_matches_oracle_numeric`, `restricted_string::charset_exactly_matches_oracle_visible`, `utc_time::full_year_pivot_is_correct`.
 <!-- END GENERATED:bounds -->
 
 Two bounds are deliberate, documented **reductions** rather than natural sizes, and are called out
@@ -737,8 +773,8 @@ input space. This crate treats that as the default suspicion, and the check is m
 <!-- BEGIN GENERATED:non-vacuity (gates/gen_proof_manifest.py) -->
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
-| harnesses | 191 |
-| `kani::cover` witnesses | 184, in 30 of the 32 modules that have harnesses |
+| harnesses | 201 |
+| `kani::cover` witnesses | 186, in 31 of the 33 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **1** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 88 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
@@ -912,6 +948,7 @@ The full hand-written helper surface inside `mod proofs`, so a reader can go aud
 | `big_integer` | `is_minimal_oracle` | `validate_iff_minimal_oracle` |
 | `bit_string` | — | `octet_aligned_iff_unused_zero` |
 | `generalized_time` | `is_canonical_der_generalizedtime` | `accepted_iff_canonical_oracle` |
+| `identifier_form` | `any_class`, `any_tag`, `oracle_is_constructed_only`, `oracle_is_primitive_only` | `accepts_iff_no_rule_violated_and_never_rejects_non_universal`, `constructed_form_rule_matches_oracle_on_all_tags`, `oracle_is_well_formed`, `required_form_matches_oracle_on_all_u32`, `reserved_eoc_rejected_iff_universal_zero` |
 | `profile` | — | `rule1_mismatch_iff_algorithms_differ`, `rule2_requires_v3_iff_extensions_present_and_not_v3`, `rule3_generalized_too_early_iff_year_le_2049` |
 | `restricted_string` | `oracle_ia5`, `oracle_numeric`, `oracle_printable`, `oracle_visible` | `charset_exactly_matches_oracle_ia5`, `charset_exactly_matches_oracle_numeric`, `charset_exactly_matches_oracle_printable`, `charset_exactly_matches_oracle_visible`, `validate_iff_all_in_charset_ia5`, `validate_iff_all_in_charset_numeric`, `validate_iff_all_in_charset_printable`, `validate_iff_all_in_charset_visible` |
 | `rsa_private_key` | `stub_validate_other_prime_info`, `stub_validate_other_prime_infos` | — |
@@ -924,7 +961,7 @@ The full hand-written helper surface inside `mod proofs`, so a reader can go aud
 | `x509_name` | `stub_validate_rdn` | — |
 | `x509_tbs_certificate` | `stub_parse_validity`, `stub_validate_extensions`, `stub_validate_name` | — |
 
-18 hand-written helper functions in total. Derived by exclusion — every `fn` in a `mod proofs` block that is not itself a harness — so a helper cannot escape this list by being named something unexpected.
+22 hand-written helper functions in total. Derived by exclusion — every `fn` in a `mod proofs` block that is not itself a harness — so a helper cannot escape this list by being named something unexpected.
 <!-- END GENERATED:oracles -->
 
 What mitigates this, and what does not:
@@ -1006,6 +1043,7 @@ Every `kani::assume` inside a **stub body** — each constrains what the stub is
 
 For contrast, the other `kani::assume`s outside harness bodies live in input generators and narrow a nondeterministic selector — ordinary harness setup, nothing to discharge:
 
+- `identifier_form::any_class` — `assume(sel < 4)`
 - `tag::any_class` — `assume(sel < 4)`
 - `tlv::any_class` — `assume(sel < 4)`
 <!-- END GENERATED:stubs -->
@@ -1091,9 +1129,16 @@ of a prose list is not the kind of thing this crate's tools can check.
 
 **Not on this list, deliberately: the framing layer's named residual (§6.3).** The two rules there —
 primitive form for primitive-only universal types, and the EOC exclusion — are not *narrowings* of
-DER that this crate chose; they are DER rules that no layer here decides either way, at a layer that
-never claimed to. They are recorded as a residual with their repro bytes rather than as a deviation,
-because calling them a design decision would imply a decision was made.
+DER that this crate chose; they were DER rules that no layer here decided either way, at a layer that
+never claimed to. They were recorded as a residual with their repro bytes rather than as a deviation,
+because calling them a design decision would have implied a decision was made.
+
+**Since 2026-08-25 a decision HAS been made, and it is a scope choice rather than a deviation.**
+`identifier_form` decides both rules; `tag`/`tlv`/`sequence` deliberately keep their permissive
+framing-only behaviour, so the rules are enforced where a caller opts in and nowhere else. That is
+now a design decision, and it is on the record here: the permissive framing reader is load-bearing
+for recursive parsing, and tightening it would be a behavioural change to Lean-lidded shipped
+functions. Still not a *narrowing* of DER — no legal encoding is rejected anywhere.
 
 ## 10. Reproduce
 

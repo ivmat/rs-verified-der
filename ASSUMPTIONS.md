@@ -55,7 +55,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   defect of the class it exists to catch survives (this is why the mutation controls in
   `evidence/MUTATION-CONTROLS-*.md` exist — they are the cheapest available probe of A1, and they
   sample it rather than establish it).
-  **load-bearing-for:** all 191 proof harnesses — i.e. every bounded claim in `PROOF_MANIFEST.md`
+  **load-bearing-for:** all 201 proof harnesses — i.e. every bounded claim in `PROOF_MANIFEST.md`
   §§3.1, 4, 5, 7.
   *Not enforced by `./check.sh`:* the Kani version is pinned in CI, and a local run with a different
   Kani will not tell you so (`PROOF_MANIFEST.md` §2).
@@ -241,7 +241,8 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   decides three things — well-formed identifier octets, a canonical definite length, and the
   declared value present inside the input — and it decides **nothing about whether the identifier it
   parsed is legal for a DER value**. Two rules a DER validator applies are therefore enforced in
-  **no verified layer of this crate**: the *primitive-form requirement* for primitive-only universal
+  **no framing layer of this crate** — and, until 2026-08-25, in no layer at all: the
+  *primitive-form requirement* for primitive-only universal
   types (X.690 mandates the primitive form; `21 00`, `26 01 39` and their siblings set the
   constructed bit and are accepted here), and the *EOC exclusion* (universal 0, `00 00`, BER's
   indefinite-length marker, never legal in DER, accepted here as a well-formed TLV).
@@ -256,9 +257,17 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   **load-bearing-for:** any use of `tlv::decode_tlv` / `sequence`'s child walk as a validity gate;
   the honest reading of the ∀-length `tlv`/`sequence` theorems, which are about consumption and
   windowing and say nothing about tag legality.
-  *Disposition (2026-08):* **named, not fixed.** A strict mode — a primitive-form and EOC check at
-  the framing layer — is a possible future change; nothing in this crate implements one today, and
-  this entry exists so that absence is stated rather than inferred.
+  *Disposition (2026-08-25):* **decided in a new module; the framing layer unchanged.**
+  `identifier_form` implements both rules (`validate_identifier_form` on a `Tag`; `decode_tlv_der` /
+  `decode_tlv_der_strict` composed onto the framing reader), with its own Kani harness set (counted in `PROOF_MANIFEST.md` §4), four of its theorems
+  over the complete `u32` × class × form domain. See `DECISIONS.md` D34.
+  **The assumption above is NOT retired by that.** It is an assumption about what a consumer reads
+  into `decode_tlv` acceptance, and `decode_tlv` still accepts every input named here — deliberately,
+  because a permissive framing reader is load-bearing for recursive parsing. So the rules are
+  enforced where a caller opts in, and the fence stays exactly as stated. What changed is that the
+  supported way to reject those inputs is now a verified entry point rather than only a
+  hand-written per-call-site check. Whether to wire the check into `decode_tlv_strict` itself is
+  open (D34, `DER-REMAINING-WORK.md`).
 
 ## 3. Out of focus — parked, not gone
 

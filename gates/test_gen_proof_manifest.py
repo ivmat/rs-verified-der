@@ -215,10 +215,12 @@ class DoctestCounting(unittest.TestCase):
     # --- the crate's own measured total, so a regression in EITHER direction is caught end-to-end
 
     def test_crate_total_doctests_matches_the_measured_cargo_test_doc_count(self):
-        # `cargo test --doc -p der-verified` reports "33 passed" (measured 2026-08-17, the
-        # handover's own figure). This pins the whole pipeline — `count_doctests` summed across
-        # every module in `SRC`, not just `lib.rs` — against ground truth, not just fixtures.
-        self.assertEqual(facts()['totals']['doctests'], 33)
+        # `cargo test --doc -p der-verified` reports "34 passed" (re-measured 2026-08-25, when
+        # `identifier_form` added the 34th; previously 33, measured 2026-08-17). This pins the whole
+        # pipeline — `count_doctests` summed across every module in `SRC`, not just `lib.rs` —
+        # against ground truth, not just fixtures. Bump it only from a fresh `cargo test --doc` run,
+        # never to whatever makes the gate green: the literal IS the ground truth here.
+        self.assertEqual(facts()['totals']['doctests'], 34)
 
     def test_only_lib_rs_undercounts_against_the_all_module_total(self):
         # The counter-test for the fix itself: summing `count_doctests` over `lib.rs` ALONE (the
