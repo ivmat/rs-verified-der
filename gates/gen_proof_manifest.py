@@ -1218,7 +1218,12 @@ GUARDED_DOCS = ['PROOF_MANIFEST.md', 'README.md', 'der-verified/README.md',
                 # ("all 191 proof harnesses", "six codecs", "472 unit and regression tests"). A
                 # stale count in the file whose whole job is to be believed is the worst place for
                 # one, so it is guarded like the rest.
-                'ASSUMPTIONS.md']
+                'ASSUMPTIONS.md',
+                # COVERAGE.md is the per-rule consumer ledger, and it is HAND-BUILT — no generated
+                # region, so nothing else in this repo would catch a stale count in it. That is
+                # exactly why it is guarded: its own provenance section tells the reader its
+                # crate totals are gate-enforced, and this entry is what makes that true.
+                'COVERAGE.md']
 
 # A count, numeric or spelled. The lookbehind matters: without it, "X.509 harnesses" reads as
 # the number 509 and the guard fires on a phantom drift.

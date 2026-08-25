@@ -123,6 +123,15 @@ judgements**, not derived from code — each one is a row in
 That split is load-bearing, not decorative: an undisclosed gated-looking claim on this repo's
 front page is exactly the wrong shape.
 
+**The map is per module. If your question is per *rule* — "is the constructed-form rule actually
+enforced?", "is SET OF ordering decided, and over what?" — read [`COVERAGE.md`](COVERAGE.md).** It
+carries one row per X.690 / RFC 5280 rule, each with the strength of the evidence behind it and a
+command you can run to check that row yourself. Rules that no layer of this crate decides get a row
+there too, so you never have to infer coverage from silence. Several of the most important rows —
+the constructed-form rule, the end-of-contents exclusion, OID arc materialisation — exist only on
+that axis, because no single module owns them and a module-shaped table therefore cannot have a row
+for them.
+
 <!-- BEGIN GENERATED:map (gates/gen_verification_map.py) -->
 ```mermaid
 flowchart TB
@@ -331,6 +340,9 @@ composition uses. See [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) and `DECISIONS.md
 
 - [`docs/why-verified.md`](docs/why-verified.md) — why a verified DER decoder, the two-layer
   (Kani + Aeneas→Lean) approach, the honesty envelope, and the modular-proof war story.
+- [`COVERAGE.md`](COVERAGE.md) — the per-rule coverage ledger: one row per X.690 / RFC 5280 rule,
+  its evidence strength, and a self-verify command per row. Start here if your question is "is *this
+  rule* verified?" rather than "does *this module* have harnesses?".
 - [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) — what is proven, bounds, assumptions, stubs, and non-goals.
 - [`DECISIONS.md`](DECISIONS.md) — the contestable-decisions ledger: every scope narrowing and design
   fork, with its rationale and review outcome.
