@@ -1,0 +1,172 @@
+[
+  {
+    "run": "R1-length-mutated-classify",
+    "module": "length",
+    "harness": "length::proofs::long_form_of_short_value_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "length.rs",
+    "defect": "LEN-A: length::decode_length long-form minimality check removed (the `val < 0x80` rejection commented out), so a long-form encoding of a short-form-representable value is wrongly accepted"
+  },
+  {
+    "run": "R1-length-mutated-canonical",
+    "module": "length",
+    "harness": "length::proofs::decode_accepts_only_canonical",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "length.rs",
+    "defect": "LEN-A: length::decode_length long-form minimality check removed (the `val < 0x80` rejection commented out), so a long-form encoding of a short-form-representable value is wrongly accepted"
+  },
+  {
+    "run": "R1-length-reverted-classify",
+    "module": "length",
+    "harness": "length::proofs::long_form_of_short_value_is_non_minimal",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "length.rs",
+    "defect": "LEN-A: length::decode_length long-form minimality check removed (the `val < 0x80` rejection commented out), so a long-form encoding of a short-form-representable value is wrongly accepted"
+  },
+  {
+    "run": "R2-tag-mutated-classify",
+    "module": "tag",
+    "harness": "tag::proofs::high_tag_of_small_number_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "tag.rs",
+    "defect": "TAG-A: tag::decode_tag high-tag minimality check removed (the `number <= 30` rejection commented out), so a high-tag form of a low-tag-representable number is wrongly accepted"
+  },
+  {
+    "run": "R2-tag-mutated-canonical",
+    "module": "tag",
+    "harness": "tag::proofs::decode_tag_accepts_only_canonical",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "tag.rs",
+    "defect": "TAG-A: tag::decode_tag high-tag minimality check removed (the `number <= 30` rejection commented out), so a high-tag form of a low-tag-representable number is wrongly accepted"
+  },
+  {
+    "run": "R2-tag-reverted-classify",
+    "module": "tag",
+    "harness": "tag::proofs::high_tag_of_small_number_is_non_minimal",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "tag.rs",
+    "defect": "TAG-A: tag::decode_tag high-tag minimality check removed (the `number <= 30` rejection commented out), so a high-tag form of a low-tag-representable number is wrongly accepted"
+  },
+  {
+    "run": "R3-integer-mutated-minimal",
+    "module": "integer",
+    "harness": "integer::proofs::decode_accepts_only_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted"
+  },
+  {
+    "run": "R3-integer-mutated-positive-padding",
+    "module": "integer",
+    "harness": "integer::proofs::redundant_positive_padding_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted"
+  },
+  {
+    "run": "R3-integer-mutated-negative-padding",
+    "module": "integer",
+    "harness": "integer::proofs::redundant_negative_padding_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted"
+  },
+  {
+    "run": "R3-integer-reverted-minimal",
+    "module": "integer",
+    "harness": "integer::proofs::decode_accepts_only_minimal",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted"
+  },
+  {
+    "run": "R4-bigint-mutated-oracle",
+    "module": "big_integer",
+    "harness": "big_integer::proofs::validate_iff_minimal_oracle",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "big_integer.rs",
+    "defect": "BIG-A: big_integer::validate_integer_content wrong index -- `c1` is bound to content[0] a second time instead of content[1], so the minimality check no longer inspects the byte X.690 8.3.2 keys on"
+  },
+  {
+    "run": "R4-bigint-reverted-oracle",
+    "module": "big_integer",
+    "harness": "big_integer::proofs::validate_iff_minimal_oracle",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "big_integer.rs",
+    "defect": "BIG-A: big_integer::validate_integer_content wrong index -- `c1` is bound to content[0] a second time instead of content[1], so the minimality check no longer inspects the byte X.690 8.3.2 keys on"
+  },
+  {
+    "run": "R5-oidA-leading",
+    "module": "oid",
+    "harness": "oid::proofs::leading_0x80_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "oid.rs",
+    "defect": "OID-A: oid::validate_oid subidentifier minimality check removed (the redundant leading 0x80 rejection commented out), so non-minimal subidentifiers are wrongly accepted"
+  },
+  {
+    "run": "R5-oidA-later",
+    "module": "oid",
+    "harness": "oid::proofs::later_0x80_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "oid.rs",
+    "defect": "OID-A: oid::validate_oid subidentifier minimality check removed (the redundant leading 0x80 rejection commented out), so non-minimal subidentifiers are wrongly accepted"
+  },
+  {
+    "run": "R5-oidA-reverted",
+    "module": "oid",
+    "harness": "oid::proofs::leading_0x80_is_non_minimal",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "oid.rs",
+    "defect": "OID-A: oid::validate_oid subidentifier minimality check removed (the redundant leading 0x80 rejection commented out), so non-minimal subidentifiers are wrongly accepted"
+  },
+  {
+    "run": "R6-oidB-later",
+    "module": "oid",
+    "harness": "oid::proofs::later_0x80_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "oid.rs",
+    "defect": "OID-B: oid::validate_oid subidentifier minimality NARROWED to the first octet only (`i == 0` conjunct added), so a redundant 0x80 opening a LATER subidentifier is wrongly accepted while the leading case still rejects"
+  },
+  {
+    "run": "R6-oidB-reverted",
+    "module": "oid",
+    "harness": "oid::proofs::later_0x80_is_non_minimal",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "oid.rs",
+    "defect": "OID-B: oid::validate_oid subidentifier minimality NARROWED to the first octet only (`i == 0` conjunct added), so a redundant 0x80 opening a LATER subidentifier is wrongly accepted while the leading case still rejects"
+  }
+]
