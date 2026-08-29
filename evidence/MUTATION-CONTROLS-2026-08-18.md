@@ -4,10 +4,12 @@ type: reference
 
 # Mutation controls on the primitive oracles — `length`/`tag`/`tlv`/`integer`/`big_integer`, 2026-08-18
 
-**Task:** finding **F1** of the external rigor re-review of this crate (2026-08-16), §5,
-implementing mutation-control review lens 2: *"Plant a subtly-wrong implementation ... and
-confirm the oracle FAILS it. Confirm a correct implementation PASSES. If the oracle cannot
-distinguish, it is wrong — regardless of a green run."*
+**Task:** finding **F1** of the external rigor re-review of this crate (2026-08-16), §5.
+
+**The technique.** A mutation control is a *pair*, and only the pair is evidence. Plant a defect the
+oracle is supposed to catch and confirm the run goes RED; restore the correct code and confirm the
+same run goes GREEN. An oracle that returns the same verdict either way is deciding nothing, however
+green its transcript looks.
 
 **What this closes.** The review found reachability covers (§8.2) prove the `Ok` tail is *live*,
 but nothing in the repository recorded the *negative* control: that the canonicality/classification
@@ -280,8 +282,8 @@ the minimality check no longer inspects the byte that X.690 §8.3.2 actually key
      }
 ```
 
-Note on which harness this targets, precisely, and why it matters (this is the crate's flagship
-Lens-2 case, per the review): the mutated condition degenerates to "reject whenever `content[0]` is
+Note on which harness this targets, precisely, and why it matters (this is the crate's sharpest
+case of the technique): the mutated condition degenerates to "reject whenever `content[0]` is
 `0x00` or `0xFF`", independent of `content[1]`. That makes it **stricter** than correct in one
 direction — e.g. `[0x00, 0x80, ...]` (minimal: the `0x00` guard byte IS required because
 `content[1]`'s top bit is set) is now wrongly rejected as `NonMinimal`. The crate's own
@@ -319,7 +321,7 @@ Verification Time: 0.07885997s
 - **Establishes:** for each of the five primitives, at least one real, non-trivial defect class
   (non-minimal acceptance, an off-by-one consumed-count, a wrong-index typo) is caught by the
   harness(es) whose documented job is to catch it, and the same harness passes on the unmutated
-  code — the two-directional control Lens 2 asks for. No oracle gap was found; the STOP protocol
+  code — the two-directional control the technique requires. No oracle gap was found; the STOP protocol
   was not exercised.
 - **Does not establish:** that *every* possible defect in these five modules would be caught — five
   planted mutations are a sample, not an exhaustive mutation-testing sweep (this crate has no

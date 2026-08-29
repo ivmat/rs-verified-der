@@ -1,0 +1,42 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/length.rs",
+  "checked": "length::proofs::long_form_of_short_value_is_non_minimal",
+  "claim": "PM/length",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/length"
+  },
+  "produced_at": "2026-08-29T21:27:59.068642+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:cad298ad8156d1aafe84fabebdaff30f4802f51d3e3587acdff041dc01930f5deef6737517aa9b6387efb6c52325514a27eb25d6e7bacb0dd5d83cd80e9b3b30",
+  "subject": {
+    "commit": "69bbc9f",
+    "repo": "rs-verified-der",
+    "unit": "length"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness length::proofs::long_form_of_short_value_is_non_minimal"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

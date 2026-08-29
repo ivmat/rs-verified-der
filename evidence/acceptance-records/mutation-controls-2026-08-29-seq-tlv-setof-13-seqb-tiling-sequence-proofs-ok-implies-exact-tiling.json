@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row); a targeted single-harness run changes no bound.",
+  "checked": "sequence::proofs::ok_implies_exact_tiling",
+  "claim": "PM/sequence",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/sequence"
+  },
+  "produced_at": "2026-08-29T21:27:59.224093+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "sha-512:162017f20f53a7cc35b9dcbf2d2af6462aa5267642623e1dce25ca317d52c5cd7e0b66e0d08e57d73be7acc91168f437c1b12208cdaa4e49acd27ee29c7f7063",
+  "subject": {
+    "commit": "402719a",
+    "repo": "rs-verified-der",
+    "unit": "sequence"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness sequence::proofs::ok_implies_exact_tiling"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

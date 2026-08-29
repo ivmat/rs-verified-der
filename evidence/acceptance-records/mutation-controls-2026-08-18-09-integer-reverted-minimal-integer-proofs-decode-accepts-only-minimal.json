@@ -1,0 +1,42 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/integer.rs",
+  "checked": "integer::proofs::decode_accepts_only_minimal",
+  "claim": "PM/integer",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/integer"
+  },
+  "produced_at": "2026-08-29T21:27:59.088651+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:bc81fbce6c6100beb956b2a525ff2a1df17daadff2c4e73ba0cf5ed080b289c9d3b7caf7ed0c75e875b9c234f7e41a444b9f9ef9a1f639e1099cc81dfe9c56ec",
+  "subject": {
+    "commit": "69bbc9f",
+    "repo": "rs-verified-der",
+    "unit": "integer"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness integer::proofs::decode_accepts_only_minimal"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

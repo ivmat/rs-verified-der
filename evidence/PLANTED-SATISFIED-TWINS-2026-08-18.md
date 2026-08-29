@@ -4,10 +4,13 @@ type: reference
 
 # Planted-satisfied twins for the 3 disclosed-UNSAT covers — 2026-08-18
 
-**Task:** finding **F2** of the external rigor re-review of this crate (2026-08-16), §5,
-a vacuity/reachability review lens: *"for each UNSAT-means-good cover ... find its exact
-planted-satisfied twin — inject the defect the cover denies and confirm the cover flips to
-SATISFIED. A missing twin = vacuity risk; an UNSAT cover proves nothing on its own."*
+**Task:** finding **F2** of the external rigor re-review of this crate (2026-08-16), §5.
+
+**The technique.** Wherever a cover's *unsatisfiability* is what counts as good news, that cover
+needs a planted-satisfied twin: inject the very defect the cover denies, and confirm the cover flips
+to SATISFIED. An UNSAT cover proves nothing on its own — until something has been seen to satisfy
+it, it cannot be told apart from a cover that is unsatisfiable for a boring reason, and that is
+vacuity rather than evidence.
 
 **What this closes.** `PROOF_MANIFEST.md` §8.2 already discloses three harnesses whose `Ok`-tail
 cover is *known-unsatisfiable* at its bound (`x509_extension::validate_extensions_never_panics`,

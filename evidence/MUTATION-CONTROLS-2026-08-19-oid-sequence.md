@@ -240,7 +240,7 @@ the symbolic tiling harness, not on the round-trip one.
 - **Establishes:** for `oid` and `sequence`, real defect classes (non-minimal arc acceptance in both
   first and later positions, an off-by-one child count, acceptance of a non-tiling child sequence)
   are caught by the harnesses whose documented job is to catch them, and those harnesses pass on the
-  unmutated code — the two-directional control the review's lens 2 asks for, now covering seven of
+  unmutated code — the two-directional control the technique requires, now covering seven of
   the crate's DER base codecs rather than five.
 - **Establishes, additionally:** two harnesses are shown to be *individually* load-bearing rather
   than redundant, by the two predicted-GREEN runs — `oid::later_0x80_is_non_minimal` (the only

@@ -1,0 +1,42 @@
+{
+  "bound": "the SAME harness with its symbolic buffer enlarged [u8;16] -> [u8;32], unwind 20 — exactly the arithmetic floor its own doc names. Source edit reverted after the run and confirmed byte-identical.",
+  "carry_over_file": "der-verified/src/x509_validity.rs",
+  "checked": "x509_validity::proofs::parse_never_panics",
+  "claim": "PM/x509_validity",
+  "control": {
+    "expectation": "sat",
+    "kind": "planted-twin",
+    "observed": "sat",
+    "of_claim": "PM/x509_validity"
+  },
+  "produced_at": "2026-08-29T21:27:59.384692+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:56c1729e140bd0e8a10293ab3b159458fe150c24c75a441f40b25ca6b1182c0aeaeba9829fc10cb928b4b989ba10704be11b62a8c1a90469afca0ef13147d72c",
+  "subject": {
+    "commit": "69bbc9f",
+    "repo": "rs-verified-der",
+    "unit": "x509_validity"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness x509_validity::proofs::parse_never_panics"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

@@ -525,3 +525,31 @@ correctness residual — a product decision.**
 accepted constructed TLV are unchecked. A recursive `validate_der_tree` built on `sequence::Elements`
 + `validate_identifier_form` would close that; it needs a recursion/unwind story for the nesting
 depth, so it is a real (if modest) proof-engineering task rather than a wrapper.
+
+## UPDATE 2026-08-30 — the negative controls are current again; two docs overclaims closed
+
+**Controls.** The eleven mutated control legs for `length`, `tag`, `integer`, `big_integer` and
+`oid` were re-witnessed at `402719a` (`evidence/mutation-controls-2026-08-30-five-modules/`, D35).
+All five modules now hold a current, self-describing RED leg — a defect actually observed to make
+the harness fail — rather than only a GREEN reverted leg. Predictions are preregistered and the
+driver is committed. **Cost, since the old estimate deterred this for weeks: 13.8 s CPU, 267 MB
+peak for all 17 legs, on an ordinary machine.**
+
+**Docs.** Two overclaims closed. The front page said "every public codec carries machine-checkable
+evidence"; it now says **primitive** codec, and names the `x509_*` layer as structural framing not
+proven to the same bar. Both READMEs gained a **Security considerations** section stating the thing
+a security reader asks first and that no proof here answers: the harnesses are bounded, so
+**resource exhaustion on deeply nested untrusted input is a live residual surface**, and callers
+must bound input size and nesting depth themselves. Both gained a **Status** line (pre-1.0, API
+unstable, no production deployment record).
+
+**Still open, and now written down rather than implied.**
+
+- **R5 (OPEN) — no recursion-depth or total-work bound.** The Security-considerations text pushes
+  this onto the caller, which is honest but is not a fix. R4 above (a recursive `validate_der_tree`)
+  is the proof-engineering half; a depth/work limit in the decode path is the engineering half. They
+  are related but not the same task, and neither is done.
+- **(OPEN) — the x509/pkcs8/rsa family has no mutation controls at all.** Every module with a
+  current negative control is a primitive. The composed layer's harnesses have never been watched to
+  fail, so nothing yet distinguishes them from harnesses that cannot fail. This is the largest
+  remaining evidence gap in the crate and the obvious next campaign.

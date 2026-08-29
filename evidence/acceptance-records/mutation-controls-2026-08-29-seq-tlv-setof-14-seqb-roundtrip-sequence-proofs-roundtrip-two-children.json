@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row); a targeted single-harness run changes no bound.",
+  "checked": "sequence::proofs::roundtrip_two_children",
+  "claim": "PM/sequence",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/sequence"
+  },
+  "produced_at": "2026-08-29T21:27:59.234955+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:06c3b2b6c3d9b5399f5c5d0d1c4266b13cd801a3ecd618da0a66dddc7716df2ef71f594e3ce8a2172d563b5447d7f525691e20721b25419d0df87fd818047dfe",
+  "subject": {
+    "commit": "402719a",
+    "repo": "rs-verified-der",
+    "unit": "sequence"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness sequence::proofs::roundtrip_two_children"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

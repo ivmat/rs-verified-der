@@ -35,8 +35,25 @@ carries everything since `0.1.0`: the changes below, plus the 2026-08-11 cut fur
   therefore enforced where a caller opts in, and nowhere else. Whether to wire the check into
   `decode_tlv_strict` itself is open (`DER-REMAINING-WORK.md` R3).
 - **`gates/test_check_lean_skip.py`** — a self-test for `lean/check_lean.sh`'s toolchain guard.
+- **`evidence/mutation-controls-2026-08-30-five-modules/`** — the eleven mutated control legs for
+  `length`, `tag`, `integer`, `big_integer` and `oid`, re-witnessed at `402719a` (17 legs total with
+  their reverted partners; all matched prediction). The earlier campaigns recorded which harness
+  observed each mutation but not, as data, which file the mutation touched, so their red legs could
+  not be confirmed against current source. Two tightenings over those campaigns: predictions are
+  **preregistered to disk before any harness runs**, and the driver (`run_campaign.py`) is committed
+  and *is* the mutation specification — exact-string replacement that aborts unless its anchor is
+  unique.
+- **A "Security considerations" section** in both READMEs: the proofs are bounded, and
+  resource exhaustion on deeply nested untrusted input is the residual surface the bounds cannot
+  speak to. Callers should bound input size and nesting depth themselves.
+- **A "Status" line** in both READMEs — pre-1.0, API unstable, no production deployment record.
 
 ### Fixed
+- **The front page overstated the crate's scope.** "Every public codec carries machine-checkable
+  evidence" is now "every **primitive** codec", with the `x509_*` layer named explicitly as
+  structural framing that composes verified primitives and is not proven to the same bar. The crate
+  is called `der-verified`, so its first sentence carries unusual weight and must not be read as
+  claiming more than `PROOF_MANIFEST.md` supports.
 - **A green `check.sh` no longer hides a Lean stage that never ran.** `lean/check_lean.sh` is
   guarded: with no Aeneas/Lean toolchain it skipped and exited 0, indistinguishably from a pass, and
   `check.sh` then printed an unqualified `== check.sh: PASS ==`. The lean stage now reports a

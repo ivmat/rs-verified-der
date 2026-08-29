@@ -1,0 +1,42 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4), except on the one source-edit twin, whose bound is stated per run.",
+  "carry_over_file": "der-verified/src/x509_tbs_certificate.rs",
+  "checked": "x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed",
+  "claim": "PM/x509_tbs_certificate",
+  "control": {
+    "expectation": "sat",
+    "kind": "planted-twin",
+    "observed": "sat",
+    "of_claim": "PM/x509_tbs_certificate"
+  },
+  "produced_at": "2026-08-29T21:27:59.378305+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:19e2c8939d5005461e6df1df52932f76bd9d5777b225fc4fa4eb8463dbcbcc2247104d9a5a6110f559d5ef2778b38863e1cfa476b9e4460cfee22457f576ccc8",
+  "subject": {
+    "commit": "69bbc9f",
+    "repo": "rs-verified-der",
+    "unit": "x509_tbs_certificate"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

@@ -1,8 +1,16 @@
 # der-verified
 
 A **formally verified** DER (X.690) encoding/decoding core in Rust — the encoding layer where real
-X.509 parser differentials live. Every public codec carries machine-checkable evidence, re-runnable
-from a fresh clone: the proofs are the product, not a badge.
+X.509 parser differentials live. Every **primitive** codec carries machine-checkable evidence,
+re-runnable from a fresh clone: the proofs are the product, not a badge.
+
+**Status:** pre-1.0 (`0.1.1`). The proofs and their evidence are real, re-runnable and honestly
+bounded; the API is not yet stable, and the crate carries no production deployment record. Treat it
+as a verified building block to evaluate, not as a drop-in hardened parser.
+
+Read "primitive" strictly: the `x509_*` layer is **structural framing composing verified
+primitives**, not proven to the same bar (see Scope below). The crate's name should not be read as
+claiming more than that.
 
 - **L3 — Kani** (bounded model checking): 203 proof harnesses over 33 modules — memory safety, no
   panics, no overflow, plus functional properties (round-trip, canonicality/minimality, rejection of
@@ -52,6 +60,25 @@ let cert = parse_certificate(der_bytes)?;                // structural X.509 fra
 ```
 
 The crate is `#![forbid(unsafe_code)]` and allocation-free on the decode paths.
+
+## Security considerations
+
+This crate parses attacker-controlled input, so be precise about what the proofs buy you.
+
+- **The proofs are bounded.** Each Kani harness decides its properties up to a declared buffer width
+  and unwind depth (`PROOF_MANIFEST.md` §4 lists every bound). "No panic at the proven bound" is not
+  "no panic at any size". The six Lean lids are the exception — unbounded in input length, and for
+  `sequence` in child count too.
+- **Resource exhaustion is the residual surface and is not proven away.** Deeply nested input is
+  exactly what a bounded proof cannot speak to, and the crate imposes no recursion-depth or
+  total-work limit of its own. **Bound input size and nesting depth yourself before feeding it
+  untrusted certificates.** A stack overflow aborts the process — not memory-unsafe, but a denial
+  of service you own.
+- **No cryptography.** Encoding layer only: no signature verification, no chain building, no trust
+  decisions. Framing that parses is not a valid certificate.
+- **The trusted base is real:** Kani/CBMC/SAT soundness, the Lean kernel, and the fidelity of the
+  Aeneas extraction (the lids prove a Lean model of the shipped Rust, not the Rust itself). See
+  [`ASSUMPTIONS.md`](https://github.com/ivmat/rs-verified-der/blob/main/ASSUMPTIONS.md).
 
 ## License
 

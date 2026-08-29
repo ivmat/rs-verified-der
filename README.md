@@ -5,8 +5,18 @@
 [![license: MIT OR Apache-2.0](https://img.shields.io/crates/l/der-verified.svg)](#license)
 
 A **formally verified** DER (X.690) encoding/decoding core in Rust — the encoding layer where real
-X.509 parser differentials live. Every public codec carries machine-checkable evidence, and that
-evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
+X.509 parser differentials live. Every **primitive** codec carries machine-checkable evidence, and
+that evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
+
+**Status:** pre-1.0 (`0.1.1`). The proofs and their evidence are real, re-runnable and honestly
+bounded; the API is not yet stable, and the crate carries no production deployment record. Treat it
+as a verified building block to evaluate, not as a drop-in hardened parser.
+
+Read "primitive" strictly. The X.509 layer above the base codecs is **structural framing that
+composes verified primitives**, and it is not proven to the same bar as they are: its harnesses
+cover panic-freedom and parsing behaviour, while the minimality and canonicality theorems belong to
+the primitives underneath it. `PROOF_MANIFEST.md` draws that line precisely, and the crate's name
+should not be read as claiming more than this paragraph does.
 
 - **L3 — Kani** (bounded model checking): 203 proof harnesses over 33 modules — memory safety, no
   panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
@@ -219,6 +229,27 @@ let cert = parse_certificate(der_bytes)?;               // structural X.509 fram
 ```
 
 The crate is `#![forbid(unsafe_code)]` and allocation-free on the decode paths.
+
+## Security considerations
+
+This crate parses attacker-controlled input, so be precise about what the proofs do and do not buy
+you. (Reporting: see [`SECURITY.md`](SECURITY.md).)
+
+- **The proofs are bounded.** The Kani harnesses decide their properties over symbolic inputs up to
+  a declared buffer width and unwind depth, per harness — `PROOF_MANIFEST.md` §4 lists every bound.
+  "No panic at the proven bound" is not "no panic at any size". The six Lean lids are the exception:
+  those are unbounded in input length (and, for `sequence`, in child count).
+- **Resource exhaustion is the residual surface, and it is not proven away.** Deeply nested or
+  pathologically structured input is exactly the case a bounded proof cannot speak to. The crate
+  does not impose a recursion-depth or total-work limit of its own. **If you feed it untrusted
+  certificates, bound the input size and the nesting depth yourself, and run it where a stack
+  overflow is survivable.** A stack overflow in Rust aborts the process; it is not memory-unsafe,
+  but it is a denial of service you own, not one this crate has ruled out.
+- **No cryptography.** This is the encoding layer only: no signature verification, no chain
+  building, no trust decisions. Structural framing that parses is not a valid certificate.
+- **The trusted base is real.** Kani/CBMC/SAT soundness, the Lean kernel, and the fidelity of the
+  Aeneas extraction (the lids prove a Lean model of the shipped Rust, not the Rust itself) all sit
+  under every claim here. [`ASSUMPTIONS.md`](ASSUMPTIONS.md) states them in one place, loudly.
 
 ## Verify it yourself (the point of this crate)
 

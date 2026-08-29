@@ -67,7 +67,11 @@ VOCAB_HASHES = {
     "349cf9765467015a1e3cc89163cfdf471451ad5c4c63c7faed080ab58bd713c3",
     "fd65e22d139c4255e091534e8825ce34684cb03f609696049df50c2449da5902",
     "5e5b62b6117ba77578a671150ace15cea220d00dedba186ab56c816b107ccbcc",
-    "4d7d4ebc2bc65ec026b2453cc0bb8fefa28fde42f4b41fc5557c7f17ea463f48",
+    # (one token retired 2026-08-30 per control-seat ruling R-6: its subject was PUBLISHED by the
+    # owner on 2026-08-28, so this entry guarded a name that is no longer private. Retiring a stale
+    # entry CORRECTS the guard rather than weakening it -- and keeping it would leave this crate
+    # unable to name the format its own certificate is written in, since the acceptance manifest
+    # declares that format as its `spec_id` and gates/vendor/ carries its pinned validator.)
     "ea4161e784fde57e47ab3cd34824175c45ca9bb75d97db0d822756f812a77167",
     "b6d3157581a116fd3a7da6c81ef6e6db00c2fea50757fced88bbb852d7d7fcf9",
     "78ee8eaaf7f07b7f64bfa844be7536878d2b0f9611ff395097d4deb306fecb49",

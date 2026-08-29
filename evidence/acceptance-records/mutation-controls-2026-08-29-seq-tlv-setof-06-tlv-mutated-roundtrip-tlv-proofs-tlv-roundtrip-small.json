@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row); a targeted single-harness run changes no bound.",
+  "checked": "tlv::proofs::tlv_roundtrip_small",
+  "claim": "PM/tlv",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/tlv"
+  },
+  "produced_at": "2026-08-29T21:27:59.260173+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "sha-512:cb8a2bc4abd4ac4d3a9229c69f79cda0aa0624ff6ce653c1cb16eeeb63de3115baae61bd340ca58e5400893c85d1567cf75757fa492bfa75b6e5e4bb8d82b5e4",
+  "subject": {
+    "commit": "402719a",
+    "repo": "rs-verified-der",
+    "unit": "tlv"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness tlv::proofs::tlv_roundtrip_small"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

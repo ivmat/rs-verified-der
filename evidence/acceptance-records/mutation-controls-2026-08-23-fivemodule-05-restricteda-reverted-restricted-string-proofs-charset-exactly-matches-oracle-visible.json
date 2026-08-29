@@ -1,0 +1,42 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/restricted_string.rs",
+  "checked": "restricted_string::proofs::charset_exactly_matches_oracle_visible",
+  "claim": "PM/restricted_string",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/restricted_string"
+  },
+  "produced_at": "2026-08-29T21:27:59.130712+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:19fc6d02e0459601a8e03ae95466e5f7fcf19a63fd3ed1a8ef1b298664a025ebb7ddbc0331064006c450cba84e8b2b2a079b5c223b6b49ccafc8d98ba08ffd2a",
+  "subject": {
+    "commit": "3f2ee5eda183369ebf855e58af7c250684b082e6",
+    "repo": "rs-verified-der",
+    "unit": "restricted_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness restricted_string::proofs::charset_exactly_matches_oracle_visible"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

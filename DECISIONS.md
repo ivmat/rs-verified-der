@@ -2182,3 +2182,51 @@ explicit-versus-implicit context tagging is not inferable from an identifier.
 
 **Verdict.** **Reworked, then landed.** Both reviews ran against unpushed local commits, so the
 public history never carries the overclaiming names or the incomplete table.
+
+## D35 — Re-witnessing eleven control legs rather than arguing they were still good (2026-08-30)
+
+**Context.** Five modules — `length`, `tag`, `integer`, `big_integer`, `oid` — held mutation
+controls whose GREEN (reverted) legs were current but whose RED (mutated) legs could not be
+confirmed against today's source. The 2026-08-18 and 2026-08-19 campaigns recorded which harness
+observed each mutation; they did not record, as a machine-readable field, **which file each mutation
+touched**. That fact existed only in campaign prose.
+
+**The tempting argument, and why it was refused.** All five files are byte-identical between
+`69bbc9f` and `402719a`, and each campaign document names its mutation site in prose. So one could
+argue the old red legs are still perfectly good evidence and simply transcribe the site from the
+prose. That argument is probably even correct. It was refused anyway: it makes the standing of the
+crate's negative controls depend on a reading of prose, and it would have been adopted *because it
+was cheaper*, at the exact moment the alternative was inconvenient. Evidence that survives only by
+an argument made under time pressure is not the kind this crate is supposed to ship.
+
+**Decision.** Re-run them. Eleven mutated legs plus one reverted leg per mutation, 17 in all, fresh
+at `402719a`, each red leg recording its own mutation site as data. All 17 matched prediction; the
+failed assertions and check counts reproduce the originals exactly (`BIG-A` still fails
+`accepted == oracle_says_ok` at `1 of 50`, `OID-B` still fails
+`validate_oid(&buf) == Err(OidError::NonMinimalSubid)` at `1 of 81`), and the recorded baseline
+sha256 of all five files equals the ones the earlier documents recorded.
+
+**Cost, recorded because the estimate was so wrong.** These controls had long carried an estimate of
+~20 G of memory, which is why they were treated as needing dedicated hardware. Actual: **13.8 s of
+CPU and 267 MB peak** for all 17 legs. The expensive thing was never the compute; it was the
+provenance discipline around it.
+
+**Two tightenings, kept for every future campaign.** Predictions are written to disk *before* any
+harness runs, so a prediction cannot be back-fitted to an observation — the 2026-08-18 campaign
+recorded only observations, which made its "expected RED" a post-hoc reading. And the driver is
+committed and *is* the specification: exact-string replacement that aborts unless its anchor occurs
+exactly once, each mutation applied to a pristine file and reverted sha256-byte-identical before the
+next. That ordering is load-bearing rather than ceremonial — `OID-B`'s anchor is a strict prefix of
+`OID-A`'s, so applying them in the wrong order would silently mutate the wrong thing.
+
+**Also recorded: the toolchain trap.** The first pass inherited a `PATH` resolving system
+`cargo` 1.93.1 ahead of the pinned 1.97.0. Every leg was re-run with it corrected — verified by
+probing the service manager rather than assuming — and every verdict reproduced exactly, which is
+the expected outcome since Kani compiles with its own bundled `rustc`. Only the provenance record
+needed the fix. The published logs are the corrected run's, and the campaign README says so rather
+than leaving a reader to discover it.
+
+**Scope note.** This establishes that these harnesses catch **these planted defects**. It is not a
+mutation-coverage score, and the `OID-B` pair makes the converse concrete: `leading_0x80` is
+entirely blind to a defect its partner `later_0x80` catches. One harness of a pair can be useless
+against a real bug.

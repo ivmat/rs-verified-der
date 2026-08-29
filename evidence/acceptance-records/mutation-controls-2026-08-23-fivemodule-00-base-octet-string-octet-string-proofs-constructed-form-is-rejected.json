@@ -1,0 +1,42 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/octet_string.rs",
+  "checked": "octet_string::proofs::constructed_form_is_rejected",
+  "claim": "PM/octet_string",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/octet_string"
+  },
+  "produced_at": "2026-08-29T21:27:59.119050+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:de6e5c7592f2bfd7b0e7e9f05ce77b08e57c621d10a8555cda4053c7bbe0702a8623f5720ea76f8761c14face75c9d90d3d0b4db47592a53add6e8c3c9305d7c",
+  "subject": {
+    "commit": "3f2ee5eda183369ebf855e58af7c250684b082e6",
+    "repo": "rs-verified-der",
+    "unit": "octet_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness octet_string::proofs::constructed_form_is_rejected"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

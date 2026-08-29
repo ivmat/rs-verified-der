@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row); a targeted single-harness run changes no bound.",
+  "checked": "integer::proofs::decode_accepts_only_minimal",
+  "claim": "PM/integer",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/integer"
+  },
+  "produced_at": "2026-08-29T21:27:59.317804+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "sha-512:3c4820894931be23a62ea0fe1c6bda11e47f0a419c2940176b72f14cfe150c7a01d00a8902bf3438369e665a8a15e6a1f662119620e2d8131d1a731fe593836a",
+  "subject": {
+    "commit": "402719a",
+    "repo": "rs-verified-der",
+    "unit": "integer"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness integer::proofs::decode_accepts_only_minimal"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

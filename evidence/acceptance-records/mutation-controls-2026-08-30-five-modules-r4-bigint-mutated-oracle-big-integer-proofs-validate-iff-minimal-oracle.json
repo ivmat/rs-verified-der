@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row); a targeted single-harness run changes no bound.",
+  "checked": "big_integer::proofs::validate_iff_minimal_oracle",
+  "claim": "PM/big_integer",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/big_integer"
+  },
+  "produced_at": "2026-08-29T21:27:59.328115+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "sha-512:7e02442ab6e901bfd5ef64fe3a528cf3d1db34af2b31292170322502c76094876a2a3305a8c812bbe4729899bc1a00cb172ba77b4ed37e70a2c2442572b310e4",
+  "subject": {
+    "commit": "402719a",
+    "repo": "rs-verified-der",
+    "unit": "big_integer"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness big_integer::proofs::validate_iff_minimal_oracle"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

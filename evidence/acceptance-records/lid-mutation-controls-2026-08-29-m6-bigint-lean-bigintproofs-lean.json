@@ -1,0 +1,38 @@
+{
+  "checked": "lean/BigIntProofs.lean",
+  "claim": "PM/lean-bigint",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/lean-bigint"
+  },
+  "produced_at": "2026-08-29T21:27:59.408692+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "sha-512:b0f0d0d48659a7915f88150a424c770eeb624bf16b5974b3be143467d167f63cb90d6df6c77f5ef2b9528ba6d9addb5dbd576422f9d1bc31fd4fdf0be6e05325",
+  "subject": {
+    "commit": "402719a",
+    "repo": "rs-verified-der",
+    "unit": "lean/BigIntProofs.lean"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "aeneas",
+        "version": "45061fa1a5b4bad876f17c03d3a5544d818622e6"
+      },
+      {
+        "name": "charon",
+        "version": "40ee060a8df43f4e7e0842d3f05387b0a4426aaf"
+      }
+    ],
+    "features": null,
+    "flags": [
+      "lake build DerVerified (via lean/)",
+      "one planted mutation per run, reverted byte-identical after"
+    ],
+    "name": "lean4",
+    "version": "leanprover/lean4:v4.30.0-rc2"
+  }
+}

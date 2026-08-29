@@ -1,0 +1,42 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4), except on the one source-edit twin, whose bound is stated per run.",
+  "carry_over_file": "der-verified/src/x509_extension.rs",
+  "checked": "x509_extension::proofs::validate_extensions_ok_path_witnessed",
+  "claim": "PM/x509_extension",
+  "control": {
+    "expectation": "sat",
+    "kind": "planted-twin",
+    "observed": "sat",
+    "of_claim": "PM/x509_extension"
+  },
+  "produced_at": "2026-08-29T21:27:59.367044+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:191510939cef69155ae8a47d5e601c511812fe95a50789d07ab9af83efe8fac4dd086953763c104d44223b7a7add3e3fcf2143ea90c8373e91a65722210f6091",
+  "subject": {
+    "commit": "69bbc9f",
+    "repo": "rs-verified-der",
+    "unit": "x509_extension"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness x509_extension::proofs::validate_extensions_ok_path_witnessed"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

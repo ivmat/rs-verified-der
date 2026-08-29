@@ -1,0 +1,42 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/tag.rs",
+  "checked": "tag::proofs::decode_tag_accepts_only_canonical",
+  "claim": "PM/tag",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/tag"
+  },
+  "produced_at": "2026-08-29T21:27:59.077331+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:74139ea862fbc6dd178a779ae00ed44b02b2102c2acdcb9a7649dab57f46b45b0270f74de737062e56c6e59b442d954733fbeec600e89a052e8356a363f38a14",
+  "subject": {
+    "commit": "69bbc9f",
+    "repo": "rs-verified-der",
+    "unit": "tag"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness tag::proofs::decode_tag_accepts_only_canonical"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}
