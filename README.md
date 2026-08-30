@@ -41,6 +41,20 @@ should not be read as claiming more than this paragraph does.
 > the toolchain pins, "bounded means bounded", and the three disclosed-unsatisfiable
 > covers. Every entry names how it could fail and what leans on it.
 
+> **Machine-readable, and inside the package:
+> [`der-verified/acceptance.toml`](der-verified/acceptance.toml).** The envelope the two documents
+> above state in prose, in a form a tool can check: every claim with its grade, its evidence, and —
+> the number that matters — whether it is *weighted*. **13 of 39 claims are weighted**, meaning they
+> carry a mutation control that was watched to fail. The other 26 are published as unweighted, each
+> saying why.
+>
+> It lives in the crate directory rather than here, and there is **exactly one copy**: it ships
+> inside the published `.crate`, so someone who installed `der-verified` from crates.io can check
+> these claims without cloning anything. Its evidence records travel with it in
+> [`der-verified/evidence/acceptance-records/`](der-verified/evidence/acceptance-records/), and the
+> paths it cites are relative to the manifest, so they resolve inside an unpacked package too. Both
+> are GENERATED — never hand-edited — and `check.sh` re-validates them against a pinned validator.
+
 ## Scope — proven vs. tested vs. out of scope
 
 **In scope (verified):** the DER encoding layer — identifier (tag) and definite-length fields, and

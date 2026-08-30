@@ -3,13 +3,20 @@
 # state. It is regenerated from that run's own artifacts, never written by hand and
 # never edited to taste — if a number here is wrong, the run is what to re-examine.
 #
-# HOW TO CHECK IT YOURSELF, with nothing but this repository:
+# HOW TO CHECK IT YOURSELF. The checker is the acceptance/0 validator published at
+# github.com/ivmat/acceptance-format, and `validator_sha` below names the exact
+# revision this file was generated against, so you can check it with the same one:
 #
-#   python3 gates/vendor/acceptance-format/check_acceptance.py \
-#       --strict --strict-weight acceptance.toml
+#   python3 check_acceptance.py --strict --strict-weight acceptance.toml
 #
-# The validator recomputes each cited record's content hash from the file it points
-# at, so the `record`/`record_hash` pairs below are checkable, not decorative.
+# Every `record` path below is relative to THIS FILE's own directory, so they resolve
+# whether you are reading the source repository or an unpacked package. The validator
+# recomputes each cited record's content hash from the file it points at, so the
+# `record`/`record_hash` pairs are checkable, not decorative.
+#
+# (The source repository also vendors a pinned copy of that validator, which is what
+# the project's own gate runs. It is not part of a published package — the manifest
+# and its evidence records are.)
 #
 # Honest gaps this manifest carries on EVERY claim:
 #   - EVIDENCE RECORDS ARE PROJECTIONS. Each file under `evidence/acceptance-records/`
@@ -43,7 +50,7 @@ spec_id       = "acceptance-format"
 spec_sha      = "c8c00bb"
 validator_sha = "c8c00bb"
 generated_by  = "acceptance/0 evidence emitter"
-generated_at  = "2026-08-29T22:09:00Z"
+generated_at  = "2026-08-30T08:10:46Z"
 
 [subject]
 name   = "rs-verified-der"

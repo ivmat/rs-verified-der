@@ -30,7 +30,8 @@ echo "== verification-map gate (README.md's mermaid map vs source; pure stdlib) 
 python3 "$ROOT/gates/gen_verification_map.py" --check
 echo "== acceptance-manifest gate (acceptance.toml vs the PINNED vendored validator; pure stdlib) =="
 # Also present in check_fast.sh (runs on every commit); repeated here so the release path's own
-# record is complete. The root acceptance.toml is this crate's machine-readable certificate and is
+# record is complete. der-verified/acceptance.toml is this crate's machine-readable certificate,
+# shipped INSIDE the published package (ruling R-8), and it is
 # GENERATED — this re-validates it with the validator vendored in gates/vendor/ (verifying that
 # validator's own bytes against their recorded hashes first), and checks the projected evidence
 # store in BOTH directions: every cited record resolves inside the store, and no projection sits

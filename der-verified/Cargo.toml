@@ -20,6 +20,23 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/ivmat/rs-verified-der"
 keywords = ["der", "asn1", "x509", "formal-verification", "kani"]
 categories = ["encoding", "parser-implementations"]
+# The published .crate carries this crate's own acceptance manifest AND its evidence store, so a
+# consumer who installed from the registry can check the claims without cloning the repository
+# (owner ruling R-8, 2026-08-30 — "acceptance should be part of crate, that's the point of
+# exposure"). `record` pointers in acceptance.toml are package-root-relative precisely so they
+# still resolve inside an unpacked .crate.
+#
+# NOTE: specifying `include` REPLACES cargo's default file selection, so everything the package
+# needs is listed explicitly here. `cargo package --list` is what verifies this list is complete
+# — not this comment.
+include = [
+    "src/**/*.rs",
+    "README.md",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "acceptance.toml",
+    "evidence/acceptance-records/*.json",
+]
 
 [dependencies]
 

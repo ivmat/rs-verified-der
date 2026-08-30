@@ -30,7 +30,8 @@ python3 "$ROOT/gates/test_check_lid_staleness.py"
 echo "== lid-staleness gate (Lean-lid source drift since the last green Lean run; pure stdlib, fast) =="
 python3 "$ROOT/gates/check_lid_staleness.py"
 echo "== acceptance-manifest gate (acceptance.toml vs the PINNED vendored validator; pure stdlib) =="
-# The root acceptance.toml is this crate's machine-readable certificate, and it is GENERATED. This
+# der-verified/acceptance.toml is this crate's machine-readable certificate, shipped INSIDE the
+# published package (ruling R-8), and it is GENERATED. This
 # re-validates it with the validator vendored in gates/vendor/ (verifying that validator's own
 # bytes against their recorded hashes first), and checks the projected evidence store in BOTH
 # directions: every cited record resolves inside the store, and no projection sits there uncited.

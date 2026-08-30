@@ -24,6 +24,21 @@ claiming more than that.
 > and assumptions, what is stubbed, and what is **not** proven. Counts are inventory, not a coverage
 > guarantee.
 
+> **`acceptance.toml` ships in this package**, next to this README, with its evidence records in
+> `evidence/acceptance-records/`. It is the same envelope in machine-checkable form: every claim
+> with its grade, its evidence, and whether it is *weighted*. **13 of 39 claims are weighted** —
+> they carry a mutation control that was watched to fail. The other 26 are published as unweighted
+> and each states why.
+>
+> You do not need this repository to check it. The paths it cites are relative to the manifest, so
+> they resolve in the unpacked crate; run the acceptance/0 validator from
+> [github.com/ivmat/acceptance-format](https://github.com/ivmat/acceptance-format) at the revision
+> its own `validator_sha` names:
+>
+> ```sh
+> python3 check_acceptance.py --strict --strict-weight acceptance.toml
+> ```
+
 ## Scope
 
 **Verified:** the DER encoding layer — tag/length fields and the canonical content codecs (`BOOLEAN`,

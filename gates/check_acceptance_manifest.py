@@ -2,8 +2,9 @@
 """check_acceptance_manifest.py — validate this repo's acceptance manifest against the PINNED,
 vendored validator. Pure stdlib apart from the vendored tool it invokes.
 
-`acceptance.toml` at the repo root is this crate's machine-readable certificate: what is claimed,
-at what grade, on what evidence, and — the part that matters — what is NOT weighted and why. It is
+`der-verified/acceptance.toml` — inside the PACKAGE root, so it ships to registry consumers — is
+this crate's machine-readable certificate: what is claimed, at what grade, on what evidence, and
+— the part that matters — what is NOT weighted and why. It is
 GENERATED. Nothing in this repo should ever hand-edit it, and this gate is one half of why that
 rule holds: if the file is edited into a shape the validator refuses, the gate fails closed.
 
@@ -32,13 +33,19 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-MANIFEST = ROOT / "acceptance.toml"
+# The manifest and its evidence store live inside the PACKAGE root, not the repo root (owner
+# ruling R-8, 2026-08-30). A crate published to a registry must carry its own checkable surface:
+# placed at the repo root they would reach people reading GitHub but NOT the consumer who
+# installed the crate from crates.io — who is exactly the audience the exposure exists for.
+# `record` pointers are therefore package-root-relative, and Cargo.toml's `include` ships both.
+PACKAGE = ROOT / "der-verified"
+MANIFEST = PACKAGE / "acceptance.toml"
 VENDOR = ROOT / "gates" / "vendor" / "acceptance-format"
 VALIDATOR = VENDOR / "check_acceptance.py"
 VENDOR_DOC = VENDOR / "VENDOR.md"
 # The projected public evidence store: neutral, generated views of the internal verification
 # records, committed so a public reader can resolve and re-hash what the manifest cites.
-STORE = ROOT / "evidence" / "acceptance-records"
+STORE = PACKAGE / "evidence" / "acceptance-records"
 
 # The commit of the format repo this validator was vendored from. Kept here as well as in
 # VENDOR.md so the gate can CHECK the manifest against it rather than trust a prose note.
@@ -148,7 +155,10 @@ def main():
     cited = set()
     for m_rec in re.finditer(r'^\s*record\s*=\s*"([^"]+)"', text, re.MULTILINE):
         rel = m_rec.group(1)
-        path = (ROOT / rel).resolve()
+        # Resolved against the MANIFEST's own directory, which is what a relative `record` means
+        # to the validator and to any consumer who unpacked the crate — not against the repo root,
+        # which a crates.io consumer does not even have.
+        path = (MANIFEST.parent / rel).resolve()
         if not path.is_file():
             return fail(f"acceptance.toml cites a record that does not resolve: {rel!r}. A public "
                         f"manifest whose records cannot be fetched cannot be checked by the people "
