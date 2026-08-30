@@ -24,20 +24,44 @@ claiming more than that.
 > and assumptions, what is stubbed, and what is **not** proven. Counts are inventory, not a coverage
 > guarantee.
 
-> **`acceptance.toml` ships in this package**, next to this README, with its evidence records in
-> `evidence/acceptance-records/`. It is the same envelope in machine-checkable form: every claim
-> with its grade, its evidence, and whether it is *weighted*. **13 of 39 claims are weighted** —
-> they carry a mutation control that was watched to fail. The other 26 are published as unweighted
-> and each states why.
->
-> You do not need this repository to check it. The paths it cites are relative to the manifest, so
-> they resolve in the unpacked crate; run the acceptance/0 validator from
-> [github.com/ivmat/acceptance-format](https://github.com/ivmat/acceptance-format) at the revision
-> its own `validator_sha` names:
->
-> ```sh
-> python3 check_acceptance.py --strict --strict-weight acceptance.toml
-> ```
+## What ships in this package vs. the repository
+
+Some of the evidence travels with the crate and some of it does not, so here is the split, plainly.
+
+**In this package** (what you get from `cargo add der-verified`, no clone and no network):
+
+- **All 34 source files, including every one of the 203 Kani proof harnesses.** They are
+  `#[cfg(kani)]` modules inside the same sources you compile, so with
+  [Kani](https://model-checking.github.io/kani/) installed you can re-run them here:
+  ```sh
+  cargo kani --harness integer::proofs::decode_accepts_only_minimal --exact -Z stubbing
+  ```
+- **`acceptance.toml`** — the proof envelope in machine-checkable form: every claim with its grade,
+  its evidence, and whether it is *weighted*. **13 of 39 claims are weighted**, meaning they carry a
+  mutation control that was watched to fail; the other 26 are published as unweighted, each stating
+  why.
+- **All 273 evidence records** in `evidence/acceptance-records/` — including the 17 Lean-lid
+  records, so the Lean results are *readable and hash-checkable* here even though the proofs
+  themselves are not.
+- The manifest's `record` paths are relative to the manifest, so they resolve inside the unpacked
+  crate. Check it offline with the acceptance/0 validator from
+  [github.com/ivmat/acceptance-format](https://github.com/ivmat/acceptance-format), at the revision
+  the manifest's own `validator_sha` names (`c8c00bb`):
+  ```sh
+  python3 check_acceptance.py --strict --strict-weight acceptance.toml
+  ```
+
+**Repository only** (not in the package):
+
+- **The 12 Lean/Aeneas proof sources** (`lean/`) that establish the six unbounded lids.
+- **The full gate** (`check.sh`, `gates/`) and the vendored validator copy the project runs itself.
+
+**So:** the **Kani** claims are re-runnable from this package alone; the **Lean-lid** claims are
+re-runnable from the repository. For everything in between — what each claim rests on, and what is
+*not* claimed — read `acceptance.toml` here, and `PROOF_MANIFEST.md` in the repository.
+
+**Repository:** <https://github.com/ivmat/rs-verified-der>. Each release is tagged (`v0.1.1` for
+this one) and that tag is the exact source this package was built from.
 
 ## Scope
 

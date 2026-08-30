@@ -51,9 +51,13 @@ should not be read as claiming more than this paragraph does.
 > It lives in the crate directory rather than here, and there is **exactly one copy**: it ships
 > inside the published `.crate`, so someone who installed `der-verified` from crates.io can check
 > these claims without cloning anything. Its evidence records travel with it in
-> [`der-verified/evidence/acceptance-records/`](der-verified/evidence/acceptance-records/), and the
-> paths it cites are relative to the manifest, so they resolve inside an unpacked package too. Both
-> are GENERATED — never hand-edited — and `check.sh` re-validates them against a pinned validator.
+> [`der-verified/evidence/acceptance-records/`](der-verified/evidence/acceptance-records/). Both are
+> GENERATED — never hand-edited — and `check.sh` re-validates them against a pinned validator.
+>
+> For the exact split of what ships in the package versus what stays in this repository (the
+> Lean/Aeneas sources and the full gate are repo-only), see **"What ships in this package vs. the
+> repository"** in [`der-verified/README.md`](der-verified/README.md) — stated once, there, rather
+> than restated here where the two copies would drift.
 
 ## Scope — proven vs. tested vs. out of scope
 
