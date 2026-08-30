@@ -2230,3 +2230,60 @@ than leaving a reader to discover it.
 mutation-coverage score, and the `OID-B` pair makes the converse concrete: `leading_0x80` is
 entirely blind to a defect its partner `later_0x80` catches. One harness of a pair can be useless
 against a real bug.
+
+## D36 — `no_std`: DEFERRED to a post-0.1.1 release (2026-08-30)
+
+**Decision.** `der-verified` does **not** ship `#![no_std]` in 0.1.1. Support is deferred to a
+later release. The standalone decision memo (`NO_STD-DECISION-MEMO-2026-08-17.md`) is removed at
+the owner's request before the crate publish, and its substance is folded here so the repository
+keeps one decision record rather than a memo plus a decision.
+
+**The deferral is SEQUENCING, not capability — and the difference matters.** The memo's first
+draft argued the opposite: that Option A was blocked because the L3 floor could not complete on
+this box. That rested on `evidence/FLOOR-2026-08-03.md`, an OOM-kill under a *computed* 20 GiB
+`MemoryMax` cap that sat **below** this crate's ~22 GiB requirement. It was an envelope mistake,
+not a hardware ceiling, and the memo itself was corrected same-day. The floor has now completed on
+this same box **twice** under a *fixed* `MemoryMax=22G`: 191/191 harnesses at **21.0 GB** peak
+(`evidence/check-ffcea81.log`, committed `ca0754f`, 2026-08-11), and 203/203 at **20.8 GB** peak on
+2026-08-30. `TODO.md`'s `no_std` item carried the stale "cannot be run to completion" wording until
+today and is corrected in the same commit that removes the memo — deleting the memo while the stale
+claim it corrected still stood would have left the repository worse, not tidier.
+
+**Keep this number.** A 20 G cap OOM-kills this crate's floor after ~50 minutes of work; 22 G
+completes it. That was learned three separate times — 2026-08-03, and twice more since, the last on
+2026-08-30 during this release work. It is recorded here and in `TODO.md` precisely because the
+document that used to hold it is being deleted.
+
+**Why defer, now that infeasibility is off the table.**
+
+- `#![no_std]` is a `der-verified/src` change, so `VERIFIED_PATHS` in `gates/gen_proof_manifest.py`
+  correctly treats it as invalidating the committed proof evidence. It owes a fresh full floor run
+  (~63 minutes, L4 Lean lid included as one stage of the same run) plus review of that result.
+  0.1.1 has neither scheduled.
+- Nothing is waiting on the capability. `TODO.md` rates it "Low priority; a strong differentiator
+  when done" — a differentiator, not a blocker.
+- One genuinely unsettled question makes rushing it unwise: **whether `cargo kani` sets
+  `cfg(test)`**. If it ever did, a naive `#![cfg_attr(not(test), no_std)]` would silently verify the
+  `std` configuration instead of the shipped one, and nothing in this crate would currently catch
+  that. The change must ship with the `#[cfg(all(kani, test))] compile_error!(...)` guard rather
+  than resting on the assumption.
+- The crate's own rule — where a claim would be stronger than the evidence, the evidence wins and
+  the claim is narrowed — argues against asserting `no_std` before its gate and its floor run exist.
+
+**What landing it later looks like** (the plan, unchanged from the memo): `#![cfg_attr(not(test),
+no_std)]` or an explicit `std` feature on `lib.rs`; a gate job building
+`--target thumbv7em-none-eabi` so the claim is *mechanically* checked rather than merely true on
+the day it lands; the `cfg(all(kani, test))` guard above; `PROOF_MANIFEST.md` §1 reasserting
+`no_std` truthfully; and a fresh L3+L4 run against the changed source. Note that a `std` Cargo
+feature is public API surface — once published, renaming or removing it is a semver break.
+
+**Already-true facts that make this cheap when scheduled** (measured 2026-08-03, unchanged since):
+exactly one `std::` path in `der-verified/src` and it is inside a `#[test]` assertion *message*
+(`utf8_string.rs`), not library code; every `Vec`/`String`/`vec!`/`Box` occurrence is inside a
+`#[cfg(test)]` module; the 26 `#[cfg(test)]` and 26 `#[cfg(kani)]` modules are disjoint, so the
+Kani floor already runs on the shipped configuration; zero runtime dependencies;
+`#![forbid(unsafe_code)]`; allocation-free decode paths.
+
+**Not a claim/reality gap today.** `PROOF_MANIFEST.md` no longer asserts `no_std` — that wording was
+corrected on 2026-08-17, separately from this decision, because it was a false statement rather than
+a design choice.

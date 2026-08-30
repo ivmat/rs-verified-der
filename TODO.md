@@ -164,10 +164,23 @@ scope boundary referenced below.
       * **The claim would be checkable, which it was not before today:** `thumbv7em-none-eabi` is now
         installed here, so `cargo build --target thumbv7em-none-eabi` is a gate that fails the moment
         anything pulls `std` back in — the same shape of fix the MSRV declaration got.
-      ⛔ **Why not landed:** it is a source change, and the L3 floor **cannot currently be run to
-      completion on this box** (`evidence/FLOOR-2026-08-03.md`: OOM-killed at the computed 20 GiB cap,
-      below this crate's own documented ~22 GiB requirement). Landing source now would leave the crate
-      with *weaker* proof evidence than it has, to buy a capability nothing is waiting on.
+      ⛔ **Why not landed:** it is a `der-verified/src` change, so it invalidates the committed proof
+      evidence (`VERIFIED_PATHS` in `gates/gen_proof_manifest.py`) and owes its own fresh L3+L4 floor
+      run and its own review — release time that 0.1.1 does not have scheduled, to buy a capability
+      nothing is waiting on. **Sequencing, not capability.**
+      ✅ **CORRECTION 2026-08-30 (this line previously said the opposite).** It used to read that the
+      L3 floor "cannot currently be run to completion on this box", citing
+      `evidence/FLOOR-2026-08-03.md`. That was stale, and it was the reason given for deferring. The
+      2026-08-03 OOM was a *computed* 20 GiB `MemoryMax` cap sitting **below** this crate's ~22 GiB
+      requirement — an envelope mistake, not a hardware ceiling. The floor has since completed on this
+      same box **twice**, both under a *fixed* `MemoryMax=22G`:
+      * 191/191 harnesses, **21.0 GB** peak — `evidence/check-ffcea81.log`, committed `ca0754f`,
+        2026-08-11.
+      * 203/203 harnesses, **20.8 GB** peak — measured 2026-08-30 during the acceptance-manifest
+        release work.
+      The 20 GiB figure is a trap worth stating plainly, because it was fallen into a *third* time on
+      2026-08-30 before this correction was written: a 20 G cap OOM-kills this crate's floor after
+      ~50 minutes. Use the fixed **22 G** cap.
       ⚠ Unsettled, and the reason the change must carry its own guard: **whether `cargo kani` sets
       `cfg(test)`**. If it ever did, `#![cfg_attr(not(test), no_std)]` would silently verify the std
       configuration. Ship it with `#[cfg(all(kani, test))] compile_error!(...)` rather than resting on
