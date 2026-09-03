@@ -4,6 +4,17 @@ All notable changes to `der-verified` are documented here. The format is based o
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`replay.sh` / `REPLAY.md` — a bounded, laptop-sized replay of the verification story.** Runs
+  the test suite, the acceptance-manifest gate, and one Kani harness (`boolean` module) to
+  ACCEPT, then reruns the same harness and the same gate against a seeded code fault and a
+  tampered evidence record to confirm they REJECT — without the ~24 GB the full Kani floor needs.
+  It is explicitly scoped as a demonstration of the mechanism, not a substitute for `./check.sh`,
+  the L4/L5 Lean lids, or any X.509 correctness claim; see `REPLAY.md`'s "Boundary" section.
+  README's "Verify it yourself" section links to it.
+
 ## [0.1.1] — 2026-08-25
 
 The `0.1.1` version was cut on 2026-08-11 but never published to crates.io; this release therefore

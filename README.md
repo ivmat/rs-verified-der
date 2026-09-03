@@ -273,6 +273,14 @@ you. (Reporting: see [`SECURITY.md`](SECURITY.md).)
 
 The evidence is re-runnable. From a fresh clone:
 
+### Ten-minute replay
+
+Don't have ~24 GB of RAM handy? `./replay.sh` (see [`REPLAY.md`](REPLAY.md)) runs on a laptop: it
+replays the test suite, the acceptance-manifest gate, and ONE Kani harness (accept), then shows
+that same harness and that same gate REJECT a seeded code fault and a tampered evidence record.
+It is a bounded demonstration of the mechanism, not the proof floor, the Lean lids, or an X.509
+correctness claim — read `REPLAY.md`'s "Boundary" section before treating it as either.
+
 ### 1. Tests + the L3 Kani proof floor
 
 ```sh
