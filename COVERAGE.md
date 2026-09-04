@@ -49,18 +49,33 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 **Every claim on the declared spec axis is admitted to this table, including the ones no machine decides.**
 A claim left out of a coverage table is a claim the reader has to infer from silence, which is the
 failure this file exists to prevent. But admission is not endorsement. Rows fall into two tiers, and
-the tier is visible in the `strength` column:
+the tier is visible beside the `strength` column.
 
-- **Weighted** — `CONTRACT+L4`, `CONTRACT`, `mechanical`. A *deciding* recipe exists: a command whose
-  failure would falsify the row. `DER-F-4`, `DER-C-INT-2` and `DER-P-2` are weighted rows.
+**Weight is not a rank of the strength label, and this block used to read as if it were.** Until
+2026-08-27 it listed "Weighted — `CONTRACT+L4`, `CONTRACT`, `mechanical`" against "Admitted —
+`PROBE`, `test-only`, `inspection-argued`, `not-covered`, `derived`" — i.e. weight presented as the
+top rungs of the strength ladder. That is wrong: **weight is orthogonal to strength, not a grade
+above it.** Strength answers *"how good is the evidence, if it decides anything?"*. Weight answers a
+narrower and different question: *"does a deciding recipe actually exist for this specific row — a
+command whose failure would falsify it?"* A row can carry a strong label and still lack that recipe,
+and a weak label does not, in principle, bar a row from having one (a `PROBE` can be an honest,
+well-controlled proof of something narrower than the row's item — that narrowness is exactly why it
+is a probe, not a defect in its recipe). This crate's rows do not currently exercise that
+combination, which is a fact about today's rows, not a rule about the tiers.
+
+- **Weighted** — a *deciding* recipe exists: a command whose failure would falsify the row. Every row
+  that meets that bar today happens to carry `CONTRACT+L4`, `CONTRACT`, or `mechanical` — `DER-F-4`,
+  `DER-C-INT-2` and `DER-P-2` are weighted rows — but that correlation describes which rows have a
+  recipe today, not a definition of the tier by label.
 - **Admitted** — `PROBE`, `test-only`, `inspection-argued`, `not-covered`, `derived`. These are
   carried at the evidentiary level they actually have, which is usually *"a human asserted it and a
-  reviewer checked the assertion"*. `DER-X-BOUND` and `DER-C-OID-2` are admitted rows.
+  reviewer checked the assertion"*, or — for `inspection-argued` specifically — a label for which no
+  deciding recipe can exist by definition. `DER-X-BOUND` and `DER-C-OID-2` are admitted rows.
 
 **The split cannot be crossed by writing better prose.** A row becomes weighted when a deciding
 recipe is attached to it, and not before.
 
-**Of the 75 rows below, 35 are weighted and 39 are admitted**, with one (`DER-C-STR-2`) resting on
+**Of the 75 rows below, 36 are weighted and 39 are admitted**, with one (`DER-C-STR-2`) resting on
 symbolic harnesses while naming the fixture-shaped ones beside it that would be a probe alone.
 
 **One row, one claim.** Where a single item genuinely carried two strengths, it is **split into two
@@ -286,8 +301,8 @@ are proved as **biconditionals**, which is stronger than the structural layer be
 | `DER-P-3` | Dates through 2049 use UTCTime; 2050 onward use GeneralizedTime (§4.1.2.5) | done | **CONTRACT** (bounded) (biconditional, plus a proof that UTCTime *cannot* denote ≥2050) | `K profile::proofs::rule3_generalized_too_early_iff_year_le_2049` · `K profile::proofs::utc_time_can_never_denote_2050_or_later` |
 | `DER-P-4` | Error precedence follows declaration order (determinism of the reported violation) | done | **CONTRACT** (bounded) | `K profile::proofs::error_precedence_follows_declaration_order` |
 | `DER-P-5` | Basic constraints (§4.2.1.9) | **not-covered** | **not-covered** | `E 'basic_?constraints'` → 0 in the implementation region; controls 6 and 14 as shown in §4. `gates/map_declared.txt` row `basic_constraints`. **The absence-grep this row used to name was unsound; see §4.** |
-| `DER-P-6` | Key usage (§4.2.1.3) | **not-covered** | **not-covered** | `E 'key_usage'` → 0 in the implementation region, same controls. `gates/map_declared.txt` row `key_usage`. |
-| `DER-P-7` | Name constraints (§4.2.1.10) | **not-covered** | **not-covered** | `E 'name_constraint'` → 0 in the implementation region, same controls. `gates/map_declared.txt` row `name_constraints`. |
+| `DER-P-6` | Key usage (§4.2.1.3) | **not-covered** | **not-covered** | `E 'key_usage'` → 0 in the implementation region, **sharing only control 1** (`ExtensionsRequireV3`, scoped → 6) with `DER-P-5`. **Control 2 does not apply here**: `key_usage` also returns 0 unscoped (`grep -ic 'key_usage' der-verified/src/profile.rs` → 0) — profile.rs's `mod tests` carries no key-usage fixture at all (unlike `EXT_BASIC_CONSTRAINTS_DEFAULT`, reused generically across `DER-P-5`'s tests), so there is no fixture-shaped false positive for a second control to rule out, and scoping is not what produced this zero. `gates/map_declared.txt` row `key_usage`. |
+| `DER-P-7` | Name constraints (§4.2.1.10) | **not-covered** | **not-covered** | `E 'name_constraint'` → 0 in the implementation region, **sharing only control 1** (`ExtensionsRequireV3`, scoped → 6) with `DER-P-5`. **Control 2 does not apply here**: `name_constraint` also returns 0 unscoped (`grep -ic 'name_constraint' der-verified/src/profile.rs` → 0) — profile.rs's `mod tests` carries no name-constraints fixture at all, so there is no fixture-shaped false positive for a second control to rule out, and scoping is not what produced this zero. `gates/map_declared.txt` row `name_constraints`. |
 | `DER-P-8` | Validity against a clock (§4.1.2.5) | **not-covered** | **not-covered** | `A '::now('` over `der-verified/src/` → **0** (likewise `SystemTime` and `Instant`, run separately): the crate never acquires a current time, so it cannot compare one. **Positive control:** `grep -c 'Time' der-verified/src/x509_validity.rs` → 115 — the crate has UTCTime/GeneralizedTime *values* in abundance and no *clock*, and that is exactly the distinction this row records. `gates/map_declared.txt` row `validity_against_clock`. |
 | `DER-P-9` | Certificate-path / trust validation; signature and crypto verification | **not-covered** | **out-of-scope** | `D README.md` scope section — *"Out of scope (not implemented, not proven)"*. `gates/map_declared.txt` rows `path_validation`, `crypto_verification`. |
 | `DER-P-10` | String canonicalisation / name-comparison rules; OID semantics | **not-covered** | **out-of-scope** | `D PROOF_MANIFEST.md` §6.2 |
