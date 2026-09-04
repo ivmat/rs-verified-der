@@ -29,6 +29,10 @@ echo "== lid-staleness gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_check_lid_staleness.py"
 echo "== lid-staleness gate (Lean-lid source drift since the last green Lean run; pure stdlib, fast) =="
 python3 "$ROOT/gates/check_lid_staleness.py"
+echo "== Lean dependency-path gate: self-test (pure stdlib) =="
+PYTHONPATH="$ROOT/gates" python3 "$ROOT/gates/test_check_lean_dependency_path.py"
+echo "== Lean dependency-path gate (lakefile and manifest use the same location-independent Aeneas path) =="
+python3 "$ROOT/gates/check_lean_dependency_path.py"
 echo "== acceptance-manifest gate (acceptance.toml vs the PINNED vendored validator; pure stdlib) =="
 # der-verified/acceptance.toml is this crate's machine-readable certificate, shipped INSIDE the
 # published package (ruling R-8), and it is GENERATED. This

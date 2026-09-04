@@ -2,13 +2,12 @@ name = "der-verified-lean"
 defaultTargets = ["DerVerified"]
 
 # The L4 "lid": we depend on Aeneas's Lean library (which transitively pulls
-# mathlib @ v4.30.0-rc2). Local path → reuse the already-built Aeneas + mathlib
-# under the isolated tools dir; never re-clones from git. This couples the lid
-# to the tools dir, which is why check.sh guards the Lean step on toolchain
-# presence (the L3 Kani floor is the always-on gate).
+# mathlib @ v4.30.0-rc2). The local path reuses the installed Aeneas backend instead
+# of cloning Aeneas. check_lean.sh creates this ignored link from VERIFIED_RS_TOOLS
+# before invoking Lake, so the checkout itself can live at any filesystem depth.
 [[require]]
 name = "Aeneas"
-path = "../../../Downloads/verified_rs_tools/aeneas/backends/lean"
+path = ".lake/packages/Aeneas"
 
 [[lean_lib]]
 name = "DerVerified"

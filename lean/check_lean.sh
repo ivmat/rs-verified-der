@@ -18,6 +18,7 @@ TOOLS="${VERIFIED_RS_TOOLS:-$HOME/Downloads/verified_rs_tools}"
 AENEAS="$TOOLS/aeneas"
 CHARON_BIN="$AENEAS/charon/bin/charon"
 AENEAS_BIN="$AENEAS/bin/aeneas"
+AENEAS_LEAN="$AENEAS/backends/lean"
 
 # MACHINE-READABLE OUTCOME (added 2026-08-25). This script has THREE outcomes -- PASS, SKIP and
 # FAIL -- but for its whole life it reported only two exit codes, and SKIP shared exit 0 with PASS.
@@ -36,7 +37,8 @@ _lid_status() {
 }
 if [ -n "${DER_LID_STATUS_FILE:-}" ]; then printf '%s\n' "FAIL" > "$DER_LID_STATUS_FILE"; fi
 
-if ! command -v lake >/dev/null 2>&1 || [ ! -x "$AENEAS_BIN" ] || [ ! -x "$CHARON_BIN" ]; then
+if ! command -v lake >/dev/null 2>&1 || [ ! -x "$AENEAS_BIN" ] || [ ! -x "$CHARON_BIN" ] \
+    || [ ! -f "$AENEAS_LEAN/lakefile.lean" ]; then
   echo "== lean lid: SKIP (Aeneas/Lean toolchain absent; the L3 Kani floor is the gate) =="
   # FAIL-CLOSED SWITCH. Any run whose result will be published, cited as an L4 witness, or minted
   # into a push receipt must set DER_REQUIRE_LEAN=1, which turns an absent toolchain from a silent
@@ -128,6 +130,43 @@ if [ "$GOT_AENEAS" != "$EXPECT_AENEAS" ] || [ "$GOT_CHARON" != "$EXPECT_CHARON" 
   echo "   expected  aeneas=$EXPECT_AENEAS  charon=$EXPECT_CHARON" >&2
   echo "   got       aeneas=$GOT_AENEAS  charon=$GOT_CHARON" >&2
   echo "   Proofs are checked against a specific Aeneas Std semantics; re-verify then update these pins." >&2
+  exit 1
+fi
+for tool_repo in "$AENEAS" "$AENEAS/charon"; do
+  if ! git -C "$tool_repo" diff --quiet HEAD -- \
+      || ! git -C "$tool_repo" diff --cached --quiet HEAD --; then
+    echo "!! lean lid: FAIL - pinned tool checkout has tracked local changes: $tool_repo" >&2
+    echo "   A clean commit id does not identify modified working-tree bytes." >&2
+    exit 1
+  fi
+done
+
+# Lake's TOML format does not expand environment variables in a path dependency. Keep the
+# committed path stable and create its ignored local target from the same VERIFIED_RS_TOOLS value
+# that selects the Charon and Aeneas binaries above. This removes the old dependency on the repo
+# being cloned at one exact directory depth below $HOME.
+AENEAS_LAKE_LINK="$HERE/.lake/packages/Aeneas"
+for parent in "$HERE/.lake" "$HERE/.lake/packages"; do
+  if [ -L "$parent" ]; then
+    echo "!! lean lid: FAIL - refusing a symbolic-link parent for the local Aeneas binding: $parent" >&2
+    exit 1
+  fi
+done
+mkdir -p "$HERE/.lake/packages"
+if [ -L "$AENEAS_LAKE_LINK" ]; then
+  rm "$AENEAS_LAKE_LINK"
+elif [ -e "$AENEAS_LAKE_LINK" ]; then
+  echo "!! lean lid: FAIL - $AENEAS_LAKE_LINK exists but is not a symbolic link." >&2
+  echo "   Move that local path aside so the gate can bind Lake to $AENEAS_LEAN." >&2
+  exit 1
+fi
+ln -s "$AENEAS_LEAN" "$AENEAS_LAKE_LINK"
+EXPECTED_AENEAS_LEAN="$(cd -P "$AENEAS_LEAN" && pwd)"
+LINKED_AENEAS_LEAN="$(cd -P "$AENEAS_LAKE_LINK" && pwd)"
+if [ "$LINKED_AENEAS_LEAN" != "$EXPECTED_AENEAS_LEAN" ]; then
+  echo "!! lean lid: FAIL - local Aeneas binding resolves to the wrong directory." >&2
+  echo "   expected $EXPECTED_AENEAS_LEAN" >&2
+  echo "   got      $LINKED_AENEAS_LEAN" >&2
   exit 1
 fi
 

@@ -6,7 +6,7 @@
    "name": "Aeneas",
    "manifestFile": "lake-manifest.json",
    "inherited": false,
-   "dir": "../../../Downloads/verified_rs_tools/aeneas/backends/lean",
+   "dir": ".lake/packages/Aeneas",
    "configFile": "lakefile.lean"},
   {"url": "https://github.com/leanprover-community/mathlib4.git",
    "type": "git",
