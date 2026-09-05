@@ -13,12 +13,13 @@ That is a ONE-WAY ALARM: a check that can only ever say "fine" is not evidence, 
 being read as a pass. The fix gives the script a machine-readable outcome (`lean-lid-status: PASS |
 SKIP | FAIL`, plus $DER_LID_STATUS_FILE) that `check.sh` names in its own summary.
 
-A guard is only worth having if it can be watched to fail, so this self-test drives all three
+A guard is only worth having if it can be watched to fail, so this self-test drives four
 reachable states rather than asserting the happy one:
 
   1. SKIP        — toolchain absent, permissive default: exit 0, and NO false PASS anywhere.
   2. FAIL-CLOSED — toolchain absent + DER_REQUIRE_LEAN=1: non-zero exit, status FAIL.
-  3. FAIL        — toolchain "present" (stubs), so the guard does NOT fire: the run proceeds past
+  3. SKIP        — binaries + Lake present but the Aeneas Lean backend is absent: exit 0.
+  4. FAIL        — toolchain "present" (stubs), so the guard does NOT fire: the run proceeds past
                    the guard and fails downstream. This is the positive control: it proves the SKIP
                    token is emitted because the toolchain is missing, not unconditionally.
 
@@ -71,7 +72,7 @@ def run(env_extra, tools_dir, status_path, extra_path=None):
 
 
 def main():
-    print("== test_check_lean_skip.py: lean-lid guard self-test (3 states) ==")
+    print("== test_check_lean_skip.py: lean-lid guard self-test (4 states) ==")
 
     with tempfile.TemporaryDirectory() as td:
         td = Path(td)
@@ -100,12 +101,11 @@ def main():
         check("does NOT emit a SKIP token", "lean-lid-status: SKIP" not in out)
         check("does NOT claim a sorry-free pass", "lean lid: PASS" not in out)
 
-        # --- 3. POSITIVE CONTROL: guard does not fire when the toolchain looks present. ---
-        # Without this, states 1 and 2 would also pass if the script emitted SKIP unconditionally.
-        print("-- state 3: stub toolchain present (guard must NOT fire) --")
-        fake_tools = td / "tools"
+        # --- 3. SKIP: binaries and Lake exist, but the required Lean backend does not. ---
+        print("-- state 3: binaries present but Aeneas Lean backend absent --")
+        partial_tools = td / "partial-tools"
         for rel in ("aeneas/bin/aeneas", "aeneas/charon/bin/charon"):
-            p = fake_tools / rel
+            p = partial_tools / rel
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text("#!/bin/sh\nexit 0\n")
             p.chmod(0o755)
@@ -116,11 +116,29 @@ def main():
         lake.chmod(0o755)
 
         status.unlink(missing_ok=True)
-        rc, out, token = run({}, fake_tools, status, extra_path=str(fake_bin))
+        rc, out, token = run({}, partial_tools, status, extra_path=str(fake_bin))
+        check("exits 0", rc == 0, f"(got {rc})")
+        check("status file says SKIP", token == "SKIP", f"(got {token!r})")
+        check("announces the skip", "lean lid: SKIP" in out)
+        check("does NOT claim a sorry-free pass", "lean lid: PASS" not in out)
+
+        # --- 4. POSITIVE CONTROL: guard does not fire when the toolchain looks present. ---
+        # Without this, states 1-3 would also pass if the script emitted SKIP unconditionally.
+        print("-- state 4: stub toolchain present (guard must NOT fire) --")
+        # The real guard also requires Aeneas's Lean backend. Keep this fixture on the
+        # toolchain-present side of that guard; it should fail later at the revision pin check.
+        backend_lakefile = partial_tools / "aeneas/backends/lean/lakefile.lean"
+        backend_lakefile.parent.mkdir(parents=True, exist_ok=True)
+        backend_lakefile.write_text("package Aeneas\n")
+
+        status.unlink(missing_ok=True)
+        rc, out, token = run({}, partial_tools, status, extra_path=str(fake_bin))
         check("guard did NOT fire (no SKIP token)", "lean-lid-status: SKIP" not in out)
         check("ran past the guard and failed downstream", rc != 0, f"(got {rc})")
         check("status file says FAIL, not SKIP or PASS", token == "FAIL", f"(got {token!r})")
         check("does NOT claim a sorry-free pass", "lean lid: PASS" not in out)
+        check("failed at the revision pin, before any tree mutation",
+              "toolchain revision drift" in out)
 
     print()
     if failures:
