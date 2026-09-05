@@ -65,7 +65,7 @@ echo "== lean-lid skip-guard gate: self-test (the gate's own gate; pure stdlib) 
 # the SKIP and FAIL directions of that guard (the PASS direction is witnessed by the real run
 # below, which now prints its own status token).
 python3 "$ROOT/gates/test_check_lean_skip.py"
-echo "== lean lid :: der-verified length/big_integer/oid codecs (L4, unbounded; guarded) =="
+echo "== lean lid :: all six DER codecs (L4/L5, unbounded; guarded) =="
 # Capture the lean stage's OWN verdict rather than inferring it from an exit code that cannot
 # distinguish PASS from SKIP. Not piped: `sh` here has no `pipefail`, so a pipe would hand us tee's
 # exit status and silently swallow a lean-stage failure -- the script writes the token to a file

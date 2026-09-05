@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 # L4/L5 "Lean lid" gate — re-runnable (the L3 Kani floor's unbounded companion).
 #
-# Re-extracts the length + big_integer + oid + tlv + sequence codecs through
+# Re-extracts the length + big_integer + oid + tag + tlv + sequence codecs through
 # Charon -> Aeneas and machine-checks the unbounded (any-length, and for `sequence`
 # ALSO any-child-count) Lean proofs (LengthProofs.lean, BigIntProofs.lean,
-# OidProofs.lean, TlvProofs.lean, SequenceProofs.lean).
+# OidProofs.lean, TagProofs.lean, TlvProofs.lean, SequenceProofs.lean).
 #
 # GUARDED: this no-ops (exit 0) when the Aeneas/Lean toolchain is not installed.
 # The always-on gate is the L3 Kani floor in ../check.sh; this lid is additive.

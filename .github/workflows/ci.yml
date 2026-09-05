@@ -29,6 +29,8 @@ jobs:
         run: |
           python3 gates/test_gen_proof_manifest.py
           python3 gates/gen_proof_manifest.py --check
+      - name: Replay CLI gate
+        run: python3 gates/test_replay_cli.py
       # The tractability split is data (gates/tiers.txt) and CI's own shard filters are one of
       # the two things it keeps honest, so CI must run it: a shard filter edited here without the
       # tier file following is precisely the drift this catches.

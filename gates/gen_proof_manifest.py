@@ -1212,7 +1212,7 @@ WORDNUM = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6,
 # Only documents that make *current-state* claims are guarded. CHANGELOG.md, DECISIONS.md and
 # DER-REMAINING-WORK.md are dated, append-only, point-in-time records: a historical count in
 # them is correct *as history* and must not be rewritten.
-GUARDED_DOCS = ['PROOF_MANIFEST.md', 'README.md', 'der-verified/README.md',
+GUARDED_DOCS = ['PROOF_MANIFEST.md', 'README.md', 'REPLAY.md', 'der-verified/README.md',
                 'docs/why-verified.md', 'docs/verification-cost.md', 'der-verified/src/lib.rs',
                 # ASSUMPTIONS.md states the trusted base and repeats crate totals while doing it
                 # ("all 191 proof harnesses", "six codecs", "472 unit and regression tests"). A

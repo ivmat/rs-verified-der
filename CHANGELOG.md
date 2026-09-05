@@ -11,9 +11,12 @@ All notable changes to `der-verified` are documented here. The format is based o
   the test suite, the acceptance-manifest gate, and one Kani harness (`boolean` module) to
   ACCEPT, then reruns the same harness and the same gate against a seeded code fault and a
   tampered evidence record to confirm they REJECT — without the ~24 GB the full Kani floor needs.
-  It is explicitly scoped as a demonstration of the mechanism, not a substitute for `./check.sh`,
-  the L4/L5 Lean lids, or any X.509 correctness claim; see `REPLAY.md`'s "Boundary" section.
-  README's "Verify it yourself" section links to it.
+  It is explicitly scoped as a demonstration of the mechanism, not a substitute for `./check.sh`
+  or any X.509 correctness claim. `--with-lean` re-extracts and machine-checks the six current Lean
+  lids, fail-closed on an absent or drifted toolchain, or a toolchain checkout with tracked local
+  changes. That step is accept-only: the replay validates but does not rerun the six recorded Lean
+  mutation controls. See `REPLAY.md`'s "Boundary" section. README's "Verify it yourself" section
+  links to it.
 
 ## [0.1.1] — 2026-08-25
 

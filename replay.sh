@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # replay.sh — the ten-minute replay. See REPLAY.md for what this does and does not cover.
 #
-# Six steps, each printing a `== ... ==` header and a `RESULT:` line:
+# Six base steps, each printing a `== ... ==` header; S1-S5 also print a `RESULT:` line:
 #   S1  cargo test (the crate's test suite)                          — expect ACCEPT
 #   S2  the vendored acceptance-manifest validator, strict mode      — expect ACCEPT
 #   S3  ONE Kani harness (boolean::proofs::one_octet_is_canonical)   — expect ACCEPT
@@ -10,13 +10,19 @@
 #   S5  negative control B: the SAME validator against a tampered    — expect REJECT
 #       evidence record, in a throwaway temp copy
 #   S6  summary table
+# Optional `--with-lean` adds L1 before S6: re-extract and check all six Lean lids with the
+# pinned Charon/Aeneas/Lean toolchain. It is fail-closed and never turns an absent toolchain
+# into a skip. L1 is accept-only: it re-executes the Lean baseline but seeds no Lean fault. S2
+# validates every recorded evidence projection, including the historical Lean control records.
 #
 # Every Kani invocation runs under a hard virtual-memory cap (`ulimit -v`) and a wall-clock
 # timeout, per this repo's memory-blowup lesson (see evidence/*.md and the README's "needs
 # ~24 GB RAM" note for the FULL floor — this script never runs the full floor).
 #
-# Nothing here mutates a TRACKED file. S4 and S5 each work in their own `mktemp -d` copy of
-# `der-verified/` and are torn down on every exit path, including failure.
+# Default mode mutates no tracked file. S4 and S5 each work in their own `mktemp -d` copy of
+# `der-verified/` and are torn down on every exit path, including failure. `--with-lean`
+# delegates to lean/check_lean.sh, which can refresh tracked lean/lid-source-state.txt after a
+# green run when the recorded source hashes changed. Lean build state stays under ignored .lake/.
 set -eu
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -24,6 +30,37 @@ HARNESS="boolean::proofs::one_octet_is_canonical"
 MODULE="boolean"
 MEM_CAP_KB=8000000        # ~8 GB
 KANI_TIMEOUT_S=300        # 5 minutes
+WITH_LEAN=0
+
+usage() {
+    echo "usage: ./replay.sh [--with-lean]"
+    echo
+    echo "  default      laptop-sized tests, manifest validation, one Kani harness, and controls"
+    echo "  --with-lean  also re-extract and check all six Lean lids; missing tools are a failure"
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --with-lean)
+            if [ "$WITH_LEAN" -eq 1 ]; then
+                echo "replay.sh: --with-lean was supplied more than once" >&2
+                usage >&2
+                exit 64
+            fi
+            WITH_LEAN=1
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "replay.sh: unknown option: $1" >&2
+            usage >&2
+            exit 64
+            ;;
+    esac
+    shift
+done
 
 BASE_TMP="$(mktemp -d)"
 RESULTS="$BASE_TMP/results.tsv"
@@ -277,6 +314,29 @@ rm -rf "$S5_DIR"
 S5_DIR=""
 
 # ---------------------------------------------------------------------------
+if [ "$WITH_LEAN" -eq 1 ] && [ "$MISSING_KANI" -eq 0 ]; then
+    echo
+    echo "== L1: all six Charon -> Aeneas -> Lean lids (required, no skip) =="
+    run_timed l1 env DER_REQUIRE_LEAN=1 sh "$ROOT/lean/check_lean.sh"
+    if [ "$RC" -eq 0 ] \
+        && grep -qF '== lean lid: PASS (sorry-free) ==' "$OUTLOG" \
+        && grep -qF 'lean-lid-status: PASS' "$OUTLOG"; then
+        observed="ACCEPT"
+    else
+        observed="REJECT"
+    fi
+    tail -n 20 "$OUTLOG"
+    result_line "L1 (Lean lids)" "ACCEPT" "$observed"
+    record "L1 Lean lids (all six)" "ACCEPT" "$observed" "$WALL_S" "$RSS_KB"
+    if [ "$observed" != "ACCEPT" ]; then
+        cat "$OUTLOG" >&2
+        echo "L1 FAILED: --with-lean requires lean/check_lean.sh to exit 0 AND print both PASS" >&2
+        echo "markers (exit was $RC). The complete L1 output is above." >&2
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 echo
 echo "== S6: summary =="
 printf '%-42s %-9s %-9s %-8s %s\n' "step" "expected" "observed" "wall" "peak RSS (KB)"
@@ -286,6 +346,10 @@ done <"$RESULTS"
 
 if [ "$MISSING_KANI" -eq 1 ]; then
     echo >&2
+    if [ "$WITH_LEAN" -eq 1 ]; then
+        echo "L1 NOT RUN: --with-lean cannot make an incomplete Kani replay complete." >&2
+        echo "Install Kani before paying the cost of the Lean replay." >&2
+    fi
     echo "FAILED: Kani is not installed, so S3/S4 could not run — this replay is INCOMPLETE, not" >&2
     echo "a pass." >&2
     kani_install_hint >&2
@@ -293,4 +357,8 @@ if [ "$MISSING_KANI" -eq 1 ]; then
 fi
 
 echo
-echo "replay.sh: all six steps observed their expected verdict."
+if [ "$WITH_LEAN" -eq 1 ]; then
+    echo "replay.sh: all six base steps plus the requested Lean replay observed their expected verdict."
+else
+    echo "replay.sh: all six steps observed their expected verdict."
+fi

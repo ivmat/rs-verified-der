@@ -278,8 +278,11 @@ The evidence is re-runnable. From a fresh clone:
 Don't have ~24 GB of RAM handy? `./replay.sh` (see [`REPLAY.md`](REPLAY.md)) runs on a laptop: it
 replays the test suite, the acceptance-manifest gate, and ONE Kani harness (accept), then shows
 that same harness and that same gate REJECT a seeded code fault and a tampered evidence record.
-It is a bounded demonstration of the mechanism, not the proof floor, the Lean lids, or an X.509
-correctness claim — read `REPLAY.md`'s "Boundary" section before treating it as either.
+The default validates the Lean evidence records in acceptance/0 but does not execute Lean.
+`./replay.sh --with-lean` additionally re-extracts the shipped Rust and checks all six Lean lids;
+it fails rather than skips when the pinned toolchain is absent. This Lean step is accept-only; S2
+validates the recorded Lean controls but does not rerun them. Neither mode runs the full Kani floor
+or establishes an X.509 correctness claim — read `REPLAY.md`'s "Boundary" section first.
 
 ### 1. Tests + the L3 Kani proof floor
 

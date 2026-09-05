@@ -33,6 +33,8 @@ echo "== Lean dependency-path gate: self-test (pure stdlib) =="
 PYTHONPATH="$ROOT/gates" python3 "$ROOT/gates/test_check_lean_dependency_path.py"
 echo "== Lean dependency-path gate (lakefile and manifest use the same location-independent Aeneas path) =="
 python3 "$ROOT/gates/check_lean_dependency_path.py"
+echo "== replay CLI gate: --with-lean is explicit and fail-closed (pure stdlib) =="
+python3 "$ROOT/gates/test_replay_cli.py"
 echo "== acceptance-manifest gate (acceptance.toml vs the PINNED vendored validator; pure stdlib) =="
 # der-verified/acceptance.toml is this crate's machine-readable certificate, shipped INSIDE the
 # published package (ruling R-8), and it is GENERATED. This

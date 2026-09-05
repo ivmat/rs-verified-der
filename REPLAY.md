@@ -2,7 +2,9 @@
 
 A bounded, laptop-sized companion to the full proof floor. Run it when you want to *watch* the
 gates work — accept a real result, then reject a seeded fault and a tampered evidence record —
-without provisioning the ~24 GB machine the full `./check.sh` Kani run needs.
+without provisioning the ~24 GB machine the full `./check.sh` Kani run needs. Add `--with-lean`
+when the pinned Lean/Aeneas toolchain is installed and you also want to re-execute the six Lean
+lids that the acceptance manifest records.
 
 ## What this replays (and what it does not)
 
@@ -14,11 +16,20 @@ because BOOLEAN is the smallest module with a documented mutation control — se
 same validator each REJECT a deliberately broken input: a one-line code mutation, and a
 one-byte-flipped evidence record.
 
+**With `--with-lean`:** it additionally runs `lean/check_lean.sh` with `DER_REQUIRE_LEAN=1`. That
+re-extracts the shipped Rust through Charon and Aeneas and checks all six L4/L5 lids. An absent or
+wrong toolchain is a failure, never a skip. This re-executes the current Lean baseline; it does not
+rerun every historical Lean mutation-control record that the acceptance manifest validates. L1 is
+accept-only: it seeds no Lean-side fault. The reject side is the six recorded controls under
+`evidence/lid-mutation-controls-2026-08-29/`; S2 hash-validates their public projections but does not
+re-execute them. A green Lean run can refresh tracked `lean/lid-source-state.txt` when its recorded
+source hashes changed. Lean build state stays under ignored `lean/.lake/`.
+
 **It does not replay:** the full 203-harness Kani floor (`./check.sh`/`cargo kani -Z stubbing`,
-which needs ~24 GB RAM — see the README's "Verify it yourself" §1), the L4/L5 Lean lids (unbounded
-proofs over six codecs — README §2), or any claim about the X.509 layer or real-world certificate
-correctness. One harness passing is evidence about one bounded property of one primitive codec,
-not about the crate as a whole. For the actual scope of what is (and is not) proven, read
+which needs ~24 GB RAM — see the README's "Verify it yourself" §1), any claim about the X.509 layer,
+or real-world certificate correctness. In the default mode it also does not execute Lean. One Kani
+harness passing is evidence about one bounded property of one primitive codec, not about the crate
+as a whole. For the actual scope of what is (and is not) proven, read
 [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) and [`ASSUMPTIONS.md`](ASSUMPTIONS.md) — this replay is a
 demonstration of the *mechanism*, not a substitute for either.
 
@@ -34,15 +45,23 @@ demonstration of the *mechanism*, not a substitute for either.
   If Kani is not installed, the script SKIPS those two steps loudly and exits non-zero — it never
   reports a pass it did not actually run.
 - Python 3, stdlib only (no `pip install`).
+- For `--with-lean`: Elan plus the pinned Aeneas and Charon checkouts described in README §2.
+  `VERIFIED_RS_TOOLS` points at the directory containing the `aeneas/` checkout, with Charon at
+  `aeneas/charon/`. The option fails if they are absent, at the wrong pinned revisions, or have
+  tracked local changes.
 
 ## Run it
 
 ```sh
-./replay.sh
+./replay.sh               # default laptop replay; validates Lean records but does not run Lean
+./replay.sh --with-lean   # also re-extracts and checks all six Lean lids; fail-closed
 ```
 
-The name is the budget, not the duration: on a warm laptop the whole script finishes in seconds
-(the crate is small and dependency-free); a cold first build adds compile time.
+The name is the default-mode budget, not a promise for the optional Lean mode. The measured
+`--with-lean` path uses a warm `lean/.lake/`, where Lake validates reusable build traces and cached
+artifacts. A cold `lean/.lake/` is not a laptop-sized operation: Lake must re-fetch the pinned
+packages over the network and rebuild the Mathlib subset that Aeneas imports from source. No script
+here fetches Mathlib's prebuilt cache, and this document makes no duration claim for that cold path.
 
 ## Expected output
 
@@ -61,6 +80,14 @@ RESULT: S5 (validator, tampered record) REJECT (expected REJECT)
 followed by a summary table (step, expected, observed, wall time, peak RSS) and
 `replay.sh: all six steps observed their expected verdict.`
 
+With `--with-lean`, one additional result appears before the summary:
+
+```
+RESULT: L1 (Lean lids) ACCEPT (expected ACCEPT)
+```
+
+The final line then confirms the six base steps plus the requested Lean replay.
+
 ## Negative controls
 
 **S4 (seeded code fault).** In a throwaway `mktemp -d` copy of `der-verified/` — never a tracked
@@ -77,9 +104,10 @@ loud-abort rule if it does not.
 
 ## Boundary
 
-This replays **one codec's one bounded property, plus the manifest check** — not the proof floor
-(203 harnesses across 33 modules), not the L4/L5 Lean lids, and not X.509 or certificate-chain
-correctness. It is a fast, honest demonstration that the gates are real gates: they accept a real
-result and they reject a real fault. It is not a substitute for `./check.sh`, and it makes no claim
-this document does not spell out. See `PROOF_MANIFEST.md` for the actual proof envelope and
+The default mode replays **one codec's one bounded property, plus the manifest check**. The
+`--with-lean` mode adds the six current L4/L5 Lean lids. Neither mode runs the full proof floor
+(203 Kani harnesses across 33 modules), proves X.509 or certificate-chain correctness, or reruns
+every historical control record. S4 and S5 watch the Kani harness and manifest validator reject real
+faults. L1 is accept-only; its six recorded Lean controls are validated by S2 rather than rerun. This
+is not a substitute for `./check.sh`. See `PROOF_MANIFEST.md` for the actual proof envelope and
 `ASSUMPTIONS.md` for what all of it stands on.
