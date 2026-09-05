@@ -18,6 +18,23 @@ All notable changes to `der-verified` are documented here. The format is based o
   mutation controls. See `REPLAY.md`'s "Boundary" section. README's "Verify it yourself" section
   links to it.
 
+### Changed
+- **README's verification map is now coloured by ASSURANCE BAND, not by tool.** The map used to
+  paint every Lean-lidded module green and every other Kani-harnessed module blue. Both colours read
+  as "done", while most of the crate's claims carry no control that was ever watched to fail — so
+  the picture said more than the evidence does. Colour is now the band recorded per claim in
+  `der-verified/acceptance.toml` (A0..A4; a band above A0 needs an observed-red mutation control),
+  grade (contract / probe / ungraded) is printed on every node instead of being folded into the
+  colour, the legend states the whole ladder with a claim count per rung, and a generated line above
+  the diagram states the target and the shortfall against it. Nodes with no claim at all — planned
+  work, a wall, a scope decision — are white dashed boxes, never a band.
+  `gates/gen_verification_map.py` now reads the manifest (its `--check` fails if the committed
+  diagram drifts from it), cross-checks the manifest's Lean-lid claims against the source tree's own
+  lid derivation, draws a module the manifest does not rate as `unrated` rather than borrowing a
+  neighbour's colour, and refuses to render if a manifest claim maps to no node.
+  `gates/map_declared.txt`'s first column is now the reason there is no claim
+  (`planned` / `wall` / `out-of-scope`) instead of a colour name. No claim, count or proof changed.
+
 ## [0.1.1] — 2026-08-25
 
 The `0.1.1` version was cut on 2026-08-11 but never published to crates.io; this release therefore

@@ -24,9 +24,10 @@ python3 "$ROOT/gates/gen_proof_manifest.py" --check
 echo "== verification-map gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_gen_verification_map.py"
 echo "== verification-map gate (README.md's mermaid map vs source; pure stdlib) =="
-# The map's green/blue are DERIVED (the Lean lid set + gates/tiers.txt) and its yellow/red/gray are
-# DECLARED human judgements (gates/map_declared.txt); this fails closed if either drifts from what's
-# committed in README.md. Regenerate with `python3 gates/gen_verification_map.py --write`.
+# The map's colours are assurance BANDS, DERIVED from der-verified/acceptance.toml over the module
+# roster in gates/tiers.txt; its white dashed "no claim" boxes are DECLARED human judgements
+# (gates/map_declared.txt). This fails closed if either drifts from what's committed in README.md.
+# Regenerate with `python3 gates/gen_verification_map.py --write`.
 python3 "$ROOT/gates/gen_verification_map.py" --check
 echo "== acceptance-manifest gate (acceptance.toml vs the PINNED vendored validator; pure stdlib) =="
 # Also present in check_fast.sh (runs on every commit); repeated here so the release path's own

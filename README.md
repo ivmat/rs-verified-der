@@ -138,16 +138,34 @@ leap-second rejection, range caps, primitive-form-only rules) are design decisio
 
 ## Verification map
 
-A picture of the same scope section above, coloured by evidence grade and regenerated from
-source on every check — a hand-drawn version of this diagram is exactly the kind of claim that
+A picture of the same scope section above, **coloured by assurance band** — how strong the evidence
+behind a claim is, not which tool produced it — and regenerated on every check from the crate's own
+machine-readable manifest. A hand-drawn version of this diagram is exactly the kind of claim that
 rots the moment coverage changes, so there isn't one.
 
-**Green and blue are derived from gated sources** — green from the Aeneas → Lean lid set (the
-same derivation `PROOF_MANIFEST.md`'s L4 table uses), blue from every other harnessed module in
+**A band is a floor on evidence, gated by control discipline.** A check that nobody ever watched
+fail is untested: a harness whose oracle nobody perturbed reads, at the evidence level, exactly like
+one a mutation control proved catches bugs. So every band above **A0** requires an *observed-red
+control* — a deliberate fault the oracle had to reject — and a module with many harnesses and no
+such control stays at A0. The colour therefore answers "how much may a reader assume without
+re-running anything", which is a harsher question than "does this module have harnesses". The band
+ladder comes from the acceptance/0 format (`spec/assurance-bands.md` in `ivmat/acceptance-format`);
+the legend inside the diagram restates it.
+
+**Grade is a separate axis from band, and is printed on every node.** `contract` means the evidence
+decides a functional postcondition; `probe` means it spot-checks behaviour, most often
+panic-freedom; `ungraded` means no graded oracle is claimed. A probe is honest evidence; it is not a
+contract, and the diagram never merges the two into one colour.
+
+**The bands are derived; the white dashed boxes are declared.** Every coloured node is read from
+[`der-verified/acceptance.toml`](der-verified/acceptance.toml) — generated, and re-validated by
+`check.sh` against a pinned validator — over the module roster in
 [`gates/tiers.txt`](gates/tiers.txt), itself enforced against the source tree by
-[`gates/check_tier_parity.py`](gates/check_tier_parity.py). **Yellow, red and gray are human
-judgements**, not derived from code — each one is a row in
-[`gates/map_declared.txt`](gates/map_declared.txt) citing the file and section it is read from.
+[`gates/check_tier_parity.py`](gates/check_tier_parity.py); the manifest's Lean-lid claims are
+cross-checked against the same lid derivation `PROOF_MANIFEST.md`'s L4 table uses, so the two
+documents cannot tell you different stories. The white dashed boxes carry **no claim at all** —
+planned work, a wall we hit, or a recorded scope decision — and each is a human judgement, one row
+in [`gates/map_declared.txt`](gates/map_declared.txt) citing the file and section it is read from.
 That split is load-bearing, not decorative: an undisclosed gated-looking claim on this repo's
 front page is exactly the wrong shape.
 
@@ -161,46 +179,58 @@ that axis, because no single module owns them and a module-shaped table therefor
 for them.
 
 <!-- BEGIN GENERATED:map (gates/gen_verification_map.py) -->
+**Colour is the assurance BAND, not the tool.** Target: band **A3** or better on every claim. Today **13 of 39** claims reach A3 or better, and **26** do not — so this crate is not done, and the picture is drawn to show that rather than to hide it.
+
 ```mermaid
 flowchart TB
-    classDef green fill:#1b7f4d,stroke:#0a3d22,color:#ffffff
-    classDef blue fill:#2f6fb0,stroke:#173a5e,color:#ffffff
-    classDef yellow fill:#b58a1a,stroke:#5c4610,color:#ffffff
-    classDef red fill:#b3382a,stroke:#5c1a10,color:#ffffff
-    classDef gray fill:#6b6b6b,stroke:#333333,color:#ffffff
+    classDef a4 fill:#12633c,stroke:#08301d,color:#ffffff
+    classDef a3_5 fill:#5fa877,stroke:#2f6146,color:#ffffff
+    classDef a3 fill:#9ed0a8,stroke:#3f7a4c,color:#0d2a15
+    classDef a2 fill:#d99b1c,stroke:#6f4f0c,color:#241a04
+    classDef a1 fill:#f2dda6,stroke:#8a6d2f,color:#3a2c08
+    classDef a0 fill:#9b9b9b,stroke:#4d4d4d,color:#111111
+    classDef unrated fill:#ffffff,stroke:#4d4d4d,stroke-dasharray: 3 3,color:#111111
+    classDef noclaim fill:#ffffff,stroke:#8a8a8a,stroke-dasharray: 5 4,color:#333333
 
     subgraph crypto_layer["cryptographic layer — outside the fence, not verified"]
         direction LR
         style crypto_layer stroke-dasharray: 6 4
-        crypto_gray["Certificate-path / trust validation · Signature / crypto verification"]:::gray
+        crypto_out_of_scope["no claim — deliberately out of scope<br/>Certificate-path / trust validation · Signature / crypto verification"]:::noclaim
     end
     subgraph profile_layer["RFC 5280 profile rules"]
         direction LR
-        profile_blue["profile"]:::blue
-        profile_yellow["Basic constraints (RFC 5280 §4.2.1.9) · Key usage (RFC 5280 §4.2.1.3) · Name constraints (RFC 5280 §4.2.1.10) · Validity-against-clock (RFC 5280 §4.1.2.5)"]:::yellow
+        profile_a0_ungraded_unweighted["A0 · grade: ungraded · unweighted<br/>profile"]:::a0
+        profile_planned["no claim — planned<br/>Basic constraints (RFC 5280 §4.2.1.9) · Key usage (RFC 5280 §4.2.1.3) · Name constraints (RFC 5280 §4.2.1.10) · Validity-against-clock (RFC 5280 §4.1.2.5)"]:::noclaim
     end
     subgraph structural_layer["X.509 structural composition"]
         direction LR
-        structural_blue["x509_algorithm_identifier · x509_certificate · x509_extension · x509_name<br/>x509_spki · x509_tbs_certificate · x509_validity"]:::blue
-        structural_yellow["X.509 structural-module Lean lid (L4)"]:::yellow
+        structural_a1_probe_unweighted["A1 · grade: probe · unweighted<br/>x509_algorithm_identifier · x509_certificate · x509_extension · x509_name<br/>x509_spki · x509_tbs_certificate · x509_validity"]:::a1
+        structural_planned["no claim — planned<br/>X.509 structural-module Lean lid (L4)"]:::noclaim
     end
     subgraph codecs_layer["DER content codecs"]
         direction LR
-        codecs_green["big_integer · oid · sequence"]:::green
-        codecs_blue["bit_string · boolean · context_tag · ec_private_key<br/>ecdsa_sig_value · encrypted_private_key_info · enumerated · generalized_time<br/>identifier_form · integer · null · octet_string<br/>pkcs8 · restricted_string · rsa_private_key · rsa_public_key<br/>set_of · utc_time · utf8_string"]:::blue
-        codecs_gray["General SET (X.690 §10.3)"]:::gray
+        codecs_a3_contract_weighted["A3 · grade: contract · weighted<br/>big_integer · integer · oid · sequence"]:::a3
+        codecs_a1_probe_unweighted["A1 · grade: probe · unweighted<br/>context_tag · ec_private_key · ecdsa_sig_value · encrypted_private_key_info<br/>pkcs8 · rsa_private_key · rsa_public_key"]:::a1
+        codecs_a0_ungraded_unweighted["A0 · grade: ungraded · unweighted<br/>bit_string · boolean · enumerated · generalized_time<br/>identifier_form · null · octet_string · restricted_string<br/>set_of · utc_time · utf8_string"]:::a0
+        codecs_out_of_scope["no claim — deliberately out of scope<br/>General SET (X.690 §10.3)"]:::noclaim
     end
     subgraph framing_layer["tag / length / TLV framing base"]
         direction LR
-        framing_green["length · tag · tlv"]:::green
+        framing_a3_contract_weighted["A3 · grade: contract · weighted<br/>length · tag · tlv"]:::a3
+    end
+    subgraph lid_layer["unbounded Lean-lid claims — SEPARATE claims (PM/lean-*), each proven over inputs of ANY length"]
+        direction LR
+        lid_a4_contract_weighted["A4 · grade: contract · weighted<br/>big_integer · length · oid · sequence<br/>tag · tlv"]:::a4
     end
 
     crypto_layer -.-> profile_layer --> structural_layer --> codecs_layer --> framing_layer
 
     subgraph legend["Legend"]
-        legend_all["green = L4/L5 (Aeneas → Lean lid), DERIVED<br/>blue = L3 (Kani-harnessed), DERIVED<br/>yellow = planned, DECLARED<br/>red = a wall we hit, DECLARED<br/>gray = deliberately not planned, DECLARED"]
+        legend_all["colour = assurance BAND: what a reader may assume without re-running anything<br/>A4 unbounded functional proof, kernel-checked, red mutation control — 6 claim(s)<br/>A3 bounded functional contract, red mutation control — 7 claim(s)<br/>A2 memory safety on the unsafe surface, with a control — 0 claim(s)<br/>A1 non-vacuous but not state-exhaustive, and no functional control — 14 claim(s)<br/>A0 ran or asserted, with NO control watched to fail — the claim is not done — 12 claim(s)<br/>white dashed = no claim in the manifest (planned · wall · out of scope), DECLARED<br/>grade is a SEPARATE axis: contract = decides a functional postcondition · probe = spot-check, typically panic-freedom · ungraded = no graded oracle"]:::unrated
     end
 ```
+
+Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `402719a`, generated `2026-09-04T23:08:58Z`. A band above A0 needs a control that was watched to fail, so nothing here can be raised by adding harnesses alone.
 <!-- END GENERATED:map -->
 
 ## Strict decoding — exact consumption, no trailing bytes

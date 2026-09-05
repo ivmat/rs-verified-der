@@ -111,7 +111,9 @@ Tier 4  Band-A containers    ecdsa_sig_value · rsa_public_key · pkcs8      (+ 
   Band-A module cost one module + three harnesses, not a re-proof of the stack.
 
 The gated **verification map** in `README.md` (`gen_verification_map.py`) is the always-current picture
-of which module sits at which layer and colour; treat it as the live building-block diagram.
+of which module sits at which layer, coloured by the assurance BAND its claim carries in
+`der-verified/acceptance.toml` (A0..A4 — a band above A0 needs a control that was watched to fail);
+treat it as the live building-block diagram, and read the colour as evidence strength, not as tooling.
 
 ## 6. Runtime view
 

@@ -1,19 +1,19 @@
-# gates/map_declared.txt — DECLARED (non-derivable) verification-map tiers.
+# gates/map_declared.txt — DECLARED (non-derivable) verification-map nodes.
 #
-# `gates/gen_verification_map.py` renders `README.md`'s GENERATED:map region. Two of its five
-# colours are DERIVED straight from source (green = an Aeneas->Lean lid; blue = every other
-# harnessed module in `gates/tiers.txt`) and can never drift, because they are re-computed on
-# every run. The other three colours are not properties of the source tree at all -- they are
-# a human's read of the project's own prose about what it intends -- so they cannot be derived,
-# and live here instead, one row per node.
+# `gates/gen_verification_map.py` renders `README.md`'s GENERATED:map region. Every COLOURED node
+# there is an assurance BAND read from `der-verified/acceptance.toml` (the generated acceptance/0
+# manifest) and can never drift, because it is re-read on every run. The nodes in THIS file are the
+# opposite case: places where the manifest carries no claim at all, and the reason it does not is a
+# human's read of the project's own prose. They render as white dashed boxes — never as a band,
+# because nothing was measured — one row per node.
 #
 # FORMAT: one row per node, TAB-separated, exactly 5 fields:
 #
-#     <color>\t<id>\t<layer>\t<label>\t<source>
+#     <class>\t<id>\t<layer>\t<label>\t<source>
 #
-#   color  — one of: yellow (planned, whether or not started), red (a wall we hit — a known
-#            hard tool/expressiveness blocker), gray (deliberately not planned — a recorded
-#            scope decision). NEVER green or blue: those are gate-derived, not declared.
+#   class  — one of: planned (intended, whether or not started), wall (a known hard
+#            tool/expressiveness blocker we hit), out-of-scope (a recorded scope decision).
+#            NEVER a band (A0..A4): bands are derived from the manifest, never declared here.
 #   id     — a mermaid-safe identifier (`^[a-z][a-z0-9_]*$`). MUST NOT collide with a module
 #            name in `gates/tiers.txt` — `gen_verification_map.py`'s parity check fails closed
 #            on that, because a same-named declared node would silently shadow a real one.
@@ -27,11 +27,11 @@
 #
 # Comment lines (leading `#`) and blank lines are ignored. Column order is fixed; do not reorder.
 
-yellow	name_constraints	profile	Name constraints (RFC 5280 §4.2.1.10)	PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")
-yellow	key_usage	profile	Key usage (RFC 5280 §4.2.1.3)	PROOF_MANIFEST.md:538
-yellow	basic_constraints	profile	Basic constraints (RFC 5280 §4.2.1.9)	PROOF_MANIFEST.md:538
-yellow	validity_against_clock	profile	Validity-against-clock (RFC 5280 §4.1.2.5)	PROOF_MANIFEST.md:538
-yellow	x509_structural_lid	structural	X.509 structural-module Lean lid (L4)	DER-REMAINING-WORK.md:157-165 ("All X.509 structural modules (x509_*) are Kani-only — no L4 lid... still the crate's one open breadth item")
-gray	crypto_verification	crypto	Signature / crypto verification	README.md:47-48 ("Out of scope (not implemented, not proven): signature/crypto verification...")
-gray	path_validation	crypto	Certificate-path / trust validation	README.md:47-48 ("...certificate-path or trust validation...")
-gray	general_set	codecs	General SET (X.690 §10.3)	README.md:49-50 ("general SET (§10.3)"); DECISIONS.md:463 (D13 — "general SET (§10.3) stays out of scope")
+planned	name_constraints	profile	Name constraints (RFC 5280 §4.2.1.10)	PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")
+planned	key_usage	profile	Key usage (RFC 5280 §4.2.1.3)	PROOF_MANIFEST.md:538
+planned	basic_constraints	profile	Basic constraints (RFC 5280 §4.2.1.9)	PROOF_MANIFEST.md:538
+planned	validity_against_clock	profile	Validity-against-clock (RFC 5280 §4.1.2.5)	PROOF_MANIFEST.md:538
+planned	x509_structural_lid	structural	X.509 structural-module Lean lid (L4)	DER-REMAINING-WORK.md:157-165 ("All X.509 structural modules (x509_*) are Kani-only — no L4 lid... still the crate's one open breadth item")
+out-of-scope	crypto_verification	crypto	Signature / crypto verification	README.md:47-48 ("Out of scope (not implemented, not proven): signature/crypto verification...")
+out-of-scope	path_validation	crypto	Certificate-path / trust validation	README.md:47-48 ("...certificate-path or trust validation...")
+out-of-scope	general_set	codecs	General SET (X.690 §10.3)	README.md:49-50 ("general SET (§10.3)"); DECISIONS.md:463 (D13 — "general SET (§10.3) stays out of scope")
