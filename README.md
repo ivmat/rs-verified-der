@@ -4,179 +4,60 @@
 [![docs.rs](https://img.shields.io/docsrs/der-verified)](https://docs.rs/der-verified)
 [![license: MIT OR Apache-2.0](https://img.shields.io/crates/l/der-verified.svg)](#license)
 
-A **formally verified** DER (X.690) encoding/decoding core in Rust — the encoding layer where real
-X.509 parser differentials live. Every **primitive** codec carries machine-checkable evidence, and
-that evidence is **re-runnable from a fresh clone**: the proofs are the product, not a badge.
+A DER (X.690) encoding/decoding core in Rust **under formal verification**, with re-runnable
+evidence and an explicit claim-by-claim assurance map.
 
-**Status:** pre-1.0 (`0.1.1`). The proofs and their evidence are real, re-runnable and honestly
-bounded; the API is not yet stable, and the crate carries no production deployment record. Treat it
-as a verified building block to evaluate, not as a drop-in hardened parser.
+**Status:** pre-1.0 (`0.1.1`). Today **13 of 39** manifest claims reach the target assurance band A3
+or better; **26 do not** (14 are A1 and 12 are A0). The crate is therefore not uniformly formally
+verified and is not done. Proofs are bounded except for the selected Lean properties below; the API
+is unstable, with no production deployment record. Evaluate it as a building block, not a hardened parser.
 
-Read "primitive" strictly. The X.509 layer above the base codecs is **structural framing that
-composes verified primitives**, and it is not proven to the same bar as they are: its harnesses
-cover panic-freedom and parsing behaviour, while the minimality and canonicality theorems belong to
-the primitives underneath it. `PROOF_MANIFEST.md` draws that line precisely, and the crate's name
-should not be read as claiming more than this paragraph does.
+## Evidence at a glance
 
-- **L3 — Kani** (bounded model checking): 203 proof harnesses over 33 modules — memory safety, no
-  panics, no overflow, plus the functional properties (round-trip, canonicality/minimality, rejection
-  of malformed/non-canonical encodings).
-- **L4/L5 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`,
-  `tag`, `tlv`, `sequence`) are additionally proven over inputs of **any length** — and, for `sequence`,
-  ALSO **any number of children** (the crate's first unbounded-loop lid) — `sorry`-free. **Residual:**
-  for `tag`, only totality and the consumption bound are lifted to ∀-length; minimal-encoding
-  *rejection* (the canonicality property) is proven only Kani-bounded, at a 7-byte buffer — see
-  `PROOF_MANIFEST.md` §6.2.
-- **485** unit and regression tests (concrete vectors, incl. seeded-bad specimens) alongside the proofs.
+- **L3 — Kani:** 203 proof harnesses over 33 modules establish default safety checks on their
+  bounded domains; functional claims vary by harness and are listed in the proof manifest.
+- **L4/L5 — Aeneas → Lean 4:** selected properties of six codecs (`length`, `big_integer`, `oid`,
+  `tag`, `tlv`, `sequence`) hold for any input length; `sequence` also covers any child count. The
+  lids are `sorry`-free; `tag` canonicality rejection remains Kani-bounded at 7 bytes.
+- **Tests:** 485 unit and regression tests plus 34 doc-tests cover concrete vectors. Counts are
+  inventory, not coverage.
 
-> **Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) before relying on any of this.** It is the honest
-> proof envelope: exactly what is proven, under what bounds and assumptions, what is stubbed, and
-> **what is *not* proven**. Counts are inventory, not a coverage guarantee.
->
-> **And read [`ASSUMPTIONS.md`](ASSUMPTIONS.md) for what all of it stands on.** The trusted base,
-> stated loudly and in one place: Kani/CBMC/SAT soundness, the Lean kernel, the *Aeneas extraction's
-> fidelity* (the lids prove a Lean model of the shipped Rust, not the Rust), the six lids' 13
-> declared axioms — **all specs for upstream `core` primitives since 2026-08-19; none is an
-> assumption about this crate's own code any more** (the four that were became theorems that day) —
-> the toolchain pins, "bounded means bounded", and the three disclosed-unsatisfiable
-> covers. Every entry names how it could fail and what leans on it.
+Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the exact properties, bounds, stubs and non-goals;
+[`ASSUMPTIONS.md`](ASSUMPTIONS.md) for the trusted base; and generated
+[`acceptance.toml`](der-verified/acceptance.toml) for every claim's evidence, grade and weight. The
+manifest and [records](der-verified/evidence/acceptance-records/) ship in the crate; the
+[crate README](der-verified/README.md) explains what remains repository-only.
 
-> **Machine-readable, and inside the package:
-> [`der-verified/acceptance.toml`](der-verified/acceptance.toml).** The envelope the two documents
-> above state in prose, in a form a tool can check: every claim with its grade, its evidence, and —
-> the number that matters — whether it is *weighted*. **13 of 39 claims are weighted**, meaning they
-> carry a mutation control that was watched to fail. The other 26 are published as unweighted, each
-> saying why.
->
-> It lives in the crate directory rather than here, and there is **exactly one copy**: it ships
-> inside the published `.crate`, so someone who installed `der-verified` from crates.io can check
-> these claims without cloning anything. Its evidence records travel with it in
-> [`der-verified/evidence/acceptance-records/`](der-verified/evidence/acceptance-records/). Both are
-> GENERATED — never hand-edited — and `check.sh` re-validates them against a pinned validator.
->
-> For the exact split of what ships in the package versus what stays in this repository (the
-> Lean/Aeneas sources and the full gate are repo-only), see **"What ships in this package vs. the
-> repository"** in [`der-verified/README.md`](der-verified/README.md) — stated once, there, rather
-> than restated here where the two copies would drift.
+## Scope
 
-## Scope — proven vs. tested vs. out of scope
+- **Core codecs:** tag, definite length, TLV framing, primitive content codecs, `SEQUENCE`, and
+  `SET OF` member ordering. Read “primitive” strictly: properties and bounds differ by codec.
+- **Structural containers:** `x509_*` and the signature/private-key containers compose the core.
+  Their evidence is bounded framing, not algorithm, key, signature, or certificate semantics.
+- **Profile:** three value-level RFC 5280 cross-field rules are covered; this is not full profile or
+  path validation.
+- **Out of scope:** cryptographic verification, trust/path validation, remaining RFC 5280 profile
+  rules, and general `SET` (§10.3). See [`DECISIONS.md`](DECISIONS.md), `PROOF_MANIFEST.md` §6, and
+  the module docs.
 
-**In scope (verified):** the DER encoding layer — identifier (tag) and definite-length fields, and
-the canonical content codecs: `BOOLEAN`, `INTEGER` (`i64` and arbitrary-magnitude), `NULL`,
-`OBJECT IDENTIFIER`, `BIT STRING`, `OCTET STRING`, `ENUMERATED`, the ASCII-restricted strings,
-`UTF8String`, `UTCTime`, `GeneralizedTime`, `SEQUENCE`, and `SET OF` member-ordering (§11.6).
+Two composition bounds are especially important: `x509_certificate` proves panic-freedom only
+through 12 bytes versus a roughly 170-byte fixture, and `rsa_private_key` only through 20 bytes
+versus a roughly 317-byte fixture. Beyond those bounds, confidence rests on an un-machine-checked
+compositional argument plus concrete witnesses, not a symbolic proof over real-size inputs. See
+`PROOF_MANIFEST.md` §6.2.
 
-**Structural composition (framing only, no semantics):** the `x509_*` modules parse RFC 5280 objects
-(`AlgorithmIdentifier`, `SubjectPublicKeyInfo`, `Name`, `Validity`, `Extension`/`Extensions`,
-`TBSCertificate`, `Certificate`) by composing the verified codecs. They interpret **no**
-algorithm/key/signature/certificate semantics — a demonstration that the verified core is usable
-downstream, inside the same fence. **Two of these compositions' panic-freedom bounds are small
-relative to a real object, and that gap is not machine-checked away:** `x509_certificate` proves
-panic-freedom **≤ 12 bytes** (a real certificate is ~170 bytes) and `rsa_private_key` proves it
-**≤ 20 bytes** (a real two-prime key is ~317 bytes); for both, panic-freedom on the larger, real
-size rests on an **un-machine-checked compositional argument** (each delegated sub-parser is
-separately proven panic-free on its own) plus one concrete witness fixture, not a symbolic proof
-over the real-size domain — see `PROOF_MANIFEST.md` §6.2 for the exact statement of each.
-
-**Signature-container framing (Kani-proven, no Lean lid):** the [`ecdsa_sig_value`] module parses the
-ASN.1 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480) — `SEQUENCE { r INTEGER, s INTEGER }` — composing
-`sequence` + `big_integer`. `r`/`s` are exposed as opaque validated bytes, never materialized as
-numbers. DER framing and canonicality only: **no** curve-order range check (`1 <= r,s <= n-1` needs a
-curve, which this container does not carry), **no** low-S policy (a protocol profile choice, not a DER
-validity rule), and **no** cryptographic interpretation — see the module doc for the full fence.
-
-**Key-container framing (Kani-proven, no Lean lid):** the [`rsa_public_key`] module parses the
-PKCS#1 `RSAPublicKey` (RFC 8017 §A.1.1) — `SEQUENCE { modulus INTEGER, publicExponent INTEGER }` —
-structurally the same two-INTEGER container shape as [`ecdsa_sig_value`], composing `sequence` +
-`big_integer`. `modulus`/`publicExponent` are exposed as opaque validated bytes, never materialized
-as numbers. This is the container that sits inside an SPKI's BIT STRING payload for an
-`rsaEncryption` key; this module parses it wherever it appears — it does **not** unwrap an SPKI
-itself. DER framing and canonicality only: **no** exponent oddness/minimum-value policy, **no**
-modulus size policy, and **no** RSA semantics whatsoever — see the module doc for the full fence.
-
-**Key-container framing (Kani-proven, no Lean lid):** the [`pkcs8`] module parses the PKCS#8 v1
-`PrivateKeyInfo` container (RFC 5208 §5) — `SEQUENCE { version INTEGER, privateKeyAlgorithm
-AlgorithmIdentifier, privateKey OCTET STRING, attributes [0] IMPLICIT OPTIONAL }` — composing
-`sequence` + `big_integer` + `x509_algorithm_identifier` + `octet_string`. `version` is required to
-be exactly v1 (RFC 5958's `OneAsymmetricKey`/PKCS#8 v2 is explicitly out of scope); `privateKey` and
-the optional `attributes` wrapper's content are exposed as opaque bytes, never interpreted — this
-module validates only the `[0]` wrapper's framing, never descending into `SET OF Attribute`. See the
-module doc for the full fence.
-
-**Typed profile-validation layer (Kani-proven, no Lean lid):** the [`profile`] module is a first
-slice of a layer built *on top of* the structural parsers above, checking cross-field RFC 5280 rules
-those parsers deliberately leave to the caller. It currently enforces three rules: §4.1.1.2's
-`signatureAlgorithm == tbsCertificate.signature` equality, §4.1.2.1/§4.1.2.9's "extensions is
-v3-only" rule, and §4.1.2.5's UTCTime-through-2049/GeneralizedTime-from-2050 encoding-choice rule.
-Each of the three is proven as a **biconditional** — the rule fires *exactly* when it should — and the
-documented precedence between them is proven too, over symbolic field values rather than symbolic DER
-bytes (which is why the module is the cheapest in the crate to verify: ~0.5 s, ~205 MB). No Lean lid.
-Not yet covered: name constraints, key usage, basic constraints, path validation, and any other
-RFC 5280 cross-field rule — see [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the honest framing.
-
-**Out of scope (not implemented, not proven):** signature/crypto verification; certificate-path or
-trust validation; full X.509/RFC 5280 profile semantics beyond the three `profile`-module rules above
-(name constraints, key usage, basic constraints, validity-against-clock, path validation); general
-`SET` (§10.3). The crate is a strict, deliberately narrowed profile — the narrowings (e.g.
-leap-second rejection, range caps, primitive-form-only rules) are design decisions recorded in
-[`DECISIONS.md`](DECISIONS.md).
-
-> **Framing is not validity — a named residual, not a bug.** `tlv::decode_tlv` (and the `sequence`
-> child walk over it) decides **structural framing**: well-formed identifier octets, a canonical
-> definite length, and the declared value present inside the input. It decides **nothing about
-> whether the identifier it parsed is a legal identifier for a DER value.** Two consequences,
-> confirmed by differential fuzzing against an independent DER implementation (2026-08) and named
-> rather than fixed: the framing layer accepts **constructed encodings of primitive-only universal
-> types** (e.g. `21 00` for BOOLEAN, `26 01 39` for OBJECT IDENTIFIER — X.690 requires the primitive
-> form) and the **reserved EOC identifier** (`00 00`, BER's indefinite-length marker, never legal in
-> DER). Those rules are enforced in **no verified layer of this crate**. Where a *typed* parser
-> exists it does check its own tag and form — `octet_string` rejects the constructed form, the
-> `pkcs8`/`x509_*` parsers check every field's identifier — but that is a property of those call
-> sites, not of the framing layer. **Do not read `decode_tlv` acceptance as "this is valid DER".**
-> A strict mode may be added later; there is none today. Full statement, with the repro bytes and
-> the third (comparison-capacity) class: [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) §6.3.
+> **Framing is not validity.** `tlv::decode_tlv`, its strict sibling, and the `sequence` child walk
+> accept structurally framed values without deciding whether the identifier is legal for DER; this
+> includes constructed encodings of primitive-only universal types and reserved EOC. Typed parsers
+> check their own identifiers, and `identifier_form` provides separate form-checked TLV entry points,
+> but that check is not wired into the base TLV or sequence APIs. See `PROOF_MANIFEST.md` §6.3.
 
 ## Verification map
 
-A picture of the same scope section above, **coloured by assurance band** — how strong the evidence
-behind a claim is, not which tool produced it — and regenerated on every check from the crate's own
-machine-readable manifest. A hand-drawn version of this diagram is exactly the kind of claim that
-rots the moment coverage changes, so there isn't one.
-
-**A band is a floor on evidence, gated by control discipline.** A check that nobody ever watched
-fail is untested: a harness whose oracle nobody perturbed reads, at the evidence level, exactly like
-one a mutation control proved catches bugs. So every band above **A0** requires an *observed-red
-control* — a deliberate fault the oracle had to reject — and a module with many harnesses and no
-such control stays at A0. The colour therefore answers "how much may a reader assume without
-re-running anything", which is a harsher question than "does this module have harnesses". The band
-ladder comes from the acceptance/0 format (`spec/assurance-bands.md` in `ivmat/acceptance-format`);
-the legend inside the diagram restates it.
-
-**Grade is a separate axis from band, and is printed on every node.** `contract` means the evidence
-decides a functional postcondition; `probe` means it spot-checks behaviour, most often
-panic-freedom; `ungraded` means no graded oracle is claimed. A probe is honest evidence; it is not a
-contract, and the diagram never merges the two into one colour.
-
-**The bands are derived; the white dashed boxes are declared.** Every coloured node is read from
-[`der-verified/acceptance.toml`](der-verified/acceptance.toml) — generated, and re-validated by
-`check.sh` against a pinned validator — over the module roster in
-[`gates/tiers.txt`](gates/tiers.txt), itself enforced against the source tree by
-[`gates/check_tier_parity.py`](gates/check_tier_parity.py); the manifest's Lean-lid claims are
-cross-checked against the same lid derivation `PROOF_MANIFEST.md`'s L4 table uses, so the two
-documents cannot tell you different stories. The white dashed boxes carry **no claim at all** —
-planned work, a wall we hit, or a recorded scope decision — and each is a human judgement, one row
-in [`gates/map_declared.txt`](gates/map_declared.txt) citing the file and section it is read from.
-That split is load-bearing, not decorative: an undisclosed gated-looking claim on this repo's
-front page is exactly the wrong shape.
-
-**The map is per module. If your question is per *rule* — "is the constructed-form rule actually
-enforced?", "is SET OF ordering decided, and over what?" — read [`COVERAGE.md`](COVERAGE.md).** It
-carries one row per X.690 / RFC 5280 rule, each with the strength of the evidence behind it and a
-command you can run to check that row yourself. Rules that no layer of this crate decides get a row
-there too, so you never have to infer coverage from silence. Several of the most important rows —
-the constructed-form rule, the end-of-contents exclusion, OID arc materialisation — exist only on
-that axis, because no single module owns them and a module-shaped table therefore cannot have a row
-for them.
+This generated map grades evidence, not tools. Above A0 requires an observed-red control; grade is a
+separate axis (`contract`, `probe`, or `ungraded`). The map is per module; use
+[`COVERAGE.md`](COVERAGE.md) when the question is whether a particular DER or RFC 5280 rule is
+decided. White dashed boxes are declared non-claims.
 
 <!-- BEGIN GENERATED:map (gates/gen_verification_map.py) -->
 **Colour is the assurance BAND, not the tool.** Target: band **A3** or better on every claim. Today **13 of 39** claims reach A3 or better, and **26** do not — so this crate is not done, and the picture is drawn to show that rather than to hide it.
@@ -233,25 +114,13 @@ flowchart TB
 Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `402719a`, generated `2026-09-04T23:08:58Z`. A band above A0 needs a control that was watched to fail, so nothing here can be raised by adding harnesses alone.
 <!-- END GENERATED:map -->
 
-## Strict decoding — exact consumption, no trailing bytes
+## Strict decoding
 
-X.690 §8.1.1.1 requires a DER value to be *exactly one* complete TLV with no trailing data. This crate
-makes that explicit at the API boundary: the top-level entry points are **strict** and fail closed on
-any trailing byte.
-
-- `tlv::decode_tlv_strict` and `sequence::decode_sequence_tlv_strict` require the input to be exactly
-  one TLV / one SEQUENCE and return a distinct `TrailingData` error otherwise;
-  `x509_certificate::parse_certificate` uses the strict form, so appended bytes are rejected at the
-  outer SEQUENCE. The non-strict `decode_tlv` / `decode_sequence_tlv` exist only to drive recursive
-  parsing of *inner* values — where consuming one TLV and leaving a suffix is correct — and are never
-  the top-level entry point.
-- A Kani harness (`decode_tlv_structure`) proves, over a symbolic buffer, that an accepted TLV consumes
-  exactly `header + declared_length` bytes and never over-reads; a second (`strict_rejects_trailing`)
-  proves the strict wrapper returns `TrailingData` on a valid TLV followed by an arbitrary trailing
-  byte. Both are bounded proofs — see [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md).
-
-Trailing-byte acceptance is a classic parser-differential surface; here it is closed at the top level
-and machine-checked on that domain.
+Top-level strict entry points reject trailing bytes. `tlv::decode_tlv_strict` and
+`sequence::decode_sequence_tlv_strict` require exactly one value; composable variants leave a suffix
+only so containers can parse children. Kani checks strict rejection on its bounded domain, while the
+TLV consumption/no-over-read property also has an unbounded Lean lid. This does not turn the base
+framing APIs into DER-validity checks; the identifier-form residual above still applies.
 
 ## Use
 
@@ -259,172 +128,82 @@ and machine-checked on that domain.
 cargo add der-verified
 ```
 
-```toml
-[dependencies]
-der-verified = "0.1.1"
-```
-
-(Or pin to the repo as a git dependency:
-`der-verified = { git = "https://github.com/ivmat/rs-verified-der" }`.)
-
 ```rust
 use der_verified::length::decode_length;
 use der_verified::x509_certificate::parse_certificate;
 
-// Every decoder is strict: it accepts a byte string only if it is the unique canonical DER encoding.
-let (length_value, consumed) = decode_length(&bytes)?;  // rejects non-minimal / non-canonical lengths
-let cert = parse_certificate(der_bytes)?;               // structural X.509 framing (no crypto)
+let (length_value, consumed) = decode_length(&bytes)?; // canonical length field
+let cert = parse_certificate(der_bytes)?;              // strict structural framing; no crypto
 ```
 
-The crate is `#![forbid(unsafe_code)]` and allocation-free on the decode paths.
+The crate has zero runtime dependencies, is `#![forbid(unsafe_code)]`, and is allocation-free on the
+decode paths. It is not `#![no_std]` today.
 
 ## Security considerations
 
-This crate parses attacker-controlled input, so be precise about what the proofs do and do not buy
-you. (Reporting: see [`SECURITY.md`](SECURITY.md).)
+- **Bounded means bounded.** A Kani result covers only its harness's buffer and unwind domain; the
+  selected Lean properties are the stated exceptions. Deep nesting and resource exhaustion are not
+  proven away. Bound untrusted input size and nesting depth; a Rust stack overflow aborts the process.
+- **No cryptography or trust decision.** A structurally parsed object is not thereby a valid
+  certificate, key, or signature.
+- **The trusted base is real.** Claims depend on Kani/CBMC/SAT, the Lean kernel, pinned toolchains,
+  and Aeneas extraction fidelity: the lids prove a model of the Rust. Their 13 declared axioms
+  specify upstream `core` primitives, not crate code. The proof manifest also names three
+  known-unsatisfiable covers and their separate witnesses. See [`ASSUMPTIONS.md`](ASSUMPTIONS.md).
 
-- **The proofs are bounded.** The Kani harnesses decide their properties over symbolic inputs up to
-  a declared buffer width and unwind depth, per harness — `PROOF_MANIFEST.md` §4 lists every bound.
-  "No panic at the proven bound" is not "no panic at any size". The six Lean lids are the exception:
-  those are unbounded in input length (and, for `sequence`, in child count).
-- **Resource exhaustion is the residual surface, and it is not proven away.** Deeply nested or
-  pathologically structured input is exactly the case a bounded proof cannot speak to. The crate
-  does not impose a recursion-depth or total-work limit of its own. **If you feed it untrusted
-  certificates, bound the input size and the nesting depth yourself, and run it where a stack
-  overflow is survivable.** A stack overflow in Rust aborts the process; it is not memory-unsafe,
-  but it is a denial of service you own, not one this crate has ruled out.
-- **No cryptography.** This is the encoding layer only: no signature verification, no chain
-  building, no trust decisions. Structural framing that parses is not a valid certificate.
-- **The trusted base is real.** Kani/CBMC/SAT soundness, the Lean kernel, and the fidelity of the
-  Aeneas extraction (the lids prove a Lean model of the shipped Rust, not the Rust itself) all sit
-  under every claim here. [`ASSUMPTIONS.md`](ASSUMPTIONS.md) states them in one place, loudly.
+For vulnerability reporting, see [`SECURITY.md`](SECURITY.md).
 
 ## Verify it yourself (the point of this crate)
 
 The evidence is re-runnable. From a fresh clone:
 
-### Ten-minute replay
-
-Don't have ~24 GB of RAM handy? `./replay.sh` (see [`REPLAY.md`](REPLAY.md)) runs on a laptop: it
-replays the test suite, the acceptance-manifest gate, and ONE Kani harness (accept), then shows
-that same harness and that same gate REJECT a seeded code fault and a tampered evidence record.
-The default validates the Lean evidence records in acceptance/0 but does not execute Lean.
-`./replay.sh --with-lean` additionally re-extracts the shipped Rust and checks all six Lean lids;
-it fails rather than skips when the pinned toolchain is absent. This Lean step is accept-only; S2
-validates the recorded Lean controls but does not rerun them. Neither mode runs the full Kani floor
-or establishes an X.509 correctness claim — read `REPLAY.md`'s "Boundary" section first.
-
-### 1. Tests + the L3 Kani proof floor
+### Laptop replay
 
 ```sh
-# Rust: the repo pins a stable toolchain via rust-toolchain.toml (rustup selects it automatically).
-cargo test                                    # 485 tests + 34 doc-tests
+./replay.sh
+./replay.sh --with-lean
+```
 
-# Kani (bounded model checker) — https://model-checking.github.io/kani/install-guide.html
-cargo install --locked kani-verifier            # add `--version 0.67.0` to match the pinned toolchain
+The default replays tests, the acceptance gate, one Kani harness, and negative controls; it validates
+recorded Lean evidence but does not run Lean. `--with-lean` re-extracts and checks the lids. Neither
+mode runs the full Kani floor or establishes X.509 correctness; read [`REPLAY.md`](REPLAY.md).
+
+### Tests and full gates
+
+```sh
+cargo test                                      # 485 tests + 34 doc-tests
+cargo install --locked kani-verifier --version 0.67.0
 cargo kani setup
-cargo kani -Z stubbing                          # 203 proof harnesses
+cargo kani -Z stubbing                          # 203 proof harnesses, needs a large machine
 ```
-
-Or run the whole gate — hygiene checks + tests + Kani + the (guarded) Lean lids:
 
 ```sh
-./check.sh          # full gate (Kani + Lean run here; minutes; needs ~24 GB RAM — see below)
-./check_fast.sh     # fast subset: doc-link gate + proof-manifest gate (+ its self-test) + cargo test
+./check_fast.sh     # docs/manifests + tests
+./check.sh          # full Kani floor; Lean runs only when its pinned toolchain is present
 ```
 
-Both start with two stdlib-only hygiene gates: doc-link resolution, and a **proof-manifest gate**
-(`gates/gen_proof_manifest.py --check`) that re-derives every count in `PROOF_MANIFEST.md` from the
-source tree and fails if the document — or a count-claim in this README or in `docs/` — has drifted
-from it. Regenerate with `--write`. The gate compares facts derived from the *source tree*, so it
-passes on any machine: your rustc version and whether you have Kani or Aeneas installed are recorded
-in the manifest as provenance, never gate-enforced (`gates/test_gen_proof_manifest.py` holds that
-line, and holds the opposite one too — a drifted count or a drifted declared pin still fails).
-
-**`./check.sh` needs a large machine for the full Kani floor.** Two harnesses peak around 20.5 GiB
-and 17.1 GiB, so below roughly 24 GB of available RAM they will not converge and the gate will fail
-on memory rather than on any defect. CI runs the memory-tractable share; see
-`docs/verification-cost.md` and `PROOF_MANIFEST.md` §3.4.
-
-`-Z stubbing` is required: eight harnesses are **modular** proofs that stub an
-independently-proven sub-parser. Four are in X.509 (`x509_name`/`x509_tbs_certificate`/
-`x509_certificate`: three never-panics harnesses plus one positive-construction witness); four are in
-`rsa_private_key` (the three `RSAPrivateKey` parse harnesses, which stub the `otherPrimeInfos`
-member-walk, plus the walk lemma itself, which stubs the per-member validator). Each is disclosed,
-with its discharging harness, in `PROOF_MANIFEST.md` §8.3. Harnesses without a stub are unaffected by
-the flag.
-
-### 2. The L4/L5 Lean lids (optional; unbounded proofs on 6 codecs)
-
-`./check.sh` runs the Lean lids if — and only if — the Aeneas/Lean toolchain is present; otherwise it
-**skips them and still passes on the Kani floor**. To run them you need, in an isolated location
-(default `~/Downloads/verified_rs_tools`, overridable via the `VERIFIED_RS_TOOLS` env var):
-
-- [`elan`](https://github.com/leanprover/elan) (Lean is pinned to `v4.30.0-rc2` by
-  `lean/lean-toolchain`, resolved per-directory);
-- [Aeneas](https://github.com/AeneasVerif/aeneas) and [Charon](https://github.com/AeneasVerif/charon)
-  at the exact commits pinned in `lean/check_lean.sh` (it fails on revision drift, because the proofs
-  are checked against a specific Aeneas Std semantics).
-
-The lid **re-extracts each codec from the shipped `.rs`** and fails if the regenerated model differs,
-so it provably concerns the shipped source. It also fails closed on any `sorry`.
+`-Z stubbing` is required for the eight modular harnesses; their independently discharged contracts
+are listed in `PROOF_MANIFEST.md` §8.4. The Lean step re-extracts the shipped Rust, fails on drift or
+`sorry`, and requires the exact Aeneas/Charon/Lean pins below.
 
 ## Toolchain pins
 
 | Tool | Version | Source of truth |
 |---|---|---|
-| rustc | `stable` channel (checked at `1.96.1`) | `rust-toolchain.toml` pins the channel |
+| rustc | floating `stable` channel | `rust-toolchain.toml` |
 | Kani | `0.67.0` (pinned in CI; bundles CBMC) | `.github/workflows/ci.yml` |
 | Lean 4 | `v4.30.0-rc2` | `lean/lean-toolchain` |
 | Aeneas / Charon | pinned commits | `lean/check_lean.sh` |
 
-The crate builds on the current `stable` toolchain; `1.96.1` is the release these claims were last
-checked against. For a byte-identical Kani reproduction, install the pinned Kani version (below).
-
 ## Continuous integration
 
-[GitHub Actions](.github/workflows/ci.yml) runs, on every push and PR: the two **hygiene gates**
-(`gates/check_links.py`, and `gates/gen_proof_manifest.py --check` preceded by its own 35-test
-self-test `gates/test_gen_proof_manifest.py`), `cargo test`,
-`cargo clippy -D warnings`, and the **memory-tractable share of the Kani proof floor** — currently
-**175** of the 203 harnesses (the shard filters are by module, not a pinned count, so this total is
-re-derived from the per-module counts rather than maintained by hand; see
-`.github/workflows/ci.yml` for the exact per-shard module list), sharded by module across four
-parallel runners. The remaining 28 (`set_of`, `sequence`, `x509_certificate`,
-`x509_tbs_certificate`, `x509_extension`, `x509_name`) peak above a standard 7 GB runner, so — like
-the L4 Lean lids — they are a **local-milestone check** via `./check.sh` (or the `kani-heavy` job
-stub in the workflow, on a large-memory runner).
+[GitHub Actions](.github/workflows/ci.yml) runs hygiene and parity gates, tests, clippy, and the
+memory-tractable **175 of 203** Kani harnesses. The remaining heavy modules are a local milestone via
+`./check.sh`; the two largest harnesses need roughly 24 GB available. Indicative shard timings and
+memory measurements live in [`docs/verification-cost.md`](docs/verification-cost.md).
 
-### Measured timing (16-core / 29 GB Linux, Kani 0.67.0)
-
-**All 203 harnesses verify locally with 0 failures.** Approximate Kani solve times (per-shard
-harness counts below were re-derived from the current module counts by static count, not a fresh
-timing run — treat the *times themselves* as the prior measurement's indicative, possibly-stale
-numbers, and the counts as current):
-
-| Stage | Harnesses | Solve time | Peak RAM |
-|---|---|---|---|
-| `cargo test` + `clippy` (no external deps) | — | ~2 s | — |
-| CI shard `codecs-a` | 85 | ~28 s | < 0.2 GB |
-| CI shard `codecs-b` | 52 | pending† | ~1 GB |
-| CI shard `private-keys` | 17 | pending† | ~1 GB |
-| CI shard `utf8` | 9 | ~247 s | 2.7 GB |
-| local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | ≈24 | ~30 min | ~20 GB (`x509_extension`) |
-| local: `x509_tbs_certificate` + `x509_name` (`validate_name` stub + `validate_rdn` lemma) | ≈4 | ~9 min | ~17 GB (`validate_rdn`) |
-
-The four CI Kani shards run in parallel (~4–5 min wall, bounded by the `utf8` shard). †The composite
-private-key container parsers (`ec_private_key`, `rsa_public_key`, `rsa_private_key`,
-`pkcs8`, `encrypted_private_key_info`) were split out of `codecs-b` into their own `private-keys`
-shard to keep `codecs-b`'s wall-clock down; per-shard solve times for the two rebalanced shards await
-a fresh CI run. The full local floor is ~40 min of proving; peak RAM ~20 GB.
-
-**`x509_name` is a modular proof.** A monolithic never-panics proof over `validate_name` is intractable
-(>100 GB in CBMC symbolic execution — the SET-OF §11.6 ordering re-derived over symbolic content, before
-the SAT solve). It is split: `validate_rdn_never_panics` proves the heavy SET-OF/ATV layer at one-RDN
-scale (~17 GB), and `validate_never_panics` stubs `validate_rdn` with its proven postcondition and
-verifies the outer-`Name` glue (~510 MB). Same theorem, now compositional; both fit a normal machine.
-Each modular stub is discharged over a *symbolic input length*, so it holds at every length the
-composition uses. See [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) and `DECISIONS.md` D26.
+The `x509_name` proof's split from a monolithic >100 GB attempt into discharged modular proofs is
+explained in [`docs/why-verified.md`](docs/why-verified.md#a-war-story-the-proof-that-needed-100-gb).
 
 ## Documentation
 
@@ -437,12 +216,7 @@ composition uses. See [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) and `DECISIONS.md
 - [`DECISIONS.md`](DECISIONS.md) — the contestable-decisions ledger: every scope narrowing and design
   fork, with its rationale and review outcome.
 - [`SECURITY.md`](SECURITY.md) — private vulnerability disclosure.
-
-## Keeping docs in sync
-
-Every code/proof/feature change ships with a docs-sync pass — see
-[`DOCS-SYNC.md`](DOCS-SYNC.md) for exactly which doc(s) to touch for which kind of change (new
-harness, new Lean lid, new module/feature, …).
+- [`DOCS-SYNC.md`](DOCS-SYNC.md) — which documents to update when code or proofs change.
 
 ## License
 

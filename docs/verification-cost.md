@@ -22,6 +22,26 @@ been going for minutes — is that normal?"*
   the generated, gated inventory; the per-harness timings below are the prior measurement pass and
   were not re-run for the newer harnesses).
 
+## Reference shard and full-floor measurements (16-core / 29 GB Linux)
+
+All 203 harnesses verified locally with no failures in the recorded measurement. Harness counts in
+this table are re-derived from the current module inventory; solve times are earlier indicative
+measurements and were not refreshed when the `codecs-b` / `private-keys` split changed.
+
+| Stage | Harnesses | Solve time | Peak RAM |
+|---|---:|---:|---:|
+| `cargo test` + `clippy` (no external dependencies) | — | ~2 s | — |
+| CI shard `codecs-a` | 85 | ~28 s | <0.2 GB |
+| CI shard `codecs-b` | 52 | pending | ~1 GB |
+| CI shard `private-keys` | 17 | pending | ~1 GB |
+| CI shard `utf8` | 9 | ~247 s | 2.7 GB |
+| local: `set_of` + `sequence` + `x509_extension` + `x509_certificate` | ≈24 | ~30 min | ~20 GB (`x509_extension`) |
+| local: `x509_tbs_certificate` + `x509_name` | ≈4 | ~9 min | ~17 GB (`validate_rdn`) |
+
+The CI shards run in parallel, with roughly 4–5 minutes wall time in this measurement. The full
+local Kani floor took roughly 40 minutes and peaked around 20 GB. The private-key modules were split
+from `codecs-b` to reduce its wall time; the two rebalanced shard times still await a fresh run.
+
 ## Cost tiers
 
 **The large majority of the 203 harnesses are fast** — sub-second to a few seconds. Typical per-module
