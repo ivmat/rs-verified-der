@@ -48,9 +48,10 @@ compositional argument plus concrete witnesses, not a symbolic proof over real-s
 
 > **Framing is not validity.** `tlv::decode_tlv`, its strict sibling, and the `sequence` child walk
 > accept structurally framed values without deciding whether the identifier is legal for DER; this
-> includes constructed encodings of primitive-only universal types and reserved EOC. Typed parsers
-> check their own identifiers, and `identifier_form` provides separate form-checked TLV entry points,
-> but that check is not wired into the base TLV or sequence APIs. See `PROOF_MANIFEST.md` §6.3.
+> includes constructed encodings of primitive-only universal types and reserved EOC. Typed TLV
+> parsers (`octet_string`, `pkcs8`, the `x509_*` modules) check their own identifiers; content-level
+> codecs never see one. `identifier_form` adds opt-in form-checking, but it is not wired into the base
+> TLV or sequence APIs. See `PROOF_MANIFEST.md` §6.3.
 
 ## Verification map
 
@@ -199,7 +200,7 @@ are listed in `PROOF_MANIFEST.md` §8.4. The Lean step re-extracts the shipped R
 
 [GitHub Actions](.github/workflows/ci.yml) runs hygiene and parity gates, tests, clippy, and the
 memory-tractable **175 of 203** Kani harnesses. The remaining heavy modules are a local milestone via
-`./check.sh`; the two largest harnesses need roughly 24 GB available. Indicative shard timings and
+`./check.sh`; the full floor needs roughly 24 GB available (largest harness peaks ~20 GB). Indicative shard timings and
 memory measurements live in [`docs/verification-cost.md`](docs/verification-cost.md).
 
 The `x509_name` proof's split from a monolithic >100 GB attempt into discharged modular proofs is

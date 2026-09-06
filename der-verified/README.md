@@ -1,12 +1,15 @@
 # der-verified
 
-A **formally verified** DER (X.690) encoding/decoding core in Rust — the encoding layer where real
-X.509 parser differentials live. Every **primitive** codec carries machine-checkable evidence,
-re-runnable from a fresh clone: the proofs are the product, not a badge.
+A DER (X.690) encoding/decoding core in Rust **under formal verification** — the encoding layer where
+real X.509 parser differentials live. Codec evidence is machine-checkable and re-runnable from a fresh
+clone, but it is **uneven**: read the shipped per-claim assurance manifest (`acceptance.toml`) before
+relying on any of it.
 
-**Status:** pre-1.0 (`0.1.1`). The proofs and their evidence are real, re-runnable and honestly
-bounded; the API is not yet stable, and the crate carries no production deployment record. Treat it
-as a verified building block to evaluate, not as a drop-in hardened parser.
+**Status:** pre-1.0 (`0.1.1`). **Most manifest claims are not yet at the target assurance band A3**
+(the shipped `acceptance.toml` gives the exact per-claim split) — the crate is not uniformly formally
+verified and is not done. The proofs and their evidence are real, re-runnable and honestly bounded;
+the API is not yet stable, and the crate carries no production deployment record. Treat it as a
+building block to evaluate, not as a drop-in hardened parser.
 
 Read "primitive" strictly: the `x509_*` layer is **structural framing composing verified
 primitives**, not proven to the same bar (see Scope below). The crate's name should not be read as
