@@ -144,7 +144,8 @@ decode paths. It is not `#![no_std]` today.
 
 - **Bounded means bounded.** A Kani result covers only its harness's buffer and unwind domain; the
   selected Lean properties are the stated exceptions. Deep nesting and resource exhaustion are not
-  proven away. Bound untrusted input size and nesting depth; a Rust stack overflow aborts the process.
+  proven away, and the crate imposes no recursion-depth or total-work limit of its own. Bound
+  untrusted input size and nesting depth; a Rust stack overflow aborts the process.
 - **No cryptography or trust decision.** A structurally parsed object is not thereby a valid
   certificate, key, or signature.
 - **The trusted base is real.** Claims depend on Kani/CBMC/SAT, the Lean kernel, pinned toolchains,
@@ -166,8 +167,10 @@ The evidence is re-runnable. From a fresh clone:
 ```
 
 The default replays tests, the acceptance gate, one Kani harness, and negative controls; it validates
-recorded Lean evidence but does not run Lean. `--with-lean` re-extracts and checks the lids. Neither
-mode runs the full Kani floor or establishes X.509 correctness; read [`REPLAY.md`](REPLAY.md).
+recorded Lean evidence but does not run Lean. `--with-lean` re-extracts and checks the lids, but is
+**accept-only** — it confirms the lids hold; the recorded Lean mutation controls are validated as
+records, not re-run. Neither mode runs the full Kani floor or establishes X.509 correctness; read
+[`REPLAY.md`](REPLAY.md).
 
 ### Tests and full gates
 

@@ -11,15 +11,17 @@ verified and is not done. The proofs and their evidence are real, re-runnable an
 the API is not yet stable, and the crate carries no production deployment record. Treat it as a
 building block to evaluate, not as a drop-in hardened parser.
 
-Read "primitive" strictly: the `x509_*` layer is **structural framing composing verified
-primitives**, not proven to the same bar (see Scope below). The crate's name should not be read as
-claiming more than that.
+Read "primitive" strictly: the `x509_*` layer is **structural framing composing the core codecs**,
+not proven to the same bar (see Scope below). The crate's name should not be read as claiming more
+than that.
 
-- **L3 — Kani** (bounded model checking): 203 proof harnesses over 33 modules — memory safety, no
-  panics, no overflow, plus functional properties (round-trip, canonicality/minimality, rejection of
-  malformed/non-canonical encodings).
-- **L4 — Aeneas → Lean 4** (unbounded proofs): six codecs (`length`, `big_integer`, `oid`, `tag`,
-  `tlv`, `sequence`) are additionally proven over inputs of **any length**, `sorry`-free.
+- **L3 — Kani** (bounded model checking): 203 proof harnesses over 33 modules establish default
+  safety checks (memory safety, no panics, no overflow) on their bounded domains; functional claims
+  (round-trip, canonicality/minimality, rejection of malformed encodings) vary by harness and are
+  listed per claim in `acceptance.toml` / `PROOF_MANIFEST.md`.
+- **L4 — Aeneas → Lean 4:** *selected properties* of six codecs (`length`, `big_integer`, `oid`,
+  `tag`, `tlv`, `sequence`) hold for **any input length**; `sequence` also covers any child count.
+  The lids are `sorry`-free; `tag` canonicality *rejection* remains Kani-bounded at 7 bytes.
 - **485** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
 
 > Read [`PROOF_MANIFEST.md`](https://github.com/ivmat/rs-verified-der/blob/main/PROOF_MANIFEST.md)
@@ -68,11 +70,11 @@ this one) and that tag is the exact source this package was built from.
 
 ## Scope
 
-**Verified:** the DER encoding layer — tag/length fields and the canonical content codecs (`BOOLEAN`,
-`INTEGER`, `NULL`, `OBJECT IDENTIFIER`, `BIT STRING`, `OCTET STRING`, `ENUMERATED`, the restricted
-strings, `UTF8String`, `UTCTime`, `GeneralizedTime`, `SEQUENCE`, `SET OF` §11.6 ordering).
-**Structural framing (no semantics):** the `x509_*` modules parse RFC 5280 objects by composing the
-verified codecs. **Signature-container framing (no semantics):** `ecdsa_sig_value` parses the ASN.1
+**Core codecs (assurance varies by claim — see `acceptance.toml`):** the DER encoding layer —
+tag/length fields and the canonical content codecs (`BOOLEAN`, `INTEGER`, `NULL`, `OBJECT
+IDENTIFIER`, `BIT STRING`, `OCTET STRING`, `ENUMERATED`, the restricted strings, `UTF8String`,
+`UTCTime`, `GeneralizedTime`, `SEQUENCE`, `SET OF` §11.6 ordering). **Structural framing (no
+semantics):** the `x509_*` modules parse RFC 5280 objects by composing the core codecs. **Signature-container framing (no semantics):** `ecdsa_sig_value` parses the ASN.1
 `ECDSA-Sig-Value` (RFC 3279 §2.2.3 / RFC 5480, `SEQUENCE { r INTEGER, s INTEGER }`), exposing `r`/`s`
 as opaque validated bytes — no curve-order range check, no low-S policy, no cryptographic
 interpretation. **`pkcs8`** parses the PKCS#8 v1 `PrivateKeyInfo` container (RFC 5208 §5), v1 only
@@ -89,14 +91,23 @@ field values, as is their documented precedence — see `PROOF_MANIFEST.md`.
 checks on `ECDSA-Sig-Value`, and every other RFC 5280 profile rule (name constraints, key usage, basic
 constraints, validity-against-clock).
 
+> **Framing is not validity.** `tlv::decode_tlv`, its `_strict` sibling, and the `sequence` child
+> walk accept structurally framed values without deciding whether the identifier is legal for DER —
+> this includes constructed encodings of primitive-only universal types and the reserved EOC
+> identifier. Typed TLV parsers (`octet_string`, `pkcs8`, the `x509_*` modules) check their own
+> identifiers; content-level codecs never see one. `identifier_form` adds opt-in form-checking for a
+> *single* identifier (form + EOC exclusion) — it does not validate content or descendants, and it is
+> not wired into the base TLV/sequence APIs. See `PROOF_MANIFEST.md` §6.3.
+
 ## Usage
 
 ```rust
 use der_verified::length::decode_length;
 use der_verified::x509_certificate::parse_certificate;
 
-// Decoders reject non-canonical encodings of the value they consume; the `_strict` entry points
-// additionally reject any trailing bytes (composable decoders leave the caller to check consumption).
+// `decode_length` and the typed content codecs reject non-canonical encodings of the value they
+// consume; the `_strict` entry points additionally reject trailing bytes. Base TLV/sequence *framing*
+// decides structure only, not whether an identifier is legal DER — see "Framing is not validity".
 let (length_value, consumed) = decode_length(&bytes)?;   // rejects non-minimal / non-canonical lengths
 let cert = parse_certificate(der_bytes)?;                // structural X.509 framing (no crypto)
 ```
@@ -111,6 +122,11 @@ This crate parses attacker-controlled input, so be precise about what the proofs
   and unwind depth (`PROOF_MANIFEST.md` §4 lists every bound). "No panic at the proven bound" is not
   "no panic at any size". The six Lean lids are the exception — unbounded in input length, and for
   `sequence` in child count too.
+- **Two composition bounds are especially small.** `x509_certificate` proves panic-freedom only
+  through **12 bytes** versus a ~170-byte fixture, and `rsa_private_key` only through **20 bytes**
+  versus a ~317-byte fixture. Beyond those bounds, confidence rests on an un-machine-checked
+  compositional argument plus concrete witnesses (some of which are themselves modular, using stubs),
+  not a symbolic proof over real-size inputs. See `PROOF_MANIFEST.md` §6.2.
 - **Resource exhaustion is the residual surface and is not proven away.** Deeply nested input is
   exactly what a bounded proof cannot speak to, and the crate imposes no recursion-depth or
   total-work limit of its own. **Bound input size and nesting depth yourself before feeding it
@@ -118,8 +134,11 @@ This crate parses attacker-controlled input, so be precise about what the proofs
   of service you own.
 - **No cryptography.** Encoding layer only: no signature verification, no chain building, no trust
   decisions. Framing that parses is not a valid certificate.
-- **The trusted base is real:** Kani/CBMC/SAT soundness, the Lean kernel, and the fidelity of the
-  Aeneas extraction (the lids prove a Lean model of the shipped Rust, not the Rust itself). See
+- **The trusted base is real.** Claims depend on Kani/CBMC/SAT soundness, the Lean kernel, the pinned
+  toolchains, and the fidelity of the Aeneas extraction (the lids prove a Lean model of the shipped
+  Rust, not the Rust itself). The lids' **13 declared axioms specify upstream `core` primitives, not
+  this crate's code**; `PROOF_MANIFEST.md` §8.2 also names **three known-unsatisfiable covers** and
+  their separate witnesses. See
   [`ASSUMPTIONS.md`](https://github.com/ivmat/rs-verified-der/blob/main/ASSUMPTIONS.md).
 
 ## License
