@@ -562,4 +562,32 @@ mod tests {
 
         assert_eq!(parse_certificate(&bytes), Err(CertificateError::MissingSignatureValue));
     }
+
+    // --- exact-field-boundary Missing* specimens ------------------------------------------------
+    //
+    // Same pattern as `x509_tbs_certificate`'s own exact-boundary fixtures: the outer content is
+    // built as a strict PREFIX of the full three-field sequence, then wrapped in a
+    // correctly-sized outer SEQUENCE header -- so the outer envelope is well-formed and consumes
+    // exactly the (shorter) input, but `content[off..]` is empty at exactly the point the next
+    // field's presence is checked. `rejects_missing_signature_value` above already covers the
+    // third field's boundary (after `signatureAlgorithm`); these two cover the first two.
+
+    #[test]
+    fn rejects_missing_tbs_exact_boundary() {
+        // Outer content is entirely empty: the walk's very first field-presence check, for
+        // tbsCertificate, sees empty content.
+        let bytes = wrap(0x30, &[]);
+        assert_eq!(parse_certificate(&bytes), Err(CertificateError::MissingTbs));
+    }
+
+    #[test]
+    fn rejects_missing_signature_algorithm_exact_boundary() {
+        // Outer content ends exactly after tbsCertificate.
+        let tbs = build_v3_tbs_with_extensions();
+        let bytes = wrap(0x30, &tbs);
+        assert_eq!(
+            parse_certificate(&bytes),
+            Err(CertificateError::MissingSignatureAlgorithm)
+        );
+    }
 }

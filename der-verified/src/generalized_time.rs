@@ -734,9 +734,43 @@ mod tests {
         assert_eq!(decode_generalized_time(b"20231331235959Z"), Err(GeneralizedTimeError::MonthRange));
     }
     #[test]
+    fn rejects_day_32() {
+        // 20231232120000Z -- day 32 is out of range (01..=31).
+        assert_eq!(decode_generalized_time(b"20231232120000Z"), Err(GeneralizedTimeError::DayRange));
+    }
+    #[test]
+    fn rejects_minute_60() {
+        // 20231231126000Z -- minute 60 is out of range (00..=59).
+        assert_eq!(decode_generalized_time(b"20231231126000Z"), Err(GeneralizedTimeError::MinuteRange));
+    }
+    #[test]
     fn accepts_leading_zero_fraction() {
         // ".01" is canonical (0.01s): a leading zero is significant, only TRAILING zeros are forbidden.
         let t = decode_generalized_time(b"20230615120000.01Z").unwrap();
         assert_eq!(t.fraction, b"01");
+    }
+
+    // --- encode-side guards (encode_generalized_time_into's None-returning branches) ---
+    #[test]
+    fn encode_rejects_out_of_range_fields() {
+        // month = 13 is out of range -- fields_in_range fails before the fraction/buffer checks.
+        let t = GeneralizedTime { year: 2023, month: 13, day: 1, hour: 0, minute: 0, second: 0, fraction: &[] };
+        let mut out = [0u8; 32];
+        assert_eq!(encode_generalized_time_into(&t, &mut out), None);
+    }
+    #[test]
+    fn encode_rejects_noncanonical_fraction() {
+        // a trailing-zero fraction ("10") is not canonical -- fields are in range, but the fraction
+        // guard rejects it.
+        let t = GeneralizedTime { year: 2023, month: 6, day: 15, hour: 12, minute: 0, second: 0, fraction: b"10" };
+        let mut out = [0u8; 32];
+        assert_eq!(encode_generalized_time_into(&t, &mut out), None);
+    }
+    #[test]
+    fn encode_rejects_output_buffer_too_small() {
+        // a valid no-fraction GeneralizedTime needs 15 bytes; a 14-byte buffer is too small.
+        let t = GeneralizedTime { year: 2023, month: 6, day: 15, hour: 12, minute: 30, second: 45, fraction: &[] };
+        let mut out = [0u8; 14];
+        assert_eq!(encode_generalized_time_into(&t, &mut out), None);
     }
 }

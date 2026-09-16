@@ -359,6 +359,31 @@ mod tests {
         let mut out = [0u8; 4];
         assert_eq!(encode_bit_string_into(&[0x01], 1, &mut out), None);
     }
+    #[test]
+    fn encode_rejects_unused_over_seven() {
+        // unused = 8 is impossible in a single octet (§11.2.1) -- rejected before any data check.
+        let mut out = [0u8; 4];
+        assert_eq!(encode_bit_string_into(&[0xF0], 8, &mut out), None);
+    }
+    #[test]
+    fn encode_rejects_empty_data_with_nonzero_unused() {
+        // no value octets but unused != 0: an empty bit string must be exactly [0x00].
+        let mut out = [0u8; 4];
+        assert_eq!(encode_bit_string_into(&[], 3, &mut out), None);
+    }
+    #[test]
+    fn encode_accepts_empty_data_with_zero_unused() {
+        // the canonical empty-data counterpart: unused == 0 with no value octets succeeds ([0x00]).
+        let mut out = [0u8; 4];
+        assert_eq!(encode_bit_string_into(&[], 0, &mut out), Some(1));
+        assert_eq!(&out[..1], &[0x00]);
+    }
+    #[test]
+    fn encode_rejects_output_buffer_too_small() {
+        // canonical (data, unused) = ([0xF0], 4) needs 2 bytes; a 1-byte buffer is too small.
+        let mut out = [0u8; 1];
+        assert_eq!(encode_bit_string_into(&[0xF0], 4, &mut out), None);
+    }
 
     // --- canonicality boundary (a review HIGH false positive, memorialized) ---
     #[test]

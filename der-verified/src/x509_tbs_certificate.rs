@@ -1007,4 +1007,187 @@ mod tests {
             Err(TbsCertificateError::BadOuterSeq(SequenceError::Tlv(TlvError::Truncated)))
         );
     }
+
+    // --- exact-field-boundary Missing* specimens -----------------------------------------------
+    //
+    // `rejects_truncated_input` above truncates MID-FIELD (the outer SEQUENCE's declared length
+    // stays 152, so the truncated buffer is simply too short for its own header, surfacing
+    // `BadOuterSeq(Tlv(Truncated))`). The six fixtures below instead build the outer content as a
+    // strict PREFIX of the full field sequence, then wrap that shorter content in a
+    // correctly-sized outer SEQUENCE header (via `wrap`) -- so the outer envelope is well-formed
+    // and consumes exactly the (shorter) input, but `content[off..]` is empty at exactly the
+    // point the next field's presence is checked. Each fixture is one field longer than the last,
+    // building up through the full seven-field walk.
+
+    #[test]
+    fn rejects_missing_serial_exact_boundary() {
+        // Outer content ends immediately (no version present -- DEFAULT v1 -- and nothing else):
+        // the walk's very first field-presence check, for serialNumber, sees empty content.
+        let bytes = wrap(0x30, &[]);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::MissingSerial));
+    }
+
+    #[test]
+    fn rejects_missing_signature_exact_boundary() {
+        // Outer content ends exactly after serialNumber.
+        let content = SERIAL_1.to_vec();
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::MissingSignature));
+    }
+
+    #[test]
+    fn rejects_missing_issuer_exact_boundary() {
+        // Outer content ends exactly after signature.
+        let mut content = Vec::new();
+        content.extend_from_slice(&SERIAL_1);
+        content.extend_from_slice(&SIGNATURE_ED25519);
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::MissingIssuer));
+    }
+
+    #[test]
+    fn rejects_missing_validity_exact_boundary() {
+        // Outer content ends exactly after issuer.
+        let mut content = Vec::new();
+        content.extend_from_slice(&SERIAL_1);
+        content.extend_from_slice(&SIGNATURE_ED25519);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // issuer
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::MissingValidity));
+    }
+
+    #[test]
+    fn rejects_missing_subject_exact_boundary() {
+        // Outer content ends exactly after validity.
+        let mut content = Vec::new();
+        content.extend_from_slice(&SERIAL_1);
+        content.extend_from_slice(&SIGNATURE_ED25519);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // issuer
+        content.extend_from_slice(&VALIDITY_UTC_UTC);
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::MissingSubject));
+    }
+
+    #[test]
+    fn rejects_missing_spki_exact_boundary() {
+        // Outer content ends exactly after subject.
+        let mut content = Vec::new();
+        content.extend_from_slice(&SERIAL_1);
+        content.extend_from_slice(&SIGNATURE_ED25519);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // issuer
+        content.extend_from_slice(&VALIDITY_UTC_UTC);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // subject
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::MissingSpki));
+    }
+
+    // --- malformed `[0]` version-wrapper inner-TLV specimens ------------------------------------
+    //
+    // In each case the `[0]` wrapper's OWN framing is well-formed (context-specific, constructed,
+    // number 0 -- `decode_explicit_context` succeeds), but its inner content fails one of the
+    // three checks `parse_tbs_certificate` applies to it directly. Since the function returns
+    // before consuming anything past the version field, these fixtures need no further fields.
+
+    #[test]
+    fn rejects_version_inner_wrong_tag() {
+        // The [0] wrapper's inner TLV is UNIVERSAL 4 (OCTET STRING), not UNIVERSAL 2 (INTEGER).
+        let inner_octet_string = wrap(0x04, &[0x01]);
+        let version_wrapper = wrap(0xA0, &inner_octet_string);
+        let bytes = wrap(0x30, &version_wrapper);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::VersionInnerWrongTag));
+    }
+
+    #[test]
+    fn rejects_version_inner_constructed() {
+        // The [0] wrapper's inner TLV is UNIVERSAL 2 (INTEGER) but in the *constructed* form
+        // (identifier octet 0x22 = universal | constructed | number 2), zero-length content --
+        // INTEGER content must always be primitive.
+        let inner: [u8; 2] = [0x22, 0x00];
+        let version_wrapper = wrap(0xA0, &inner);
+        let bytes = wrap(0x30, &version_wrapper);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::VersionInnerConstructed));
+    }
+
+    #[test]
+    fn rejects_version_inner_trailing() {
+        // The [0] wrapper's content holds a complete, valid primitive INTEGER TLV (`02 01 01`,
+        // value 1) PLUS one extra trailing byte inside the wrapper -- EXPLICIT tagging wraps
+        // exactly one inner TLV.
+        let inner: [u8; 4] = [0x02, 0x01, 0x01, 0xFF];
+        let version_wrapper = wrap(0xA0, &inner);
+        let bytes = wrap(0x30, &version_wrapper);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::VersionInnerTrailing));
+    }
+
+    // --- uniqueID / extensions peek-fallthrough specimens ----------------------------------------
+    //
+    // Both the `[1]`/`[2]` uniqueID peek (step 9) and the `[3]` extensions peek (step 10) run over
+    // the SAME `content[off..]` slice (step 9 never advances `off` -- it only rejects on a match
+    // or falls through untouched). So a single trailing TLV that matches neither peek's
+    // class/number exercises BOTH peeks' fallthrough arms (the closing braces of their `if let`
+    // blocks) without erroring at either peek -- the eventual result is `TrailingInTbs` from the
+    // final strict-tiling check, since nothing ever consumes the trailing bytes. The two fixtures
+    // below use a different reason for each peek to fall through (wrong NUMBER vs. wrong CLASS),
+    // exercising both sides of each peek's `class == ContextSpecific && number == n` conjunction.
+
+    #[test]
+    fn rejects_trailing_context_tag_wrong_number_falls_through_both_peeks() {
+        // A context-specific, primitive [5] TLV right after subjectPublicKeyInfo: class matches
+        // ContextSpecific but number (5) matches neither the uniqueID peek's {1, 2} nor the
+        // extensions peek's {3} -- both peeks fall through on the number half of their condition,
+        // and the trailing bytes are left unconsumed.
+        let stray_context_tag = wrap(0x85, &[0xAA]); // [5] primitive, context-specific
+        let mut content = Vec::new();
+        content.extend_from_slice(&SERIAL_1);
+        content.extend_from_slice(&SIGNATURE_ED25519);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // issuer
+        content.extend_from_slice(&VALIDITY_UTC_UTC);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // subject
+        content.extend_from_slice(&SPKI_ED25519);
+        content.extend_from_slice(&stray_context_tag);
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::TrailingInTbs));
+    }
+
+    #[test]
+    fn rejects_trailing_universal_tag_falls_through_both_peeks() {
+        // A well-formed UNIVERSAL OCTET STRING TLV right after subjectPublicKeyInfo: its class
+        // isn't ContextSpecific at all, so both peeks fall through on the class half of their
+        // condition (a different branch than the wrong-number fixture above), again leaving the
+        // trailing bytes unconsumed.
+        let stray_universal_tag = wrap(0x04, &[0xBB]); // OCTET STRING, UNIVERSAL class
+        let mut content = Vec::new();
+        content.extend_from_slice(&SERIAL_1);
+        content.extend_from_slice(&SIGNATURE_ED25519);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // issuer
+        content.extend_from_slice(&VALIDITY_UTC_UTC);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // subject
+        content.extend_from_slice(&SPKI_ED25519);
+        content.extend_from_slice(&stray_universal_tag);
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::TrailingInTbs));
+    }
+
+    #[test]
+    fn rejects_trailing_malformed_tag_falls_through_via_decode_failure() {
+        // A single stray identifier octet, with no length octet at all, right after
+        // subjectPublicKeyInfo: `decode_tlv`'s OWN peek fails outright (truncated framing) rather
+        // than succeeding with a mismatched class/number. This is the OTHER way each `if let
+        // Ok((peek, _)) = decode_tlv(...)` peek can fall through -- the `if let` itself doesn't
+        // match, so control skips straight to that peek's own closing brace without ever reaching
+        // the inner class/number check. Since `off` is never advanced, the same lone byte is
+        // re-peeked (and re-fails the same way) at the extensions check right below, so this one
+        // fixture exercises both peeks' "decode itself failed" fallthrough arm.
+        let stray_malformed_tag: [u8; 1] = [0xA1]; // context-specific [1], constructed, NO length octet
+        let mut content = Vec::new();
+        content.extend_from_slice(&SERIAL_1);
+        content.extend_from_slice(&SIGNATURE_ED25519);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // issuer
+        content.extend_from_slice(&VALIDITY_UTC_UTC);
+        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // subject
+        content.extend_from_slice(&SPKI_ED25519);
+        content.extend_from_slice(&stray_malformed_tag);
+        let bytes = wrap(0x30, &content);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::TrailingInTbs));
+    }
 }

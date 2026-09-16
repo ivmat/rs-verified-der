@@ -319,4 +319,14 @@ mod tests {
     fn rejects_empty_input() {
         assert_eq!(decode_tlv(&[]), Err(TlvError::Tag(TagError::Truncated)));
     }
+
+    // --- encode-side guard: output buffer too small ---
+    #[test]
+    fn encode_rejects_output_buffer_too_small() {
+        // tag 0x02 (1-byte header) + length 0x01 (1-byte) + 1 value byte = 3 bytes total;
+        // a 2-byte buffer is too small.
+        let tag = Tag { class: Class::Universal, constructed: false, number: 2 };
+        let mut out = [0u8; 2];
+        assert_eq!(encode_tlv_into(tag, &[0x07], &mut out), None);
+    }
 }

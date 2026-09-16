@@ -480,4 +480,33 @@ mod tests {
         bytes[9] = 0x23;
         assert_eq!(parse_subject_public_key_info(&bytes), Err(SpkiError::PublicKeyConstructed));
     }
+
+    // --- coverage completeness: exercise map_algid_error's BadOidTlv / BadParametersTlv arms,
+    //     which the tests above never trip (those only reach OidWrongTag / BadOid / BadParametersTlv
+    //     at the x509_algorithm_identifier level, not through the SPKI-level delegation). ---
+
+    #[test]
+    fn rejects_algorithm_oid_malformed_tlv() {
+        // AlgorithmIdentifier SEQUENCE content is `06 05 2b 65 70` -- the OID TLV declares 5 value
+        // bytes but only 3 are present within the AlgorithmIdentifier's own (5-byte) content, so the
+        // inner decode_tlv fails with Truncated before the tag/constructed checks ever run.
+        // 30 07 30 05 06 05 2b 65 70  (outer SEQUENCE, len 7, wrapping the malformed AlgorithmIdentifier)
+        let bytes = [0x30, 0x07, 0x30, 0x05, 0x06, 0x05, 0x2b, 0x65, 0x70];
+        assert_eq!(
+            parse_subject_public_key_info(&bytes),
+            Err(SpkiError::BadOidTlv(TlvError::Truncated))
+        );
+    }
+
+    #[test]
+    fn rejects_algorithm_parameters_malformed_tlv() {
+        // AlgorithmIdentifier SEQUENCE content is a complete, valid OID (`06 03 2b 65 70`) followed
+        // by a truncated parameters TLV header (`04 05`, declaring 5 value bytes but none present).
+        // 30 09 30 07 06 03 2b 65 70 04 05
+        let bytes = [0x30, 0x09, 0x30, 0x07, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x05];
+        assert_eq!(
+            parse_subject_public_key_info(&bytes),
+            Err(SpkiError::BadParametersTlv(TlvError::Truncated))
+        );
+    }
 }

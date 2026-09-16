@@ -654,6 +654,17 @@ mod tests {
     }
 
     #[test]
+    fn charset_identifier_is_the_der_identifier_octet() {
+        // The canonical DER identifier octet: primitive, UNIVERSAL, this type's tag number --
+        // exercised directly since `identifier()` (unlike `tag_number()`) is never invoked by
+        // decode/encode and so is otherwise dead from a coverage standpoint.
+        assert_eq!(Charset::Printable.identifier(), 0x13);
+        assert_eq!(Charset::Ia5.identifier(), 0x16);
+        assert_eq!(Charset::Numeric.identifier(), 0x12);
+        assert_eq!(Charset::Visible.identifier(), 0x1A);
+    }
+
+    #[test]
     fn decodes_simple_printable() {
         // 13 05 "Hello" = PrintableString { "Hello" }
         let (content, used) =

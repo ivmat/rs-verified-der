@@ -544,4 +544,20 @@ mod tests {
     fn rejects_minute_60() {
         assert_eq!(decode_utc_time(b"991231236059Z"), Err(UtcTimeError::MinuteRange));
     }
+
+    // --- encode-side guards (encode_utc_time's None-returning branches) ---
+    #[test]
+    fn encode_rejects_out_of_range_fields() {
+        // month = 13 is out of range -- fields_in_range fails before the buffer-size check.
+        let t = UtcTime { year2: 23, month: 13, day: 1, hour: 0, minute: 0, second: 0 };
+        let mut out = [0u8; 13];
+        assert_eq!(encode_utc_time(&t, &mut out), None);
+    }
+    #[test]
+    fn encode_rejects_output_buffer_too_small() {
+        // a valid UtcTime always needs 13 bytes; a 12-byte buffer is too small.
+        let t = UtcTime { year2: 23, month: 6, day: 15, hour: 12, minute: 30, second: 45 };
+        let mut out = [0u8; 12];
+        assert_eq!(encode_utc_time(&t, &mut out), None);
+    }
 }
