@@ -451,6 +451,18 @@ bytes against a ~317-byte key. Real-size panic-freedom rests on a compositional 
 written down and reviewed but **not machine-checked**. This is the single largest gap between what
 "203/203 verified" sounds like and what it is.
 
+**The ≤12-byte bound is a CI-time floor, not a capability ceiling (measured 2026-09-17).** The same
+`x509_certificate` outer-framing harness (TBS parser stubbed) was re-run at increasing buffer/unwind
+bounds on a 62 GB host: it verifies panic-free at **N = 128** (≈28 min, ~15.5 GB) — 10.7× the shipped
+12-byte bound — and N = 170 (a real certificate's size) did **not** exhaust memory, it exceeded a
+1-hour solver budget. So the shipped bound of 12 is chosen for CI tractability (≈28 min per harness
+blows CI's ~10-min cap), and a much larger bound is a reproducible capability, not a wall. Two honest
+caveats keep this from being oversold: (1) the climb **stubs the TBS parser**, so the ≥128 result is
+about the outer TLV framing, not a full-size certificate — the compositional argument above still
+stands unchecked for the inner structure; and (2) the growth is super-linear, so N = 170 unstubbed is
+a proof-*tractability* limit (the model checker self-diagnoses the state-space growth), not a tool
+defect — it is not a solver/codegen bug.
+
 ### 6.6 The strongest and weakest layers are inverted relative to your risk
 
 The framing and codec layers carry the `CONTRACT` and `CONTRACT+L4` rows. The X.509 layer — the part
