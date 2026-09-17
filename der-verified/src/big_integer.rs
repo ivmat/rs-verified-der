@@ -528,6 +528,19 @@ mod tests {
     }
 
     #[test]
+    fn strips_all_zero_content_to_single_zero_without_over_reading() {
+        // An all-zero content of length >= 2: the stripping loop must stop with exactly one
+        // trailing 0x00 byte, never reading past the end of `content`. A `start + 1 < len`
+        // boundary mutated to `start < len` (or `+` to `*`) would let the loop enter one iteration
+        // too many when only the last byte remains, indexing `content[start + 1]` out of bounds —
+        // this would panic instead of returning the correct minimized result.
+        let mut out = [0u8; 4];
+        let n = encode_minimal_integer_into(&[0x00, 0x00, 0x00, 0x00], &mut out).unwrap();
+        assert_eq!(n, 1);
+        assert_eq!(&out[..n], &[0x00]);
+    }
+
+    #[test]
     fn encode_reports_none_when_out_is_too_small() {
         let mut out = [0u8; 1];
         assert_eq!(encode_minimal_integer_into(&[0x01, 0x02], &mut out), None);

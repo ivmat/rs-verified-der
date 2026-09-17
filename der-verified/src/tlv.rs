@@ -329,4 +329,16 @@ mod tests {
         let mut out = [0u8; 2];
         assert_eq!(encode_tlv_into(tag, &[0x07], &mut out), None);
     }
+
+    #[test]
+    fn encode_accepts_exact_fit_buffer() {
+        // Same total as above (3 bytes) but the buffer is exactly that size: must succeed, not be
+        // rejected -- pins the `out.len() < total` boundary (a `<` -> `<=` mutation would reject
+        // an exact-fit buffer).
+        let tag = Tag { class: Class::Universal, constructed: false, number: 2 };
+        let mut out = [0u8; 3];
+        let n = encode_tlv_into(tag, &[0x07], &mut out).unwrap();
+        assert_eq!(n, 3);
+        assert_eq!(&out[..n], &[0x02, 0x01, 0x07]);
+    }
 }

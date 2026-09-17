@@ -26,7 +26,7 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 | gate receipt | `./check.sh` exit 0 at `bffab69`, `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, run with `DER_REQUIRE_LEAN=1` |
 | proof floor (L3) | **203 of 203 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-bffab69.log:1149` |
 | unbounded lids (L4) | 6 lids in Lean, `lean lid: PASS (sorry-free)`, re-extracted from the shipped `.rs`; `lid-source-state.txt unchanged (hashes identical)` |
-| tests | 514 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
+| tests | 530 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
 | unsafe | 0 `unsafe` blocks; the crate is `#![forbid(unsafe_code)]` |
 | toolchain | Kani `0.67.0`, CBMC `6.8.0` (kani-bundled, read from the run's own output), CaDiCaL 2.0.0, rustc `1.97.0`, Lean 4 `v4.30.0-rc2` |
 | cost | 1h11m07s wall, peak 20.43 GiB. **That peak is systemd cgroup-wide `MemoryPeak`, sampled every 20 s** — a different measure from the previous run's 20.26 GiB (`/usr/bin/time -v` largest-single-process RSS). Do not read a trend across the two. |
@@ -139,7 +139,7 @@ All commands run from the repository root at `130de97`. `<H>` = a harness path o
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 514 unit and regression tests, all 203 Kani harnesses. Needs ≥24 GB RAM, ~71 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 203 Kani harnesses. Needs ≥24 GB RAM, ~71 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Six modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension` — see `gates/tiers.txt`. |
 | **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-bffab69.log` | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
@@ -531,6 +531,32 @@ is the part no gate can check. The first draft of this ledger overclaimed seven 
 fixture-shaped or monomorphic evidence as `CONTRACT` — and a review caught them. That a hand-built
 coverage table's first draft overclaimed seven rows is itself worth knowing: the labels are what need
 review, and the recipes are what make review cheap enough to be worth running.
+
+**cargo-mutants survivor disposition (2026-09-17).** A `cargo-mutants` run over the crate left 38
+production-code survivors after filtering `proofs::` mutants (which `cargo test` cannot reach — a
+`#[kani::proof]` line decides them, not a unit test). Most were closed by new `#[test]` fixtures
+(the test count above moved accordingly). The rest are dispositioned here, not left silent:
+
+- **Equivalent mutants — no test can distinguish them from the original:**
+  - `length.rs` `|`→`^` in `encode_length` (`0x80 | n`, `n ∈ 1..=4`) and `decode_length`
+    (`(val << 8) | octet`): the operands share no set bits, so `|` ≡ `^`. And `length.rs` `lead < 4`
+    → `lead <= 4`: unreachable-guard equivalence — this line is reached only after the `len < 0x80`
+    early return, so `be` is never all-zero and the loop always stops at `lead <= 3`; the `< 4` guard
+    never has to prevent a `be[4]` read.
+  - `set_of.rs:118` `cmp_padded` `>`→`>=`: reached only after the `a.len() == b.len()` branch already
+    returned, so lengths are always unequal here and `>` ≡ `>=` for every reachable input. (The plan's
+    hint that "≥4-byte slices expose it" does not hold — verified against the guarding code.)
+  - `integer.rs:87`, `utf8_string.rs:150`, `tag.rs:148` — the same disjoint-bitfield `|` ≡ `^`
+    pattern (annotated inline at those sites).
+  - `identifier_form.rs` arm-15 deletion — falls through to the identical `_ => Unspecified`.
+- **Disclosed residual — not equivalent, but no fast unit test distinguishes it:** `tlv.rs:110`
+  `value.len() > u32::MAX as usize` is distinguishable from `>=`/`==` only by a `value` slice of
+  length exactly `u32::MAX` (~4 GiB), impractical in a fast test. A Kani harness or a VM-run property
+  test is the appropriate closer (see [`DER-REMAINING-WORK.md`](DER-REMAINING-WORK.md)).
+
+The equivalent-mutant rationale for the **lid-covered** modules (`length`, `tlv`) is recorded here
+rather than inline: a comment inside an Aeneas-extracted function shifts the extracted model's
+embedded source spans and would (correctly) trip the Lean-lid drift gate.
 
 **Related documents.** [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) — what is machine-checked, per module,
 with bounds and stubs. [`ASSUMPTIONS.md`](ASSUMPTIONS.md) — the trusted base everything here stands

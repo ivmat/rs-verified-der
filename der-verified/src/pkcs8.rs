@@ -889,6 +889,24 @@ mod tests {
     }
 
     #[test]
+    fn rejects_context_tag_other_than_zero_as_trailing_elements() {
+        // A well-formed constructed context-specific [1] TLV (not [0]) trailing a valid
+        // PrivateKeyInfo -- must be classified TrailingElements by tag ALONE (class AND number
+        // must both match [0]), not accidentally treated as an attributes ([0]) wrapper just
+        // because the class matches. Pins the `class != ContextSpecific || number != 0` guard (a
+        // `||` -> `&&` mutation would let this fall through and be accepted as attributes).
+        // Outer content grows from 12 (0x0c) to 12 + 2 = 14 (0x0e).
+        let bytes = [
+            0x30, 0x0e,
+                0x02, 0x01, 0x00,
+                0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70,
+                0x04, 0x00,
+                0xA1, 0x00,
+        ];
+        assert_eq!(parse_pkcs8_private_key_info(&bytes), Err(Pkcs8Error::TrailingElements));
+    }
+
+    #[test]
     fn accepts_empty_attributes_wrapper() {
         // A well-formed, EMPTY [0] attributes TLV -- structurally valid (a SET OF with zero
         // members is a well-formed, if degenerate, encoding), yielding `Some(&[])`.

@@ -750,6 +750,93 @@ mod tests {
         assert_eq!(t.fraction, b"01");
     }
 
+    // --- mutation-killing boundary/regression tests (cargo-mutants survivors) ---
+
+    #[test]
+    fn decode_rejects_non_digit_in_mandatory_prefix() {
+        // A non-digit (':' = '9' + 1) inside the mandatory 14-digit prefix, placed so the two
+        // arithmetic-digit interpretation of the byte still lands in-range for every field
+        // (second = 0*10 + 10 = 10, <= 59) -- i.e. a mutation that skipped the mandatory-prefix
+        // digit-check loop entirely (`i < 14` -> `i == 14`) would let this decode succeed instead
+        // of being rejected as NonDigit.
+        let bytes = b"2023010100000:Z";
+        assert_eq!(decode_generalized_time(bytes), Err(GeneralizedTimeError::NonDigit));
+    }
+
+    #[test]
+    fn decode_rejects_non_digit_inside_fraction() {
+        // A non-digit ('X') inside the fraction, with the fraction's last byte not '0' (so the
+        // trailing-zero check alone would not reject it) -- a mutation that skipped the fraction
+        // digit-check loop (`j < frac.len()` -> `j > frac.len()`) would let this decode succeed.
+        assert_eq!(
+            decode_generalized_time(b"20230615120000.5XZ"),
+            Err(GeneralizedTimeError::NonDigit)
+        );
+    }
+
+    #[test]
+    fn encode_rejects_non_digit_fraction() {
+        // A fraction containing a non-digit byte, with its last byte not '0' (so only the digit
+        // check in `fraction_is_canonical` -- not the trailing-zero check -- can reject it). A
+        // mutation that skipped that digit-check loop (`i < frac.len()` -> `i > frac.len()`) would
+        // let this encode succeed instead of returning None.
+        let t = GeneralizedTime {
+            year: 2023,
+            month: 6,
+            day: 15,
+            hour: 12,
+            minute: 0,
+            second: 0,
+            fraction: b"5X",
+        };
+        let mut out = [0u8; 32];
+        assert_eq!(encode_generalized_time_into(&t, &mut out), None);
+    }
+
+    #[test]
+    fn encode_boundary_buffer_sizes_with_fraction() {
+        // Correct total = 14 (mandatory) + 1 ('.') + 3 (fraction) + 1 ('Z') = 19. A one-byte-short
+        // buffer must be rejected, and an exact-fit buffer must succeed and produce the exact
+        // expected bytes -- pins both the `total` arithmetic and the `out.len() < total` boundary
+        // (a `<` -> `<=` mutation would reject the exact-fit buffer).
+        let t = GeneralizedTime {
+            year: 2023,
+            month: 6,
+            day: 15,
+            hour: 12,
+            minute: 30,
+            second: 45,
+            fraction: b"125",
+        };
+        let mut too_small = [0u8; 18];
+        assert_eq!(encode_generalized_time_into(&t, &mut too_small), None);
+
+        let mut exact = [0u8; 19];
+        let w = encode_generalized_time_into(&t, &mut exact).unwrap();
+        assert_eq!(w, 19);
+        assert_eq!(&exact[..w], b"20230615123045.125Z");
+    }
+
+    #[test]
+    fn roundtrips_distinguishing_year_digits() {
+        // Year 1934: every decimal digit place is non-zero and distinct, so a wrong arithmetic
+        // operator (e.g. `+` -> `-`) in any single year-digit computation produces a visibly wrong
+        // output byte at that exact position, unlike years whose digits happen to be 0.
+        let t = GeneralizedTime {
+            year: 1934,
+            month: 6,
+            day: 15,
+            hour: 12,
+            minute: 30,
+            second: 45,
+            fraction: &[],
+        };
+        let mut out = [0u8; 32];
+        let w = encode_generalized_time_into(&t, &mut out).unwrap();
+        assert_eq!(&out[..w], b"19340615123045Z");
+        assert_eq!(decode_generalized_time(&out[..w]).unwrap(), t);
+    }
+
     // --- encode-side guards (encode_generalized_time_into's None-returning branches) ---
     #[test]
     fn encode_rejects_out_of_range_fields() {

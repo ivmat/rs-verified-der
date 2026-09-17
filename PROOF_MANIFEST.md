@@ -7,7 +7,7 @@ they are being offered, and where the guarantee stops.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "203 Kani harnesses, 6 Lean lids, 514 tests" describes how
+> **Counts are inventory, not coverage.** "203 Kani harnesses, 6 Lean lids, 530 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -86,7 +86,7 @@ deviations. Read the two differently.
 | `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 186 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 11 / 8 |
-| `#[test]` unit + regression tests | 514 |
+| `#[test]` unit + regression tests | 530 |
 | crate-doc examples run as doc-tests | 34 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
@@ -125,7 +125,7 @@ Because the rustc pin is a floating channel, **the rustc version is a property o
 <!-- END GENERATED:pins -->
 
 <!-- BEGIN GENERATED:pins-observed (gates/gen_proof_manifest.py) -->
-Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.97.0 (2d8144b78 2026-07-07)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
+Observed on the machine that last regenerated this section — a provenance note, **not** a gate-enforced pin (your values will differ, and that is fine): rustc `rustc 1.93.1 (01f6ddf75 2026-02-11) (built from a source tarball)`, Kani `cargo-kani 0.67.0`, Aeneas `45061fa1a5b4bad876f17c03d3a5544d818622e6`, Charon `40ee060a8df43f4e7e0842d3f05387b0a4426aaf`.
 <!-- END GENERATED:pins-observed -->
 
 Toolchain identity is part of every claim in this document. Two honest qualifications:
@@ -176,10 +176,10 @@ canonicality classifications of these same six remain Kani-bounded; §6.2 says w
 | `lean/LengthProofs.lean` | `length` | 46 | 1 |
 | `lean/OidProofs.lean` | `oid` | 5 | 0 |
 | `lean/SequenceProofs.lean` | `sequence` | 18 | 4 |
-| `lean/TagProofs.lean` | `tag` | 7 | 1 |
+| `lean/TagProofs.lean` | `tag` | 25 | 1 |
 | `lean/TlvProofs.lean` | `tlv` | 13 | 4 |
 
-The `axiom` column counts the *assumed Aeneas-Std specs declared in the lid file itself* — the trust surface a reader can audit by opening the file. It excludes Lean's own `propext`/`Classical.choice`/`Quot.sound` and `bv_decide`'s certificate axiom. Separately, the lids carry 49 `#print axioms` commands: that is a count of *audit commands* (roughly one per theorem whose dependency set is disclosed at build time), **not** a count of axioms — do not compare it with the column.
+The `axiom` column counts the *assumed Aeneas-Std specs declared in the lid file itself* — the trust surface a reader can audit by opening the file. It excludes Lean's own `propext`/`Classical.choice`/`Quot.sound` and `bv_decide`'s certificate axiom. Separately, the lids carry 52 `#print axioms` commands: that is a count of *audit commands* (roughly one per theorem whose dependency set is disclosed at build time), **not** a count of axioms — do not compare it with the column.
 
 One limitation to name explicitly: a declared `axiom` characterising an Aeneas-Std primitive and a bespoke assumption about this crate's own code are syntactically identical, and the latter would be an unsound hole. Nothing in this repository mechanically distinguishes them — the argument that each is an upstream-primitive spec is made in the lid docstrings and rests on review, not on a gate.
 <!-- END GENERATED:l4 -->
@@ -236,7 +236,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 514 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 530 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.

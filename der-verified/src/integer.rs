@@ -84,6 +84,8 @@ pub fn decode_integer(content: &[u8]) -> Result<i64, IntError> {
     let mut acc: u64 = if neg { u64::MAX } else { 0 };
     let mut i = 0;
     while i < content.len() {
+        // EQUIVALENT-MUTANT: disjoint bitfields, |≡^ (cargo-mutants survivor, not a coverage
+        // gap) — `acc << 8` always has its low 8 bits zero, and `content[i]` fits in 8 bits.
         acc = (acc << 8) | content[i] as u64;
         i += 1;
     }

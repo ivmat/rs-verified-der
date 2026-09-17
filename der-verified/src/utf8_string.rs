@@ -147,6 +147,8 @@ pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
             if cont & 0xC0 != 0x80 {
                 return Err(Utf8Error::IllFormed { position: i });
             }
+            // EQUIVALENT-MUTANT: disjoint bitfields, |≡^ (cargo-mutants survivor, not a coverage
+            // gap) — `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.
             cp = (cp << 6) | (cont & 0x3F) as u32;
             k += 1;
         }
@@ -644,6 +646,45 @@ mod tests {
             decode_utf8_string(&[0x1F, 0x0C, 0x01, b'A']),
             Err(Utf8Error::Tlv(TlvError::Tag(TagError::NonMinimal)))
         );
+    }
+
+    // --- mutation-killing boundary/regression tests (cargo-mutants survivors) ---
+
+    #[test]
+    fn two_byte_lead_uses_all_five_low_bits() {
+        // 0xC8 0x80: a valid 2-byte sequence (lead 0xC8 is in the legal C2..DF range). Its low 5
+        // bits (used to seed the code point, `lead & 0x1F`) are `01000` = 8, distinct from its low
+        // 3 bits (`000` = 0): if the match arm seeding `cp` for a 2-byte sequence were deleted (so
+        // it fell through to the 4-byte-shaped `& 0x07` seed instead), this input's derived code
+        // point would drop from 0x200 to 0x000, spuriously classified as overlong (< 0x80) and
+        // rejected. Confirms it is accepted, pinning that the len==2 arm is live.
+        assert!(validate_utf8(&[0xC8, 0x80]).is_ok());
+        assert_eq!(
+            validate_utf8(&[0xC8, 0x80]).is_ok(),
+            core::str::from_utf8(&[0xC8, 0x80]).is_ok()
+        );
+    }
+
+    #[test]
+    fn accepts_two_byte_minimum_code_point_boundary() {
+        // 0xC2 0x80 = U+0080, the SMALLEST code point requiring the 2-byte form (`cp == min_cp`
+        // exactly). Must be accepted: a `<` -> `<=` mutation on the overlong check would reject
+        // this boundary value.
+        assert!(validate_utf8(&[0xC2, 0x80]).is_ok());
+        assert_eq!(
+            validate_utf8(&[0xC2, 0x80]).is_ok(),
+            core::str::from_utf8(&[0xC2, 0x80]).is_ok()
+        );
+    }
+
+    #[test]
+    fn accepts_maximum_valid_code_point_boundary() {
+        // 0xF4 0x8F 0xBF 0xBF = U+10FFFF, the LARGEST legal Unicode code point (`cp ==
+        // 0x10FFFF` exactly). Must be accepted: a `>` -> `>=` mutation on the beyond-max check
+        // would reject this boundary value.
+        let x = [0xF4, 0x8F, 0xBF, 0xBF];
+        assert!(validate_utf8(&x).is_ok());
+        assert_eq!(validate_utf8(&x).is_ok(), core::str::from_utf8(&x).is_ok());
     }
 
     #[test]

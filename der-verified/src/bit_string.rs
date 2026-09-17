@@ -410,4 +410,36 @@ mod tests {
         let bs = decode_bit_string(&[0x04, 0xF0]).unwrap();
         assert_eq!(require_octet_aligned(bs), None);
     }
+
+    // --- mutation-killing boundary tests (cargo-mutants survivors) ---
+
+    #[test]
+    fn accepts_unused_seven_boundary() {
+        // unused = 7 is the maximum LEGAL value (§11.2.1): only its top bit is significant, so the
+        // 7 low-order padding bits must be zero. Pins the `unused > 7` boundary (a `>` -> `>=`
+        // mutation would reject this legal value).
+        let bs = decode_bit_string(&[0x07, 0x80]).unwrap();
+        assert_eq!(bs.data, &[0x80]);
+        assert_eq!(bs.unused, 7);
+    }
+
+    #[test]
+    fn encode_accepts_unused_seven_boundary() {
+        // Encode-side counterpart: unused = 7 is legal and must be accepted (a `>` -> `>=`
+        // mutation on the encoder's own `unused > 7` guard would reject it).
+        let mut out = [0u8; 4];
+        let w = encode_bit_string_into(&[0x80], 7, &mut out).unwrap();
+        assert_eq!(&out[..w], &[0x07, 0x80]);
+    }
+
+    #[test]
+    fn encode_accepts_exact_fit_buffer() {
+        // total = 1 (unused-bits octet) + 1 (data) = 2; an exact-fit buffer must succeed, not be
+        // rejected -- pins the `out.len() < total` boundary (a `<` -> `<=` mutation would reject
+        // an exact-fit buffer).
+        let mut out = [0u8; 2];
+        let w = encode_bit_string_into(&[0xF0], 4, &mut out).unwrap();
+        assert_eq!(w, 2);
+        assert_eq!(&out[..w], &[0x04, 0xF0]);
+    }
 }

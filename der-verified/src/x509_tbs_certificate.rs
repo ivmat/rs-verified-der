@@ -961,6 +961,18 @@ mod tests {
     }
 
     #[test]
+    fn version_peek_requires_both_context_specific_and_number_zero() {
+        // A trailing [1] context-specific constructed TLV in the version position (tag 0xA1, not
+        // the version wrapper's 0xA0) must NOT be treated as a present `version` wrapper -- the
+        // peek requires BOTH `class == ContextSpecific` AND `number == 0` (a `&&` -> `||` mutation
+        // would let a bare class match alone trigger the version-decode branch). Falling through,
+        // the same bytes are re-attempted as `serialNumber`, which is not a UNIVERSAL INTEGER --
+        // SerialWrongTag, not some version-decode error.
+        let bytes = wrap(0x30, &[0xA1, 0x00]);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::SerialWrongTag));
+    }
+
+    #[test]
     fn rejects_malformed_issuer_name() {
         // issuer's ATV type OID tag, 06 (OBJECT IDENTIFIER) -> 02 (INTEGER): the issuer Name's own
         // outer SEQUENCE/SET framing is untouched (only content deep inside changes), so the span

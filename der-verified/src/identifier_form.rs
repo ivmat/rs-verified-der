@@ -181,7 +181,10 @@ pub fn required_form(number: u32) -> RequiredForm {
         // two are one question. Behavioural stake is small either way: if 14 were unassigned there
         // would be no legal universal-14 value for this arm to over-reject.
         12..=14 => RequiredForm::Primitive,
-        // 15 — reserved by X.680, unassigned. Not decided; see the module docs.
+        // EQUIVALENT-MUTANT: deleting this arm changes nothing observable — 15 would then fall
+        // through to the `_ => RequiredForm::Unspecified` arm below, which returns the identical
+        // value (cargo-mutants survivor, not a coverage gap). Kept as an explicit arm for
+        // documentation: 15 is reserved by X.680, unassigned. Not decided; see the module docs.
         15 => RequiredForm::Unspecified,
         // 16 SEQUENCE / SEQUENCE OF, 17 SET / SET OF (§8.9, §8.11, §8.12) — constructed by
         // definition; this is the rule that makes 0x30/0x31 the only legal spellings.
@@ -624,6 +627,19 @@ mod tests {
             );
             assert_eq!(validate_identifier_form(universal(number, false)), Ok(()));
         }
+    }
+
+    #[test]
+    fn required_form_number_30_bmpstring_is_primitive() {
+        // BMPString (UNIVERSAL 30) is primitive under DER §10.2 -- a distinct arm from the `_ =>
+        // Unspecified` fallback (unlike arm 15 just above, this one changes real behavior; a
+        // deleted-arm mutation here would make `required_form(30)` return `Unspecified` instead).
+        assert_eq!(required_form(30), RequiredForm::Primitive);
+        assert_eq!(validate_identifier_form(universal(30, false)), Ok(()));
+        assert_eq!(
+            validate_identifier_form(universal(30, true)),
+            Err(FormError::MustBePrimitive)
+        );
     }
 
     #[test]

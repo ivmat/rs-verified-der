@@ -21,11 +21,13 @@ shape `oid::validate_oid` hit before D25's refactor, and exactly what `TlvProofs
 Fix, applied to the shipped `tag.rs` (single source of truth — the same file the Kani floor
 proves): every early `return` inside the loop became a `break` carrying the outcome in an
 accumulated `Result<(u32, usize), TagError>` (`state`), matched **once**, after the loop, via `?`.
-Behavior is **identical** — proven, not asserted: `cargo test` (295 tests) and all `tag::proofs::*`
-Kani harnesses (`roundtrip_all_tags`, `decode_tag_never_panics`, `decode_tag_accepts_only_canonical`,
+Behavior was **re-validated by the full test suite and all 16 Kani harnesses** (a re-validation,
+not an equivalence proof): `cargo test` (295 tests) and all `tag::proofs::*` Kani harnesses
+(`roundtrip_all_tags`, `decode_tag_never_panics`, `decode_tag_accepts_only_canonical`,
 `high_tag_of_small_number_is_non_minimal`, `leading_zero_high_tag_is_non_minimal`,
-`truncated_high_tag_is_classified`, `too_large_tag_is_classified`) re-passed on the refactored code
-(re-run by me via real exit codes, `cargo kani -Z stubbing --harness tag`, 16/16 SUCCESSFUL). With
+`truncated_high_tag_is_classified`, `too_large_tag_is_classified`) passed on the refactored code
+when the returns→breaks refactor originally landed — validated VM-side at that time, 16/16
+SUCCESSFUL under `cargo kani -Z stubbing --harness tag` (Kani is never run on this box). With
 this fix `decode_tag` now extracts **with a body** (`tag.decode_tag_loop` / `.body`, the Aeneas
 `loop` combinator — see `DerTagExtract.lean`), unlocking the theorems below.
 
@@ -368,5 +370,617 @@ theorem tag_decode_used_bounds (input : Slice U8) (t : tag.Tag) (used : Usize) :
   exact hspec t used rfl
 
 #print axioms tag_decode_used_bounds
+
+/-! ## The base-128 value semantics of `decode_tag`'s high-tag loop
+
+    Everything above proves *totality* and *consumption bounds* of `decode_tag` but says nothing
+    about the numeric VALUE the high-tag loop accumulates. That gap left three `cargo-mutants`
+    survivors alive in the base-128 loop body (`tag.rs:142/145/149`). The theorems below pin the
+    value semantics ∀-length (symbolically, never for a fixed byte array), making each mutant
+    provably false. They mirror `LengthProofs.lean`'s base-256 development (`beVal`, `beVal_take_succ`,
+    `shl8_or_bv`, `decode_length_loop_spec`, `decode_long_form_accept`) almost line-for-line, with
+    the radix changed from 256 to 128 and the septet mask `b &&& 0x7f = b.val % 128` in place of a
+    whole byte.
+
+    The high-tag loop consumes continuation octets starting at input index 1. For a loop state
+    `(i1, number1, count1)` the octets consumed so far are `input.val.drop 1 |>.take count1.val`
+    (`count1 = i1 - 1` of them), and `number1` is their base-128 big-endian value `b128`. Each octet
+    contributes its low 7 bits (`b &&& 0x7f`, i.e. `b.val % 128`); the high bit `b &&& 0x80` is the
+    continuation flag (loop terminates when it is clear). -/
+
+/-- Base-128 big-endian value of a septet list — matches `decode_tag_loop`'s fold
+    `number := (number <<< 7) | (b & 0x7f)` (the septet being `b.val % 128`). The base-128 analogue
+    of `LengthProofs.beVal`. -/
+def b128 : List U8 → Nat := List.foldl (fun acc b => acc * 128 + (b.val % 128)) 0
+
+@[simp] theorem b128_nil : b128 [] = 0 := rfl
+
+/-- One fold step: appending septet `k` multiplies by 128 and adds its low 7 bits. Mirror of
+    `LengthProofs.beVal_take_succ`. -/
+theorem b128_take_succ (l : List U8) (k : Nat) (hk : k < l.length) :
+    b128 (l.take (k + 1)) = b128 (l.take k) * 128 + l[k].val % 128 := by
+  have he : l.take (k + 1) = l.take k ++ [l[k]] := by
+    rw [List.take_succ, List.getElem?_eq_getElem hk]; rfl
+  rw [he]; simp only [b128, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
+/-- `b128` of a prefix is monotone in the prefix length: one more octet can only grow the value
+    (multiply by 128, add a septet). This is what makes the pre-shift `≤ 0x01FFFFFF` bound
+    genuinely *inductive* over the loop's `cont` states: given `hbound` (the accumulated value at
+    the last `cont` octet is `≤ 0x01FFFFFF`), monotonicity yields the same bound at every earlier
+    `cont` state, so each `number << 7` step stays in range. The accumulated value only *exceeds*
+    `0x01FFFFFF` on the terminal `done` step, where it is returned rather than shifted again — so
+    the bound is not violated on any step that reads it. -/
+theorem b128_take_succ_ge (l : List U8) (k : Nat) :
+    b128 (l.take k) ≤ b128 (l.take (k + 1)) := by
+  by_cases hk : k < l.length
+  · rw [b128_take_succ l k hk]
+    have h1 : b128 (l.take k) ≤ b128 (l.take k) * 128 := by
+      have := Nat.le_mul_of_pos_right (b128 (l.take k)) (show 0 < 128 by norm_num); omega
+    omega
+  · have he : l.take (k + 1) = l.take k := by
+      rw [List.take_of_length_le (by omega : l.length ≤ k),
+          List.take_of_length_le (by omega : l.length ≤ k + 1)]
+    rw [he]
+
+theorem b128_take_mono (l : List U8) {a b : Nat} (h : a ≤ b) :
+    b128 (l.take a) ≤ b128 (l.take b) := by
+  induction b with
+  | zero => simp only [Nat.le_zero] at h; rw [h]
+  | succ n ih =>
+    rcases Nat.lt_succ_iff_lt_or_eq.mp (Nat.lt_succ_of_le h) with h1 | h1
+    · exact le_trans (ih (by omega)) (b128_take_succ_ge l n)
+    · rw [h1]
+
+/-- The `(number << 7) | septet` step is exactly `number*128 + septet` when it does not overflow
+    (`number ≤ 0x01FFFFFF = U32::MAX >> 7`, so `number << 7` fits in 32 bits, and the septet
+    `< 0x80`). Base-128 analogue of `LengthProofs.shl8_or_bv`; the disjoint-bitfield identity that
+    makes `tag.rs:148`'s `|` behave as `+` (the EQUIVALENT mutant `|`≡`^`). -/
+theorem shl7_or_bv (v w : BitVec 32) (hv : v < 0x2000000#32) (hw : w < 0x80#32) :
+    (v <<< (7 : Nat) ||| w) = v * 128#32 + w := by bv_decide
+
+/-- The same, at the `Nat` (`toNat`) level. Mirror of `LengthProofs.shl8_or_toNat`. -/
+theorem shl7_or_toNat (v w : BitVec 32) (hv : v < 0x2000000#32) (hw : w < 0x80#32) :
+    (v <<< (7 : Nat) ||| w).toNat = v.toNat * 128 + w.toNat := by
+  have h1 : v.toNat < 2 ^ 25 := by bv_omega
+  have h2 : w.toNat < 128 := by bv_omega
+  rw [shl7_or_bv v w hv hw, BitVec.toNat_add, BitVec.toNat_mul, BitVec.toNat_ofNat]
+  omega
+
+/-- Bitwise-AND commutes with `.val` on `U8` (both are `BitVec.toNat` of the same `&&&`). Lets the
+    continuation-bit test `b &&& 0x80` and the septet mask `b &&& 0x7f` be read numerically. -/
+theorem u8_and_val (b c : U8) : (b &&& c).val = b.val &&& c.val := by
+  simp only [UScalar.val, UScalar.bv_and, BitVec.toNat_and]
+
+/-- The septet mask `b &&& 0x7f` numerically is `b.val % 128` — the base-128 analogue of the
+    `low7_eq_mod` fact used in `LengthProofs.lean`. -/
+theorem u8_and_127 (b : U8) : (b &&& 127#u8).val = b.val % 128 := by
+  rw [u8_and_val, show (127#u8).val = 127 from by decide]
+  have h := Nat.and_two_pow_sub_one_eq_mod b.val 7
+  norm_num at h
+  exact h
+
+/-- `U32::MAX >> 7 = 0x01FFFFFF = 33554431`: the extracted `TooLarge` threshold constant (the
+    largest pre-shift value for which `number << 7` still fits in a `u32`). Load-bearing for the
+    `>>`→`<<` mutant of `tag.rs:145` (the mutated constant would be a different number). -/
+theorem u32_max_shr7 : (core.num.U32.MAX).val >>> (7#i32).toNat = 33554431 := by
+  decide
+
+/-! ## (a) Leading-zero rule ⇒ `NonMinimal` — kills the `tag.rs:142` `==`→`!=` mutant
+
+    `if count == 0 && b == 0x80 { NonMinimal }`: the FIRST continuation octet (`count == 0`, i.e.
+    loop index `i = 1`) may not be `0x80` (a leading septet of value 0 with the continuation bit
+    set — a non-canonical leading zero). If the `==` on `count` is mutated to `!=`, this check
+    never fires on the first octet, so a leading `0x80` is wrongly ACCEPTED as the start of a
+    multi-octet number; the theorem below (leading `0x80` ⇒ `NonMinimal`) then becomes false. -/
+
+/-- The high-tag loop, entered fresh at `(1, 0, 0)`, rejects `NonMinimal` as soon as the first
+    continuation octet (`input[1]`) is `0x80`. The invariant pins the loop to its entry state:
+    the body fires the `count == 0 && b == 0x80` branch immediately, so the `cont` case is never
+    reached (vacuous). -/
+theorem decode_tag_loop_leading_zero (input : Slice U8) (h1 : input.val[1]? = some 128#u8) :
+    tag.decode_tag_loop 1#usize input 0#u32 0#usize
+      ⦃ r => r = core.result.Result.Err tag.TagError.NonMinimal ⦄ := by
+  unfold tag.decode_tag_loop
+  apply loop.spec_decr_nat
+    (measure := fun (⟨i1, _, _⟩ : Usize × U32 × Usize) => input.val.length - i1.val)
+    (inv := fun (⟨i1, number1, count1⟩ : Usize × U32 × Usize) =>
+      i1 = 1#usize ∧ number1 = 0#u32 ∧ count1 = 0#usize)
+  · rintro ⟨i1, number1, count1⟩ ⟨hi1, hn1, hc1⟩
+    simp only [tag.decode_tag_loop.body, core.slice.Slice.get, bind_tc_ok]
+    have hval : i1.val = 1 := by rw [hi1]; scalar_tac
+    match hoeq : input.val[i1.val]? with
+    | none =>
+      have h2 : input.val[i1.val]? = some 128#u8 := by rw [hval]; exact h1
+      rw [hoeq] at h2; exact absurd h2 (by simp)
+    | some b =>
+      have hb : b = 128#u8 := by
+        have h2 : input.val[i1.val]? = some 128#u8 := by rw [hval]; exact h1
+        rw [hoeq] at h2; injection h2
+      subst hb
+      simp only [hc1, ↓reduceIte, WP.spec_ok]
+  · exact ⟨rfl, rfl, rfl⟩
+
+/-- **(a) ∀-length, spec form.** A high-tag marker whose first continuation octet is `0x80`
+    decodes to `NonMinimal` — mirrors `tag_decode_total_spec`'s `step`-driven walk of the pre-loop
+    scaffold, then feeds `decode_tag_loop_leading_zero` through the post-loop `?`. -/
+theorem tag_decode_leading_zero_spec (input : Slice U8) (b0 : U8)
+    (h0 : input.val[0]? = some b0) (hhigh : b0 &&& 31#u8 = 31#u8)
+    (h1 : input.val[1]? = some 128#u8) :
+    tag.decode_tag input ⦃ r => r = core.result.Result.Err tag.TagError.NonMinimal ⦄ := by
+  unfold tag.decode_tag
+  rw [first_spec, h0]
+  simp only [bind_tc_ok]
+  step as ⟨i, hi⟩
+  split <;> simp only [bind_tc_ok]
+  all_goals
+    step as ⟨i1, hi1⟩
+    step as ⟨i2, hi2, hi2bv⟩
+    rw [hhigh] at hi2
+    have hi2eq : i2 = 31#u8 := UScalar.eq_of_val_eq hi2
+    have hlow : ¬ ((i2 != 31#u8) = true) := by rw [hi2eq]; simp
+    rw [if_neg hlow]
+    have hspec := decode_tag_loop_leading_zero input h1
+    obtain ⟨y, hy, rfl⟩ := WP.spec_imp_exists hspec
+    rw [hy]
+    simp [core.result.Result.Insts.CoreOpsTry.branch,
+      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+      core.convert.FromSame, WP.spec_ok]
+
+/-- **(a) ∀-length: a high-tag whose first continuation octet is `0x80` decodes to `NonMinimal`.**
+    Symbolic in the marker octet `b0` (only its low-5-bits-all-ones high-tag form is fixed) and in
+    the slice length. Kills `tag.rs:142` (`count == 0 && b == 0x80`, mutant `==`→`!=`). -/
+theorem tag_decode_leading_zero (input : Slice U8) (b0 : U8)
+    (h0 : input.val[0]? = some b0) (hhigh : b0 &&& 31#u8 = 31#u8)
+    (h1 : input.val[1]? = some 128#u8) :
+    tag.decode_tag input = ok (core.result.Result.Err tag.TagError.NonMinimal) := by
+  have hspec := tag_decode_leading_zero_spec input b0 h0 hhigh h1
+  obtain ⟨y, hy, rfl⟩ := WP.spec_imp_exists hspec
+  exact hy
+
+#print axioms tag_decode_leading_zero
+
+/-! ## (c) Accept-value semantics — kills the `tag.rs:148/149` mutants
+
+    The high-tag loop, run over a *canonical* continuation window (first octet `≠ 0x80`, every octet
+    before the terminator has its continuation bit set, the terminator octet has it clear, and the
+    accumulated value stays `≤ 0x01FFFFFF` before the final shift), returns exactly the base-128
+    value `b128` of the window, consuming `1 + count` octets. Because the octets are SYMBOLIC and the
+    window has arbitrary length `t`, an *interior* `0x80` septet (continuation bit set, low 7 bits 0)
+    is admitted — which is precisely what the `count += 1`→`count *= 1` mutant of `tag.rs:149` would
+    wrongly reject (that mutant keeps `count == 0` forever, so the leading-zero test fires on every
+    octet). The `|`≡`+` value identity (`shl7_or`) is what makes `tag.rs:148`'s `(number<<7)|septet`
+    compute `number*128 + septet`. -/
+
+/-- **Accept-path loop invariant, ∀-length.** From the fresh entry `(1, 0, 0)`, given a canonical
+    continuation window terminating at index `t`, the loop returns `Ok (number', used)` with
+    `number'` the base-128 value of the `t` octets and `used = t + 1`. Proved by `loop.spec_decr_nat`
+    carrying `number1 = b128 (window consumed so far)` and `count1 = i1 - 1` through each step. -/
+theorem decode_tag_loop_accept_spec (input : Slice U8) (t : Nat)
+    (ht : 1 ≤ t) (htlen : t + 1 ≤ input.val.length)
+    (hlead : input.val[1]! ≠ 128#u8)
+    (hterm : input.val[t]!.val &&& 128 = 0)
+    (hcont : ∀ j, 1 ≤ j → j < t → input.val[j]!.val &&& 128 ≠ 0)
+    (hbound : b128 ((input.val.drop 1).take (t - 1)) ≤ 33554431) :
+    tag.decode_tag_loop 1#usize input 0#u32 0#usize ⦃ r =>
+      ∃ (number' : U32) (used : Usize), r = core.result.Result.Ok (number', used) ∧
+        number'.val = b128 ((input.val.drop 1).take t) ∧ used.val = t + 1 ⦄ := by
+  unfold tag.decode_tag_loop
+  apply loop.spec_decr_nat
+    (measure := fun (⟨i1, _, _⟩ : Usize × U32 × Usize) => input.val.length - i1.val)
+    (inv := fun (⟨i1, number1, count1⟩ : Usize × U32 × Usize) =>
+      1 ≤ i1.val ∧ i1.val ≤ t ∧ count1.val = i1.val - 1 ∧
+      number1.val = b128 ((input.val.drop 1).take count1.val))
+  · rintro ⟨i1, number1, count1⟩ ⟨hge1, hile1, hceq, hveq⟩
+    simp only [tag.decode_tag_loop.body, core.slice.Slice.get, bind_tc_ok]
+    have hi1lt : i1.val < input.val.length := by omega
+    match hoeq : input.val[i1.val]? with
+    | none =>
+      rw [List.getElem?_eq_none_iff] at hoeq; omega
+    | some b =>
+      have hbget : input.val[i1.val]'hi1lt = b := by
+        have h := List.getElem?_eq_getElem hi1lt; rw [hoeq] at h; exact (Option.some_inj.mp h).symm
+      have hbbang : input.val[i1.val]! = b := by
+        rw [getElem!_pos input.val i1.val hi1lt]; exact hbget
+      have hcmax : count1.val + 1 ≤ Usize.max := by
+        have := Slice.length_ineq (s := input); omega
+      have hidx_eq : 1 + count1.val = i1.val := by omega
+      have hdrlen : count1.val < (input.val.drop 1).length := by
+        simp only [List.length_drop]; omega
+      have hdrget : (input.val.drop 1)[count1.val]'hdrlen = b := by
+        have h := List.getElem?_eq_getElem hdrlen
+        rw [List.getElem?_drop, hidx_eq, hoeq] at h; exact (Option.some_inj.mp h).symm
+      have hi7pre : b.val &&& 128 = input.val[i1.val]!.val &&& 128 := by rw [hbbang]
+      by_cases hzero : count1 = 0#usize
+      · -- count = 0 (i1 = 1): the leading-zero check must NOT fire (first octet ≠ 0x80)
+        have hi1one : i1.val = 1 := by
+          have : count1.val = 0 := by rw [hzero]; rfl
+          omega
+        have hbne : b ≠ 128#u8 := by
+          have hb1 : input.val[1]! = b := by rw [← hi1one]; exact hbbang
+          rw [← hb1]; exact hlead
+        by_cases hb128 : b = 128#u8
+        · exact absurd hb128 hbne
+        · simp only [hzero, ↓reduceIte, hb128]
+          step as ⟨i2, hi2, hi2bv⟩
+          have hi2v : i2.val = 33554431 := by rw [hi2]; exact u32_max_shr7
+          have hnb : number1.val ≤ 33554431 := by
+            rw [hveq]
+            exact le_trans (b128_take_mono (input.val.drop 1) (by omega : count1.val ≤ t - 1)) hbound
+          by_cases htoolarge : number1 > i2
+          · exact absurd htoolarge (by scalar_tac)
+          · simp only [htoolarge, ↓reduceIte]
+            step as ⟨i3, hi3, hi3bv⟩
+            step as ⟨i4, hi4, hi4bv⟩
+            step as ⟨i5, hi5⟩
+            step as ⟨number1', hn1, hn1bv⟩
+            step as ⟨count1', hc1⟩
+            step as ⟨i6, hi6⟩
+            have hi6val : i6.val = i1.val + 1 := by scalar_tac
+            step as ⟨i7, hi7, hi7bv⟩
+            have hi5val : i5.val = b.val % 128 := by rw [hi5, U8.cast_U32_val_eq, hi4]; exact u8_and_127 b
+            have hkey : number1'.val = number1.val * 128 + b.val % 128 := by
+              have hnbv : number1.bv < 0x2000000#32 := by
+                have h : number1.bv.toNat ≤ 33554431 := hnb; bv_omega
+              have hi5bv : i5.bv < 0x80#32 := by
+                have h : i5.bv.toNat = b.bv.toNat % 128 := hi5val; bv_omega
+              simp only [UScalar.val] at *
+              rw [hn1bv, hi3bv, shl7_or_toNat number1.bv i5.bv hnbv hi5bv, hi5val]
+            have hb128step : b128 ((input.val.drop 1).take (count1.val + 1)) = number1'.val := by
+              rw [b128_take_succ (input.val.drop 1) count1.val hdrlen, hdrget, ← hveq, hkey]
+            have hi7val : i7.val = b.val &&& 128 := by
+              rw [hi7, u8_and_val, show (128#u8).val = 128 from by decide]
+            have hc1val : count1'.val = count1.val + 1 := by scalar_tac
+            rcases lt_or_eq_of_le hile1 with hlt | heq
+            · -- interior octet: continuation bit set ⇒ cont
+              have hbit : b.val &&& 128 ≠ 0 := by
+                rw [hi7pre]; exact hcont i1.val hge1 hlt
+              have hi7ne : i7 ≠ 0#u8 := by
+                intro hc; apply hbit; rw [← hi7val, hc]; rfl
+              simp only [hi7ne, ↓reduceIte, WP.spec_ok]
+              refine ⟨by omega, by omega, by omega, ?_, by omega⟩
+              rw [hc1val, hb128step]
+            · -- terminator octet: continuation bit clear ⇒ done Ok, value pinned
+              have hbit : b.val &&& 128 = 0 := by
+                rw [hi7pre, heq]; exact hterm
+              have hi7z : i7 = 0#u8 := by
+                apply UScalar.eq_of_val_eq; rw [hi7val, hbit]; rfl
+              simp only [hi7z, ↓reduceIte, WP.spec_ok]
+              refine ⟨number1', i6, rfl, ?_, by rw [hi6val]; omega⟩
+              rw [← heq, ← hidx_eq]
+              have : 1 + count1.val = count1.val + 1 := by omega
+              rw [this, hb128step]
+      · -- count ≠ 0 (i1 ≥ 2): no leading-zero check, identical arithmetic tail
+        simp only [hzero, ↓reduceIte]
+        step as ⟨i2, hi2, hi2bv⟩
+        have hi2v : i2.val = 33554431 := by rw [hi2]; exact u32_max_shr7
+        have hnb : number1.val ≤ 33554431 := by
+          rw [hveq]
+          exact le_trans (b128_take_mono (input.val.drop 1) (by omega : count1.val ≤ t - 1)) hbound
+        by_cases htoolarge : number1 > i2
+        · exact absurd htoolarge (by scalar_tac)
+        · simp only [htoolarge, ↓reduceIte]
+          step as ⟨i3, hi3, hi3bv⟩
+          step as ⟨i4, hi4, hi4bv⟩
+          step as ⟨i5, hi5⟩
+          step as ⟨number1', hn1, hn1bv⟩
+          step as ⟨count1', hc1⟩
+          step as ⟨i6, hi6⟩
+          have hi6val : i6.val = i1.val + 1 := by scalar_tac
+          step as ⟨i7, hi7, hi7bv⟩
+          have hi5val : i5.val = b.val % 128 := by rw [hi5, U8.cast_U32_val_eq, hi4]; exact u8_and_127 b
+          have hkey : number1'.val = number1.val * 128 + b.val % 128 := by
+            have hnbv : number1.bv < 0x2000000#32 := by
+              have h : number1.bv.toNat ≤ 33554431 := hnb; bv_omega
+            have hi5bv : i5.bv < 0x80#32 := by
+              have h : i5.bv.toNat = b.bv.toNat % 128 := hi5val; bv_omega
+            simp only [UScalar.val] at *
+            rw [hn1bv, hi3bv, shl7_or_toNat number1.bv i5.bv hnbv hi5bv, hi5val]
+          have hb128step : b128 ((input.val.drop 1).take (count1.val + 1)) = number1'.val := by
+            rw [b128_take_succ (input.val.drop 1) count1.val hdrlen, hdrget, ← hveq, hkey]
+          have hi7val : i7.val = b.val &&& 128 := by
+            rw [hi7, u8_and_val, show (128#u8).val = 128 from by decide]
+          have hc1val : count1'.val = count1.val + 1 := by scalar_tac
+          rcases lt_or_eq_of_le hile1 with hlt | heq
+          · have hbit : b.val &&& 128 ≠ 0 := by
+              rw [hi7pre]; exact hcont i1.val hge1 hlt
+            have hi7ne : i7 ≠ 0#u8 := by
+              intro hc; apply hbit; rw [← hi7val, hc]; rfl
+            simp only [hi7ne, ↓reduceIte, WP.spec_ok]
+            refine ⟨by omega, by omega, by omega, ?_, by omega⟩
+            rw [hc1val, hb128step]
+          · have hbit : b.val &&& 128 = 0 := by
+              rw [hi7pre, heq]; exact hterm
+            have hi7z : i7 = 0#u8 := by
+              apply UScalar.eq_of_val_eq; rw [hi7val, hbit]; rfl
+            simp only [hi7z, ↓reduceIte, WP.spec_ok]
+            refine ⟨number1', i6, rfl, ?_, by rw [hi6val]; omega⟩
+            rw [← heq, ← hidx_eq]
+            have : 1 + count1.val = count1.val + 1 := by omega
+            rw [this, hb128step]
+  · exact ⟨by scalar_tac, ht, by scalar_tac, by simp⟩
+
+/-- **Accept-path tail, GENERIC over the `Tag` fields the loop does not fix** (`class1`,
+    `constructed`) — the base-128 analogue of `total_tail_ok`. Given a loop value `number' > 30`
+    (so the post-loop `number ≤ 30 ⇒ NonMinimal` guard is not taken), the tail accepts `Ok (tag,
+    used)` with `tag.number = number'` and reports `used`. Factored out (like `total_tail_ok`) so the
+    SAME proof term applies at all four `Class` branches `split` leaves. -/
+theorem accept_tail {class1 : tag.Class} {constructed : Bool} (number' : U32) (used : Usize)
+    (bv tp1 : Nat) (hval : number'.val = bv) (husd : used.val = tp1) (h30 : 30 < number'.val) :
+    (let (number, i3) := (number', used)
+     if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+     else ok (core.result.Result.Ok ({ «class» := class1, constructed, number }, i3))
+     : Result (core.result.Result (tag.Tag × Usize) tag.TagError))
+    ⦃ r => ∃ (tg : tag.Tag) (used' : Usize), r = core.result.Result.Ok (tg, used') ∧
+        tg.number.val = bv ∧ used'.val = tp1 ⦄ := by
+  show (if number' ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+        else ok (core.result.Result.Ok ({ «class» := class1, constructed, number := number' }, used))
+        : Result (core.result.Result (tag.Tag × Usize) tag.TagError))
+      ⦃ r => ∃ (tg : tag.Tag) (used' : Usize), r = core.result.Result.Ok (tg, used') ∧
+        tg.number.val = bv ∧ used'.val = tp1 ⦄
+  rw [if_neg (show ¬ (number' ≤ 30#u32) by scalar_tac)]
+  simp only [WP.spec_ok]
+  exact ⟨_, used, rfl, hval, husd⟩
+
+/-- **(c) ∀-length, spec form.** A canonical high-tag (marker `b0 &&& 31 = 31`, canonical
+    continuation window of length `t` per `decode_tag_loop_accept_spec`, and a value `> 30` so the
+    final `number ≤ 30 ⇒ NonMinimal` guard is *not* taken) accepts `Ok (tag, used)` with
+    `tag.number = b128 window` and `used = t + 1`. -/
+theorem tag_decode_high_tag_accept_spec (input : Slice U8) (b0 : U8) (t : Nat)
+    (h0 : input.val[0]? = some b0) (hhigh : b0 &&& 31#u8 = 31#u8)
+    (ht : 1 ≤ t) (htlen : t + 1 ≤ input.val.length)
+    (hlead : input.val[1]! ≠ 128#u8)
+    (hterm : input.val[t]!.val &&& 128 = 0)
+    (hcont : ∀ j, 1 ≤ j → j < t → input.val[j]!.val &&& 128 ≠ 0)
+    (hbound : b128 ((input.val.drop 1).take (t - 1)) ≤ 33554431)
+    (hgt30 : 30 < b128 ((input.val.drop 1).take t)) :
+    tag.decode_tag input ⦃ r => ∃ (tg : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (tg, used) ∧
+      tg.number.val = b128 ((input.val.drop 1).take t) ∧ used.val = t + 1 ⦄ := by
+  unfold tag.decode_tag
+  rw [first_spec, h0]
+  simp only [bind_tc_ok]
+  step as ⟨i, hi⟩
+  split <;> simp only [bind_tc_ok]
+  all_goals
+    step as ⟨i1, hi1⟩
+    step as ⟨i2c, hi2c, hi2cbv⟩
+    rw [hhigh] at hi2c
+    have hi2eq : i2c = 31#u8 := UScalar.eq_of_val_eq hi2c
+    have hlow : ¬ ((i2c != 31#u8) = true) := by rw [hi2eq]; simp
+    rw [if_neg hlow]
+    obtain ⟨y, hy, number', used, rfl, hval, husd⟩ :=
+      WP.spec_imp_exists (decode_tag_loop_accept_spec input t ht htlen hlead hterm hcont hbound)
+    have h30 : 30 < number'.val := by rw [hval]; exact hgt30
+    rw [hy]
+    simp only [bind_tc_ok, core.result.Result.Insts.CoreOpsTry.branch]
+    exact accept_tail number' used _ _ hval husd h30
+
+/-- **(c) ∀-length: canonical high-tag accept-value semantics.** For a symbolic input whose
+    continuation window (length `t`, arbitrary) is canonical — first octet `≠ 0x80`, interior octets
+    with the continuation bit set (an interior `0x80` septet IS admitted, which is the `count += 1`
+    → `count *= 1` kill for `tag.rs:149`), terminator bit clear, value in range and `> 30` — the
+    decoded tag number equals the base-128 value `b128` of the window (the `tag.rs:148`
+    `(number<<7)|septet` = `number*128 + septet` kill), consuming `t + 1` octets.
+
+    **Disclosure (scope).** This theorem pins the decoded `number` and the consumed `used`, and
+    deliberately does NOT constrain the `class`/`constructed` fields: those are the marker octet's
+    high bits, unaffected by the three high-tag-loop mutants (`tag.rs:142/145/148/149`) this lid
+    targets, so they are out of scope here. Their correctness is covered by the round-trip / class
+    coverage of the L3 Kani floor, not by this value-semantics lid. -/
+theorem tag_decode_high_tag_accept (input : Slice U8) (b0 : U8) (t : Nat)
+    (h0 : input.val[0]? = some b0) (hhigh : b0 &&& 31#u8 = 31#u8)
+    (ht : 1 ≤ t) (htlen : t + 1 ≤ input.val.length)
+    (hlead : input.val[1]! ≠ 128#u8)
+    (hterm : input.val[t]!.val &&& 128 = 0)
+    (hcont : ∀ j, 1 ≤ j → j < t → input.val[j]!.val &&& 128 ≠ 0)
+    (hbound : b128 ((input.val.drop 1).take (t - 1)) ≤ 33554431)
+    (hgt30 : 30 < b128 ((input.val.drop 1).take t)) :
+    ∃ (tg : tag.Tag) (used : Usize),
+      tag.decode_tag input = ok (core.result.Result.Ok (tg, used)) ∧
+      tg.number.val = b128 ((input.val.drop 1).take t) ∧ used.val = t + 1 := by
+  obtain ⟨v, hv, tg, used, rfl, hnum, husd⟩ :=
+    WP.spec_imp_exists (tag_decode_high_tag_accept_spec input b0 t h0 hhigh ht htlen hlead hterm
+      hcont hbound hgt30)
+  exact ⟨tg, used, hv, hnum, husd⟩
+
+#print axioms tag_decode_high_tag_accept
+
+/-! ## (b) `TooLarge` overflow threshold — kills the `tag.rs:145` `>>`→`<<` mutant
+
+    `if number > (u32::MAX >> 7) { TooLarge }` rejects a high-tag number whose accumulated value has
+    grown past `0x01FFFFFF` — the largest value for which the next `number << 7` still fits in a
+    `u32`. The extracted threshold constant is `core.num.U32.MAX >>> 7 = 0x01FFFFFF = 33554431`
+    (`u32_max_shr7`). Mutating `>>` to `<<` changes the constant to `u32::MAX << 7 = 0xFFFFFF80`
+    (wrapping), so values in `(0x01FFFFFF, 0xFFFFFF80]` would no longer be rejected — the theorem
+    below (such a value ⇒ `TooLarge`) then becomes false. -/
+
+/-- **`TooLarge` loop spec, ∀-length.** From `(1, 0, 0)`, a window whose octets `1..p-1` all carry
+    the continuation bit (first `≠ 0x80`), whose accumulated value stays `≤ 0x01FFFFFF` through entry
+    `p-1` but EXCEEDS it at entry `p` (`b128` of the first `p-1` septets), makes the loop reject
+    `TooLarge` — the guard fires at entry `p`, before the `<< 7` that would overflow. Same
+    `loop.spec_decr_nat` skeleton as `decode_tag_loop_accept_spec`; the terminating body is the
+    `number > 0x01FFFFFF` guard instead of the continuation-bit-clear branch. -/
+theorem decode_tag_loop_toolarge_spec (input : Slice U8) (p : Nat)
+    (hp : 2 ≤ p) (hplen : p < input.val.length)
+    (hlead : input.val[1]! ≠ 128#u8)
+    (hcont : ∀ j, 1 ≤ j → j < p → input.val[j]!.val &&& 128 ≠ 0)
+    (hprev : b128 ((input.val.drop 1).take (p - 2)) ≤ 33554431)
+    (hbig : 33554431 < b128 ((input.val.drop 1).take (p - 1))) :
+    tag.decode_tag_loop 1#usize input 0#u32 0#usize ⦃ r =>
+      r = core.result.Result.Err tag.TagError.TooLarge ⦄ := by
+  unfold tag.decode_tag_loop
+  apply loop.spec_decr_nat
+    (measure := fun (⟨i1, _, _⟩ : Usize × U32 × Usize) => input.val.length - i1.val)
+    (inv := fun (⟨i1, number1, count1⟩ : Usize × U32 × Usize) =>
+      1 ≤ i1.val ∧ i1.val ≤ p ∧ count1.val = i1.val - 1 ∧
+      number1.val = b128 ((input.val.drop 1).take count1.val))
+  · rintro ⟨i1, number1, count1⟩ ⟨hge1, hile1, hceq, hveq⟩
+    simp only [tag.decode_tag_loop.body, core.slice.Slice.get, bind_tc_ok]
+    have hi1lt : i1.val < input.val.length := by omega
+    match hoeq : input.val[i1.val]? with
+    | none =>
+      rw [List.getElem?_eq_none_iff] at hoeq; omega
+    | some b =>
+      have hbget : input.val[i1.val]'hi1lt = b := by
+        have h := List.getElem?_eq_getElem hi1lt; rw [hoeq] at h; exact (Option.some_inj.mp h).symm
+      have hbbang : input.val[i1.val]! = b := by
+        rw [getElem!_pos input.val i1.val hi1lt]; exact hbget
+      have hcmax : count1.val + 1 ≤ Usize.max := by
+        have := Slice.length_ineq (s := input); omega
+      have hidx_eq : 1 + count1.val = i1.val := by omega
+      have hdrlen : count1.val < (input.val.drop 1).length := by
+        simp only [List.length_drop]; omega
+      have hdrget : (input.val.drop 1)[count1.val]'hdrlen = b := by
+        have h := List.getElem?_eq_getElem hdrlen
+        rw [List.getElem?_drop, hidx_eq, hoeq] at h; exact (Option.some_inj.mp h).symm
+      have hi7pre : b.val &&& 128 = input.val[i1.val]!.val &&& 128 := by rw [hbbang]
+      by_cases hzero : count1 = 0#usize
+      · -- count = 0 (i1 = 1 < p): leading octet ≠ 0x80, value 0 ≤ threshold, continues
+        have hi1one : i1.val = 1 := by
+          have : count1.val = 0 := by rw [hzero]; rfl
+          omega
+        have hbne : b ≠ 128#u8 := by
+          have hb1 : input.val[1]! = b := by rw [← hi1one]; exact hbbang
+          rw [← hb1]; exact hlead
+        by_cases hb128 : b = 128#u8
+        · exact absurd hb128 hbne
+        · simp only [hzero, ↓reduceIte, hb128]
+          step as ⟨i2, hi2, hi2bv⟩
+          have hi2v : i2.val = 33554431 := by rw [hi2]; exact u32_max_shr7
+          have hc0 : count1.val = 0 := by rw [hzero]; rfl
+          have hnb : number1.val ≤ 33554431 := by rw [hveq, hc0]; simp
+          by_cases htoolarge : number1 > i2
+          · exact absurd htoolarge (by scalar_tac)
+          · simp only [htoolarge, ↓reduceIte]
+            step as ⟨i3, hi3, hi3bv⟩
+            step as ⟨i4, hi4, hi4bv⟩
+            step as ⟨i5, hi5⟩
+            step as ⟨number1', hn1, hn1bv⟩
+            step as ⟨count1', hc1⟩
+            step as ⟨i6, hi6⟩
+            have hi6val : i6.val = i1.val + 1 := by scalar_tac
+            step as ⟨i7, hi7, hi7bv⟩
+            have hi5val : i5.val = b.val % 128 := by rw [hi5, U8.cast_U32_val_eq, hi4]; exact u8_and_127 b
+            have hkey : number1'.val = number1.val * 128 + b.val % 128 := by
+              have hnbv : number1.bv < 0x2000000#32 := by
+                have h : number1.bv.toNat ≤ 33554431 := hnb; bv_omega
+              have hi5bv : i5.bv < 0x80#32 := by
+                have h : i5.bv.toNat = b.bv.toNat % 128 := hi5val; bv_omega
+              simp only [UScalar.val] at *
+              rw [hn1bv, hi3bv, shl7_or_toNat number1.bv i5.bv hnbv hi5bv, hi5val]
+            have hb128step : b128 ((input.val.drop 1).take (count1.val + 1)) = number1'.val := by
+              rw [b128_take_succ (input.val.drop 1) count1.val hdrlen, hdrget, ← hveq, hkey]
+            have hi7val : i7.val = b.val &&& 128 := by
+              rw [hi7, u8_and_val, show (128#u8).val = 128 from by decide]
+            have hc1val : count1'.val = count1.val + 1 := by scalar_tac
+            have hbit : b.val &&& 128 ≠ 0 := by
+              rw [hi7pre]; exact hcont i1.val hge1 (by omega)
+            have hi7ne : i7 ≠ 0#u8 := by
+              intro hc; apply hbit; rw [← hi7val, hc]; rfl
+            simp only [hi7ne, ↓reduceIte, WP.spec_ok]
+            refine ⟨by omega, by omega, by omega, ?_, by omega⟩
+            rw [hc1val, hb128step]
+      · -- count ≠ 0 (i1 ≥ 2): TooLarge fires exactly at i1 = p
+        simp only [hzero, ↓reduceIte]
+        step as ⟨i2, hi2, hi2bv⟩
+        have hi2v : i2.val = 33554431 := by rw [hi2]; exact u32_max_shr7
+        by_cases hip : i1.val = p
+        · have hbiggt : number1 > i2 := by
+            have hcp : count1.val = p - 1 := by omega
+            have hnv : number1.val = b128 ((input.val.drop 1).take (p - 1)) := by rw [hveq, hcp]
+            scalar_tac
+          simp only [hbiggt, ↓reduceIte, WP.spec_ok]
+        · have hi1ltp : i1.val < p := by omega
+          have hnb : number1.val ≤ 33554431 := by
+            rw [hveq]
+            exact le_trans (b128_take_mono (input.val.drop 1) (by omega : count1.val ≤ p - 2)) hprev
+          by_cases htoolarge : number1 > i2
+          · exact absurd htoolarge (by scalar_tac)
+          · simp only [htoolarge, ↓reduceIte]
+            step as ⟨i3, hi3, hi3bv⟩
+            step as ⟨i4, hi4, hi4bv⟩
+            step as ⟨i5, hi5⟩
+            step as ⟨number1', hn1, hn1bv⟩
+            step as ⟨count1', hc1⟩
+            step as ⟨i6, hi6⟩
+            have hi6val : i6.val = i1.val + 1 := by scalar_tac
+            step as ⟨i7, hi7, hi7bv⟩
+            have hi5val : i5.val = b.val % 128 := by rw [hi5, U8.cast_U32_val_eq, hi4]; exact u8_and_127 b
+            have hkey : number1'.val = number1.val * 128 + b.val % 128 := by
+              have hnbv : number1.bv < 0x2000000#32 := by
+                have h : number1.bv.toNat ≤ 33554431 := hnb; bv_omega
+              have hi5bv : i5.bv < 0x80#32 := by
+                have h : i5.bv.toNat = b.bv.toNat % 128 := hi5val; bv_omega
+              simp only [UScalar.val] at *
+              rw [hn1bv, hi3bv, shl7_or_toNat number1.bv i5.bv hnbv hi5bv, hi5val]
+            have hb128step : b128 ((input.val.drop 1).take (count1.val + 1)) = number1'.val := by
+              rw [b128_take_succ (input.val.drop 1) count1.val hdrlen, hdrget, ← hveq, hkey]
+            have hi7val : i7.val = b.val &&& 128 := by
+              rw [hi7, u8_and_val, show (128#u8).val = 128 from by decide]
+            have hc1val : count1'.val = count1.val + 1 := by scalar_tac
+            have hbit : b.val &&& 128 ≠ 0 := by
+              rw [hi7pre]; exact hcont i1.val hge1 hi1ltp
+            have hi7ne : i7 ≠ 0#u8 := by
+              intro hc; apply hbit; rw [← hi7val, hc]; rfl
+            simp only [hi7ne, ↓reduceIte, WP.spec_ok]
+            refine ⟨by omega, by omega, by omega, ?_, by omega⟩
+            rw [hc1val, hb128step]
+  · exact ⟨by scalar_tac, by scalar_tac, by scalar_tac, by simp⟩
+
+/-- **(b) ∀-length, spec form.** A high-tag whose accumulated value exceeds the `u32::MAX >> 7`
+    threshold decodes to `TooLarge` — feeds `decode_tag_loop_toolarge_spec` through the post-loop
+    `?` (an `Err` residual propagates unchanged). -/
+theorem tag_decode_too_large_spec (input : Slice U8) (b0 : U8) (p : Nat)
+    (h0 : input.val[0]? = some b0) (hhigh : b0 &&& 31#u8 = 31#u8)
+    (hp : 2 ≤ p) (hplen : p < input.val.length)
+    (hlead : input.val[1]! ≠ 128#u8)
+    (hcont : ∀ j, 1 ≤ j → j < p → input.val[j]!.val &&& 128 ≠ 0)
+    (hprev : b128 ((input.val.drop 1).take (p - 2)) ≤ 33554431)
+    (hbig : 33554431 < b128 ((input.val.drop 1).take (p - 1))) :
+    tag.decode_tag input ⦃ r => r = core.result.Result.Err tag.TagError.TooLarge ⦄ := by
+  unfold tag.decode_tag
+  rw [first_spec, h0]
+  simp only [bind_tc_ok]
+  step as ⟨i, hi⟩
+  split <;> simp only [bind_tc_ok]
+  all_goals
+    step as ⟨i1, hi1⟩
+    step as ⟨i2c, hi2c, hi2cbv⟩
+    rw [hhigh] at hi2c
+    have hi2eq : i2c = 31#u8 := UScalar.eq_of_val_eq hi2c
+    have hlow : ¬ ((i2c != 31#u8) = true) := by rw [hi2eq]; simp
+    rw [if_neg hlow]
+    have hspec := decode_tag_loop_toolarge_spec input p hp hplen hlead hcont hprev hbig
+    obtain ⟨y, hy, rfl⟩ := WP.spec_imp_exists hspec
+    rw [hy]
+    simp [core.result.Result.Insts.CoreOpsTry.branch,
+      core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+      core.convert.FromSame, WP.spec_ok]
+
+/-- **(b) ∀-length: overflow-threshold `TooLarge` classification.** A symbolic high-tag whose
+    running base-128 value crosses the `u32::MAX >> 7 = 0x01FFFFFF` boundary at some octet `p`
+    decodes to `TooLarge`. Load-bearing on the exact threshold constant, so the `>>`→`<<` mutant of
+    `tag.rs:145` (which changes the constant to `0xFFFFFF80`) falsifies it.
+
+    **Disclosure (vacuity of small windows).** The hypotheses are unsatisfiable for `p ∈ {2, 3, 4}`:
+    the value at entry `p` is `b128` of `p − 1` septets, at most `7·(p−1) ≤ 21` bits, which cannot
+    exceed `2^25 − 1 = 0x01FFFFFF` (the `hbig` hypothesis), so no such input exists. The first
+    satisfiable instance is `p = 5` (`7·4 = 28 > 25` bits). This is harmless — the theorem is
+    non-vacuous overall (it has genuine models at `p ≥ 5`) and its statement holds trivially where
+    the premises cannot be met; it is disclosed so the reader does not read `p ≥ 2` as claiming a
+    live `TooLarge` at `p = 2..4`. -/
+theorem tag_decode_too_large (input : Slice U8) (b0 : U8) (p : Nat)
+    (h0 : input.val[0]? = some b0) (hhigh : b0 &&& 31#u8 = 31#u8)
+    (hp : 2 ≤ p) (hplen : p < input.val.length)
+    (hlead : input.val[1]! ≠ 128#u8)
+    (hcont : ∀ j, 1 ≤ j → j < p → input.val[j]!.val &&& 128 ≠ 0)
+    (hprev : b128 ((input.val.drop 1).take (p - 2)) ≤ 33554431)
+    (hbig : 33554431 < b128 ((input.val.drop 1).take (p - 1))) :
+    tag.decode_tag input = ok (core.result.Result.Err tag.TagError.TooLarge) := by
+  have hspec := tag_decode_too_large_spec input b0 p h0 hhigh hp hplen hlead hcont hprev hbig
+  obtain ⟨y, hy, rfl⟩ := WP.spec_imp_exists hspec
+  exact hy
+
+#print axioms tag_decode_too_large
 
 end DerVerified.Tag

@@ -115,6 +115,9 @@ pub fn cmp_padded(a: &[u8], b: &[u8]) -> Ordering {
     if a.len() == b.len() {
         return Ordering::Equal;
     }
+    // EQUIVALENT-MUTANT: `a.len() > b.len()` can never itself become `a.len() >= b.len()` in a
+    // way a test could observe here — the `a.len() == b.len()` case already returned above, so by
+    // this point the lengths are always unequal (cargo-mutants survivor, not a coverage gap).
     let (longer, is_a_longer) = if a.len() > b.len() { (a, true) } else { (b, false) };
     let mut j = n;
     while j < longer.len() {
