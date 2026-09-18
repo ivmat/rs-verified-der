@@ -15,7 +15,7 @@ Read "primitive" strictly: the `x509_*` layer is **structural framing composing 
 not proven to the same bar (see Scope below). The crate's name should not be read as claiming more
 than that.
 
-- **L3 — Kani** (bounded model checking): 203 proof harnesses over 33 modules establish default
+- **L3 — Kani** (bounded model checking): 208 proof harnesses over 33 modules establish default
   safety checks (memory safety, no panics, no overflow) on their bounded domains; functional claims
   (round-trip, canonicality/minimality, rejection of malformed encodings) vary by harness and are
   listed per claim in `acceptance.toml` / `PROOF_MANIFEST.md`.

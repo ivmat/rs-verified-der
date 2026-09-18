@@ -106,7 +106,7 @@ loud-abort rule if it does not.
 
 The default mode replays **one codec's one bounded property, plus the manifest check**. The
 `--with-lean` mode adds the six current L4/L5 Lean lids. Neither mode runs the full proof floor
-(203 Kani harnesses across 33 modules), proves X.509 or certificate-chain correctness, or reruns
+(208 Kani harnesses across 33 modules), proves X.509 or certificate-chain correctness, or reruns
 every historical control record. S4 and S5 watch the Kani harness and manifest validator reject real
 faults. L1 is accept-only; its six recorded Lean controls are validated by S2 rather than rerun. This
 is not a substitute for `./check.sh`. See `PROOF_MANIFEST.md` for the actual proof envelope and

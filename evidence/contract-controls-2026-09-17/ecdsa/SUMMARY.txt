@@ -1,0 +1,9 @@
+=== der-verified/src/ecdsa_sig_value.rs (2026-09-18T06:32:57Z) ===
+baseline_faithful:     VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+control1 (tiling):     VERIFICATION:- FAILED   [want FAILED]
+  mutation1:           mutated: 'if s_used != rest.len() {' -> 'if s_used > rest.len() {'
+  failed_check1:       	 - Description: "assertion failed: r_used + s_used == outer_content.len()"
+control1 neverpanics:  VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+control2 (conjunct):   VERIFICATION:- FAILED   [want FAILED]
+  mutation2:           mutated: 'validate_integer_content(tlv.value).map_err(IntegerFieldError::Content)?;' -> 'let _ = tlv.value;'
+  failed_check2:       	 - Description: "assertion failed: validate_integer_content(r_tlv.value).is_ok()"

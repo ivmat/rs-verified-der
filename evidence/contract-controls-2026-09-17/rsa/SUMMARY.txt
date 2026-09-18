@@ -1,0 +1,9 @@
+=== der-verified/src/rsa_public_key.rs (2026-09-18T06:36:41Z) ===
+baseline_faithful:     VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+control1 (tiling):     VERIFICATION:- FAILED   [want FAILED]
+  mutation1:           mutated: 'if exponent_used != rest.len() {' -> 'if exponent_used > rest.len() {'
+  failed_check1:       	 - Description: "assertion failed: modulus_used + exponent_used == outer_content.len()"
+control1 neverpanics:  VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+control2 (conjunct):   VERIFICATION:- FAILED   [want FAILED]
+  mutation2:           mutated: 'validate_integer_content(tlv.value).map_err(IntegerFieldError::Content)?;' -> 'let _ = tlv.value;'
+  failed_check2:       	 - Description: "assertion failed: validate_integer_content(modulus_tlv.value).is_ok()"

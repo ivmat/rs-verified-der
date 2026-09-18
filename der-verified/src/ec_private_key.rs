@@ -533,6 +533,133 @@ mod proofs {
         let _ = result;
     }
 
+    /// **Functional contract (CONTRACT SURFACE / bounded-backing evidence).** When
+    /// `parse_ec_private_key` accepts a symbolic input, its output faithfully and exactly reflects
+    /// that input's DER structure — this is a functional postcondition, not the panic-freedom of
+    /// `parse_never_panics`. Proven over the whole `0..=16`-octet symbolic domain (buffer AND
+    /// length symbolic); the 16-octet backing is a harness tractability bound (per the module
+    /// sizing comment and the 2026-09-12 Law-6 amendment), and the public API carries no bound.
+    ///
+    /// The oracle is INDEPENDENT of `parse_fields`'s control flow: it re-derives every field
+    /// boundary directly from the lidded/verified primitives (`decode_sequence_tlv`, `decode_tlv`,
+    /// `decode_octet_string`, `decode_explicit_context`, `decode_bit_string`) and asserts the
+    /// parser's *outputs* match — deliberately NOT via this module's own `validate_parameters_inner`
+    /// / `decode_public_key_tlv` helpers, which are part of the impl's own field-decode chain (the
+    /// same discipline `pkcs8::parse_faithful` applies by re-deriving `version` via `decode_tlv`
+    /// directly instead of calling `decode_version_tlv`). A composition defect — wrong field order,
+    /// a missing exact-tiling check, a wrong version constant, a misclassified `[0]`/`[1]` optional,
+    /// or a mis-sliced field — is caught even though each trusted primitive is used by both sides.
+    /// Non-vacuity is pinned by the observed-red control
+    /// `evidence/contract-controls-2026-09-17/ec/`: mutating either exact-tiling check
+    /// at `parse_fields` (`ec_private_key.rs`, the `[0]`-inner `tlv_used != inner.len()` guard in
+    /// `validate_parameters_inner`, or the final `!rest.is_empty()` tiling guard) makes THIS harness
+    /// fail while `parse_never_panics` stays green — precisely the property this promotion adds.
+    ///
+    /// Postcondition, on `Ok((key, used))` for symbolic `input`:
+    /// 1. `used` equals the outer SEQUENCE's independently-decoded framed length, and `used <=
+    ///    input.len()` (exact envelope consumption / no over-read);
+    /// 2. `version` is a primitive universal INTEGER whose content is exactly the `ecPrivkeyVer1`
+    ///    octet `0x01`;
+    /// 3. `key.private_key` IS the OCTET STRING content sub-slice at its computed offset (pointer +
+    ///    length identity — faithful, not a copy);
+    /// 4. if `key.parameters` is `Some`, it IS the `[0] EXPLICIT` wrapper's inner content octets at
+    ///    its computed offset (pointer + length identity), and that content is exactly one
+    ///    well-formed DER TLV that tiles it;
+    /// 5. if `key.public_key` is `Some`, it equals the BIT STRING an independent re-decode of the
+    ///    `[1] EXPLICIT` wrapper's inner TLV value yields, at the (parameters-adjusted) offset;
+    /// 6. `version`, `privateKey`, and the present optional `[0]`/`[1]` fields — threaded in
+    ///    declaration order, `parameters` before `publicKey` — exactly tile the SEQUENCE content
+    ///    (nothing uncovered, nothing left over). A `None` for `parameters` does NOT by itself imply
+    ///    emptiness (since `publicKey` may still follow); only `publicKey`'s `None` arm (the LAST
+    ///    field) does, and the harness additionally re-asserts the true final remainder is empty
+    ///    regardless of which arm was taken.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_ec_private_key(input);
+        kani::cover(
+            result.is_ok(),
+            "the functional-contract Ok branch is reachable (harness is non-vacuous)",
+        );
+
+        if let Ok((key, used)) = result {
+            // (1) Exact envelope consumption / no over-read, re-derived independently.
+            let (outer_content, outer_used) = decode_sequence_tlv(input)
+                .expect("an accepted input re-decodes as an outer SEQUENCE");
+            assert!(used == outer_used);
+            assert!(used <= input.len());
+
+            // (2) version INTEGER: present, primitive, universal, content exactly the
+            //     ecPrivkeyVer1 octet.
+            let (v_tlv, v_used) =
+                decode_tlv(outer_content).expect("an accepted input has a leading version TLV");
+            assert!(v_tlv.tag.class == Class::Universal);
+            assert!(v_tlv.tag.number == BIG_INTEGER_TAG);
+            assert!(!v_tlv.tag.constructed);
+            assert!(v_tlv.value.len() == 1 && v_tlv.value[0] == 0x01);
+
+            // (3) privateKey: the returned slice IS the OCTET STRING content sub-slice (faithful).
+            let after_version = &outer_content[v_used..];
+            let (pk_content, pk_used) = decode_octet_string(after_version)
+                .expect("an accepted input has a privateKey OCTET STRING at the version offset");
+            assert!(core::ptr::eq(key.private_key.as_ptr(), pk_content.as_ptr()));
+            assert!(key.private_key.len() == pk_content.len());
+
+            // (4) parameters [0] EXPLICIT OPTIONAL: threaded first, in declaration order. A `None`
+            //     here does NOT imply the remainder is empty -- publicKey [1] may still follow --
+            //     so this arm carries no emptiness assertion (only the LAST field's `None` arm
+            //     does, below).
+            let after_pk = &after_version[pk_used..];
+            let after_params: &[u8] = match key.parameters {
+                None => after_pk,
+                Some(params) => {
+                    let (inner, ctx_used) = decode_explicit_context(0, after_pk)
+                        .expect("a present parameters field re-decodes as a [0] EXPLICIT wrapper");
+                    assert!(core::ptr::eq(params.as_ptr(), inner.as_ptr()));
+                    assert!(params.len() == inner.len());
+                    // The wrapper's content must be exactly one well-formed DER TLV that tiles it
+                    // (`validate_parameters_inner`'s claim, re-derived independently via
+                    // `decode_tlv` rather than by calling that helper).
+                    let (_inner_tlv, inner_used) = decode_tlv(inner)
+                        .expect("a present parameters wrapper's content is a single TLV");
+                    assert!(inner_used == inner.len());
+                    &after_pk[ctx_used..]
+                }
+            };
+
+            // (5) publicKey [1] EXPLICIT OPTIONAL: the LAST field -- a `None` here DOES mean the
+            //     remainder (after parameters) must already be empty.
+            let final_rest: &[u8] = match key.public_key {
+                None => after_params,
+                Some(bs) => {
+                    let (inner, ctx_used) = decode_explicit_context(1, after_params)
+                        .expect("a present publicKey field re-decodes as a [1] EXPLICIT wrapper");
+                    let (tlv, tlv_used) = decode_tlv(inner)
+                        .expect("a present publicKey wrapper's content is a single TLV");
+                    assert!(tlv.tag.class == Class::Universal);
+                    assert!(tlv.tag.number == BIT_STRING_TAG);
+                    assert!(!tlv.tag.constructed);
+                    assert!(tlv_used == inner.len());
+                    let decoded = decode_bit_string(tlv.value).expect(
+                        "a present publicKey wrapper's inner TLV value is a valid BIT STRING",
+                    );
+                    assert!(bs == decoded);
+                    &after_params[ctx_used..]
+                }
+            };
+
+            // (6) Exact field tiling: version, privateKey, and the present optionals exactly cover
+            //     the SEQUENCE content -- the property the exact-tiling checks enforce and the
+            //     observed-red control mutates.
+            assert!(final_rest.is_empty());
+        }
+    }
+
     /// Robustness: `parse_ec_private_key_strict` never panics on any input **of any length up to 16
     /// octets** (buffer and length both symbolic, matching `parse_never_panics` above), and
     /// specifically exercises its one behavioural difference from the composable entry point: a

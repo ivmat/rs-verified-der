@@ -1,0 +1,10 @@
+=== der-verified/src/pkcs8.rs (2026-09-18T06:29:18Z) ===
+baseline_faithful:     VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+control1 (tiling):     VERIFICATION:- FAILED   [want FAILED]
+  mutation1:           mutated: 'if tlv_used != rest.len() {' -> 'if tlv_used > rest.len() {'
+  failed_check1:       	 - Description: "assertion failed: attr_used == after_pk.len()"
+control1 neverpanics:  VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+=== pkcs8 control2 (classification, clean re-run 2026-09-18T06:42:03Z) ===
+mutation2:      mutated (classification): 'if tag.class != Class::ContextSpecific || tag.number != 0 {' -> 'if tag.class != Class::ContextSpecific || false {'
+control2:       VERIFICATION:- FAILED   [want FAILED]
+failed_check2:  	 - Description: "assertion failed: attr_tlv.tag.number == 0"

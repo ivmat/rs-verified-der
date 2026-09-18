@@ -428,6 +428,107 @@ mod proofs {
         let _ = result;
     }
 
+    /// **Functional contract (CONTRACT SURFACE / bounded-backing evidence).** When
+    /// `parse_pkcs8_private_key_info` accepts a symbolic input, its output faithfully and exactly
+    /// reflects that input's DER structure — this is a functional postcondition, not the
+    /// panic-freedom of `parse_never_panics`. Proven over the whole `0..=16`-octet symbolic domain
+    /// (buffer AND length symbolic); the 16-octet backing is a harness tractability bound (per the
+    /// module sizing comment and the 2026-09-12 Law-6 amendment), and the public API carries no
+    /// bound.
+    ///
+    /// The oracle re-derives the field boundaries, tiling, the `[0]`-attributes classification, and
+    /// the version value directly from the lidded/verified primitives (`decode_sequence_tlv`,
+    /// `decode_tlv`, `decode_octet_string`, `parse_algorithm_identifier`) rather than from
+    /// `parse_fields`'s own field-decode chain, so a composition defect — wrong field order, a missing
+    /// exact-tiling check, a wrong version constant, a mis-classified trailing element, or a mis-sliced
+    /// field — is caught. Two claims are weaker than full independent re-derivation and are called out
+    /// as such: claim 1's `used == outer_used` recomputes the same `decode_sequence_tlv` call the impl
+    /// makes (return plumbing; the no-over-read rides on that primitive's lid, DER-C-SEQ-1), and
+    /// claim 3 is value-equality of the delegated `AlgorithmIdentifier`, not sub-slice pointer
+    /// identity. Non-vacuity is pinned by the observed-red control at
+    /// `evidence/contract-controls-2026-09-17/pkcs8/`: mutating the exact-tiling check at `parse_fields`
+    /// (the `tlv_used != rest.len()` guard) reds the tiling assert, and mutating the `[0]` tag guard
+    /// (`:246` `||` → `&&`) reds the classification assert — both while `parse_never_panics` stays
+    /// green, precisely the properties this promotion adds.
+    ///
+    /// Postcondition, on `Ok((info, used))` for symbolic `input`:
+    /// 1. `used` equals the outer SEQUENCE's decoded framed length, and `used <= input.len()` (exact
+    ///    envelope consumption / no over-read — see caveat above);
+    /// 2. `version` is a primitive universal INTEGER whose content is exactly the v1 octet `0x00`;
+    /// 3. `info.algorithm` value-equals the `AlgorithmIdentifier` an independent re-decode at the
+    ///    field's offset yields (faithful algorithm field);
+    /// 4. `info.private_key` IS the OCTET STRING content sub-slice at its computed offset (pointer +
+    ///    length identity — faithful, not a copy);
+    /// 5. a present `attributes` is a constructed context-`[0]` TLV, and `version`, `algorithm`,
+    ///    `privateKey` and that optional exactly tile the SEQUENCE content (nothing uncovered).
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_pkcs8_private_key_info(input);
+        kani::cover(
+            result.is_ok(),
+            "the functional-contract Ok branch is reachable (harness is non-vacuous)",
+        );
+
+        if let Ok((info, used)) = result {
+            // (1) Exact envelope consumption / no over-read, re-derived independently.
+            let (outer_content, outer_used) =
+                decode_sequence_tlv(input).expect("an accepted input re-decodes as an outer SEQUENCE");
+            assert!(used == outer_used);
+            assert!(used <= input.len());
+
+            // (2) version INTEGER: present, primitive, universal, content exactly the v1 octet.
+            let (v_tlv, v_used) =
+                decode_tlv(outer_content).expect("an accepted input has a leading version TLV");
+            assert!(v_tlv.tag.class == Class::Universal);
+            assert!(v_tlv.tag.number == BIG_INTEGER_TAG);
+            assert!(!v_tlv.tag.constructed);
+            assert!(v_tlv.value.len() == 1 && v_tlv.value[0] == 0x00);
+
+            // (3) privateKeyAlgorithm: the returned AlgorithmIdentifier equals the one an independent
+            //     re-decode at the field's offset yields.
+            let after_version = &outer_content[v_used..];
+            let (alg, a_used) = parse_algorithm_identifier(after_version)
+                .expect("an accepted input has a privateKeyAlgorithm at the version offset");
+            assert!(info.algorithm == alg);
+
+            // (4) privateKey: the returned slice IS the OCTET STRING content sub-slice (faithful).
+            let after_alg = &after_version[a_used..];
+            let (pk_content, pk_used) = decode_octet_string(after_alg)
+                .expect("an accepted input has a privateKey OCTET STRING at the algorithm offset");
+            assert!(core::ptr::eq(info.private_key.as_ptr(), pk_content.as_ptr()));
+            assert!(info.private_key.len() == pk_content.len());
+
+            // (5) Exact field tiling: the four fields exactly cover the SEQUENCE content — the
+            //     property the exact-tiling check enforces and the observed-red control mutates.
+            let after_pk = &after_alg[pk_used..];
+            match info.attributes {
+                None => assert!(after_pk.is_empty()),
+                Some(attr) => {
+                    let (attr_tlv, attr_used) =
+                        decode_tlv(after_pk).expect("a present attributes [0] re-decodes");
+                    // Classification (F1): the trailing element the parser accepted AS `attributes`
+                    // must be a constructed context-`[0]` wrapper (RFC 5958 `attributes [0] IMPLICIT
+                    // SET OF Attribute`; SET OF is always constructed). Re-derived from `decode_tlv`,
+                    // this catches a mis-classification defect (e.g. accepting a context-`[1]` as
+                    // attributes) that tiling + identity alone do not — the observed-red control
+                    // `control-classify-red` mutates `parse_fields`'s `:246` tag guard to red it.
+                    assert!(attr_tlv.tag.class == Class::ContextSpecific);
+                    assert!(attr_tlv.tag.number == 0);
+                    assert!(attr_tlv.tag.constructed);
+                    assert!(attr_used == after_pk.len());
+                    assert!(core::ptr::eq(attr.as_ptr(), attr_tlv.value.as_ptr()));
+                    assert!(attr.len() == attr_tlv.value.len());
+                }
+            }
+        }
+    }
+
     /// Robustness: `parse_pkcs8_private_key_info_strict` never panics on any input **of any length
     /// up to 16 octets** (buffer and length both symbolic, matching `parse_never_panics` above), and
     /// specifically exercises its one behavioural difference from the composable entry point: a

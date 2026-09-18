@@ -1,0 +1,6 @@
+=== der-verified/src/encrypted_private_key_info.rs (2026-09-17T21:45:50Z) ===
+mutation:            mutated 1 occurrence: 'if data_used != rest.len() {' -> 'if data_used > rest.len() {'
+baseline_faithful:   VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+control_faithful:    VERIFICATION:- FAILED   [want FAILED = observed red]
+control_neverpanics: VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+failed_check:        	 - Description: "assertion failed: data_used == after_alg.len()"

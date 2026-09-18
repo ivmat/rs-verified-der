@@ -359,6 +359,88 @@ mod proofs {
         let _ = result;
     }
 
+    /// **Functional contract (CONTRACT SURFACE / bounded-backing evidence).** When
+    /// `parse_rsa_public_key` accepts a symbolic input, its output faithfully and exactly
+    /// reflects that input's DER structure — this is a functional postcondition, not the
+    /// panic-freedom of `parse_never_panics`. Proven over the whole `0..=16`-octet symbolic domain
+    /// (buffer AND length symbolic); the 16-octet backing is a harness tractability bound (per the
+    /// module sizing comment and the 2026-09-12 Law-6 amendment), and the public API carries no
+    /// bound.
+    ///
+    /// The oracle re-derives the field boundaries, tiling, tag class/form, and content minimality
+    /// directly from the lidded/verified primitives (`decode_sequence_tlv`, `decode_tlv`,
+    /// `validate_integer_content`) rather than from `parse_fields`'s own field-decode chain, so a
+    /// composition defect — wrong field order, a missing exact-tiling check, a mis-sliced field, or a
+    /// dropped content-validation call — is caught. (Claim 1's `used == outer_used` is the one
+    /// exception: it recomputes the same `decode_sequence_tlv` call the impl makes, so it checks
+    /// return plumbing while the substantive no-over-read rides on that primitive's own lid,
+    /// DER-C-SEQ-1.) Non-vacuity is pinned by the observed-red control at
+    /// `evidence/contract-controls-2026-09-17/rsa/`: mutating the exact-tiling check at `parse_fields`
+    /// (the `exponent_used != rest.len()` guard) makes THIS harness fail while `parse_never_panics`
+    /// stays green — precisely the property this promotion adds.
+    ///
+    /// Postcondition, on `Ok((key, used))` for symbolic `input`:
+    /// 1. `used` equals the outer SEQUENCE's independently-decoded framed length, and `used <=
+    ///    input.len()` (exact envelope consumption / no over-read);
+    /// 2. `modulus` is a primitive universal INTEGER, decoded at the front of the outer content,
+    ///    whose content sub-slice IS `key.modulus` (pointer + length identity — faithful, not a
+    ///    copy);
+    /// 3. `publicExponent` is a primitive universal INTEGER, decoded at `modulus`'s offset, whose
+    ///    content sub-slice IS `key.public_exponent`;
+    /// 4. `modulus` and `publicExponent` exactly tile the SEQUENCE content (nothing uncovered,
+    ///    nothing overlapping) — the property the exact-tiling check enforces and the observed-red
+    ///    control mutates.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_rsa_public_key(input);
+        kani::cover(
+            result.is_ok(),
+            "the functional-contract Ok branch is reachable (harness is non-vacuous)",
+        );
+
+        if let Ok((key, used)) = result {
+            // (1) Exact envelope consumption / no over-read, re-derived independently.
+            let (outer_content, outer_used) =
+                decode_sequence_tlv(input).expect("an accepted input re-decodes as an outer SEQUENCE");
+            assert!(used == outer_used);
+            assert!(used <= input.len());
+
+            // (2) modulus: primitive universal INTEGER, content IS key.modulus (faithful).
+            let (modulus_tlv, modulus_used) =
+                decode_tlv(outer_content).expect("an accepted input has a leading modulus TLV");
+            assert!(modulus_tlv.tag.class == Class::Universal);
+            assert!(modulus_tlv.tag.number == BIG_INTEGER_TAG);
+            assert!(!modulus_tlv.tag.constructed);
+            // Minimality (F2): the accepted INTEGER content is canonical (no non-minimal / negative-pad
+            // encoding). Re-checked via the lidded `validate_integer_content` (DER-C-INT-2,
+            // CONTRACT+L4); catches a dropped content-validation defect that tiling/identity miss.
+            assert!(validate_integer_content(modulus_tlv.value).is_ok());
+            assert!(core::ptr::eq(key.modulus.as_ptr(), modulus_tlv.value.as_ptr()));
+            assert!(key.modulus.len() == modulus_tlv.value.len());
+
+            // (3) publicExponent: primitive universal INTEGER at modulus's offset, content IS
+            //     key.public_exponent (faithful).
+            let after_modulus = &outer_content[modulus_used..];
+            let (exponent_tlv, exponent_used) = decode_tlv(after_modulus)
+                .expect("an accepted input has a publicExponent TLV at modulus's offset");
+            assert!(exponent_tlv.tag.class == Class::Universal);
+            assert!(exponent_tlv.tag.number == BIG_INTEGER_TAG);
+            assert!(!exponent_tlv.tag.constructed);
+            assert!(validate_integer_content(exponent_tlv.value).is_ok()); // minimality (F2), see modulus
+            assert!(core::ptr::eq(key.public_exponent.as_ptr(), exponent_tlv.value.as_ptr()));
+            assert!(key.public_exponent.len() == exponent_tlv.value.len());
+
+            // (4) Exact field tiling: modulus and publicExponent exactly cover the SEQUENCE content.
+            assert!(modulus_used + exponent_used == outer_content.len());
+        }
+    }
+
     /// Robustness: `parse_rsa_public_key_strict` never panics on any input **of any length up to
     /// 16 octets** (buffer and length both symbolic, matching `parse_never_panics` above), and
     /// specifically exercises its one behavioural difference from the composable entry point: a

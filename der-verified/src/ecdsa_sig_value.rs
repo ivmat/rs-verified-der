@@ -331,6 +331,86 @@ mod proofs {
         let _ = result;
     }
 
+    /// **Functional contract (CONTRACT SURFACE / bounded-backing evidence).** When
+    /// `parse_ecdsa_sig_value` accepts a symbolic input, its output faithfully and exactly
+    /// reflects that input's DER structure — this is a functional postcondition, not the
+    /// panic-freedom of `parse_never_panics`. Proven over the whole `0..=16`-octet symbolic domain
+    /// (buffer AND length symbolic); the 16-octet backing is a harness tractability bound (per the
+    /// module sizing comment and the 2026-09-12 Law-6 amendment), and the public API carries no
+    /// bound.
+    ///
+    /// The oracle re-derives the field boundaries, tiling, tag class/form, and content minimality
+    /// directly from the lidded/verified primitives (`decode_sequence_tlv`, `decode_tlv`,
+    /// `validate_integer_content`) rather than from `parse_fields`'s own field-decode chain, so a
+    /// composition defect — wrong field order, a missing exact-tiling check, a mis-sliced field, or a
+    /// dropped content-validation call — is caught. (Claim 1's `used == outer_used` is the one
+    /// exception: it recomputes the same `decode_sequence_tlv` call the impl makes, so it checks
+    /// return plumbing while the substantive no-over-read rides on that primitive's own lid,
+    /// DER-C-SEQ-1.) Non-vacuity is pinned by the observed-red control at
+    /// `evidence/contract-controls-2026-09-17/ecdsa/`: mutating the exact-tiling check at
+    /// `parse_fields` (the `s_used != rest.len()` guard) makes THIS harness fail while
+    /// `parse_never_panics` stays green — precisely the property this promotion adds.
+    ///
+    /// Postcondition, on `Ok((sig, used))` for symbolic `input`:
+    /// 1. `used` equals the outer SEQUENCE's independently-decoded framed length, and `used <=
+    ///    input.len()` (exact envelope consumption / no over-read);
+    /// 2. `r` is a primitive universal INTEGER, decoded at the front of the outer content, whose
+    ///    content sub-slice IS `sig.r` (pointer + length identity — faithful, not a copy);
+    /// 3. `s` is a primitive universal INTEGER, decoded at `r`'s offset, whose content sub-slice IS
+    ///    `sig.s`;
+    /// 4. `r` and `s` exactly tile the SEQUENCE content (nothing uncovered, nothing overlapping) —
+    ///    the property the exact-tiling check enforces and the observed-red control mutates.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_ecdsa_sig_value(input);
+        kani::cover(
+            result.is_ok(),
+            "the functional-contract Ok branch is reachable (harness is non-vacuous)",
+        );
+
+        if let Ok((sig, used)) = result {
+            // (1) Exact envelope consumption / no over-read, re-derived independently.
+            let (outer_content, outer_used) =
+                decode_sequence_tlv(input).expect("an accepted input re-decodes as an outer SEQUENCE");
+            assert!(used == outer_used);
+            assert!(used <= input.len());
+
+            // (2) r: primitive universal INTEGER, content IS sig.r (faithful).
+            let (r_tlv, r_used) =
+                decode_tlv(outer_content).expect("an accepted input has a leading r TLV");
+            assert!(r_tlv.tag.class == Class::Universal);
+            assert!(r_tlv.tag.number == BIG_INTEGER_TAG);
+            assert!(!r_tlv.tag.constructed);
+            // Minimality (F2): the accepted INTEGER content is canonical (no non-minimal / negative-pad
+            // malleability) -- the anti-malleability property (BIP-66 surface) this module exists for.
+            // Re-checked via the lidded `validate_integer_content` (DER-C-INT-2, CONTRACT+L4); catches
+            // a dropped content-validation defect that tiling/identity miss.
+            assert!(validate_integer_content(r_tlv.value).is_ok());
+            assert!(core::ptr::eq(sig.r.as_ptr(), r_tlv.value.as_ptr()));
+            assert!(sig.r.len() == r_tlv.value.len());
+
+            // (3) s: primitive universal INTEGER at r's offset, content IS sig.s (faithful).
+            let after_r = &outer_content[r_used..];
+            let (s_tlv, s_used) =
+                decode_tlv(after_r).expect("an accepted input has an s TLV at r's offset");
+            assert!(s_tlv.tag.class == Class::Universal);
+            assert!(s_tlv.tag.number == BIG_INTEGER_TAG);
+            assert!(!s_tlv.tag.constructed);
+            assert!(validate_integer_content(s_tlv.value).is_ok()); // minimality (F2), see r above
+            assert!(core::ptr::eq(sig.s.as_ptr(), s_tlv.value.as_ptr()));
+            assert!(sig.s.len() == s_tlv.value.len());
+
+            // (4) Exact field tiling: r and s exactly cover the SEQUENCE content.
+            assert!(r_used + s_used == outer_content.len());
+        }
+    }
+
     /// Robustness: `parse_ecdsa_sig_value_strict` never panics on any input **of any length up to
     /// 16 octets** (buffer and length both symbolic, matching `parse_never_panics` above), and
     /// specifically exercises its one behavioural difference from the composable entry point: a

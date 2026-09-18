@@ -274,6 +274,77 @@ mod proofs {
         let _ = result;
     }
 
+    /// **Functional contract (CONTRACT SURFACE / bounded-backing evidence).** When
+    /// `parse_encrypted_private_key_info` accepts a symbolic input, its output faithfully and
+    /// exactly reflects that input's DER structure — this is a functional postcondition, not the
+    /// panic-freedom of `parse_never_panics`. Proven over the whole `0..=16`-octet symbolic domain
+    /// (buffer AND length symbolic); the 16-octet backing is a harness tractability bound (per the
+    /// module sizing comment and the 2026-09-12 Law-6 amendment), and the public API carries no
+    /// bound.
+    ///
+    /// The oracle is INDEPENDENT of `parse_fields`'s control flow: it re-derives every field
+    /// boundary directly from the lidded/verified primitives (`decode_sequence_tlv`,
+    /// `parse_algorithm_identifier`, `decode_octet_string`) and asserts the parser's *outputs*
+    /// match, so a composition defect — wrong field order, a missing exact-tiling check, or a
+    /// mis-sliced field — is caught even though each trusted primitive is used by both sides.
+    /// Non-vacuity is pinned by the observed-red control
+    /// `evidence/contract-controls-2026-09-17/epki/`: mutating the
+    /// exact-tiling check at `parse_fields` (`encrypted_private_key_info.rs`, the `data_used !=
+    /// rest.len()` guard) makes THIS harness fail while `parse_never_panics` stays green —
+    /// precisely the property this promotion adds.
+    ///
+    /// Postcondition, on `Ok((info, used))` for symbolic `input`:
+    /// 1. `used` equals the outer SEQUENCE's independently-decoded framed length, and `used <=
+    ///    input.len()` (exact envelope consumption / no over-read);
+    /// 2. `info.encryption_algorithm` equals the `AlgorithmIdentifier` an independent re-decode at
+    ///    the front of the SEQUENCE content yields (faithful algorithm field);
+    /// 3. `info.encrypted_data` IS the OCTET STRING content sub-slice at its computed offset
+    ///    (pointer + length identity — faithful, not a copy);
+    /// 4. `encryption_algorithm` and `encrypted_data` exactly tile the SEQUENCE content (nothing
+    ///    uncovered, nothing left over) — the property the exact-tiling check enforces and the
+    ///    observed-red control mutates.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_encrypted_private_key_info(input);
+        kani::cover(
+            result.is_ok(),
+            "the functional-contract Ok branch is reachable (harness is non-vacuous)",
+        );
+
+        if let Ok((info, used)) = result {
+            // (1) Exact envelope consumption / no over-read, re-derived independently.
+            let (outer_content, outer_used) = decode_sequence_tlv(input)
+                .expect("an accepted input re-decodes as an outer SEQUENCE");
+            assert!(used == outer_used);
+            assert!(used <= input.len());
+
+            // (2) encryptionAlgorithm: the returned AlgorithmIdentifier equals the one an
+            //     independent re-decode at the front of the SEQUENCE content yields.
+            let (alg, alg_used) = parse_algorithm_identifier(outer_content).expect(
+                "an accepted input has an encryptionAlgorithm at the front of the SEQUENCE content",
+            );
+            assert!(info.encryption_algorithm == alg);
+
+            // (3) encryptedData: the returned slice IS the OCTET STRING content sub-slice
+            //     (faithful), re-decoded at the algorithm's offset.
+            let after_alg = &outer_content[alg_used..];
+            let (data_content, data_used) = decode_octet_string(after_alg).expect(
+                "an accepted input has an encryptedData OCTET STRING at the algorithm offset",
+            );
+            assert!(core::ptr::eq(info.encrypted_data.as_ptr(), data_content.as_ptr()));
+            assert!(info.encrypted_data.len() == data_content.len());
+
+            // (4) Exact field tiling: the two fields exactly cover the SEQUENCE content.
+            assert!(data_used == after_alg.len());
+        }
+    }
+
     /// Robustness: `parse_encrypted_private_key_info_strict` never panics on any input **of any
     /// length up to 16 octets** (buffer and length both symbolic, matching `parse_never_panics`
     /// above), and specifically exercises its one behavioural difference from the composable entry

@@ -24,7 +24,7 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 | tree state | clean at the certified commit; the run log records `git status --porcelain` sampled clean **at launch and at completion**, not assumed |
 | spec axis | **X.690 (2021) DER encoding rules**, per type + framing; **RFC 5280** profile surface. See §3. |
 | gate receipt | `./check.sh` exit 0 at `bffab69`, `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, run with `DER_REQUIRE_LEAN=1` |
-| proof floor (L3) | **203 of 203 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-bffab69.log:1149` |
+| proof floor (L3) | **208 of 208 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-2026-09-17-contract.log` (contract-campaign tree; +5 `*_parse_faithful`) |
 | unbounded lids (L4) | 6 lids in Lean, `lean lid: PASS (sorry-free)`, re-extracted from the shipped `.rs`; `lid-source-state.txt unchanged (hashes identical)` |
 | tests | 530 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
 | unsafe | 0 `unsafe` blocks; the crate is `#![forbid(unsafe_code)]` |
@@ -93,7 +93,7 @@ precisely the failure this format exists to prevent. **The `DER-F-8` split was n
 first draft** — the row carried both grades at once until a checker refused it.
 
 **That more than half the rows are admitted is this table working, not failing.** The crate's own
-headline is "203 of 203 harnesses SUCCESSFUL". That is true, and it invites the reading that 203 of
+headline is "208 of 208 harnesses SUCCESSFUL". That is true, and it invites the reading that 208 of
 203 *rules* are decided. Compare `DER-F-4` (weighted: a Lean lid over all input lengths) with
 `DER-X-BOUND` (admitted: a compositional argument nobody has machine-checked). Both sit under the
 same green check. This table's job is to stop them reading alike.
@@ -111,7 +111,7 @@ same green check. This table's job is to stop them reading alike.
 | **out-of-scope** | the rule is deliberately outside what this crate sets out to do, and that boundary is declared in the crate's own documents. Not a gap; a fence. |
 
 > **`CONTRACT` here is NOT Kani's `#[kani::requires]`/`#[kani::ensures]` machinery.** This crate uses
-> **zero** function contracts — its 203 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
+> **zero** function contracts — its 208 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
 > built with `#[kani::stub]` + `-Z stubbing`. `CONTRACT` in this table is the review-lens sense
 > (*proves the documented rule, on the real shipped path, with an independent oracle*), which is the
 > distinction a consumer actually cares about. Verify with
@@ -139,7 +139,7 @@ All commands run from the repository root at `130de97`. `<H>` = a harness path o
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 203 Kani harnesses. Needs ≥24 GB RAM, ~71 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 208 Kani harnesses. Needs ≥24 GB RAM, ~71 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Six modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension` — see `gates/tiers.txt`. |
 | **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-bffab69.log` | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
@@ -204,7 +204,7 @@ All commands run from the repository root at `130de97`. `<H>` = a harness path o
 `kani::cover` is unsatisfiable as `SUCCESSFUL`, with `0 of 1 cover properties satisfied`. `check.sh`
 does **not** fail on that. Exactly 3 harnesses have a cover in that state, and they are disclosed
 in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, read it. The crate has
-186 `kani::cover` statements in total.
+191 `kani::cover` statements in total.
 
 ---
 
@@ -264,10 +264,19 @@ in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, re
 
 ### 5.3 X.509 / PKCS structural surface
 
-**Read this block before trusting any row in it.** Every module here is proved **panic-free**, not
-**conformant**: the harnesses are `*_never_panics`. Panic-freedom is a real and valuable safety
-property — this is the layer a malformed certificate attacks — but it does **not** decide whether the
-parser accepts exactly the RFC 5280 structures. On the rule axis, that makes these rows `partial`.
+**Read this block before trusting any row in it.** The `x509_*` structural rows (`DER-X-*`) are proved
+**panic-free**, not **conformant**: their harnesses are `*_never_panics`. Panic-freedom is a real and
+valuable safety property — this is the layer a malformed certificate attacks — but it does **not**
+decide whether the parser accepts exactly the RFC 5280 structures. On the rule axis, that keeps those
+rows `partial`. **The key-format rows (`DER-K-*`: pkcs8, epki, rsa_public_key, ec_private_key,
+ecdsa_sig_value) additionally carry a `*_parse_faithful` functional contract (2026-09-17):** on any
+accepted symbolic input it proves the decode is *faithful* — exact envelope consumption, field
+sub-slice identity, and exact field tiling — with an observed-red control (see
+[`evidence/CONTRACT-CONTROLS-2026-09-17.md`](evidence/CONTRACT-CONTROLS-2026-09-17.md)). That lifts
+their strength to `CONTRACT` (bounded-backing, `0..=16` octets) for structural faithfulness; they stay
+`partial` on the rule axis because full *value* conformance (e.g. that an OID names a known algorithm,
+or a modulus is a valid key) is still not decided. The `x509_*` cert-structural family has **no**
+conformance contract row — see §6.6.
 
 | id | structure (RFC 5280 unless noted) | status | strength | verify |
 |---|---|---|---|---|
@@ -282,12 +291,12 @@ parser accepts exactly the RFC 5280 structures. On the rule axis, that makes the
 | `DER-X-TBS-2` | DER `DEFAULT` omission for `version`: a present `[0]` encoding v1 is rejected (§11.5) | done | **test-only** — one concrete unit test; no harness asserts it | `T x509_tbs_certificate::tests` — `TbsCertificateError::VersionMustBeOmitted` |
 | `DER-X-CERT` | `Certificate` §4.1 — outermost composition | partial | **PROBE** (bounded) (panic-freedom, 1 stub, Ok-tail cover **satisfied**) — but see `DER-X-BOUND` | `K x509_certificate::proofs::parse_certificate_never_panics` |
 | `DER-X-BOUND` | **Panic-freedom at realistic input sizes** | **partial** | **inspection-argued** · ⚠ **UNWEIGHTED** | `D PROOF_MANIFEST.md` §8.1 — `x509_certificate` panic-freedom is proved at **≤12 bytes**; a real certificate is ~170 bytes. `rsa_private_key` at **≤20 bytes** vs ~317. Real-size panic-freedom *"rests on an un-machine-checked compositional argument"*. |
-| `DER-K-PKCS8` | PKCS#8 `PrivateKeyInfo` (RFC 5208 §5) | partial | **PROBE** (bounded) (panic-freedom + strict variant + an Ok-path witness) | `K pkcs8::proofs::parse_never_panics` · `K pkcs8::proofs::parse_ok_path_witnessed` |
-| `DER-K-EPKI` | `EncryptedPrivateKeyInfo` (RFC 5958 §3) | partial | **PROBE** (bounded) | `K encrypted_private_key_info::proofs::parse_never_panics` |
-| `DER-K-RSAPUB` | `RSAPublicKey` (RFC 8017 §A.1.1) | partial | **PROBE** (bounded) | `K rsa_public_key::proofs::parse_strict_never_panics` |
+| `DER-K-PKCS8` | PKCS#8 `PrivateKeyInfo` (RFC 5208 §5) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: exact consumption + sub-slice identity + exact field tiling; + observed-red control (rule-axis `partial`: structural faithfulness, not full value conformance) | `K pkcs8::proofs::parse_faithful` · `K pkcs8::proofs::parse_never_panics` · `K pkcs8::proofs::parse_ok_path_witnessed` · `D evidence/contract-controls-2026-09-17/pkcs8/` |
+| `DER-K-EPKI` | `EncryptedPrivateKeyInfo` (RFC 5958 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K encrypted_private_key_info::proofs::parse_faithful` · `K encrypted_private_key_info::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/epki/` |
+| `DER-K-RSAPUB` | `RSAPublicKey` (RFC 8017 §A.1.1) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K rsa_public_key::proofs::parse_faithful` · `K rsa_public_key::proofs::parse_strict_never_panics` · `D evidence/contract-controls-2026-09-17/rsa/` |
 | `DER-K-RSAPRIV` | `RSAPrivateKey` (RFC 8017 §A.1.2) | partial | **PROBE** (bounded), and see `DER-X-BOUND` | `K rsa_private_key::proofs::parse_never_panics` (4 stub applications across its harnesses) |
-| `DER-K-ECPRIV` | `ECPrivateKey` (RFC 5915 §3) | partial | **PROBE** (bounded) | `K ec_private_key::proofs::parse_never_panics` |
-| `DER-K-ECDSASIG` | `ECDSA-Sig-Value` (RFC 3279 §2.2.3) | partial | **PROBE** (bounded) | `K ecdsa_sig_value::proofs::parse_strict_never_panics` |
+| `DER-K-ECPRIV` | `ECPrivateKey` (RFC 5915 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode incl. both `[0]`/`[1]` optionals + observed-red control (rule-axis `partial`) | `K ec_private_key::proofs::parse_faithful` · `K ec_private_key::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/ec/` |
+| `DER-K-ECDSASIG` | `ECDSA-Sig-Value` (RFC 3279 §2.2.3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K ecdsa_sig_value::proofs::parse_faithful` · `K ecdsa_sig_value::proofs::parse_strict_never_panics` · `D evidence/contract-controls-2026-09-17/ecdsa/` |
 | `DER-X-L4` | An unbounded (Lean) lid over **any** X.509 structural module | **not-covered** | **not-covered** | `D gates/map_declared.txt` row `x509_structural_lid` → `DER-REMAINING-WORK.md` §3. All seven `x509_*` modules are Kani-only. |
 
 ### 5.4 RFC 5280 profile rules

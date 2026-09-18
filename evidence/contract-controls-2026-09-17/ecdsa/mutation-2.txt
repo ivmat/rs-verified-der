@@ -1,0 +1,1 @@
+mutated: 'validate_integer_content(tlv.value).map_err(IntegerFieldError::Content)?;' -> 'let _ = tlv.value;'
