@@ -14,7 +14,7 @@ is unstable, with no production deployment record. Evaluate it as a building blo
 
 ## Evidence at a glance
 
-- **L3 — Kani:** 208 proof harnesses over 33 modules establish default safety checks on their
+- **L3 — Kani:** 210 proof harnesses over 33 modules establish default safety checks on their
   bounded domains; functional claims vary by harness and are listed in the proof manifest.
 - **L4/L5 — Aeneas → Lean 4:** selected properties of six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) hold for any input length; `sequence` also covers any child count. The
@@ -178,7 +178,7 @@ records, not re-run. Neither mode runs the full Kani floor or establishes X.509 
 cargo test                                      # 530 tests + 34 doc-tests
 cargo install --locked kani-verifier --version 0.67.0
 cargo kani setup
-cargo kani -Z stubbing                          # 208 proof harnesses, needs a large machine
+cargo kani -Z stubbing                          # 210 proof harnesses, needs a large machine
 ```
 
 ```sh
@@ -202,7 +202,7 @@ are listed in `PROOF_MANIFEST.md` §8.4. The Lean step re-extracts the shipped R
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs hygiene and parity gates, tests, clippy, and the
-memory-tractable **175 of 208** Kani harnesses. The remaining heavy modules are a local milestone via
+memory-tractable **175 of 210** Kani harnesses. The remaining heavy modules are a local milestone via
 `./check.sh`; the full floor needs roughly 24 GB available (largest harness peaks ~20 GB). Indicative shard timings and
 memory measurements live in [`docs/verification-cost.md`](docs/verification-cost.md).
 

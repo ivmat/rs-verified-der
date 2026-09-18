@@ -229,6 +229,93 @@ mod proofs {
         kani::cover(result.is_ok(), "a well-formed SubjectPublicKeyInfo reaches the Ok tail");
         let _ = result;
     }
+
+    /// **Functional contract (CONTRACT SURFACE / bounded-backing evidence).** When
+    /// `parse_subject_public_key_info` accepts a symbolic input, its output faithfully and exactly
+    /// reflects that input's DER structure — this is a functional postcondition, not the
+    /// panic-freedom of `parse_never_panics`. Proven over the whole `0..=16`-octet symbolic domain
+    /// (buffer AND length symbolic); the 16-octet backing is a harness tractability bound (per the
+    /// module sizing comment and the 2026-09-12 Law-6 amendment), and the public API carries no
+    /// bound.
+    ///
+    /// The oracle re-derives the `subjectPublicKey` BIT STRING and the field tiling from the
+    /// lidded/verified primitives (`decode_tlv`, `decode_bit_string`) rather than this module's own
+    /// private `decode_public_key_tlv` helper, so a composition defect — a wrong field order, a
+    /// missing exact-tiling check, a mis-sliced field, or a mis-classified BIT STRING tag — is caught.
+    /// THREE claims are weaker than full independent re-derivation and are called out as such:
+    /// (a) re-deriving `outer_content` via `decode_sequence_tlv_strict(input)` recomputes the same
+    /// call the impl makes as its first step (return plumbing; the no-trailing-data guarantee rides on
+    /// that primitive's own lid); (b) claim (2)'s `algorithm` check re-runs `parse_algorithm_identifier`
+    /// — which is NOT a lidded primitive but the very function the impl calls at the same offset — so
+    /// it is an idempotence/field-plumbing check (it catches a swapped/dropped/mis-plumbed algorithm
+    /// field over the symbolic domain, but the *correctness* of the algorithm field itself rides on
+    /// `x509_algorithm_identifier::proofs::parse_faithful`'s own contract row, not on this one); and
+    /// (c) both claim (2) and claim (3) are value-equality (the flattened `algorithm_oid`/`parameters`
+    /// fields, and the decoded `subject_public_key` `BitString`) against an independent re-decode, not
+    /// sub-slice pointer identity — value-equality over the whole symbolic domain is an adequate oracle
+    /// here (a wrong sub-slice differs on some buffer), and it is the natural boundary for the
+    /// flattened struct and the stored-decoded BIT STRING. Non-vacuity is pinned by the observed-red
+    /// control: mutating the exact-tiling check (`pk_used != outer_rest.len()`, `x509_spki.rs:188`)
+    /// reds claim (4), and mutating the BIT STRING tag guard (`x509_spki.rs:147`) reds claim (3)'s
+    /// classification, both while `parse_never_panics` stays green — the properties this promotion adds.
+    ///
+    /// Postcondition, on `Ok(spki)` for symbolic `input`:
+    /// 1. `input` re-decodes as a single outer SEQUENCE via `decode_sequence_tlv_strict` (exact
+    ///    envelope consumption — no trailing bytes at the top level — is already
+    ///    `parse_subject_public_key_info`'s own strict contract; re-derived here only to obtain
+    ///    `outer_content` for the rest of the oracle, see caveat above);
+    /// 2. `spki.algorithm_oid` and `spki.parameters` value-equal the fields an independent
+    ///    `parse_algorithm_identifier` re-decode at offset 0 of `outer_content` yields (faithful
+    ///    algorithm field);
+    /// 3. `spki.subject_public_key` value-equals an independent `decode_bit_string` re-decode of the
+    ///    BIT STRING TLV at the algorithm field's offset, after independently asserting that TLV is
+    ///    primitive, universal, tag number 3 (faithful key field);
+    /// 4. the algorithm field and the `subjectPublicKey` TLV exactly tile `outer_content` (nothing
+    ///    uncovered) — the property the exact-tiling check enforces and the observed-red control
+    ///    mutates.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_subject_public_key_info(input);
+        kani::cover(
+            result.is_ok(),
+            "the functional-contract Ok branch is reachable (harness is non-vacuous)",
+        );
+
+        if let Ok(spki) = result {
+            // (1) Re-derive the outer envelope independently to obtain `outer_content`.
+            let outer_content = decode_sequence_tlv_strict(input)
+                .expect("an accepted input re-decodes as an outer SEQUENCE");
+
+            // (2) algorithm: the flattened fields value-equal an independent re-decode at the outer
+            //     content's start.
+            let (algo, algo_used) = parse_algorithm_identifier(outer_content)
+                .expect("an accepted input has an AlgorithmIdentifier at the outer content's start");
+            assert!(spki.algorithm_oid == algo.algorithm_oid);
+            assert!(spki.parameters == algo.parameters);
+
+            // (3) subjectPublicKey: BIT STRING faithful at the algorithm field's offset.
+            let after_algo = &outer_content[algo_used..];
+            let (pk_tlv, pk_used) = decode_tlv(after_algo)
+                .expect("an accepted input has a subjectPublicKey TLV at the algorithm offset");
+            assert!(pk_tlv.tag.class == Class::Universal);
+            assert!(pk_tlv.tag.number == BIT_STRING_TAG);
+            assert!(!pk_tlv.tag.constructed);
+            let bs = decode_bit_string(pk_tlv.value)
+                .expect("an accepted input's subjectPublicKey content decodes as a BIT STRING");
+            assert!(spki.subject_public_key == bs);
+
+            // (4) Exact field tiling: the algorithm field and subjectPublicKey exactly cover
+            //     `outer_content` -- the property the `pk_used != outer_rest.len()` guard enforces
+            //     (`x509_spki.rs:188`) and the observed-red control mutates.
+            assert!(pk_used == after_algo.len());
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

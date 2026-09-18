@@ -2,12 +2,12 @@
 
 This is the **honest proof envelope** for this crate: what is machine-checked, over what domain,
 under what assumptions and stubs — and, given equal weight, **what is not**. It exists so that a
-reader who is not going to read 208 proof harnesses and 6 Lean developments can still know what
+reader who is not going to read 210 proof harnesses and 6 Lean developments can still know what
 they are being offered, and where the guarantee stops.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "208 Kani harnesses, 6 Lean lids, 530 tests" describes how
+> **Counts are inventory, not coverage.** "210 Kani harnesses, 6 Lean lids, 530 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -80,10 +80,10 @@ deviations. Read the two differently.
 | public entry points (free `pub fn`s + public `impl` methods) | 84 |
 | …named by at least one Kani harness | 73 |
 | …named by **no** Kani harness | **11** |
-| `#[kani::proof]` harnesses | 208 |
-| `kani::assume` harness preconditions (narrow the proved domain) | 173 |
+| `#[kani::proof]` harnesses | 210 |
+| `kani::assume` harness preconditions (narrow the proved domain) | 175 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 4 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 191 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 193 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 11 / 8 |
 | `#[test]` unit + regression tests | 530 |
@@ -248,6 +248,7 @@ module (§7) they are the *only* evidence that exists.
 |---|---|---:|---:|---:|
 | `evidence/check-0e327b7.log` | `0e327b7` | 191 | 0 | 3 |
 | `evidence/check-2026-09-17-contract.log` | `unrecorded` | 208 | 0 | 0 |
+| `evidence/check-2026-09-18-trackb.log` | `unrecorded` | 210 | 0 | 0 |
 | `evidence/check-24ddb69.log` | `24ddb69` | 191 | 0 | 3 |
 | `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
 | `evidence/check-461f751.log` | `461f751` | 171 | 0 | 3 |
@@ -280,6 +281,7 @@ Every column here is read out of the committed log itself, so this table is repr
 - `evidence/check-ffcea81.log` (at `ffcea81`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check_tractable-67c1f80.log` (at `67c1f80`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-2026-09-17-contract.log` (at `unrecorded`): `git` could not answer, so no currency claim is made either way. Absence of an answer is reported rather than defaulted to yes.
+- `evidence/check-2026-09-18-trackb.log` (at `unrecorded`): `git` could not answer, so no currency claim is made either way. Absence of an answer is reported rather than defaulted to yes.
 <!-- END GENERATED:evidence-coverage -->
 
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
@@ -345,7 +347,7 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — 175 of the 208 harnesses (the shard filters are by module, not a
+  the memory-tractable share — 175 of the 210 harnesses (the shard filters are by module, not a
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
@@ -431,11 +433,11 @@ carry that.
 | `tlv` | 3 | 3 | 5 | 3..16 | 16 | 2 | 3 | 0 | ✅ |
 | `utc_time` | 3 | 3 | 14 | 14..17 | 14..18 | 15 | 3 | 0 |  |
 | `utf8_string` | 4 | 3 | 9 | 4..16 | 6..16 | 13 | 2 | 0 |  |
-| `x509_algorithm_identifier` | 1 | 1 | 1 | 16 | 20 | 1 | 3 | 0 |  |
+| `x509_algorithm_identifier` | 1 | 1 | 2 | 16 | 20 | 2 | 4 | 0 |  |
 | `x509_certificate` | 1 | 1 | 1 | 12 | 12 | 1 | 1 | 1 |  |
 | `x509_extension` | 2 | 2 | 3 | 13..16 | 12..20 | 2 | 3 | 0 |  |
 | `x509_name` | 1 | 1 | 2 | 16 | 10..12 | 2 | 1 | 1 |  |
-| `x509_spki` | 1 | 1 | 1 | 16 | 20 | 1 | 1 | 0 |  |
+| `x509_spki` | 1 | 1 | 2 | 16 | 20 | 2 | 2 | 0 |  |
 | `x509_tbs_certificate` | 1 | 1 | 2 | 10..135 | 12 | 1 | 2 | 5 |  |
 | `x509_validity` | 1 | 1 | 2 | 16..32 | 20 | 1 | 2 | 0 |  |
 <!-- END GENERATED:per-module -->
@@ -528,11 +530,11 @@ exact statement, including its `assume` preconditions.
 - **`tlv`** (5): `decode_tlv_never_panics`, `decode_tlv_structure`, `tlv_roundtrip_small`, `tlv_truncated_value_is_classified`, `strict_rejects_trailing`
 - **`utc_time`** (14): `roundtrip_all_fields`, `decode_never_panics`, `decode_accepts_only_canonical`, `accepted_iff_canonical_oracle`, `wrong_length_is_bad_length`, `non_digit_is_classified`, `not_zulu_is_classified`, `month_range_is_classified`, `day_range_is_classified`, `hour_range_is_classified`, `minute_range_is_classified`, `second_range_is_classified`, `decode_postcondition_fields_in_range`, `full_year_pivot_is_correct`
 - **`utf8_string`** (9): `validate_iff_oracle`, `validate_iff_oracle_multi`, `validate_iff_std`, `roundtrip`, `decode_never_panics`, `constructed_form_is_rejected`, `accepted_identifier_is_canonical`, `wrong_tag_is_classified`, `ill_formed_reports_position`
-- **`x509_algorithm_identifier`** (1): `parse_algorithm_identifier_never_panics`
+- **`x509_algorithm_identifier`** (2): `parse_algorithm_identifier_never_panics`, `parse_faithful`
 - **`x509_certificate`** (1): `parse_certificate_never_panics`
 - **`x509_extension`** (3): `parse_extension_never_panics`, `validate_extensions_never_panics`, `validate_extensions_ok_path_witnessed`
 - **`x509_name`** (2): `validate_rdn_never_panics`, `validate_never_panics`
-- **`x509_spki`** (1): `parse_never_panics`
+- **`x509_spki`** (2): `parse_never_panics`, `parse_faithful`
 - **`x509_tbs_certificate`** (2): `parse_tbs_certificate_never_panics`, `parse_tbs_certificate_ok_path_witnessed`
 - **`x509_validity`** (2): `parse_never_panics`, `parse_validity_ok_path_witnessed`
 <!-- END GENERATED:properties -->
@@ -754,10 +756,10 @@ buffer widths and unwind ranges are in §4's table; the crate-wide distribution:
 | 14 | 12 |
 | 16 | 62 |
 | 18 | 5 |
-| 20 | 35 |
+| 20 | 37 |
 | 21 | 1 |
 | 22 | 1 |
-| **total bounded** | **184** |
+| **total bounded** | **186** |
 
 24 harnesses declare no `#[kani::unwind]`, so no unwind bound is imposed on them and CBMC must unroll to completion every loop they reach. For those harnesses the loop depth is therefore *not* a limit on the claim: a loop CBMC could not fully unroll would fail an unwinding assertion rather than pass quietly. Their input domains are still bounded by buffer width like every other harness. Listed so a reader can check each one: `big_integer::empty_is_empty`, `big_integer::redundant_positive_padding_is_non_minimal`, `big_integer::redundant_negative_padding_is_non_minimal`, `bit_string::empty_is_classified`, `bit_string::empty_nonzero_unused_is_classified`, `boolean::one_octet_is_canonical`, `boolean::roundtrip`, `boolean::wrong_length_is_bad_length`, `enumerated::encode_delegates_to_integer`, `identifier_form::oracle_is_well_formed`, `identifier_form::required_form_matches_oracle_on_all_u32`, `identifier_form::reserved_eoc_rejected_iff_universal_zero`, `identifier_form::constructed_form_rule_matches_oracle_on_all_tags`, `identifier_form::accepts_iff_no_encoded_rule_violated_and_never_rejects_non_universal`, `integer::empty_is_classified`, `integer::redundant_positive_padding_is_non_minimal`, `integer::redundant_negative_padding_is_non_minimal`, `null::only_empty_is_valid`, `oid::empty_is_classified`, `restricted_string::charset_exactly_matches_oracle_printable`, `restricted_string::charset_exactly_matches_oracle_ia5`, `restricted_string::charset_exactly_matches_oracle_numeric`, `restricted_string::charset_exactly_matches_oracle_visible`, `utc_time::full_year_pivot_is_correct`.
 <!-- END GENERATED:bounds -->
@@ -783,8 +785,8 @@ input space. This crate treats that as the default suspicion, and the check is m
 <!-- BEGIN GENERATED:non-vacuity (gates/gen_proof_manifest.py) -->
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
-| harnesses | 208 |
-| `kani::cover` witnesses | 191, in 31 of the 33 modules that have harnesses |
+| harnesses | 210 |
+| `kani::cover` witnesses | 193, in 31 of the 33 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **1** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 88 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
@@ -795,7 +797,7 @@ Harnesses with implicit checks only — each needs a justification, or a cover:
 
 What the remaining 88 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
-**What the 173 harness assumptions actually restrict.** 129 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
+**What the 175 harness assumptions actually restrict.** 131 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 44 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
 Two things to hold in mind reading it. First, the classifier is deliberately conservative: anything it cannot show is a pure size/range bound is listed, so some entries below *are* range constraints in a shape it does not recognise (a negated range such as `!(mo >= 1 && mo <= 12)`, for instance). It errs toward disclosing. Second, content narrowing is usually the **point** of the harness rather than a weakness in it: a rejection-classification harness exists precisely to pin a malformed shape and assert the exact error it must produce, and it must narrow to that shape to do so. What the list gives you is the ability to check that judgement yourself, harness by harness, instead of taking a count on trust.
 

@@ -183,6 +183,97 @@ mod proofs {
         }
         let _ = result;
     }
+
+    /// **Functional contract (CONTRACT SURFACE / bounded-backing evidence).** When
+    /// `parse_algorithm_identifier` accepts a symbolic input, its output faithfully and exactly
+    /// reflects that input's DER structure — this is a functional postcondition, not the
+    /// panic-freedom of `parse_algorithm_identifier_never_panics`. Proven over the whole
+    /// `0..=16`-octet symbolic domain (buffer AND length symbolic); the 16-octet backing is a harness
+    /// tractability bound (per the module sizing comment and the 2026-09-12 Law-6 amendment), and the
+    /// public API carries no bound.
+    ///
+    /// The oracle re-derives the SEQUENCE envelope, the OID field, and the optional `parameters`
+    /// field directly from the lidded/verified primitives (`decode_sequence_tlv`, `decode_tlv`,
+    /// `validate_oid`) rather than from this module's own private `decode_oid_tlv` helper, so a
+    /// composition defect — a wrong field order, a missing exact-tiling check, a mis-sliced field, or
+    /// a mis-classified optional — is caught. One claim is weaker than full independent
+    /// re-derivation and is called out as such: claim 1's `used == seq_used` recomputes the same
+    /// `decode_sequence_tlv` call the impl makes (return plumbing; the no-over-read rides on that
+    /// primitive's own lid, per this crate's SEQUENCE convention). Non-vacuity is pinned by the
+    /// observed-red control: mutating the exact-tiling check at `parse_algorithm_identifier` (the
+    /// `params_used != rest.len()` guard, `x509_algorithm_identifier.rs:136`) reds claim 4 below
+    /// while `parse_algorithm_identifier_never_panics` stays green — precisely the property this
+    /// promotion adds.
+    ///
+    /// Postcondition, on `Ok((algid, used))` for symbolic `input`:
+    /// 1. `used` equals the SEQUENCE envelope's independently-decoded framed length, and `used <=
+    ///    input.len()` (exact envelope consumption / no over-read — see caveat above);
+    /// 2. `algid.algorithm_oid` is a primitive, universal, canonically-validated OBJECT IDENTIFIER
+    ///    decoded at the front of the SEQUENCE content, and IS that TLV's content sub-slice (pointer
+    ///    + length identity — faithful, not a copy);
+    /// 3. the optional `algid.parameters` is faithfully classified: `None` when the content ends
+    ///    right after the OID, and, when `Some`, is the single remaining TLV's raw encoding
+    ///    (tag+length+value, verbatim) at the OID's offset, again pointer + length identity;
+    /// 4. the OID field and the optional `parameters` TLV exactly tile the SEQUENCE content (nothing
+    ///    uncovered) — the property the exact-tiling check enforces and the observed-red control
+    ///    mutates.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_algorithm_identifier(input);
+        kani::cover(
+            result.is_ok(),
+            "the functional-contract Ok branch is reachable (harness is non-vacuous)",
+        );
+
+        if let Ok((algid, used)) = result {
+            // (1) Exact envelope consumption / no over-read, re-derived independently.
+            let (algo_content, seq_used) =
+                decode_sequence_tlv(input).expect("an accepted input re-decodes as a SEQUENCE");
+            assert!(used == seq_used);
+            assert!(used <= input.len());
+
+            // (2) algorithm OID: primitive universal OID, content IS algid.algorithm_oid (faithful).
+            let (oid_tlv, oid_used) =
+                decode_tlv(algo_content).expect("an accepted input has a leading OID TLV");
+            assert!(oid_tlv.tag.class == Class::Universal);
+            assert!(oid_tlv.tag.number == OID_TAG);
+            assert!(!oid_tlv.tag.constructed);
+            assert!(validate_oid(oid_tlv.value).is_ok());
+            assert!(core::ptr::eq(algid.algorithm_oid.as_ptr(), oid_tlv.value.as_ptr()));
+            assert!(algid.algorithm_oid.len() == oid_tlv.value.len());
+
+            // (3) Optional parameters: faithfully classified, and when present, IS the remaining raw
+            //     TLV encoding at the OID's offset (mirrors `pkcs8::proofs::parse_faithful`'s own
+            //     Option match for its `[0]`-attributes optional).
+            let rest = &algo_content[oid_used..];
+            match algid.parameters {
+                // `rest.is_empty()` is exactly claim 4's OID-alone-tiles-the-content case: since
+                // `rest == &algo_content[oid_used..]`, an empty `rest` means `oid_used ==
+                // algo_content.len()`.
+                None => assert!(rest.is_empty()),
+                Some(params) => {
+                    let (_params_tlv, params_used) =
+                        decode_tlv(rest).expect("a present parameters field re-decodes as a TLV");
+                    // (4) Exact field tiling: the OID and the optional parameters exactly cover the
+                    //     SEQUENCE content -- the property the `params_used != rest.len()` guard
+                    //     enforces (`x509_algorithm_identifier.rs:136`) and the observed-red control
+                    //     mutates.
+                    assert!(params_used == rest.len());
+                    // `parameters` stores the RAW TLV encoding (tag + length + value, verbatim), not
+                    // just the content octets -- so the identity check is against `rest`'s own front,
+                    // not `_params_tlv.value`.
+                    assert!(core::ptr::eq(params.as_ptr(), rest.as_ptr()));
+                    assert!(params.len() == params_used);
+                }
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

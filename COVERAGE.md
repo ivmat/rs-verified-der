@@ -24,7 +24,7 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 | tree state | clean at the certified commit; the run log records `git status --porcelain` sampled clean **at launch and at completion**, not assumed |
 | spec axis | **X.690 (2021) DER encoding rules**, per type + framing; **RFC 5280** profile surface. See §3. |
 | gate receipt | `./check.sh` exit 0 at `bffab69`, `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, run with `DER_REQUIRE_LEAN=1` |
-| proof floor (L3) | **208 of 208 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-2026-09-17-contract.log` (contract-campaign tree; +5 `*_parse_faithful`) |
+| proof floor (L3) | **210 of 210 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-2026-09-18-trackb.log` (contract-campaign + x509 Track B tree; +7 `*_parse_faithful`) |
 | unbounded lids (L4) | 6 lids in Lean, `lean lid: PASS (sorry-free)`, re-extracted from the shipped `.rs`; `lid-source-state.txt unchanged (hashes identical)` |
 | tests | 530 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
 | unsafe | 0 `unsafe` blocks; the crate is `#![forbid(unsafe_code)]` |
@@ -93,7 +93,7 @@ precisely the failure this format exists to prevent. **The `DER-F-8` split was n
 first draft** — the row carried both grades at once until a checker refused it.
 
 **That more than half the rows are admitted is this table working, not failing.** The crate's own
-headline is "208 of 208 harnesses SUCCESSFUL". That is true, and it invites the reading that 208 of
+headline is "210 of 210 harnesses SUCCESSFUL". That is true, and it invites the reading that 208 of
 203 *rules* are decided. Compare `DER-F-4` (weighted: a Lean lid over all input lengths) with
 `DER-X-BOUND` (admitted: a compositional argument nobody has machine-checked). Both sit under the
 same green check. This table's job is to stop them reading alike.
@@ -111,7 +111,7 @@ same green check. This table's job is to stop them reading alike.
 | **out-of-scope** | the rule is deliberately outside what this crate sets out to do, and that boundary is declared in the crate's own documents. Not a gap; a fence. |
 
 > **`CONTRACT` here is NOT Kani's `#[kani::requires]`/`#[kani::ensures]` machinery.** This crate uses
-> **zero** function contracts — its 208 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
+> **zero** function contracts — its 210 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
 > built with `#[kani::stub]` + `-Z stubbing`. `CONTRACT` in this table is the review-lens sense
 > (*proves the documented rule, on the real shipped path, with an independent oracle*), which is the
 > distinction a consumer actually cares about. Verify with
@@ -139,7 +139,7 @@ All commands run from the repository root at `130de97`. `<H>` = a harness path o
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 208 Kani harnesses. Needs ≥24 GB RAM, ~71 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 210 Kani harnesses. Needs ≥24 GB RAM, ~71 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Six modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension` — see `gates/tiers.txt`. |
 | **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-bffab69.log` | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
@@ -204,7 +204,7 @@ All commands run from the repository root at `130de97`. `<H>` = a harness path o
 `kani::cover` is unsatisfiable as `SUCCESSFUL`, with `0 of 1 cover properties satisfied`. `check.sh`
 does **not** fail on that. Exactly 3 harnesses have a cover in that state, and they are disclosed
 in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, read it. The crate has
-191 `kani::cover` statements in total.
+193 `kani::cover` statements in total.
 
 ---
 
@@ -275,13 +275,15 @@ sub-slice identity, and exact field tiling — with an observed-red control (see
 [`evidence/CONTRACT-CONTROLS-2026-09-17.md`](evidence/CONTRACT-CONTROLS-2026-09-17.md)). That lifts
 their strength to `CONTRACT` (bounded-backing, `0..=16` octets) for structural faithfulness; they stay
 `partial` on the rule axis because full *value* conformance (e.g. that an OID names a known algorithm,
-or a modulus is a valid key) is still not decided. The `x509_*` cert-structural family has **no**
-conformance contract row — see §6.6.
+or a modulus is a valid key) is still not decided. **Two `x509_*` framing sub-modules now also carry a
+`*_parse_faithful` contract** (`DER-X-ALGID`, `DER-X-SPKI` — 2026-09-17 Track B); the deeper
+cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`, `x509_validity`, `x509_name`,
+`x509_extension`) remain panic-freedom probes — see §6.6.
 
 | id | structure (RFC 5280 unless noted) | status | strength | verify |
 |---|---|---|---|---|
-| `DER-X-ALGID` | `AlgorithmIdentifier` §4.1.1.2 — framing | partial | **PROBE** (bounded) (panic-freedom; Ok-tail covers satisfied) | `K x509_algorithm_identifier::proofs::parse_algorithm_identifier_never_panics` · `R` (3 covers, all satisfied) |
-| `DER-X-SPKI` | `SubjectPublicKeyInfo` §4.1.2.7 — framing | partial | **PROBE** (bounded) (panic-freedom; Ok-tail cover satisfied) | `K x509_spki::proofs::parse_never_panics` |
+| `DER-X-ALGID` | `AlgorithmIdentifier` §4.1.1.2 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: OID sub-slice identity + **canonical-OID conformance** (`validate_oid`) + parameters raw-TLV identity/classification + exact tiling; 2 observed-red controls (tiling + canonicality). Rule-axis `partial`, but the canonical-OID value property IS proven | `K x509_algorithm_identifier::proofs::parse_faithful` · `K …::parse_algorithm_identifier_never_panics` · `D evidence/contract-controls-2026-09-17/x509algid/` |
+| `DER-X-SPKI` | `SubjectPublicKeyInfo` §4.1.2.7 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: BIT STRING classification + value identity + exact tiling; 2 observed-red controls (tiling + classification). Delegated `algorithm` field is plumbing-checked here, its correctness riding on `DER-X-ALGID`'s contract | `K x509_spki::proofs::parse_faithful` · `K x509_spki::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/x509spki/` |
 | `DER-X-NAME` | `Name` / `RDNSequence` §4.1.2.4 — framing | partial | **PROBE** (bounded), and see §6.3 | `K x509_name::proofs::validate_never_panics` (stubs `validate_rdn`) · `K x509_name::proofs::validate_rdn_never_panics` (**no cover at all**) |
 | `DER-X-VALID` | `Validity` §4.1.2.5 — framing | partial | **PROBE** (bounded), **cover UNSATISFIED** — see §6.3 | `R x509_validity::proofs::parse_never_panics` (`0 of 1 cover`) · `K x509_validity::proofs::parse_validity_ok_path_witnessed` (companion witness, no stubs) |
 | `DER-X-EXT-1` | `Extension` / `Extensions` §4.1.2.9 — framing | partial | **PROBE** (bounded), **cover UNSATISFIED** — see §6.3 | `R x509_extension::proofs::validate_extensions_never_panics` (`0 of 1 cover`) · `K x509_extension::proofs::validate_extensions_ok_path_witnessed` |
@@ -473,12 +475,28 @@ stands unchecked for the inner structure; and (2) the growth is super-linear, so
 a proof-*tractability* limit (the model checker self-diagnoses the state-space growth), not a tool
 defect — it is not a solver/codegen bug.
 
+**Frontier re-measured 2026-09-18 (committed artifact this time).** The N=128 point was reproduced
+(unwind 136, ~16.9 GB, ~41 min; `evidence/check-2026-09-17-contract.log` records the tree, and the climb
+logs are transient) and the bound was pushed further: **N=150 verifies panic-free** (unwind 158, ~21.1 GB,
+~70 min) — a real extension past N=128, with cost growing super-linearly. **N=170 (real-certificate size)
+is a solver-agnostic wall:** both cadical (>60 min) and kissat (>100 min) exceed budget without a verdict
+(timeout, not OOM), so a stronger SAT solver does not extend reach — the limit is proof state-space, not
+solver choice. All of this remains **TBS-stubbed outer framing**; it narrows the outer gap and does not
+touch the inner-structure compositional argument. A bounded panic-freedom probe at a larger N is still a
+probe (Law 6), recorded as a measured capability, never banked as a contract row.
+
 ### 6.6 The strongest and weakest layers are inverted relative to your risk
 
 The framing and codec layers carry the `CONTRACT` and `CONTRACT+L4` rows. The X.509 layer — the part
-you actually feed a hostile certificate to — has **no conformance `CONTRACT` row at all**: it is
+you actually feed a hostile certificate to — is far weaker: its two framing sub-modules (`DER-X-ALGID`,
+`DER-X-SPKI`) gained faithful-decode `CONTRACT` rows in 2026-09-17 Track B, but the **cert-composition
+modules you actually parse a certificate through** (`x509_certificate`, `x509_tbs_certificate`,
+`x509_validity`, `x509_name`, `x509_extension`) still have **no conformance `CONTRACT` row**: they are
 panic-freedom probes, two concrete rule tests, an inspection argument for realistic sizes, and
-uncovered semantics, with three unsatisfied covers and the smallest bounds in the crate.
+uncovered semantics, with three unsatisfied covers and the smallest bounds in the crate. (`DER-X-BOUND`,
+§6.5: the `x509_certificate` outer-framing harness verifies panic-free at N=128 — reproduced 2026-09-17,
+~41 min/16.9 GB — but N=170, a real certificate's size, exceeds a 1-hour solver budget; still
+TBS-stubbed, so the inner-structure compositional gap stays open.)
 
 That is not a defect; it is the honest cost curve — those are the 7–20 GB harnesses, and the crate
 says so. It is invisible in "203 of 203", and visible in one glance here.

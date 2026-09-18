@@ -54,6 +54,8 @@ review (classification for pkcs8; INTEGER minimality for ecdsa/rsa).
 | rsa_public_key | `exponent_used != rest.len()` → `>` | FAILED | `modulus_used + exponent_used == outer_content.len()` |
 | encrypted_private_key_info | `data_used != rest.len()` → `>` | FAILED | `data_used == after_alg.len()` |
 | ec_private_key | `!rest.is_empty()` → `false` | FAILED | `final_rest.is_empty()` |
+| x509_spki *(Track B)* | `pk_used != outer_rest.len()` → `>` | FAILED | `pk_used == after_algo.len()` |
+| x509_algorithm_identifier *(Track B)* | `params_used != rest.len()` → `>` | FAILED | `params_used == rest.len()` |
 
 **Control 2 — review-added conjunct (pkcs8/ecdsa/rsa):**
 
@@ -62,6 +64,8 @@ review (classification for pkcs8; INTEGER minimality for ecdsa/rsa).
 | pkcs8 | `[0]`-attributes classification | `\|\| tag.number != 0` → `\|\| false` | FAILED | `attr_tlv.tag.number == 0` |
 | ecdsa_sig_value | INTEGER minimality | drop `validate_integer_content(...)?` | FAILED | `validate_integer_content(r_tlv.value).is_ok()` |
 | rsa_public_key | INTEGER minimality | drop `validate_integer_content(...)?` | FAILED | `validate_integer_content(modulus_tlv.value).is_ok()` |
+| x509_spki *(Track B)* | BIT STRING classification | `\|\| tag.number != BIT_STRING_TAG` → `\|\| false` | FAILED | `pk_tlv.tag.number == BIT_STRING_TAG` |
+| x509_algorithm_identifier *(Track B)* | canonical-OID | drop `validate_oid(...)?` | FAILED | `validate_oid(oid_tlv.value).is_ok()` |
 
 epki and ec_private_key carry a single control each: epki has no delegated value constraint beyond the
 tiling; ec's version octet, `[0]`/`[1]` classification and both optionals all feed the single final
@@ -71,11 +75,31 @@ All: baseline green · every listed control observed-red on the named assert · 
 the same mutation. (The Kani property table names each assert as `assertion failed: <expr>`; 0
 `Status: FAILURE` on the baselines, exactly one on each control leg.)
 
+**Baseline non-vacuity confirmed (not just SUCCESSFUL).** Every `parse_faithful` baseline log reports
+**`1 of 1 cover properties satisfied`** for its `kani::cover(result.is_ok())` — so the Ok branch (where
+all the postcondition asserts live) is reachable at baseline, and the harness is non-vacuous
+independently of the observed-red controls. Audited across all 7 modules from the committed baseline logs.
+
+## Track A — x509_certificate outer-framing bound (measured capability, not a contract)
+
+The `x509_certificate::parse_certificate_never_panics` harness (TBS parser stubbed) is a panic-freedom
+probe; pushing its bound is a *capability* measurement, not a contract (Law 6), and is recorded as such:
+- **N=128 reproduced SUCCESSFUL** (unwind 136, peak 16.9 GB, 41 min) — 10.7× the shipped 12-byte CI floor.
+- **N=150 SUCCESSFUL** (unwind 158, peak 21.1 GB, 70 min) — a NEW extension past §6.5's N=128; cost grows
+  super-linearly (128→150 ⇒ 41→70 min, 16.9→21.1 GB).
+- **N=170 (a real certificate's size) is a solver-agnostic tractability wall:** cadical exceeds a 60-min
+  budget AND kissat exceeds a 100-min budget (both timeout, not OOM) — so a stronger SAT solver does NOT
+  extend reach here; it is a proof-*tractability* limit, not a tool defect and not a solver-choice artifact.
+- Still TBS-STUBBED: this narrows §6.5's outer-framing gap; it does NOT close the inner-structure
+  compositional argument. Not banked as a contract row; recorded in `COVERAGE.md` §6.5/§6.6.
+
 ## Scope / honest residual
 
-This closes the composed layer's "no functional contract, no mutation control" gap for these five
-modules (previously A1 panic-freedom probes — honest under assurance-bands rule 6, but oracle-free).
-The x509_* structural family remains at A1 panic-freedom (weak/stubbed oracles per the harness
-inventory) — a separate, harder campaign. The acceptance-manifest band lift is generated (not
-hand-edited), so promoting these claims to A3 is a re-emit of the manifest from imported evidence;
+This closes the composed layer's "no functional contract, no mutation control" gap for the five
+key-format modules (previously A1 panic-freedom probes — honest under assurance-bands rule 6, but
+oracle-free), and adds the **X.509 layer's first two contract rows** (x509_spki, x509_algorithm_identifier
+— Track B). The deeper x509 cert-*composition* modules (x509_certificate/tbs/validity/name/extension)
+remain A1 panic-freedom (weak/stubbed oracles per the harness inventory) — a separate, harder campaign.
+The acceptance-manifest band lift is generated (not hand-edited), so promoting these claims to A3 is a
+re-emit of the manifest from imported evidence;
 the per-module logs here are the ready inputs for that re-emit.

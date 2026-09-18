@@ -1,0 +1,6 @@
+=== der-verified/src/x509_algorithm_identifier.rs (2026-09-18T10:16:03Z) ===
+mutation:            mutated 1 occurrence: 'if params_used != rest.len() {' -> 'if params_used > rest.len() {'
+baseline_faithful:   VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+control_faithful:    VERIFICATION:- FAILED   [want FAILED = observed red]
+control_neverpanics: VERIFICATION:- SUCCESSFUL   [want SUCCESSFUL]
+failed_check:        	 - Description: "assertion failed: params_used == rest.len()"

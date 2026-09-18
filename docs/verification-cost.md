@@ -24,7 +24,7 @@ been going for minutes — is that normal?"*
 
 ## Reference shard and full-floor measurements (16-core / 29 GB Linux)
 
-All 208 harnesses verified locally with no failures in the recorded measurement. Harness counts in
+All 210 harnesses verified locally with no failures in the recorded measurement. Harness counts in
 this table are re-derived from the current module inventory; solve times are earlier indicative
 measurements and were not refreshed when the `codecs-b` / `private-keys` split changed.
 
@@ -44,7 +44,7 @@ from `codecs-b` to reduce its wall time; the two rebalanced shard times still aw
 
 ## Cost tiers
 
-**The large majority of the 208 harnesses are fast** — sub-second to a few seconds. Typical per-module
+**The large majority of the 210 harnesses are fast** — sub-second to a few seconds. Typical per-module
 worst case: `length` 0.4 s, `integer` 0.5 s, `oid` 0.04 s, `boolean` 0.03 s, `bit_string` 0.4 s,
 `tag` 0.5 s, `utc_time` 1.0 s, `big_integer` 0.7 s. Whole modules like `oid`, `boolean`, `null`,
 `enumerated`, `tag` finish in well under a second total.

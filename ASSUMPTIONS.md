@@ -55,7 +55,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   defect of the class it exists to catch survives (this is why the mutation controls in
   `evidence/MUTATION-CONTROLS-*.md` exist — they are the cheapest available probe of A1, and they
   sample it rather than establish it).
-  **load-bearing-for:** all 208 proof harnesses — i.e. every bounded claim in `PROOF_MANIFEST.md`
+  **load-bearing-for:** all 210 proof harnesses — i.e. every bounded claim in `PROOF_MANIFEST.md`
   §§3.1, 4, 5, 7.
   *Not enforced by `./check.sh`:* the Kani version is pinned in CI, and a local run with a different
   Kani will not tell you so (`PROOF_MANIFEST.md` §2).
