@@ -247,8 +247,6 @@ module (§7) they are the *only* evidence that exists.
 | Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an unsatisfied cover |
 |---|---|---:|---:|---:|
 | `evidence/check-0e327b7.log` | `0e327b7` | 191 | 0 | 3 |
-| `evidence/check-2026-09-17-contract.log` | `unrecorded` | 208 | 0 | 0 |
-| `evidence/check-2026-09-18-trackb.log` | `unrecorded` | 210 | 0 | 0 |
 | `evidence/check-24ddb69.log` | `24ddb69` | 191 | 0 | 3 |
 | `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
 | `evidence/check-461f751.log` | `461f751` | 171 | 0 | 3 |
@@ -257,6 +255,7 @@ module (§7) they are the *only* evidence that exists.
 | `evidence/check-b355f76.log` | `b355f76` | 164 | 0 | 3 |
 | `evidence/check-ba40709.log` | `ba40709` | 171 | 0 | 3 |
 | `evidence/check-bffab69.log` | `bffab69` | 203 | 0 | 3 |
+| `evidence/check-d05d3f2.log` | `d05d3f2` | 210 | 0 | 3 |
 | `evidence/check-ea8dad4-remainder.log` | `ea8dad4` | 8 | 0 | 2 |
 | `evidence/check-ea8dad4.log` | `ea8dad4` | 162 | 0 | 0 |
 | `evidence/check-ffcea81.log` | `ffcea81` | 191 | 0 | 3 |
@@ -266,7 +265,7 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
+**`evidence/check-d05d3f2.log` still speaks for HEAD.** No path it verified has changed since its commit: `git diff d05d3f2..HEAD -- der-verified/src lean` is empty. Run that command rather than trusting this sentence.
 - `evidence/check-0e327b7.log` (at `0e327b7`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-24ddb69.log` (at `24ddb69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -280,30 +279,27 @@ Every column here is read out of the committed log itself, so this table is repr
 - `evidence/check-ea8dad4.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ffcea81.log` (at `ffcea81`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check_tractable-67c1f80.log` (at `67c1f80`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-2026-09-17-contract.log` (at `unrecorded`): `git` could not answer, so no currency claim is made either way. Absence of an answer is reported rather than defaulted to yes.
-- `evidence/check-2026-09-18-trackb.log` (at `unrecorded`): `git` could not answer, so no currency claim is made either way. Absence of an answer is reported rather than defaulted to yes.
 <!-- END GENERATED:evidence-coverage -->
 
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
 in this document a reader cannot check from the source alone:
 
 - **The verdict is now read off a committed artifact, not transcribed.** The current run is
-  **2026-08-19 at commit `24ddb69`** (`evidence/check-24ddb69.log`) — `Complete - 191 successfully
-  verified harnesses, 0 failures, 191 total.`, `cargo test` green (472 + 33), every document gate
-  and the strict lid-staleness gate green in the same pass, `check.sh exit: 0`, 2h49m50s wall at a
-  20.03 GiB peak. The three unsatisfied covers are again exactly the three §8.2 discloses.
-  **Two things about this run are different from every earlier one, and both are stated in its own
-  header rather than left to be noticed.** (1) It ran on a **disposable cloud VM from a fresh clone
-  of a bundle at that commit**, not on the maintainer's machine, and dirtiness was sampled *before*
-  the run as well as after — 0 both times. (2) It **did not run the L4 Lean stage**: that VM had no
-  Aeneas/Charon/Lean stack, so the guarded lid printed `SKIP`. The L4 evidence for the identical lid
-  sources is `evidence/lean-lid-b1cdbef.log` (a full green `check_lean.sh`: re-extraction,
-  model-drift diff, `lake build`, sorry-gate, all six lids force re-elaborated from source), and
-  `git diff b1cdbef..24ddb69 -- lean` is empty. So the current L3 and L4 verdicts come from two
-  artifacts over the same bytes, not from one run — a weaker arrangement than a single end-to-end
-  green, and named as such. The previous single-process run covering both was **2026-08-11 at
-  `ffcea81`** (`evidence/check-ffcea81.log`, 191/191 with `lean lid: PASS (sorry-free)` in the same
-  pass, ~63m at 21.0 GB under `MemoryMax=22G`). The first such run, described
+  **2026-09-18 at commit `d05d3f2`** (`evidence/check-d05d3f2.log`) — `Complete - 210 successfully
+  verified harnesses, 0 failures, 210 total.`, `cargo test` green (530 + 34), every document gate
+  and the strict lid-staleness gate green in the same pass, `check.sh exit: 0`, 1h14m19s wall
+  (peak memory not captured for this run — the header says so rather than inventing a figure). The
+  three unsatisfied covers are again exactly the three §8.2 discloses.
+  **This run is a single end-to-end pass covering BOTH the L3 Kani floor and the L4 Lean lid** —
+  `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==` with `lean lid: PASS (sorry-free)`
+  in the same process — which is the stronger arrangement the earlier 2026-08-19 `24ddb69` VM run
+  could not achieve (that clean-room VM had no Aeneas/Charon/Lean stack, so its lid stage `SKIP`ped
+  and its L4 came from a separate artifact over the same bytes). It ran on the maintainer's own box
+  under the 2026-09-18 relaxation of the estate's box-Kani rule — as a memory-capped detached
+  systemd `--user` service — for the same provenance reason `check-bffab69.log` did: this box owns
+  the Aeneas/Charon/Lean stack, so a single run covering both floors cannot also be clean-room. The
+  earlier single-process run covering both was **2026-08-11 at `ffcea81`** (`evidence/check-ffcea81.log`,
+  191/191 with `lean lid: PASS (sorry-free)` in the same pass, ~63m at 21.0 GB under `MemoryMax=22G`). The first such run, described
   below, was `./check.sh`
   end-to-end on **2026-07-30** at commit `b355f76` — `cargo kani -Z stubbing` over all 164 harnesses
   **sequentially** (no `-j`; parallel harnesses multiply peak RSS), inside a `MemoryMax=22G`
@@ -319,11 +315,15 @@ in this document a reader cannot check from the source alone:
   become satisfiable. One of the three had previously never been *determined* at all — that harness
   had only ever OOM-ed past the slicing stage, so its cover's SAT/UNSAT status was unknown (see
   `docs/verification-cost.md`); it is now determined, and UNSATISFIED.
-- **`evidence/` holds two files per run, deliberately.** `evidence/check-b355f76.log` is a
-  distillation — per-harness verdicts, cover satisfaction, timings, stage banners — and
-  `evidence/raw/check-b355f76.log.gz` is the *complete* 28 MB raw log, so the distillation is
-  checkable rather than trusted. The distilled file's own header states the exact `grep` that
-  produced it, the raw log's byte count and its sha256.
+- **Each run has a committed distillation and a local raw log, deliberately.**
+  `evidence/check-b355f76.log` is a distillation — per-harness verdicts, cover satisfaction, timings,
+  stage banners. The *complete* raw log (`check-b355f76.log.gz` and its siblings) is kept **LOCAL**,
+  not committed (owner 2026-09-18: raw gate logs stay out of the repo — `evidence/raw/` is gitignored;
+  each raw log is available on request). The distillation stays checkable rather than trusted because
+  the distilled file's own header states the exact `grep` that produced it, plus the raw log's byte
+  count and sha256 — so a raw log provided on request can be verified byte-for-byte against the header
+  it was distilled from. (Historic distilled headers written before 2026-09-18 say the raw was
+  "committed alongside"; that was true when written — see `evidence/README.md`.)
 - **Which run currently speaks for HEAD is derived, not asserted in prose.** It is stated in the
   advisory region just above §3.4's table, computed as `git diff <run-commit>..HEAD --
   der-verified/src lean` being empty. That is deliberately *advisory*: it needs git history, which a
@@ -351,16 +351,18 @@ in this document a reader cannot check from the source alone:
   pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
-**The L4 evidence is in better shape than the L3 evidence, which is worth saying because it is the
-opposite of what a reader would assume.** The last recorded full `sh lean/check_lean.sh` pass —
-`PASS (sorry-free)`, 1704 `lake` jobs — was at commit `0c2948a`. Since then **no source file that any
-lid extracts from has changed**: the six extracted codecs are `length`, `big_integer`, `oid`, `tag`,
-`tlv` and `sequence`, and the only `der-verified/src` changes since `0c2948a` are `profile.rs`, the
-`lib.rs` line declaring it, and this pass's three comment-only registry lines. The extraction shims
-`#[path]`-include the individual module files and do not import the crate, so neither `lib.rs` nor
-`profile.rs` can affect them. The lid also re-extracts and fails on drift. So the recorded L4 verdict
-still concerns the bytes shipped at HEAD. (That the shims are `#[path]`-based is a fact about the
-tree; that the last pass was at `0c2948a` is transcribed from that commit's message.)
+**L3 and L4 are now witnessed by the same single run, which removes the separate-artifact drift
+argument earlier versions of this bullet had to make.** The `d05d3f2` run set `DER_REQUIRE_LEAN=1`,
+so the L4 lean-lid stage ran in the same pass as the L3 floor — an absent Aeneas/Charon/Lean stack
+would have *failed* it, not skipped — and printed `lean-lid-status: PASS` / `lean lid: PASS
+(sorry-free)`. The six extracted codecs are `length`, `big_integer`, `oid`, `tag`, `tlv` and
+`sequence`; the lid **re-extracts each from the shipped `.rs` and fails closed on drift**, so its
+PASS at `d05d3f2` concerns exactly the bytes shipped at that commit — including the 2026-09 tag-lid
+value-semantics rewrite, which this run's lid stage covers. Because the lid re-extracts and
+drift-gates on every run, L4 currency is established by the committed run itself and does not rest on
+a hand-tracked "last full pass at commit X, nothing changed since" argument (which rots toward
+over-claiming the moment a lid source lands — the exact defect the derived HEAD-currency check in
+§3.4 replaced).
 
 **Public CI is the one piece of run evidence a third party can inspect without a large machine.**
 `.github/workflows/ci.yml` runs `cargo test`, `cargo clippy -D warnings`, and the memory-tractable

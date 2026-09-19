@@ -1,4 +1,5 @@
 {
+  "carry_over_file": "lean/OidProofs.lean",
   "checked": "lean/OidProofs.lean",
   "claim": "PM/lean-oid",
   "control": {
@@ -7,10 +8,10 @@
     "observed": "red",
     "of_claim": "PM/lean-oid"
   },
-  "produced_at": "2026-08-29T21:27:59.406424+00:00",
+  "produced_at": "2026-09-19T07:05:05.352159+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "sha-512:597b3eaed62f0ff0127381f75c6fc9097963c316486ec8e941a969c713f80701a4ec6567d83a66b2119353cb5bc88fb7fffa07d0345c34ad233fd2d602913ef3",
+  "source_record_hash": "sha-512:60fe7b55a7d7c6f487c6fd13c1dd9bb0965595afca0307dfd6c7a9da18ffed996574a032b81923144267b530ee57001bb9bbcc314b1f1f5f37b982cd123f6075",
   "subject": {
     "commit": "402719a",
     "repo": "rs-verified-der",

@@ -370,7 +370,7 @@ end-to-end at commit `b355f76` and the log is in the repository.
 | L4 Lean | `lean lid: PASS (sorry-free)`, 1704 `lake` jobs — same run |
 | Unsatisfied covers | **3**, and exactly the three `PROOF_MANIFEST.md` §8.2 discloses |
 | Wall / cap | 52 min under `MemoryMax=22G MemorySwapMax=0`, box otherwise idle |
-| Artifacts | `evidence/check-b355f76.log` (distilled) + `evidence/raw/check-b355f76.log.gz` (complete, 28 MB raw, sha256 in the distilled header) |
+| Artifacts | `evidence/check-b355f76.log` (distilled, committed) + the complete raw log kept LOCAL (owner 2026-09-18: `evidence/raw/` is gitignored; available on request; byte count + sha256 in the distilled header) |
 
 **Three things this run settles that prose could not:**
 

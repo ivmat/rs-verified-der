@@ -1,4 +1,5 @@
 {
+  "carry_over_file": "lean/BigIntProofs.lean",
   "checked": "lean/BigIntProofs.lean",
   "claim": "PM/lean-bigint",
   "control": {
@@ -7,10 +8,10 @@
     "observed": "red",
     "of_claim": "PM/lean-bigint"
   },
-  "produced_at": "2026-08-29T21:27:59.408692+00:00",
+  "produced_at": "2026-09-19T07:05:05.357335+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "sha-512:b0f0d0d48659a7915f88150a424c770eeb624bf16b5974b3be143467d167f63cb90d6df6c77f5ef2b9528ba6d9addb5dbd576422f9d1bc31fd4fdf0be6e05325",
+  "source_record_hash": "sha-512:96c99d6d0bd7c5e22d1df04e784bb0d9acb9a8ac9fa0b6f0758f974d2363aa696606a73521d771b7dee51f7d7aef968e147116f59a0c35759e4fca9cbac1bbc7",
   "subject": {
     "commit": "402719a",
     "repo": "rs-verified-der",

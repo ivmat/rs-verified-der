@@ -1,0 +1,92 @@
+[
+  {
+    "run": "R4-bigint-mutated-oracle",
+    "module": "big_integer",
+    "harness": "big_integer::proofs::validate_iff_minimal_oracle",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "big_integer.rs",
+    "defect": "BIG-A: big_integer::validate_integer_content wrong index -- `c1` is bound to content[0] a second time instead of content[1], so the minimality check no longer inspects the byte X.690 8.3.2 keys on (re-witness of mutation-controls-2026-08-30-five-modules' R4, verbatim)"
+  },
+  {
+    "run": "R4-bigint-reverted-oracle",
+    "module": "big_integer",
+    "harness": "big_integer::proofs::validate_iff_minimal_oracle",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "big_integer.rs",
+    "defect": "BIG-A: big_integer::validate_integer_content wrong index -- `c1` is bound to content[0] a second time instead of content[1], so the minimality check no longer inspects the byte X.690 8.3.2 keys on (re-witness of mutation-controls-2026-08-30-five-modules' R4, verbatim)"
+  },
+  {
+    "run": "R3-integer-mutated-minimal",
+    "module": "integer",
+    "harness": "integer::proofs::decode_accepts_only_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted (re-witness of mutation-controls-2026-08-30-five-modules' R3, verbatim)"
+  },
+  {
+    "run": "R3-integer-mutated-positive-padding",
+    "module": "integer",
+    "harness": "integer::proofs::redundant_positive_padding_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted (re-witness of mutation-controls-2026-08-30-five-modules' R3, verbatim)"
+  },
+  {
+    "run": "R3-integer-mutated-negative-padding",
+    "module": "integer",
+    "harness": "integer::proofs::redundant_negative_padding_is_non_minimal",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted (re-witness of mutation-controls-2026-08-30-five-modules' R3, verbatim)"
+  },
+  {
+    "run": "R3-integer-reverted-minimal",
+    "module": "integer",
+    "harness": "integer::proofs::decode_accepts_only_minimal",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "integer.rs",
+    "defect": "INT-A: integer::decode_integer redundant-padding minimality check removed (the two-octet 0x00/0xFF padding rejection commented out), so non-minimal integer encodings are wrongly accepted (re-witness of mutation-controls-2026-08-30-five-modules' R3, verbatim)"
+  },
+  {
+    "run": "R7-tlv-mutated-structure",
+    "module": "tlv",
+    "harness": "tlv::proofs::decode_tlv_structure",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "tlv.rs",
+    "defect": "TLV-A: tlv::decode_tlv reports its consumed count off by one (`end` -> `end + 1` in the returned tuple; the value borrow itself still uses the correct `end`), so a structurally-correct decode misreports how much input it consumed (re-witness of mutation-controls-2026-08-29-seq-tlv-setof's tlv leg, verbatim defect, re-derived anchor since that campaign shipped no committed driver script)"
+  },
+  {
+    "run": "R7-tlv-mutated-roundtrip",
+    "module": "tlv",
+    "harness": "tlv::proofs::tlv_roundtrip_small",
+    "leg": "mutated",
+    "predicted": "RED",
+    "observed": "FAILED",
+    "file": "tlv.rs",
+    "defect": "TLV-A: tlv::decode_tlv reports its consumed count off by one (`end` -> `end + 1` in the returned tuple; the value borrow itself still uses the correct `end`), so a structurally-correct decode misreports how much input it consumed (re-witness of mutation-controls-2026-08-29-seq-tlv-setof's tlv leg, verbatim defect, re-derived anchor since that campaign shipped no committed driver script)"
+  },
+  {
+    "run": "R7-tlv-reverted-structure",
+    "module": "tlv",
+    "harness": "tlv::proofs::decode_tlv_structure",
+    "leg": "reverted",
+    "predicted": "GREEN",
+    "observed": "SUCCESSFUL",
+    "file": "tlv.rs",
+    "defect": "TLV-A: tlv::decode_tlv reports its consumed count off by one (`end` -> `end + 1` in the returned tuple; the value borrow itself still uses the correct `end`), so a structurally-correct decode misreports how much input it consumed (re-witness of mutation-controls-2026-08-29-seq-tlv-setof's tlv leg, verbatim defect, re-derived anchor since that campaign shipped no committed driver script)"
+  }
+]

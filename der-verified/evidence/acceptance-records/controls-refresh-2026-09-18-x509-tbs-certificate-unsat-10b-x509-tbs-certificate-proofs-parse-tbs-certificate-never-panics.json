@@ -1,0 +1,39 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4): [u8; 10] + 2 stubs for the unsat-baseline; [u8; 10] symbolic version-field prefix + a fixed 135-byte concrete TBSCertificate specimen under 3 stubs for the sat-twin, unchanged from planted-twins-2026-08-18.",
+  "checked": "x509_tbs_certificate::proofs::parse_tbs_certificate_never_panics",
+  "claim": "PM/x509_tbs_certificate",
+  "produced_at": "2026-09-19T07:05:05.293577+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:097ca89e8f70e153f5bfba690df8c3732107b13d6bf6051f29139d2280ff4b5decd78c1bcc4321023d4f64ea05bbc92a262d07bdee97a80aa74841023ffd1dc6",
+  "subject": {
+    "commit": "d05d3f2",
+    "repo": "rs-verified-der",
+    "unit": "x509_tbs_certificate"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      },
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness x509_tbs_certificate::proofs::parse_tbs_certificate_never_panics"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

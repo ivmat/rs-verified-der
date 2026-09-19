@@ -1,0 +1,43 @@
+{
+  "bound": "per-harness: each *_parse_faithful/parse_never_panics harness uses a 16-octet symbolic backing array with a symbolic length 0..=16 (a harness tractability bound, disclosed in each harness's own doc comments and in this campaign's README under 'Bounds disclosure' -- Law 6 amendment 2026-09-12, CONTRACT SURFACE / bounded-backing). A targeted single-harness run changes no bound.",
+  "checked": "x509_spki::proofs::parse_faithful",
+  "claim": "PM/x509_spki",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/x509_spki"
+  },
+  "produced_at": "2026-09-19T07:05:05.157241+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "sha-512:297de0d2a82210faf18d11f39de08ae6864944563696047aba3d956891a7682ba7c4c68ce44cf463bac7c5dc0bd2f11c8bb175cc86a461270cfbc87eb6fc25c6",
+  "subject": {
+    "commit": "d05d3f2",
+    "repo": "rs-verified-der",
+    "unit": "x509_spki"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      },
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--harness <fq-name> (per run; see run_contract_control.sh / run_contract_control2.sh / pkcs8_control2_classify.sh -- 24 of 26 legs). The x509_spki/x509_algorithm_identifier control2 legs (x509_spki-control2-classification-red, x509_algorithm_identifier-control2-canonical-oid-red) additionally passed -Z stubbing per x509_control2.sh; neither module's own parse_faithful/parse_never_panics harness uses #[kani::stub] (checked directly against the committed source), so this is a driver-invocation difference, not a harness requirement.",
+      "--harness x509_spki::proofs::parse_faithful"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

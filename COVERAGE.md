@@ -11,7 +11,7 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 [`README.md`](README.md)'s verification map are rebuilt from source by
 `gates/gen_proof_manifest.py`, and this file is written by hand.
 
-**Certified at `130de97`.** §7 states exactly what that word covers, as a procedure you can re-run.
+**Certified at `d05d3f2`.** §7 states exactly what that word covers, as a procedure you can re-run.
 
 ---
 
@@ -20,17 +20,17 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 | | |
 |---|---|
 | subject | crate `der-verified` 0.1.1, sources at `der-verified/src/` |
-| commit | `130de97` |
-| tree state | clean at the certified commit; the run log records `git status --porcelain` sampled clean **at launch and at completion**, not assumed |
+| commit | `d05d3f2` |
+| tree state | clean at the certified commit; the run log records `git status --porcelain` sampled clean **at launch** (`dirty-tracked-paths-at-launch: 0`), not assumed. This run samples at launch only — earlier runs also sampled at completion; this one does not, and the header says so rather than implying a completion sample it did not take. |
 | spec axis | **X.690 (2021) DER encoding rules**, per type + framing; **RFC 5280** profile surface. See §3. |
-| gate receipt | `./check.sh` exit 0 at `bffab69`, `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, run with `DER_REQUIRE_LEAN=1` |
-| proof floor (L3) | **210 of 210 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-2026-09-18-trackb.log` (contract-campaign + x509 Track B tree; +7 `*_parse_faithful`) |
+| gate receipt | `./check.sh` exit 0 at `d05d3f2`, `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, run with `DER_REQUIRE_LEAN=1` |
+| proof floor (L3) | **210 of 210 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-d05d3f2.log` (contract-campaign + x509 Track B tree; +7 `*_parse_faithful`) |
 | unbounded lids (L4) | 6 lids in Lean, `lean lid: PASS (sorry-free)`, re-extracted from the shipped `.rs`; `lid-source-state.txt unchanged (hashes identical)` |
 | tests | 530 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
 | unsafe | 0 `unsafe` blocks; the crate is `#![forbid(unsafe_code)]` |
 | toolchain | Kani `0.67.0`, CBMC `6.8.0` (kani-bundled, read from the run's own output), CaDiCaL 2.0.0, rustc `1.97.0`, Lean 4 `v4.30.0-rc2` |
-| cost | 1h11m07s wall, peak 20.43 GiB. **That peak is systemd cgroup-wide `MemoryPeak`, sampled every 20 s** — a different measure from the previous run's 20.26 GiB (`/usr/bin/time -v` largest-single-process RSS). Do not read a trend across the two. |
-| freshness | the run at `bffab69` speaks for HEAD iff `git diff bffab69..HEAD -- der-verified/src lean` is empty. **Run that command; do not trust this sentence.** |
+| cost | 1h14m19s wall (04:46:08Z → 06:00:27Z), harnesses run sequentially (no `-j`). **Peak memory was NOT captured for this run** — the systemd `MemoryPeak` for the unit was not retained at read time, and the run header says so; earlier runs recorded ~20.4 GiB, but this run carries no comparable figure and none is invented. The ≥24 GiB RAM floor in the `G` recipe (§4) still bounds it. |
+| freshness | the run at `d05d3f2` speaks for HEAD iff `git diff d05d3f2..HEAD -- der-verified/src lean` is empty. **Run that command; do not trust this sentence.** |
 
 **Two toolchain caveats stated up front,** because they bound everything below:
 
@@ -93,8 +93,8 @@ precisely the failure this format exists to prevent. **The `DER-F-8` split was n
 first draft** — the row carried both grades at once until a checker refused it.
 
 **That more than half the rows are admitted is this table working, not failing.** The crate's own
-headline is "210 of 210 harnesses SUCCESSFUL". That is true, and it invites the reading that 208 of
-203 *rules* are decided. Compare `DER-F-4` (weighted: a Lean lid over all input lengths) with
+headline is "210 of 210 harnesses SUCCESSFUL". That is true, and it invites the reading that every
+*rule* is decided. Compare `DER-F-4` (weighted: a Lean lid over all input lengths) with
 `DER-X-BOUND` (admitted: a compositional argument nobody has machine-checked). Both sit under the
 same green check. This table's job is to stop them reading alike.
 
@@ -134,14 +134,14 @@ Item ids are stable and never reused. Rule references are to X.690 (2021) unless
 
 ## 4. Self-verify recipes
 
-All commands run from the repository root at `130de97`. `<H>` = a harness path of the form
+All commands run from the repository root at `d05d3f2`. `<H>` = a harness path of the form
 `<module>::proofs::<fn>`.
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 210 Kani harnesses. Needs ≥24 GB RAM, ~71 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 210 Kani harnesses. Needs ≥24 GB RAM, ~74 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Six modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension` — see `gates/tiers.txt`. |
-| **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-bffab69.log` | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
+| **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-d05d3f2.log` | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
 | **T** `<filter>` | `cargo test --manifest-path Cargo.toml <filter>` | `test result: ok`. Point evidence only. |
 | **A** `<pattern>` | a grep that **must return nothing**, with its positive control | Used only by `not-covered` rows. A grep-zero is a claim about your pattern, so each A-recipe carries the control input that *would* match. See the warning below. |
@@ -461,7 +461,7 @@ The outermost parsers are proved panic-free on buffers **an order of magnitude s
 input**: `x509_certificate` at ≤12 bytes against a ~170-byte certificate, `rsa_private_key` at ≤20
 bytes against a ~317-byte key. Real-size panic-freedom rests on a compositional argument that is
 written down and reviewed but **not machine-checked**. This is the single largest gap between what
-"203/203 verified" sounds like and what it is.
+"210/210 verified" sounds like and what it is.
 
 **The ≤12-byte bound is a CI-time floor, not a capability ceiling (measured 2026-09-17).** The same
 `x509_certificate` outer-framing harness (TBS parser stubbed) was re-run at increasing buffer/unwind
@@ -475,15 +475,16 @@ stands unchecked for the inner structure; and (2) the growth is super-linear, so
 a proof-*tractability* limit (the model checker self-diagnoses the state-space growth), not a tool
 defect — it is not a solver/codegen bug.
 
-**Frontier re-measured 2026-09-18 (committed artifact this time).** The N=128 point was reproduced
-(unwind 136, ~16.9 GB, ~41 min; `evidence/check-2026-09-17-contract.log` records the tree, and the climb
-logs are transient) and the bound was pushed further: **N=150 verifies panic-free** (unwind 158, ~21.1 GB,
+**Frontier re-measured 2026-09-18.** The N=128 point was reproduced (unwind 136, ~16.9 GB, ~41 min)
+and the bound was pushed further: **N=150 verifies panic-free** (unwind 158, ~21.1 GB,
 ~70 min) — a real extension past N=128, with cost growing super-linearly. **N=170 (real-certificate size)
 is a solver-agnostic wall:** both cadical (>60 min) and kissat (>100 min) exceed budget without a verdict
 (timeout, not OOM), so a stronger SAT solver does not extend reach — the limit is proof state-space, not
 solver choice. All of this remains **TBS-stubbed outer framing**; it narrows the outer gap and does not
 touch the inner-structure compositional argument. A bounded panic-freedom probe at a larger N is still a
-probe (Law 6), recorded as a measured capability, never banked as a contract row.
+probe (Law 6), recorded as a measured capability, never banked as a contract row. The N=128/150/170
+climb logs are transient and kept local (available on request), not committed; the committed floor
+artifact is `evidence/check-d05d3f2.log`.
 
 ### 6.6 The strongest and weakest layers are inverted relative to your risk
 
@@ -499,18 +500,18 @@ uncovered semantics, with three unsatisfied covers and the smallest bounds in th
 TBS-stubbed, so the inner-structure compositional gap stays open.)
 
 That is not a defect; it is the honest cost curve — those are the 7–20 GB harnesses, and the crate
-says so. It is invisible in "203 of 203", and visible in one glance here.
+says so. It is invisible in "210 of 210", and visible in one glance here.
 
 ---
 
-## 7. What "certified at `130de97`" means
+## 7. What "certified at `d05d3f2`" means
 
 The word is only worth something if it names a procedure, so here is the one that ran. It is
 deliberately mechanical, because the point is that someone who does not trust the author can re-run
 it.
 
-1. **Freshness.** `git diff bffab69..HEAD -- der-verified/src lean` → empty. **That scoped command
-   is the claim** — no proof-bearing source has moved since the receipt, so the `bffab69` run still
+1. **Freshness.** `git diff d05d3f2..HEAD -- der-verified/src lean` → empty. **That scoped command
+   is the claim** — no proof-bearing source has moved since the receipt, so the `d05d3f2` run still
    speaks for HEAD. The unscoped diff is *not* empty and is not supposed to be: it carries
    [`CHANGELOG.md`](CHANGELOG.md), [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md), the evidence logs, and
    this file and the gate change that introduced it. **A document is part of the tree it describes,
@@ -523,11 +524,11 @@ it.
    HEAD. The receipt-specific figures beside them (tool versions, wall-clock, peak memory) are read
    out of the run log's own header instead, because they are properties of a run and not of the
    source; they are not re-derivable and are not claimed to be.
-3. **Every `K` recipe re-checked, mechanically.** All 82 distinct harness paths named in the `verify`
+3. **Every `K` recipe re-checked, mechanically.** All 91 distinct harness paths named in the `verify`
    column were extracted from this file and checked twice: that the function still exists in the
    module it names at HEAD, and that a `Checking harness <H>...` line for it appears in
-   `evidence/check-bffab69.log`. **82 of 82 passed both.** The run those lines belong to closed
-   `Complete - 203 successfully verified harnesses, 0 failures, 203 total`, so no cited harness is
+   `evidence/check-d05d3f2.log`. **91 of 91 passed both.** The run those lines belong to closed
+   `Complete - 210 successfully verified harnesses, 0 failures, 210 total`, so no cited harness is
    stale, renamed, or unrun.
 4. **Every `A` recipe actually executed**, with its positive control. This is the step that found the
    broken profile absence-grep described in §4, and the step that re-*reading* rather than

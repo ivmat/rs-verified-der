@@ -32,10 +32,11 @@ scope boundary referenced below.
 - [x] **Ran `./check.sh` end-to-end and committed the log under `evidence/`** (2026-07-30, at commit
       `b355f76`): **164 `VERIFICATION: SUCCESSFUL`, 0 `FAILED`**, `cargo test` 309 green and the L4
       Lean gate `PASS (sorry-free)` (1704 `lake` jobs) in the same run — 52 min wall, sequential
-      harnesses, `MemoryMax=22G` cgroup scope. Two artifacts per run: a distilled per-harness verdict
-      log (what the generator parses) plus the complete 28 MB raw log gzipped under `evidence/raw/`,
-      with the distilling `grep` and the raw log's sha256 stated in the distilled file's header, so
-      the projection is checkable rather than trusted. **Exactly three harnesses reported an
+      harnesses, `MemoryMax=22G` cgroup scope. Per run: a committed distilled per-harness verdict log
+      (what the generator parses) plus the complete raw log kept LOCAL (owner 2026-09-18:
+      `evidence/raw/` is gitignored; available on request), with the distilling `grep` and the raw
+      log's byte count + sha256 stated in the distilled file's header, so the projection is checkable
+      against the raw (on request) rather than trusted. **Exactly three harnesses reported an
       unsatisfied cover, and they are exactly the three §8.2 discloses** — one of which
       (`x509_extension`) had never previously reached a verdict at all. This closes the old
       "164/164 is not a single run at HEAD" caveat: the run covers `tag.rs` and `profile` as they

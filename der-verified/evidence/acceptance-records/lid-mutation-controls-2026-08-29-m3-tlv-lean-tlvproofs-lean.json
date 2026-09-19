@@ -1,4 +1,5 @@
 {
+  "carry_over_file": "lean/TlvProofs.lean",
   "checked": "lean/TlvProofs.lean",
   "claim": "PM/lean-tlv",
   "control": {
@@ -7,10 +8,10 @@
     "observed": "red",
     "of_claim": "PM/lean-tlv"
   },
-  "produced_at": "2026-08-29T21:27:59.402002+00:00",
+  "produced_at": "2026-09-19T07:05:05.342905+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "sha-512:dc5f2eb28150a558d2a2e2bfc6381fccd45c253bc9a1ab17c6042735570b120c4b7b5964ba473bcfa477eb6b32187b969ea188536701fd00dd4fc8cf3dc429a8",
+  "source_record_hash": "sha-512:d78a7a95c8132f2b982e9a25f2edc13a8be5a1d00a56e171c4e34beb0c790d85c943efc2088401792625a5367db2f3f43981d240a9071276bb29315f25d1db19",
   "subject": {
     "commit": "402719a",
     "repo": "rs-verified-der",

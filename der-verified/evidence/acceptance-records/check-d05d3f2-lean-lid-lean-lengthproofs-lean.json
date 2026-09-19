@@ -1,0 +1,36 @@
+{
+  "checked": "lean/LengthProofs.lean",
+  "claim": "PM/lean-length",
+  "produced_at": "2026-09-19T07:05:05.316170+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "sha-512:03931ca82d904b6bc422c4e4376780542f671c94a1376a9b1ae1e4cf4afc54a491fe4aa15e0564ba70ed8eaa7cb6a6e835f978f8ad070b6a42e9e54153fbf595",
+  "subject": {
+    "commit": "d05d3f2",
+    "repo": "rs-verified-der",
+    "unit": "lean/LengthProofs.lean"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "aeneas",
+        "version": "45061fa1a5b4bad876f17c03d3a5544d818622e6"
+      },
+      {
+        "name": "charon",
+        "version": "40ee060a8df43f4e7e0842d3f05387b0a4426aaf"
+      },
+      {
+        "name": "extraction-rust-toolchain",
+        "version": "nightly-2026-06-01"
+      }
+    ],
+    "features": null,
+    "flags": [
+      "lake build (via lean/check_lean.sh)",
+      "re-extract + drift check"
+    ],
+    "name": "lean4",
+    "version": "leanprover/lean4:v4.30.0-rc2"
+  }
+}

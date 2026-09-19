@@ -9,10 +9,10 @@
     "observed": "green",
     "of_claim": "PM/tag"
   },
-  "produced_at": "2026-08-29T21:27:59.077331+00:00",
+  "produced_at": "2026-09-19T07:05:04.611032+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "sha-512:74139ea862fbc6dd178a779ae00ed44b02b2102c2acdcb9a7649dab57f46b45b0270f74de737062e56c6e59b442d954733fbeec600e89a052e8356a363f38a14",
+  "source_record_hash": "sha-512:71c2f4cb3e856a0245b3bd55e4d003647c671077e644553fa715ef3a5e78f4c35331fd49bd35fbda81161cbf7fb97e8d32fe4c0a5e6d764b6bf267bedb253b80",
   "subject": {
     "commit": "69bbc9f",
     "repo": "rs-verified-der",
@@ -21,12 +21,16 @@
   "tool": {
     "dependencies": [
       {
-        "name": "cbmc",
-        "version": "6.8.0"
-      },
-      {
         "name": "cadical",
         "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      },
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
       }
     ],
     "features": [],

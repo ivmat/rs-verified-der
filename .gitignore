@@ -6,3 +6,6 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# Raw full-gate logs stay LOCAL (owner 2026-09-18: too big for repo; distilled logs are the committed evidence, raw available on request)
+evidence/raw/

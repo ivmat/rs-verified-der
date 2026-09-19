@@ -1,0 +1,16 @@
+[
+ {
+  "id": "M2-tag",
+  "file": "lean/TagProofs.lean",
+  "kind": "statement",
+  "desc": "raise tag_decode_used_bounds's lower consumption bound from 1 to 2 (a low-tag decode consumes 1) -- re-witness of lid-mutation-controls-2026-08-29's M2-tag, verbatim mutation, against d05d3f2 (TagProofs.lean grew +622 lines since 402719a, the flagship tag value-semantics campaign, 8fa75d4)",
+  "baseline_sha256": "2f1b11885848f336ff9b767ee5e45cf905fa10959f501d98d8155f16ce4d7877",
+  "restored_sha256": "2f1b11885848f336ff9b767ee5e45cf905fa10959f501d98d8155f16ce4d7877",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 20,
+  "reverted_rc": 0,
+  "reverted_wall": 15,
+  "observed": "RED"
+ }
+]

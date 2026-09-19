@@ -7,8 +7,8 @@
 A DER (X.690) encoding/decoding core in Rust **under formal verification**, with re-runnable
 evidence and an explicit claim-by-claim assurance map.
 
-**Status:** pre-1.0 (`0.1.1`). Today **13 of 39** manifest claims reach the target assurance band A3
-or better; **26 do not** (14 are A1 and 12 are A0). The crate is therefore not uniformly formally
+**Status:** pre-1.0 (`0.1.1`). Today **20 of 39** manifest claims reach the target assurance band A3
+or better; **19 do not** (7 are A1 and 12 are A0). The crate is therefore not uniformly formally
 verified and is not done. Proofs are bounded except for the selected Lean properties below; the API
 is unstable, with no production deployment record. Evaluate it as a building block, not a hardened parser.
 
@@ -61,7 +61,7 @@ separate axis (`contract`, `probe`, or `ungraded`). The map is per module; use
 decided. White dashed boxes are declared non-claims.
 
 <!-- BEGIN GENERATED:map (gates/gen_verification_map.py) -->
-**Colour is the assurance BAND, not the tool.** Target: band **A3** or better on every claim. Today **13 of 39** claims reach A3 or better, and **26** do not — so this crate is not done, and the picture is drawn to show that rather than to hide it.
+**Colour is the assurance BAND, not the tool.** Target: band **A3** or better on every claim. Today **20 of 39** claims reach A3 or better, and **19** do not — so this crate is not done, and the picture is drawn to show that rather than to hide it.
 
 ```mermaid
 flowchart TB
@@ -86,13 +86,14 @@ flowchart TB
     end
     subgraph structural_layer["X.509 structural composition"]
         direction LR
-        structural_a1_probe_unweighted["A1 · grade: probe · unweighted<br/>x509_algorithm_identifier · x509_certificate · x509_extension · x509_name<br/>x509_spki · x509_tbs_certificate · x509_validity"]:::a1
+        structural_a3_contract_weighted["A3 · grade: contract · weighted<br/>x509_algorithm_identifier · x509_spki"]:::a3
+        structural_a1_probe_unweighted["A1 · grade: probe · unweighted<br/>x509_certificate · x509_extension · x509_name · x509_tbs_certificate<br/>x509_validity"]:::a1
         structural_planned["no claim — planned<br/>X.509 structural-module Lean lid (L4)"]:::noclaim
     end
     subgraph codecs_layer["DER content codecs"]
         direction LR
-        codecs_a3_contract_weighted["A3 · grade: contract · weighted<br/>big_integer · integer · oid · sequence"]:::a3
-        codecs_a1_probe_unweighted["A1 · grade: probe · unweighted<br/>context_tag · ec_private_key · ecdsa_sig_value · encrypted_private_key_info<br/>pkcs8 · rsa_private_key · rsa_public_key"]:::a1
+        codecs_a3_contract_weighted["A3 · grade: contract · weighted<br/>big_integer · ec_private_key · ecdsa_sig_value · encrypted_private_key_info<br/>integer · oid · pkcs8 · rsa_public_key<br/>sequence"]:::a3
+        codecs_a1_probe_unweighted["A1 · grade: probe · unweighted<br/>context_tag · rsa_private_key"]:::a1
         codecs_a0_ungraded_unweighted["A0 · grade: ungraded · unweighted<br/>bit_string · boolean · enumerated · generalized_time<br/>identifier_form · null · octet_string · restricted_string<br/>set_of · utc_time · utf8_string"]:::a0
         codecs_out_of_scope["no claim — deliberately out of scope<br/>General SET (X.690 §10.3)"]:::noclaim
     end
@@ -108,11 +109,11 @@ flowchart TB
     crypto_layer -.-> profile_layer --> structural_layer --> codecs_layer --> framing_layer
 
     subgraph legend["Legend"]
-        legend_all["colour = assurance BAND: what a reader may assume without re-running anything<br/>A4 unbounded functional proof, kernel-checked, red mutation control — 6 claim(s)<br/>A3 bounded functional contract, red mutation control — 7 claim(s)<br/>A2 memory safety on the unsafe surface, with a control — 0 claim(s)<br/>A1 non-vacuous but not state-exhaustive, and no functional control — 14 claim(s)<br/>A0 ran or asserted, with NO control watched to fail — the claim is not done — 12 claim(s)<br/>white dashed = no claim in the manifest (planned · wall · out of scope), DECLARED<br/>grade is a SEPARATE axis: contract = decides a functional postcondition · probe = spot-check, typically panic-freedom · ungraded = no graded oracle"]:::unrated
+        legend_all["colour = assurance BAND: what a reader may assume without re-running anything<br/>A4 unbounded functional proof, kernel-checked, red mutation control — 6 claim(s)<br/>A3 bounded functional contract, red mutation control — 14 claim(s)<br/>A2 memory safety on the unsafe surface, with a control — 0 claim(s)<br/>A1 non-vacuous but not state-exhaustive, and no functional control — 7 claim(s)<br/>A0 ran or asserted, with NO control watched to fail — the claim is not done — 12 claim(s)<br/>white dashed = no claim in the manifest (planned · wall · out of scope), DECLARED<br/>grade is a SEPARATE axis: contract = decides a functional postcondition · probe = spot-check, typically panic-freedom · ungraded = no graded oracle"]:::unrated
     end
 ```
 
-Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `402719a`, generated `2026-09-04T23:08:58Z`. A band above A0 needs a control that was watched to fail, so nothing here can be raised by adding harnesses alone.
+Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `d05d3f2`, generated `2026-09-19T07:05:20Z`. A band above A0 needs a control that was watched to fail, so nothing here can be raised by adding harnesses alone.
 <!-- END GENERATED:map -->
 
 ## Strict decoding

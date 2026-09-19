@@ -1,0 +1,10 @@
+run	module	harness	leg	predicted
+R4-bigint-mutated-oracle	big_integer	big_integer::proofs::validate_iff_minimal_oracle	mutated	RED
+R4-bigint-reverted-oracle	big_integer	big_integer::proofs::validate_iff_minimal_oracle	reverted	GREEN
+R3-integer-mutated-minimal	integer	integer::proofs::decode_accepts_only_minimal	mutated	RED
+R3-integer-mutated-positive-padding	integer	integer::proofs::redundant_positive_padding_is_non_minimal	mutated	RED
+R3-integer-mutated-negative-padding	integer	integer::proofs::redundant_negative_padding_is_non_minimal	mutated	RED
+R3-integer-reverted-minimal	integer	integer::proofs::decode_accepts_only_minimal	reverted	GREEN
+R7-tlv-mutated-structure	tlv	tlv::proofs::decode_tlv_structure	mutated	RED
+R7-tlv-mutated-roundtrip	tlv	tlv::proofs::tlv_roundtrip_small	mutated	RED
+R7-tlv-reverted-structure	tlv	tlv::proofs::decode_tlv_structure	reverted	GREEN
