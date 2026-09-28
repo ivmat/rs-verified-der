@@ -4,8 +4,9 @@
 consumer closure. It is generated material. Do not edit any file below that
 directory by hand.
 
-- Release tag: `acceptance-v0.3.2`
-- Source commit: `d22080c8ad2efe858e9e6788d270eed92b3f6345`
+- Source: public repository `https://github.com/ivmat/acceptance-format`
+  (family version 0.3.2; this commit carries no git tag in that repository)
+- Source commit: `455ca4f84ada3fc51eed30942696f34d118e1a59`
 - Closure inventory: `acceptance/CLOSURE.json`
 
 The closure supplies its own verifier. It checks every listed file hash, the
@@ -14,15 +15,16 @@ bytecode caches. Run vendored Python with bytecode writing disabled.
 
 ## Re-vendoring
 
-1. From a clean checkout of the pinned release, export to a fresh
-   `gates/vendor/acceptance/` destination with the release's
+1. Clone the public repository `https://github.com/ivmat/acceptance-format` at
+   the pinned commit, and export to a fresh `gates/vendor/acceptance/`
+   destination with that checkout's
    `protocol_acceptance/tools/export_closure.py` tool.
 2. Verify the copy:
 
    ```sh
    PYTHONDONTWRITEBYTECODE=1 python3 -B gates/vendor/acceptance/export_closure.py verify \
      --dest gates/vendor/acceptance \
-     --expect-commit d22080c8ad2efe858e9e6788d270eed92b3f6345 --require-clean
+     --expect-commit 455ca4f84ada3fc51eed30942696f34d118e1a59 --require-clean
    ```
 
 3. Re-emit `der-verified/acceptance.toml` and its projected evidence records

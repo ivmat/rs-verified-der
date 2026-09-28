@@ -4,9 +4,10 @@
 # never edited to taste — if a number here is wrong, the run is what to re-examine.
 #
 # HOW TO CHECK IT YOURSELF. The checker is the acceptance 0.3.2 validator, pinned at
-# protocol tag acceptance-v0.3.2 and vendored whole into the source repository at
-# gates/vendor/acceptance/ (see gates/vendor/acceptance/CLOSURE.json for the exact
-# commit this file was generated against), so you can check it with the same one:
+# the public ivmat/acceptance-format commit 455ca4f84ada3fc51eed30942696f34d118e1a59
+# and vendored whole into the source repository at gates/vendor/acceptance/ (see
+# gates/vendor/acceptance/CLOSURE.json for the exact commit this file was generated
+# against), so you can check it with the same one:
 #
 #   python3 gates/vendor/acceptance/format_acceptance/tools/check_acceptance.py --strict --strict-weight der-verified/acceptance.toml
 #
@@ -43,7 +44,7 @@
 # READ THE UNWEIGHTED CLAIMS. A weighted claim carries a control that was WATCHED TO
 # FAIL; an unweighted one does not, and each says why in its own entry. The count of
 # claims is inventory, never a coverage guarantee.
-# Checked against acceptance 0.3.2, protocol tag acceptance-v0.3.2, commit d22080c8ad2efe858e9e6788d270eed92b3f6345
+# Checked against acceptance 0.3.2, public ivmat/acceptance-format commit 455ca4f84ada3fc51eed30942696f34d118e1a59
 # (gates/vendor/acceptance/CLOSURE.json).
 
 [format]

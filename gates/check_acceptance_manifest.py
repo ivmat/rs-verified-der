@@ -21,9 +21,11 @@ VALIDATOR = VENDOR / "format_acceptance" / "tools" / "check_acceptance.py"
 CLOSURE = VENDOR / "CLOSURE.json"
 VENDOR_DOC = ROOT / "gates" / "vendor" / "VENDOR.md"
 STORE = PACKAGE / "evidence" / "acceptance-records"
-PINNED_PROTOCOL_COMMIT = "d22080c8ad2efe858e9e6788d270eed92b3f6345"
+# Public ivmat/acceptance-format commit the vendored closure is pinned to (family
+# version 0.3.2; this commit carries no git tag in that repository).
+PINNED_PROTOCOL_COMMIT = "455ca4f84ada3fc51eed30942696f34d118e1a59"
 _MANIFEST_PIN_RE = re.compile(
-    r"^# Checked against acceptance 0\.3\.2, protocol tag acceptance-v0\.3\.2, commit "
+    r"^# Checked against acceptance 0\.3\.2, public ivmat/acceptance-format commit "
     r"([0-9a-f]{40})$",
     re.MULTILINE,
 )
