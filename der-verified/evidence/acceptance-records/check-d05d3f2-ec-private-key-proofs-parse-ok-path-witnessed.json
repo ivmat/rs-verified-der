@@ -5,7 +5,7 @@
   "produced_at": "2026-09-19T07:05:03.948785+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "sha-512:4effb65dc48a78a12babc7724da39b0e554acb71f42c746b75a442b381ee22b9e8811b9a7808c4340aa49a217db2e8f4e50e1b64840be9cf71609cd38a749670",
+  "source_record_hash": "record:sha-512:52153d59f3fd062372b42765470a30a54693de71f3df866ad54c7ee15096b7f373aa83242a39f7c4b52fb766da089e803d51f2d27c295c533f75a2e6fc980520",
   "subject": {
     "commit": "d05d3f2",
     "repo": "rs-verified-der",
