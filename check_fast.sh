@@ -35,11 +35,11 @@ echo "== Lean dependency-path gate (lakefile and manifest use the same location-
 python3 "$ROOT/gates/check_lean_dependency_path.py"
 echo "== replay CLI gate: --with-lean is explicit and fail-closed (pure stdlib) =="
 python3 "$ROOT/gates/test_replay_cli.py"
-echo "== acceptance-manifest gate (acceptance.toml vs the PINNED vendored validator; pure stdlib) =="
+echo "== acceptance-manifest gate (acceptance.toml vs the verified vendored closure; strict) =="
 # der-verified/acceptance.toml is this crate's machine-readable certificate, shipped INSIDE the
 # published package (ruling R-8), and it is GENERATED. This
-# re-validates it with the validator vendored in gates/vendor/ (verifying that validator's own
-# bytes against their recorded hashes first), and checks the projected evidence store in BOTH
+# re-validates it with the strict validator in the verified vendored closure, and checks the
+# projected evidence store in BOTH
 # directions: every cited record resolves inside the store, and no projection sits there uncited.
 python3 "$ROOT/gates/check_acceptance_manifest.py"
 echo "== cargo test (workspace) =="

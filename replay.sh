@@ -294,7 +294,7 @@ if [ "$before_sha" = "$after_sha" ]; then
     exit 1
 fi
 
-run_timed s5 python3 "$ROOT/gates/vendor/acceptance-format/check_acceptance.py" \
+run_timed s5 python3 -B "$ROOT/gates/vendor/acceptance/format_acceptance/tools/check_acceptance.py" \
     --strict --strict-weight "$S5_DIR/der-verified/acceptance.toml"
 if [ "$RC" -ne 0 ] && grep -q 'record_hash MISMATCH' "$OUTLOG"; then
     observed="REJECT"

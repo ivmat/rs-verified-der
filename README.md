@@ -26,7 +26,9 @@ Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the exact properties, bounds, 
 [`ASSUMPTIONS.md`](ASSUMPTIONS.md) for the trusted base; and generated
 [`acceptance.toml`](der-verified/acceptance.toml) for every claim's evidence, grade and weight. The
 manifest and [records](der-verified/evidence/acceptance-records/) ship in the crate; the
-[crate README](der-verified/README.md) explains what remains repository-only.
+[crate README](der-verified/README.md) explains what remains repository-only. The manifest follows
+acceptance format 0.3.2 with the Rust verification profile; its generated header names the exact
+validator-closure commit.
 
 ## Scope
 
@@ -113,7 +115,7 @@ flowchart TB
     end
 ```
 
-Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `d05d3f2`, generated `2026-09-19T07:05:20Z`. A band above A0 needs a control that was watched to fail, so nothing here can be raised by adding harnesses alone.
+Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `d05d3f2`, generated `2026-09-28T12:43:51Z`. A band above A0 needs a control that was watched to fail, so nothing here can be raised by adding harnesses alone.
 <!-- END GENERATED:map -->
 
 ## Strict decoding

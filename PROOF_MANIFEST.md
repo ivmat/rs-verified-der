@@ -5,6 +5,10 @@ under what assumptions and stubs — and, given equal weight, **what is not**. I
 reader who is not going to read 210 proof harnesses and 6 Lean developments can still know what
 they are being offered, and where the guarantee stops.
 
+Its machine-readable companion is `der-verified/acceptance.toml`. It follows acceptance format
+0.3.2 with the Rust verification profile and names its exact validator-closure commit in the
+generated header.
+
 > ## The rule this document is written under
 >
 > **Counts are inventory, not coverage.** "210 Kani harnesses, 6 Lean lids, 530 tests" describes how

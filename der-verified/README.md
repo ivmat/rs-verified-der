@@ -42,19 +42,16 @@ Some of the evidence travels with the crate and some of it does not, so here is 
   cargo kani --harness integer::proofs::decode_accepts_only_minimal --exact -Z stubbing
   ```
 - **`acceptance.toml`** — the proof envelope in machine-checkable form: every claim with its grade,
-  its evidence, and whether it is *weighted*. **13 of 39 claims are weighted**, meaning they carry a
-  mutation control that was watched to fail; the other 26 are published as unweighted, each stating
+  its evidence, and whether it is *weighted*. It follows acceptance format 0.3.2 with the Rust
+  verification profile. **20 of 39 claims are weighted**, meaning they carry a mutation control
+  that was watched to fail; the other 19 are published as unweighted, each stating
   why.
-- **All 273 evidence records** in `evidence/acceptance-records/` — including the 17 Lean-lid
+- **All 295 evidence records** in `evidence/acceptance-records/` — including the Lean-lid
   records, so the Lean results are *readable and hash-checkable* here even though the proofs
   themselves are not.
 - The manifest's `record` paths are relative to the manifest, so they resolve inside the unpacked
-  crate. Check it offline with the acceptance/0 validator from
-  [github.com/ivmat/acceptance-format](https://github.com/ivmat/acceptance-format), at the revision
-  the manifest's own `validator_sha` names (`c8c00bb`):
-  ```sh
-  python3 check_acceptance.py --strict --strict-weight acceptance.toml
-  ```
+  crate. In a source checkout, `./check_fast.sh` verifies the pinned validator closure and checks
+  this manifest in strict mode.
 
 **Repository only** (not in the package):
 
