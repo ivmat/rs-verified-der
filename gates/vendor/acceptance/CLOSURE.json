@@ -1,0 +1,87 @@
+{
+  "family_version": "0.3.2",
+  "files": [
+    {
+      "path": "export_closure.py",
+      "sha256": "d9816491da50b9870a23d1c478c11345195639ea5cd67cd3a3dd5a2e435047d4"
+    },
+    {
+      "path": "format_acceptance/profiles/bindings/code.md",
+      "sha256": "7eec61de6bbf4360c730b0466d5407d686d4b2a060a43505a6591f85148406e0"
+    },
+    {
+      "path": "format_acceptance/profiles/bindings/code/rust.md",
+      "sha256": "8738d5c67f53d9281ede539621ef734d989c71045e94820742534ad757d1c844"
+    },
+    {
+      "path": "format_acceptance/tools/acceptance_grammar.py",
+      "sha256": "2dda7a695766029e96ae4aaf20a7c2c61be87bbc91d1e27885c9d2baf76e12d1"
+    },
+    {
+      "path": "format_acceptance/tools/bindings/__init__.py",
+      "sha256": "1c20dc0a311069219fffd2b41ed3561364d1c21679640c04597d4573f9c24787"
+    },
+    {
+      "path": "format_acceptance/tools/bindings/code.py",
+      "sha256": "65eeb7f7f370cb1be99c56180096e4917b13fedf32eeef9e75e3bde1bdbdc5dd"
+    },
+    {
+      "path": "format_acceptance/tools/bindings/code_rust.py",
+      "sha256": "f9b17ea1982fa26527ee828e54138346460bdf7b61ad4a5b76d3b41287b00fb8"
+    },
+    {
+      "path": "format_acceptance/tools/check_acceptance.py",
+      "sha256": "c62cac8c0a60ce408f660793012bca4ee8f38fdd43c7e020d2fd768731a291d0"
+    },
+    {
+      "path": "format_acceptance/tools/check_core.py",
+      "sha256": "533229b3d64331dde96e363860512e6d503b3a9086a968dad8e825bcf42be0dd"
+    },
+    {
+      "path": "format_acceptance/tools/hashdomains.py",
+      "sha256": "7b3d3d0a8bdee2af59d30ca35f648b3728a8723cd8d898d1ac6c561cf0a7024b"
+    },
+    {
+      "path": "format_acceptance/tools/profiles/__init__.py",
+      "sha256": "98811913fcfc6e07091f38196df1712d350c7df3b00f1c008821b9a58c3657a0"
+    },
+    {
+      "path": "format_acceptance/tools/profiles/conformance.py",
+      "sha256": "0a0494367a2141347b8f83d7b16668153471eaa27dd804a38c3b937dcd65a80f"
+    },
+    {
+      "path": "format_acceptance/tools/profiles/troubleshooting.py",
+      "sha256": "0fe29309b0982f7d05a5abfb8f8ec1387b7b8ca76d194100fb509180d8d21248"
+    },
+    {
+      "path": "format_acceptance/tools/profiles/verification.py",
+      "sha256": "08899022cc6f4a979fa791c1638ebb04bb900a2dfcd8cee06eadaf257fe7f61d"
+    },
+    {
+      "path": "format_acceptance/tools/spec_inventory.py",
+      "sha256": "ffa2c5f1f96890c9caa8656890c1d41e71c37b7d1364cf8c26c9ddb95a2d53ba"
+    },
+    {
+      "path": "protocol_acceptance/spec/assurance-classes.toml",
+      "sha256": "9c2c0ad6f5db2ab1b0639a68dcc5b6390af3e1f29e5ed779a5db4033adc73b2d"
+    },
+    {
+      "path": "protocol_acceptance/spec/states.toml",
+      "sha256": "e536de5f8941e38b2e55b592d8885556a6f9fc2444aee756053e2acfc97ccc31"
+    },
+    {
+      "path": "protocol_acceptance/tools/acceptance_protocol.py",
+      "sha256": "6beb6ad251f133c84548100c1c09d1ac0049fa55b3f429fb10f583c6fc382305"
+    },
+    {
+      "path": "protocol_acceptance/tools/m11.py",
+      "sha256": "7ed2989b869ab4a0be9a8c2a72c9ba663fe19cadbe27ffc15c5fbbde37c9080a"
+    },
+    {
+      "path": "protocol_acceptance/tools/profiles.py",
+      "sha256": "e432f9ccf286fe56d60074ea7252f0adedb8b5b0b42b98929dc464befdfd2de9"
+    }
+  ],
+  "source_commit": "d22080c8ad2efe858e9e6788d270eed92b3f6345",
+  "source_dirty": false
+}
