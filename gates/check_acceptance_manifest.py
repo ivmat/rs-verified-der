@@ -25,7 +25,7 @@ STORE = PACKAGE / "evidence" / "acceptance-records"
 # version 0.3.2; this commit carries no git tag in that repository).
 PINNED_PROTOCOL_COMMIT = "455ca4f84ada3fc51eed30942696f34d118e1a59"
 _MANIFEST_PIN_RE = re.compile(
-    r"^# Checked against acceptance 0\.3\.2, public ivmat/acceptance-format commit "
+    r"^# Checked against acceptance 0\.3\.2, ivmat/acceptance-format commit "
     r"([0-9a-f]{40})$",
     re.MULTILINE,
 )

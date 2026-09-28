@@ -44,7 +44,7 @@
 # READ THE UNWEIGHTED CLAIMS. A weighted claim carries a control that was WATCHED TO
 # FAIL; an unweighted one does not, and each says why in its own entry. The count of
 # claims is inventory, never a coverage guarantee.
-# Checked against acceptance 0.3.2, public ivmat/acceptance-format commit 455ca4f84ada3fc51eed30942696f34d118e1a59
+# Checked against acceptance 0.3.2, ivmat/acceptance-format commit 455ca4f84ada3fc51eed30942696f34d118e1a59
 # (gates/vendor/acceptance/CLOSURE.json).
 
 [format]
