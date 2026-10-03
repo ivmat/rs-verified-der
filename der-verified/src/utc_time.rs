@@ -125,6 +125,20 @@ fn fields_in_range(t: &UtcTime) -> bool {
 
 /// Decode DER UTCTime content octets. Accepts **only** the canonical `YYMMDDHHMMSSZ` form: exactly
 /// 13 octets, positions `0..=11` ASCII digits, terminator `'Z'`, and every field in range.
+///
+/// **Error precedence (documented, not left to inference).** When an input has more than one
+/// defect, the reported [`UtcTimeError`] is the first applicable one in this order:
+/// 1. [`UtcTimeError::BadLength`] -- the content is not exactly 13 octets;
+/// 2. [`UtcTimeError::NonDigit`] -- any of positions `0..=11` is not an ASCII digit;
+/// 3. [`UtcTimeError::NotZulu`] -- position 12 is not `'Z'`;
+/// 4. the field ranges, in field order `MM DD HH MM SS`: [`UtcTimeError::MonthRange`], then
+///    [`UtcTimeError::DayRange`], then [`UtcTimeError::HourRange`], then
+///    [`UtcTimeError::MinuteRange`], then [`UtcTimeError::SecondRange`]. (The year pair `YY` has no
+///    range check.)
+///
+/// For example `99` in both the month and the day position reports `MonthRange`, and a non-digit
+/// together with a non-`'Z'` terminator reports `NonDigit`. A Kani harness
+/// (`proofs::decode_is_exactly_the_reference`) pins this order against an independent reference.
 pub fn decode_utc_time(content: &[u8]) -> Result<UtcTime, UtcTimeError> {
     if content.len() != 13 {
         return Err(UtcTimeError::BadLength);
@@ -167,6 +181,8 @@ pub fn decode_utc_time(content: &[u8]) -> Result<UtcTime, UtcTimeError> {
 ///
 /// Returns the number of octets written (always 13), or `None` if any field is out of its canonical
 /// range or `out` is too small. The range guard makes this the exact inverse of [`decode_utc_time`].
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_utc_time(t: &UtcTime, out: &mut [u8]) -> Option<usize> {
     if !fields_in_range(t) {
         return None;
@@ -307,7 +323,198 @@ mod proofs {
         let buf: [u8; 14] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 14);
-        assert!(decode_utc_time(&buf[..n]).is_ok() == is_canonical_der_utctime(&buf[..n]));
+        let result = decode_utc_time(&buf[..n]);
+        assert!(result.is_ok() == is_canonical_der_utctime(&buf[..n]));
+        kani::cover!(result.is_ok());
+        // Value faithfulness: each decoded field is the pair of ASCII digits at its own byte
+        // positions (YY MM DD HH MM SS), stated directly on the input rather than as the inverse of
+        // `encode` -- so a field read from the wrong position is caught even if `encode` mirrors it.
+        if let Ok(t) = result {
+            assert!(t.year2 == (buf[0] - b'0') * 10 + (buf[1] - b'0'));
+            assert!(t.month == (buf[2] - b'0') * 10 + (buf[3] - b'0'));
+            assert!(t.day == (buf[4] - b'0') * 10 + (buf[5] - b'0'));
+            assert!(t.hour == (buf[6] - b'0') * 10 + (buf[7] - b'0'));
+            assert!(t.minute == (buf[8] - b'0') * 10 + (buf[9] - b'0'));
+            assert!(t.second == (buf[10] - b'0') * 10 + (buf[11] - b'0'));
+        }
+    }
+
+    /// TOTAL reference for UTCTime content: the exact `Result` -- every error variant, with the
+    /// check order the module documents. Order (stated explicitly in the "Error precedence" section
+    /// of `decode_utc_time`'s rustdoc): `BadLength`, then `NonDigit`, then `NotZulu`, then the first
+    /// out-of-range field in the order `MonthRange`, `DayRange`, `HourRange`, `MinuteRange`,
+    /// `SecondRange`. Every step of the order, including the order among the five field ranges, is
+    /// documented there.
+    ///
+    /// Deliberately built unlike the decoder: table-driven (a position/range/error table for the five
+    /// ranged fields, a computed digit value for every pair), with a single precedence-ordered `if`
+    /// chain at the end instead of early returns interleaved with the reads.
+    fn reference_utc_time(c: &[u8]) -> Result<UtcTime, UtcTimeError> {
+        // (byte position of the pair, lowest legal value, highest legal value, error if outside).
+        const RANGED: [(usize, i32, i32, UtcTimeError); 5] = [
+            (2, 1, 12, UtcTimeError::MonthRange),
+            (4, 1, 31, UtcTimeError::DayRange),
+            (6, 0, 23, UtcTimeError::HourRange),
+            (8, 0, 59, UtcTimeError::MinuteRange),
+            (10, 0, 59, UtcTimeError::SecondRange),
+        ];
+        let right_length = c.len() == 13;
+        // Computed facts, all defined for every input (indices guarded by `right_length`).
+        let mut every_digit_ok = true;
+        let mut pair = [0i32; 6];
+        if right_length {
+            let mut k = 0;
+            while k < 12 {
+                let b = c[k];
+                if !(b >= 48 && b <= 57) {
+                    every_digit_ok = false;
+                }
+                k += 1;
+            }
+            let mut f = 0;
+            while f < 6 {
+                pair[f] = (c[2 * f] as i32 - 48) * 10 + (c[2 * f + 1] as i32 - 48);
+                f += 1;
+            }
+        }
+        let zulu = right_length && c[12] == 90;
+        let mut first_bad_field = None;
+        let mut r = 0;
+        while r < 5 {
+            let (at, lo, hi, err) = RANGED[r];
+            let v = pair[at / 2];
+            if first_bad_field.is_none() && (v < lo || v > hi) {
+                first_bad_field = Some(err);
+            }
+            r += 1;
+        }
+        if !right_length {
+            Err(UtcTimeError::BadLength)
+        } else if !every_digit_ok {
+            Err(UtcTimeError::NonDigit)
+        } else if !zulu {
+            Err(UtcTimeError::NotZulu)
+        } else if let Some(e) = first_bad_field {
+            Err(e)
+        } else {
+            Ok(UtcTime {
+                year2: pair[0] as u8,
+                month: pair[1] as u8,
+                day: pair[2] as u8,
+                hour: pair[3] as u8,
+                minute: pair[4] as u8,
+                second: pair[5] as u8,
+            })
+        }
+    }
+
+    /// **Exact-result classification:** over a fully symbolic
+    /// 14-octet buffer and every length `0..=14` (so every 13-octet input plus the 12/14 neighbours),
+    /// `decode_utc_time(content) == reference_utc_time(content)` -- the exact `Result`, so a remapped
+    /// error variant, a changed precedence on overlapping invalidity, or a wrong field value on `Ok`
+    /// is a failure, not only the accept/reject boundary. Covers: every error variant and the
+    /// accepting tail reach this assert, plus inputs where two invalidity conditions overlap (the
+    /// documented precedence is what decides them).
+    #[kani::proof]
+    #[kani::unwind(14)]
+    fn decode_is_exactly_the_reference() {
+        let buf: [u8; 14] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 14);
+        let c = &buf[..n];
+        let got = decode_utc_time(c);
+        let want = reference_utc_time(c);
+        assert!(got == want);
+        kani::cover(got == Err(UtcTimeError::BadLength), "BadLength reaches the exact-result assert");
+        kani::cover(got == Err(UtcTimeError::NonDigit), "NonDigit reaches the exact-result assert");
+        kani::cover(got == Err(UtcTimeError::NotZulu), "NotZulu reaches the exact-result assert");
+        kani::cover(got == Err(UtcTimeError::MonthRange), "MonthRange reaches the exact-result assert");
+        kani::cover(got == Err(UtcTimeError::DayRange), "DayRange reaches the exact-result assert");
+        kani::cover(got == Err(UtcTimeError::HourRange), "HourRange reaches the exact-result assert");
+        kani::cover(got == Err(UtcTimeError::MinuteRange), "MinuteRange reaches the exact-result assert");
+        kani::cover(got == Err(UtcTimeError::SecondRange), "SecondRange reaches the exact-result assert");
+        kani::cover(got.is_ok(), "an accepted value reaches the exact-result assert");
+        kani::cover(
+            got == Err(UtcTimeError::NonDigit) && n == 13 && buf[12] != b'Z',
+            "overlap: a non-digit together with a non-'Z' terminator is NonDigit",
+        );
+        kani::cover(
+            got == Err(UtcTimeError::NotZulu) && n == 13 && buf[12] != b'Z' && buf[2] == b'9' && buf[3] == b'9',
+            "overlap: a non-'Z' terminator together with an out-of-range month is NotZulu",
+        );
+        kani::cover(
+            got == Err(UtcTimeError::MonthRange) && n == 13 && buf[4] == b'9' && buf[5] == b'9',
+            "overlap: an out-of-range month together with an out-of-range day is MonthRange",
+        );
+    }
+
+    /// **Total encoder oracle.** Over fully symbolic fields (every `u8` per
+    /// field, in or out of range), a symbolic output capacity `0..=16` over a symbolic 16-octet
+    /// backing, `encode_utc_time` returns EXACTLY `Some(13)` when every field is in its canonical
+    /// range AND the capacity is at least 13, and `None` otherwise. On `Some` the 13 emitted octets
+    /// equal an independently built `YYMMDDHHMMSSZ` (each pair emitted by a right-to-left remainder
+    /// loop, not the encoder's `/10`, `%10` pair), and the octets past 13 are untouched. The range
+    /// predicate here is spelled from the documented ranges (YY `00..=99`, month `01..=12`, day
+    /// `01..=31`, hour `00..=23`, minute `00..=59`, second `00..=59`), not from `fields_in_range`.
+    /// The documented write contract ("on `None` nothing is written to `out`; on `Some(n)` only
+    /// `out[..n]` is written") is asserted for every input: `out` is unchanged on `None`, and
+    /// `out[n..]` is unchanged on `Some(n)`.
+    /// Covers: success, an in-range value rejected only for capacity (the `Some(0)`-on-short-buffer
+    /// shape), and an out-of-range value rejected with ample capacity.
+    #[kani::proof]
+    #[kani::unwind(18)]
+    fn encode_is_total_exact_oracle() {
+        let t = UtcTime {
+            year2: kani::any(),
+            month: kani::any(),
+            day: kani::any(),
+            hour: kani::any(),
+            minute: kani::any(),
+            second: kani::any(),
+        };
+        let backing: [u8; 16] = kani::any();
+        let mut out = backing;
+        let cap: usize = kani::any();
+        kani::assume(cap <= 16);
+        let r = encode_utc_time(&t, &mut out[..cap]);
+        // Rustdoc write contract: `None` => nothing written; `Some(n)` => only `out[..n]` written.
+        match r {
+            None => assert!(out == backing),
+            Some(n) => assert!(out[n..] == backing[n..]),
+        }
+
+        let in_range = t.year2 <= 99
+            && (t.month >= 1 && t.month <= 12)
+            && (t.day >= 1 && t.day <= 31)
+            && t.hour <= 23
+            && t.minute <= 59
+            && t.second <= 59;
+        if in_range && cap >= 13 {
+            assert!(r == Some(13));
+            // independent expected bytes: two digits per field, filled right to left.
+            let fields = [t.year2, t.month, t.day, t.hour, t.minute, t.second];
+            let mut want = [0u8; 13];
+            let mut f = 0;
+            while f < 6 {
+                let mut v = fields[f];
+                let mut k = 2;
+                while k > 0 {
+                    k -= 1;
+                    want[2 * f + k] = 48 + v % 10;
+                    v /= 10;
+                }
+                f += 1;
+            }
+            want[12] = 90;
+            assert!(out[..13] == want);
+            assert!(out[13..] == backing[13..]);
+        } else {
+            assert!(r.is_none());
+        }
+        kani::cover(r == Some(13), "a valid time into sufficient capacity is encoded");
+        kani::cover(r.is_none() && in_range && cap < 13, "a valid time into insufficient capacity is None");
+        kani::cover(r.is_none() && !in_range && cap >= 13, "an out-of-range field with ample capacity is None");
+        kani::cover(r == Some(13) && cap == 13, "the exact-fit capacity is accepted");
     }
 
     // --- Error-class correctness (one harness per rejection reason). ---
@@ -437,22 +644,42 @@ mod proofs {
         }
     }
 
-    /// The RFC 5280 century-pivot profile helper is total and correct over every two-digit year:
-    /// `< 50 ⇒ 20YY` (`2000..=2049`), `≥ 50 ⇒ 19YY` (`1950..=1999`). Never panics.
+    /// The RFC 5280 century-pivot profile helper is total and follows the documented mapping over
+    /// EVERY `u8` `year2` (all 256 values), with every other field symbolic too (the helper reads
+    /// only `year2`): `< 50 ⇒ 20YY`, `≥ 50 ⇒ 19YY`, i.e. `2000 + year2` / `1900 + year2` as `u16`,
+    /// never panicking. For `year2 <= 99` (the field's documented range, `00..=99`, and the decoder
+    /// postcondition `decode_postcondition_fields_in_range`) the result is in the RFC 5280
+    /// §4.1.2.5.1 window `1950..=2049`.
     ///
-    /// The `y <= 99` premise is discharged for decoder output by
-    /// `decode_postcondition_fields_in_range` above.
+    /// Disclosure: `UtcTime`'s fields are `pub`, so a hand-built `year2 > 99` is representable. The
+    /// field documentation puts such values outside the type's documented range, and the
+    /// `full_year_rfc5280` rustdoc states the formula without a domain; this harness therefore pins
+    /// the formula's literal extension there (`1900 + year2`, above 2049), which is the behaviour the
+    /// `profile` module's disclosure ("a hand-written `UtcTime { year2: 100.. }` ... maps above 2049")
+    /// relies on. It is NOT a claim that such values are valid input.
     #[kani::proof]
     fn full_year_pivot_is_correct() {
         let y: u8 = kani::any();
-        kani::assume(y <= 99);
-        let t = UtcTime { year2: y, month: 1, day: 1, hour: 0, minute: 0, second: 0 };
+        let t = UtcTime {
+            year2: y,
+            month: kani::any(),
+            day: kani::any(),
+            hour: kani::any(),
+            minute: kani::any(),
+            second: kani::any(),
+        };
         let full = full_year_rfc5280(&t);
         if y < 50 {
             assert!(full == 2000 + y as u16);
         } else {
             assert!(full == 1900 + y as u16);
         }
+        if y <= 99 {
+            assert!(full >= 1950 && full <= 2049);
+        }
+        kani::cover(y < 50, "the 20YY side of the pivot");
+        kani::cover(y >= 50 && y <= 99, "the 19YY side of the pivot, inside 00..=99");
+        kani::cover(y > 99 && full > 2049, "a hand-built year2 above 99 maps above 2049");
     }
 }
 

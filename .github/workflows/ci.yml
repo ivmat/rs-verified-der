@@ -104,11 +104,12 @@ jobs:
           # The composite private-key container parsers are the heaviest-per-harness LIGHT modules
           # (they compose sequence + big_integer + algorithm_identifier + octet_string), so they get
           # their own shard to keep codecs-b's wall-clock down. Still LIGHT — check_tier_parity gates
-          # that these four shards' union equals the LIGHT tier exactly.
+          # that these four shards' union equals the LIGHT tier exactly. (`rsa_private_key` is HEAVY:
+          # its member-walk harnesses peak near 9 GB.)
           - shard: private-keys
             filters: >-
               --harness ec_private_key:: --harness rsa_public_key::
-              --harness rsa_private_key:: --harness pkcs8::
+              --harness pkcs8::
               --harness encrypted_private_key_info::
           - shard: utf8
             filters: "--harness utf8_string::"
@@ -123,6 +124,7 @@ jobs:
 
   # Heavy tier — proofs whose CBMC peak exceeds a 7 GB runner (measured on 16-core/29 GB):
   #   set_of::* , sequence::* , x509_certificate , x509_tbs_certificate , x509_extension (~20 GB),
+  #   rsa_private_key (member-walk harnesses, ~9 GB),
   #   and x509_name (modular: validate_rdn lemma ~17 GB + a cheap validate_name stub — see DECISIONS.md
   #   D26; the monolithic proof was >100 GB, now split so both pieces fit a normal machine).
   # These are NOT run on GitHub's standard runners (they OOM). ALL of them are verified locally by
@@ -142,3 +144,4 @@ jobs:
   #           -Z stubbing --harness set_of:: --harness sequence::
   #           --harness x509_name:: --harness x509_tbs_certificate::
   #           --harness x509_certificate:: --harness x509_extension::
+  #           --harness rsa_private_key::

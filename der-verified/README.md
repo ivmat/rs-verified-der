@@ -5,7 +5,7 @@ real X.509 parser differentials live. Codec evidence is machine-checkable and re
 clone, but it is **uneven**: read the shipped per-claim assurance manifest (`acceptance.toml`) before
 relying on any of it.
 
-**Status:** pre-1.0 (`0.1.1`). **Most manifest claims are not yet at the target assurance band A3**
+**Status:** pre-1.0 (`0.2.0`). **Most manifest claims are not yet at the target assurance band A3**
 (the shipped `acceptance.toml` gives the exact per-claim split) — the crate is not uniformly formally
 verified and is not done. The proofs and their evidence are real, re-runnable and honestly bounded;
 the API is not yet stable, and the crate carries no production deployment record. Treat it as a
@@ -15,14 +15,14 @@ Read "primitive" strictly: the `x509_*` layer is **structural framing composing 
 not proven to the same bar (see Scope below). The crate's name should not be read as claiming more
 than that.
 
-- **L3 — Kani** (bounded model checking): 210 proof harnesses over 33 modules establish default
+- **L3 — Kani** (bounded model checking): 297 proof harnesses over 33 modules establish default
   safety checks (memory safety, no panics, no overflow) on their bounded domains; functional claims
   (round-trip, canonicality/minimality, rejection of malformed encodings) vary by harness and are
   listed per claim in `acceptance.toml` / `PROOF_MANIFEST.md`.
 - **L4 — Aeneas → Lean 4:** *selected properties* of six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) hold for **any input length**; `sequence` also covers any child count.
   The lids are `sorry`-free; `tag` canonicality *rejection* remains Kani-bounded at 7 bytes.
-- **530** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
+- **539** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
 
 > Read [`PROOF_MANIFEST.md`](https://github.com/ivmat/rs-verified-der/blob/main/PROOF_MANIFEST.md)
 > before relying on any of this — the honest proof envelope: exactly what is proven, under what bounds
@@ -62,7 +62,7 @@ Some of the evidence travels with the crate and some of it does not, so here is 
 re-runnable from the repository. For everything in between — what each claim rests on, and what is
 *not* claimed — read `acceptance.toml` here, and `PROOF_MANIFEST.md` in the repository.
 
-**Repository:** <https://github.com/ivmat/rs-verified-der>. Each release is tagged (`v0.1.1` for
+**Repository:** <https://github.com/ivmat/rs-verified-der>. Each release is tagged (`v0.2.0` for
 this one) and that tag is the exact source this package was built from.
 
 ## Scope
@@ -81,8 +81,8 @@ key/signature containers — `rsa_public_key` (PKCS#1 `RSAPublicKey`), `ec_priva
 (RFC 5958 `EncryptedPrivateKeyInfo`) — parse the same way: DER framing/canonicality only, key
 material exposed as opaque validated bytes, no cryptographic interpretation. **Typed profile
 layer (Kani-proven, no Lean lid):** the `profile` module checks
-three RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
-UTCTime/GeneralizedTime year-2050 encoding choice); each is proven as a biconditional over symbolic
+four RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, the
+UTCTime/GeneralizedTime year-2050 encoding choice, and no fractional seconds in a GeneralizedTime); each is proven as a biconditional over symbolic
 field values, as is their documented precedence — see `PROOF_MANIFEST.md`.
 **Out of scope:** signature/crypto verification, path/trust validation, curve-order range and low-S
 checks on `ECDSA-Sig-Value`, and every other RFC 5280 profile rule (name constraints, key usage, basic

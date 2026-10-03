@@ -218,6 +218,8 @@ pub fn decode_utf8_str(input: &[u8]) -> Result<(&str, usize), Utf8Error> {
 ///
 /// Returns the number of bytes written, or `None` if `content` is not well-formed UTF-8, `out` is
 /// too small, or `content` is longer than the length codec supports (`> u32::MAX`).
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_utf8_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
     if validate_utf8(content).is_err() {
         return None;
@@ -442,23 +444,184 @@ mod proofs {
     }
 
     /// Error-class correctness: `IllFormed { position }` names exactly the length of the longest
-    /// well-formed prefix (= `str::from_utf8`'s `valid_up_to()`): `content[..position]` is
-    /// well-formed *and* `content[..position + 1]` is not. The **maximality** clause is what makes
-    /// this non-vacuous — without it, a lazy validator that always returned `position: 0` would
-    /// satisfy the prefix clause alone (`content[..0]` is vacuously well-formed).
+    /// well-formed prefix, i.e. EXACTLY `core::str::from_utf8`'s `valid_up_to()` (the external
+    /// oracle, asserted with `==` below). The two local clauses -- `content[..position]` is
+    /// well-formed *and* `content[..position + 1]` is not -- are kept as sanity checks, but they
+    /// alone are only a LOCAL boundary property: they hold at ANY earlier multi-byte-lead boundary
+    /// too (e.g. `41 C3 A9 FF`: true position 3, yet `p = 1` also satisfies both), so they cannot
+    /// distinguish the longest valid prefix from an earlier sequence start. The equality with
+    /// `valid_up_to()` is what pins the exact (maximal) position. Bound: content `1..=6` octets
+    /// (so a failure after >= 4 octets of valid multi-byte sequences, e.g. `C3 A9 C3 A9 FF`, is in
+    /// the domain and `position` cannot be clamped to 3).
     #[kani::proof]
-    #[kani::unwind(6)]
+    #[kani::unwind(8)]
     fn ill_formed_reports_position() {
-        let buf: [u8; 4] = kani::any();
+        let buf: [u8; 6] = kani::any();
         let n: usize = kani::any();
-        kani::assume(n >= 1 && n <= 4);
+        kani::assume(n >= 1 && n <= 6);
         kani::assume(!oracle_wellformed_utf8(&buf[..n])); // force at least one ill-formed prefix
         if let Err(Utf8Error::IllFormed { position }) = validate_utf8(&buf[..n]) {
             assert!(position < n); // so `position + 1 <= n` and the slice below is in bounds
             assert!(oracle_wellformed_utf8(&buf[..position])); // prefix is well-formed ...
-            assert!(!oracle_wellformed_utf8(&buf[..position + 1])); // ... and maximal (first failure)
+            assert!(!oracle_wellformed_utf8(&buf[..position + 1])); // ... and locally maximal
+            // Exact longest-valid-prefix, against the external (other-author) oracle:
+            assert!(position == core::str::from_utf8(&buf[..n]).unwrap_err().valid_up_to());
         } else {
             panic!("expected IllFormed");
+        }
+    }
+
+    /// Decoder-level faithfulness (the typed TLV decoder's WHOLE acceptance set, not only the
+    /// content validator): over a fully symbolic 6-octet buffer with symbolic length `0..=6`
+    /// (content <= 4 octets for a short-form length), `decode_utf8_string` is classified EXACTLY,
+    /// in the documented check order, against
+    /// - `decode_tlv` as the separately-verified envelope reference,
+    /// - a literal UNIVERSAL tag number 12 (not the `TAG` const),
+    /// - `core::str::from_utf8` as the content oracle (external, other author; no call into
+    ///   `validate_utf8`): ill-formed content -> `IllFormed { position: valid_up_to() }` exactly.
+    ///
+    /// Without this, the content gate `validate_utf8(tlv.value)?` in `decode_utf8_string` is reached
+    /// by no Kani assertion on a non-encoder input (`constructed_form_is_rejected` /
+    /// `wrong_tag_is_classified` assume ASCII bodies).
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn decode_is_faithful() {
+        let buf: [u8; 6] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 6);
+        let input = &buf[..len];
+        let r = decode_utf8_string(input);
+        match decode_tlv(input) {
+            Err(e) => {
+                kani::cover(true, "envelope error branch reached");
+                assert!(r == Err(Utf8Error::Tlv(e)));
+            }
+            Ok((tlv, used)) => {
+                if tlv.tag.class != Class::Universal || tlv.tag.number != 12 {
+                    kani::cover(true, "well-formed TLV of another type reached");
+                    assert!(r == Err(Utf8Error::WrongTag));
+                } else if tlv.tag.constructed {
+                    kani::cover(true, "constructed UTF8String reached");
+                    assert!(r == Err(Utf8Error::Constructed));
+                } else {
+                    let v = tlv.value;
+                    match core::str::from_utf8(v) {
+                        Err(e) => {
+                            kani::cover(true, "ill-formed content reached");
+                            assert!(r == Err(Utf8Error::IllFormed { position: e.valid_up_to() }));
+                        }
+                        Ok(_) => {
+                            kani::cover(!v.is_empty(), "non-empty well-formed content accepted");
+                            kani::cover(v.is_empty(), "empty content accepted");
+                            match r {
+                                Ok((content, consumed)) => {
+                                    assert!(consumed == used);
+                                    assert!(content.len() == v.len());
+                                    assert!(content == v);
+                                }
+                                Err(_) => panic!("well-formed UTF-8 universal primitive rejected"),
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// **`decode_utf8_str` is EXACT delegation to `decode_utf8_string`**.
+    /// Over a fully symbolic 8-octet buffer with symbolic length `0..=8` (the bound of
+    /// `decode_never_panics`): on EVERY input the `&str` wrapper's result is the mapping of the byte
+    /// decoder's result -- the same error on `Err`; on `Ok((content, used))` the same consumed
+    /// length `used` and a `&str` whose bytes ARE the content window (same pointer, same length,
+    /// same bytes), so a wrapper that returns `""` (or any other string) on success is rejected.
+    ///
+    /// Covers: a non-empty content accepted, an empty content accepted, and an error passed through.
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn decode_str_is_exact_delegation() {
+        let buf: [u8; 8] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let bytes = decode_utf8_string(input);
+        let text = decode_utf8_str(input);
+        match bytes {
+            Err(e) => {
+                kani::cover(true, "an error of decode_utf8_string is reached");
+                assert!(text == Err(e));
+            }
+            Ok((content, used)) => {
+                kani::cover(!content.is_empty(), "non-empty content accepted");
+                kani::cover(content.is_empty(), "empty content accepted");
+                match text {
+                    Ok((s, u)) => {
+                        assert!(u == used);
+                        assert!(s.len() == content.len());
+                        assert!(s.as_bytes().as_ptr() == content.as_ptr()); // the SAME window
+                        assert!(s.as_bytes() == content);
+                    }
+                    Err(_) => panic!("decode_utf8_str rejected an input decode_utf8_string accepted"),
+                }
+            }
+        }
+    }
+
+    /// **Total encoder oracle**. Content is fully symbolic (`0..=6`
+    /// octets, valid AND ill-formed UTF-8), the output capacity is symbolic (`0..=10`) and the output
+    /// buffer starts symbolic. `encode_utf8_string_into(content, &mut out[..cap])` returns EXACTLY:
+    /// - `None` when `core::str::from_utf8(content)` rejects the content (independent external
+    ///   validator; no call into `validate_utf8`), whatever the capacity;
+    /// - else `None` when `cap < 2 + n` (identifier octet `0x0C`, one short-form length octet since
+    ///   `n <= 6 < 0x80`, then the `n` content octets);
+    /// - else `Some(2 + n)`, with the emitted bytes exactly `0C n content` and every octet at or
+    ///   past the written length untouched.
+    /// On `None` the output is left untouched (the documented write contract, "on `None` nothing is
+    /// written to `out`; on `Some(n)` only `out[..n]` is written"; asserted so a partial write before
+    /// failing would be caught).
+    ///
+    /// Bounded-backing: content `<= 6` octets, capacity `<= 10`, unwind 16.
+    /// Covers: ill-formed content rejected with ample capacity; well-formed content rejected for
+    /// too small a capacity; success with non-empty content; success with empty content; success at
+    /// exactly the minimal capacity.
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn encode_is_exact_over_content_and_capacity() {
+        let content: [u8; 6] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 6);
+        let content = &content[..n];
+        let cap: usize = kani::any();
+        kani::assume(cap <= 10);
+        let init: [u8; 10] = kani::any();
+        let mut out = init;
+        let r = encode_utf8_string_into(content, &mut out[..cap]);
+        let well_formed = core::str::from_utf8(content).is_ok();
+        let total = 2 + n;
+        if !well_formed {
+            kani::cover(cap >= total, "ill-formed content rejected despite ample capacity");
+            assert!(r == None);
+            assert!(out == init);
+        } else if cap < total {
+            kani::cover(true, "well-formed content rejected for insufficient capacity");
+            assert!(r == None);
+            assert!(out == init);
+        } else {
+            kani::cover(n > 0, "non-empty well-formed content encoded");
+            kani::cover(n == 0, "empty content encoded");
+            kani::cover(cap == total, "encoded at exactly the minimal capacity");
+            assert!(r == Some(total));
+            assert!(out[0] == 0x0C);
+            assert!(out[1] as usize == n);
+            let mut i = 0;
+            while i < n {
+                assert!(out[2 + i] == content[i]);
+                i += 1;
+            }
+            let mut j = total;
+            while j < 10 {
+                assert!(out[j] == init[j]);
+                j += 1;
+            }
         }
     }
 }

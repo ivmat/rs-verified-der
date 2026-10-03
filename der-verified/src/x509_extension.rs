@@ -199,8 +199,10 @@ fn decode_extn_id_tlv(input: &[u8]) -> Result<(&[u8], usize), ExtensionError> {
 /// 1. the outer SEQUENCE envelope ([`decode_sequence_tlv_strict`]);
 /// 2. `extnID`, an OBJECT IDENTIFIER (`decode_extn_id_tlv`);
 /// 3. the optional `critical` BOOLEAN ([`crate::boolean::decode_bool`]) — present only if the next
-///    TLV's identifier is UNIVERSAL 1; **enforces DER §11.5**: a present `critical` must encode
-///    `TRUE` (see the module docs);
+///    TLV is well framed and its identifier is UNIVERSAL 1 (a failed peek means `critical` is
+///    absent, and the framing error then surfaces as `BadExtnValue(Tlv(_))` from step 4, so
+///    `01 05 ff` after the extnID is a `BadExtnValue`, not a `critical` error); **enforces DER
+///    §11.5**: a present `critical` must encode `TRUE` (see the module docs);
 /// 4. `extnValue`, an OCTET STRING ([`decode_octet_string`]), requiring it to exactly fill what
 ///    remains of the outer content.
 ///
@@ -468,6 +470,311 @@ mod proofs {
              not produce (see that harness's VACUITY FINDING comment)",
         );
         let _ = result;
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // Contract-surface harnesses (exact-result; bounded-backing evidence).
+    // ------------------------------------------------------------------------------------------
+
+    /// Exact-result oracle for `parse_extension` (X.690 + RFC 5280 §4.1.2.9 documented check
+    /// order), re-derived ONLY from the separately-verified primitives `decode_sequence_tlv_strict`,
+    /// `decode_tlv`, `validate_oid`, `decode_bool`, `decode_octet_string`. It never calls this
+    /// module's private `decode_extn_id_tlv`. Identifier checks are stated from the LITERAL octet
+    /// bits of the first identifier octet `t` (class = `t >> 6`, constructed = `t & 0x20`, number
+    /// = `t & 0x1F`): "UNIVERSAL number N, either form" is `t & 0xDF == N` (this also rejects every
+    /// high-tag spelling, whose low five bits are `0x1F`, and `N < 31` is never legally
+    /// high-tag-encoded).
+    fn expected_parse_extension(input: &[u8]) -> Result<Extension<'_>, ExtensionError> {
+        let content = match decode_sequence_tlv_strict(input) {
+            Ok(c) => c,
+            Err(e) => return Err(ExtensionError::BadSeq(e)),
+        };
+        // extnID
+        let (oid_tlv, oid_used) = match decode_tlv(content) {
+            Ok(x) => x,
+            Err(e) => return Err(ExtensionError::BadExtnIdTlv(e)),
+        };
+        let id = content[0];
+        if id & 0xDF != 0x06 {
+            return Err(ExtensionError::ExtnIdWrongTag);
+        }
+        if id & 0x20 != 0 {
+            return Err(ExtensionError::ExtnIdConstructed);
+        }
+        if let Err(e) = validate_oid(oid_tlv.value) {
+            return Err(ExtensionError::BadOid(e));
+        }
+        let rest = &content[oid_used..];
+        if rest.is_empty() {
+            return Err(ExtensionError::MissingExtnValue);
+        }
+        // optional critical: present iff `rest` begins with a well-framed UNIVERSAL-1 TLV.
+        let mut critical = false;
+        let mut value_input = rest;
+        if let Ok((peek, peek_used)) = decode_tlv(rest) {
+            if rest[0] & 0xDF == 0x01 {
+                if rest[0] & 0x20 != 0 {
+                    return Err(ExtensionError::CriticalConstructed);
+                }
+                match decode_bool(peek.value) {
+                    Err(e) => return Err(ExtensionError::BadCritical(e)),
+                    Ok(false) => return Err(ExtensionError::CriticalMustBeTrue),
+                    Ok(true) => {}
+                }
+                critical = true;
+                value_input = &rest[peek_used..];
+            }
+        }
+        if value_input.is_empty() {
+            return Err(ExtensionError::MissingExtnValue);
+        }
+        let (extn_value, ev_used) = match decode_octet_string(value_input) {
+            Ok(x) => x,
+            Err(e) => return Err(ExtensionError::BadExtnValue(e)),
+        };
+        if ev_used != value_input.len() {
+            return Err(ExtensionError::TrailingInExtension);
+        }
+        Ok(Extension { extn_id: oid_tlv.value, critical, extn_value })
+    }
+
+    /// Exact-result contract for `parse_extension`: the result EQUALS the total
+    /// expected `Result` of `expected_parse_extension` (error variant and the documented check
+    /// order included), plus (ii) X.690 §11.5 stated literally as its own assert, plus (iii) on
+    /// `Ok` pointer identity of the borrowed sub-slices, the `critical` flag read from the literal
+    /// identifier octet, and exact field tiling.
+    ///
+    /// (ii) Let `pre` = the SEQUENCE envelope and the extnID succeeded (per the primitives) and
+    /// `rest` = the bytes after the extnID TLV. Then `pre && rest[..3] == [01 01 00]` holds iff the
+    /// result is `Err(CriticalMustBeTrue)`: a present-and-FALSE `critical` is the §11.5 DEFAULT
+    /// omission violation, and nothing else produces that error.
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 16]`, symbolic `len <= 16`,
+    /// `#[kani::unwind(20)]`, no assumptions beyond `len <= 16`, no stubs. Covers (all
+    /// always-reachable): `Ok` with `critical` absent, `Ok` with `critical` true, and the error
+    /// outcomes `BadSeq`, `BadExtnIdTlv`, `ExtnIdWrongTag`, `ExtnIdConstructed`, `BadOid`,
+    /// `CriticalMustBeTrue`, `CriticalConstructed`, `BadCritical`, `MissingExtnValue`,
+    /// `BadExtnValue`, `TrailingInExtension`. `extnValue`'s inner DER is never interpreted.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn parse_extension_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+
+        let result = parse_extension(input);
+        let expected = expected_parse_extension(input);
+
+        // (ii) X.690 §11.5, stated literally. (Checked BEFORE (i) on purpose: a failing `assert!`
+        // aborts the path, so with (i) first a §11.5 regression would be reported only as the
+        // generic exact-result mismatch.)
+        let mut pre = false;
+        let mut after_id: &[u8] = &[];
+        if let Ok(content) = decode_sequence_tlv_strict(input) {
+            if let Ok((oid_tlv, oid_used)) = decode_tlv(content) {
+                if content[0] & 0xDF == 0x06 && content[0] & 0x20 == 0 && validate_oid(oid_tlv.value).is_ok() {
+                    pre = true;
+                    after_id = &content[oid_used..];
+                }
+            }
+        }
+        let present_and_false =
+            pre && after_id.len() >= 3 && after_id[0] == 0x01 && after_id[1] == 0x01 && after_id[2] == 0x00;
+        assert!(
+            present_and_false == (result == Err(ExtensionError::CriticalMustBeTrue)),
+            "§11.5: a present critical encoding FALSE is exactly CriticalMustBeTrue"
+        );
+
+        // (i) exact result.
+        assert!(result == expected, "parse_extension result differs from the total expected result");
+
+        // (iii) on Ok: pointer identity, literal critical flag, exact tiling.
+        if let Ok(ext) = result {
+            let content = decode_sequence_tlv_strict(input).expect("accepted input has an envelope");
+            let (oid_tlv, oid_used) = decode_tlv(content).expect("accepted input has an extnID TLV");
+            assert!(core::ptr::eq(ext.extn_id.as_ptr(), oid_tlv.value.as_ptr()) && ext.extn_id.len() == oid_tlv.value.len());
+            let rest = &content[oid_used..];
+            // `critical` read from the literal identifier octet of the field after extnID.
+            assert!(ext.critical == (rest[0] == 0x01));
+            let crit_used = if ext.critical { 3 } else { 0 };
+            if ext.critical {
+                assert!(rest.len() >= 3 && rest[1] == 0x01 && rest[2] == 0xFF);
+            }
+            let value_input = &rest[crit_used..];
+            let (ev_tlv, ev_used) = decode_tlv(value_input).expect("accepted input has an extnValue TLV");
+            assert!(value_input[0] == 0x04);
+            assert!(core::ptr::eq(ext.extn_value.as_ptr(), ev_tlv.value.as_ptr()) && ext.extn_value.len() == ev_tlv.value.len());
+            // the three fields tile the SEQUENCE content exactly.
+            assert!(oid_used + crit_used + ev_used == content.len());
+        }
+
+        kani::cover(matches!(result, Ok(e) if !e.critical), "Ok with critical absent");
+        kani::cover(matches!(result, Ok(e) if e.critical), "Ok with critical true");
+        kani::cover(matches!(result, Err(ExtensionError::BadSeq(_))), "BadSeq outcome");
+        kani::cover(matches!(result, Err(ExtensionError::BadExtnIdTlv(_))), "BadExtnIdTlv outcome");
+        kani::cover(matches!(result, Err(ExtensionError::ExtnIdWrongTag)), "ExtnIdWrongTag outcome");
+        kani::cover(matches!(result, Err(ExtensionError::ExtnIdConstructed)), "ExtnIdConstructed outcome");
+        kani::cover(matches!(result, Err(ExtensionError::BadOid(_))), "BadOid outcome");
+        kani::cover(matches!(result, Err(ExtensionError::CriticalMustBeTrue)), "CriticalMustBeTrue outcome");
+        kani::cover(matches!(result, Err(ExtensionError::CriticalConstructed)), "CriticalConstructed outcome");
+        kani::cover(matches!(result, Err(ExtensionError::BadCritical(_))), "BadCritical outcome");
+        kani::cover(matches!(result, Err(ExtensionError::MissingExtnValue)), "MissingExtnValue outcome");
+        kani::cover(matches!(result, Err(ExtensionError::BadExtnValue(_))), "BadExtnValue outcome");
+        kani::cover(matches!(result, Err(ExtensionError::TrailingInExtension)), "TrailingInExtension outcome");
+    }
+
+    /// Expected result of one minimal member `M(o) = 30 05 06 01 o 04 00` inside `Extensions`:
+    /// every framing field is well-formed by construction, so the only possible member outcome is
+    /// the extnID content check, taken from the verified primitive `validate_oid`.
+    fn expected_member(o: u8) -> Result<(), ExtensionsError> {
+        match validate_oid(&[o]) {
+            Err(e) => Err(ExtensionsError::BadExtension(ExtensionError::BadOid(e))),
+            Ok(()) => Ok(()),
+        }
+    }
+
+    /// `validate_extensions` structured harnesses. Concrete TLV framing,
+    /// symbolic content bytes. Member `M(o) = 30 05 06 01 o 04 00` (1-octet OID content `o`,
+    /// `critical` absent, empty `extnValue`).
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence for all four: backing `<= 16` octets, concrete
+    /// framing, symbolic `o`/`t` bytes, `#[kani::unwind(3)]`, no assumptions beyond the stated
+    /// low-tag predicate in (d), no stubs. Every assert is the EXACT `Result`.
+    /// Unwind note: with concrete framing every loop on the path runs at most twice (two walk
+    /// iterations, 1-octet OID content, short-form lengths), so 3 is sufficient and CBMC's
+    /// unwinding assertions (enabled, and reported SUCCESS in the log) prove it. A bound of 20
+    /// made the two-member walk (c) exceed 23 GB and run out of memory (measured 2026-10-02): the
+    /// walk loop and every inlined `decode_tlv`/`validate_oid` loop were unrolled to 20 copies.
+    ///
+    /// (a) `30 00` -> `Err(EmptyExtensions)`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_extensions_structured_empty() {
+        let input: [u8; 2] = [0x30, 0x00];
+        let r = validate_extensions(&input);
+        assert!(r == Err(ExtensionsError::EmptyExtensions));
+        kani::cover(r == Err(ExtensionsError::EmptyExtensions), "EmptyExtensions outcome");
+    }
+
+    /// (b) `30 07 M(o1)`: `validate_oid([o1])` `Err(e)` -> `BadExtension(BadOid(e))`, else `Ok(())`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_extensions_structured_one_member() {
+        let o1: u8 = kani::any();
+        let input: [u8; 9] = [0x30, 0x07, 0x30, 0x05, 0x06, 0x01, o1, 0x04, 0x00];
+        let r = validate_extensions(&input);
+        assert!(r == expected_member(o1), "single-member Extensions result differs from expected");
+        kani::cover(r == Ok(()), "single member: Ok");
+        kani::cover(matches!(r, Err(ExtensionsError::BadExtension(ExtensionError::BadOid(_)))), "single member: BadOid");
+    }
+
+    /// (c) `30 0E M(o1) M(o2)`: the first failing OID in order, else `Ok(())` -- the symbolic
+    /// two-member accept path (a genuine second walk iteration at a non-zero offset).
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_extensions_structured_two_members() {
+        let o1: u8 = kani::any();
+        let o2: u8 = kani::any();
+        let input: [u8; 16] = [
+            0x30, 0x0e, 0x30, 0x05, 0x06, 0x01, o1, 0x04, 0x00, 0x30, 0x05, 0x06, 0x01, o2, 0x04, 0x00,
+        ];
+        let r = validate_extensions(&input);
+        let expected = match expected_member(o1) {
+            Err(e) => Err(e),
+            Ok(()) => expected_member(o2),
+        };
+        assert!(r == expected, "two-member Extensions result differs from expected");
+        kani::cover(r == Ok(()), "two members: Ok (second iteration at a non-zero offset)");
+        kani::cover(
+            matches!(r, Err(ExtensionsError::BadExtension(ExtensionError::BadOid(_)))) && validate_oid(&[o1]).is_ok(),
+            "two members: the SECOND member's OID is the first failure",
+        );
+        kani::cover(
+            matches!(r, Err(ExtensionsError::BadExtension(ExtensionError::BadOid(_)))) && validate_oid(&[o1]).is_err(),
+            "two members: the FIRST member's OID is the first failure",
+        );
+    }
+
+    /// (d) `30 0E M(o1) [t 05 06 01 o2 04 00]` with `o1 = 0x2a` (valid) and the second member's
+    /// identifier octet `t` symbolic and low-tag (`t & 0x1F != 0x1F`, the only assumption).
+    /// Expected: `t == 0x30` -> as (c); `t == 0x10` -> `BadExtension(BadSeq(NotConstructed))`;
+    /// any other low-tag `t` -> `BadExtension(BadSeq(WrongTag))`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_extensions_structured_second_identifier() {
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let o2: u8 = kani::any();
+        let input: [u8; 16] = [
+            0x30, 0x0e, 0x30, 0x05, 0x06, 0x01, 0x2a, 0x04, 0x00, t, 0x05, 0x06, 0x01, o2, 0x04, 0x00,
+        ];
+        let r = validate_extensions(&input);
+        let expected = if t == 0x30 {
+            expected_member(o2)
+        } else if t == 0x10 {
+            Err(ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::NotConstructed)))
+        } else {
+            Err(ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::WrongTag)))
+        };
+        assert!(r == expected, "second-member identifier result differs from expected");
+        kani::cover(t == 0x30 && r == Ok(()), "second identifier 0x30: Ok");
+        kani::cover(r == Err(ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::NotConstructed))), "second identifier 0x10: NotConstructed");
+        kani::cover(r == Err(ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::WrongTag))), "second identifier other: WrongTag");
+    }
+
+    /// (e) Child framing: `30 0E M(0x2a) [30 l 06 01 o2 04 00]` with the second member's length
+    /// octet `l` symbolic and `l > 5` (so its declared value exceeds the five octets that remain;
+    /// `l >= 0x80` selects the long-form length errors) and `o2` symbolic. The offset walk cannot
+    /// determine the member's span, so the exact result is
+    /// `Err(BadExtension(BadSeq(Tlv(e))))` with `e` the error the verified primitive `decode_tlv`
+    /// reports for the member's bytes `input[9..]` (the first member is well formed, so it
+    /// precedes). CONTRACT SURFACE / bounded-backing evidence: backing 16 octets, concrete
+    /// framing except `l`, `#[kani::unwind(5)]` (the long-form length loop reads up to four
+    /// octets), no stubs.
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn validate_extensions_rejects_child_framing() {
+        let l: u8 = kani::any();
+        kani::assume(l > 5);
+        let o2: u8 = kani::any();
+        let input: [u8; 16] = [
+            0x30, 0x0e, 0x30, 0x05, 0x06, 0x01, 0x2a, 0x04, 0x00, 0x30, l, 0x06, 0x01, o2, 0x04, 0x00,
+        ];
+        let r = validate_extensions(&input);
+        let e = decode_tlv(&input[9..]).unwrap_err();
+        assert!(
+            r == Err(ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::Tlv(e)))),
+            "child framing error differs from the primitive's error"
+        );
+        kani::cover(l < 0x80, "child framing: short-form length beyond the content");
+        kani::cover(l >= 0x80, "child framing: long-form length error");
+    }
+
+    /// (f) Outer envelope: `30 07 M(0x2a)` (9 octets) with the outer identifier octet `t` symbolic
+    /// and low-tag (`t & 0x1F != 0x1F`) and the outer length octet `l` symbolic. The exact result is
+    /// `Err(BadOuterSeq(e))` with `e` the error of the verified primitive
+    /// `decode_sequence_tlv_strict` on the same bytes, and `Ok(())` exactly when that primitive
+    /// accepts (the member is well formed). CONTRACT SURFACE / bounded-backing evidence: backing 9
+    /// octets, `#[kani::unwind(5)]`, no stubs.
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn validate_extensions_rejects_outer_envelope() {
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let l: u8 = kani::any();
+        let input: [u8; 9] = [t, l, 0x30, 0x05, 0x06, 0x01, 0x2a, 0x04, 0x00];
+        let r = validate_extensions(&input);
+        let expected = match decode_sequence_tlv_strict(&input) {
+            Err(e) => Err(ExtensionsError::BadOuterSeq(e)),
+            Ok(_) => Ok(()),
+        };
+        assert!(r == expected, "outer envelope result differs from the primitive's decision");
+        kani::cover(r == Ok(()), "outer envelope: Ok");
+        kani::cover(matches!(r, Err(ExtensionsError::BadOuterSeq(SequenceError::WrongTag))), "outer envelope: WrongTag");
+        kani::cover(matches!(r, Err(ExtensionsError::BadOuterSeq(SequenceError::NotConstructed))), "outer envelope: NotConstructed");
+        kani::cover(matches!(r, Err(ExtensionsError::BadOuterSeq(SequenceError::Tlv(_)))), "outer envelope: Tlv error");
+        kani::cover(matches!(r, Err(ExtensionsError::BadOuterSeq(SequenceError::TrailingData))), "outer envelope: TrailingData");
     }
 }
 

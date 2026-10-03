@@ -6,7 +6,33 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-10-03
+
+### Breaking
+- **`profile::validate_profile` now enforces RFC 5280 §4.1.2.5.2's no-fractional-seconds rule.** A
+  GeneralizedTime in `validity` MUST NOT include fractional seconds. Until now `validate_profile`
+  accepted a `notAfter` such as `20991231235959.5Z` (it decoded, and no profile rule looked at the
+  fraction); it now returns the new `ProfileError::NotBeforeGeneralizedTimeHasFraction` or
+  `ProfileError::NotAfterGeneralizedTimeHasFraction`. The decision is the existing
+  `generalized_time::require_no_fraction`. A certificate that the 0.1.x `validate_profile` accepted
+  can therefore be rejected now. **Error precedence:** the rule is checked after all three earlier
+  rules (signature algorithm, extensions/version, and the year rule for both fields), `notBefore`
+  first, so every certificate that was rejected under 0.1.x still reports the same error.
+- **`profile::ProfileError` is now `#[non_exhaustive]`.** The two new variants are an API addition
+  that would break exhaustive `match` expressions anyway; marking the enum `#[non_exhaustive]` lets
+  later error variants be added without another exhaustive-match break. A `match` over `ProfileError`
+  outside this crate needs a wildcard arm. The attribute does not make later changes compatible in
+  general: stricter validation can still change behaviour incompatibly.
+
 ### Added
+- **`profile` proofs for the new rule:** `rule4_fraction_iff_generalized_with_fraction` (a per-field
+  biconditional, with the reference computed from the fraction window length rather than from
+  `require_no_fraction`), and the whole-function `validate_profile_is_exactly_the_documented_precedence`
+  and `error_precedence_follows_declaration_order` now cover rule 4 and its place in the order.
+  The proofs enumerate a fraction of 0 to 4 octets; longer fractions are covered by unit tests only. Unit tests cover a fraction rejected on each field, fractions of several lengths (including 3 and 4 octets on both fields), 2050-or-later
+  fraction-free GeneralizedTimes accepted, and rule 4's position relative to rules 1 to 3.
+
+### Added (earlier, unreleased)
 - **`replay.sh` / `REPLAY.md` — a bounded, laptop-sized replay of the verification story.** Runs
   the test suite, the acceptance-manifest gate, and one Kani harness (`boolean` module) to
   ACCEPT, then reruns the same harness and the same gate against a seeded code fault and a
@@ -509,6 +535,7 @@ First functional release.
 
 - Initial name-reservation release on crates.io.
 
+[0.2.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.2.0
 [0.1.1]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.1.0
 [0.0.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.0.0

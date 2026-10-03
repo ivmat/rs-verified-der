@@ -35,9 +35,11 @@
 //!
 //! **Scope boundary (see `DECISIONS.md`).**
 //! - This implements the **X.690 DER** transfer syntax, where fractions *are* permitted. **RFC 5280
-//!   §4.1.2.5.2** additionally forbids fractional seconds in X.509 certificates — a *profile* rule the
-//!   caller applies with [`require_no_fraction`] (the same generic-syntax-vs-profile split as
-//!   [`crate::bit_string`]'s `require_octet_aligned`).
+//!   §4.1.2.5.2** additionally forbids fractional seconds in X.509 certificates — a *profile* rule
+//!   applied with [`require_no_fraction`] (the same generic-syntax-vs-profile split as
+//!   [`crate::bit_string`]'s `require_octet_aligned`). [`crate::profile::validate_profile`] applies it
+//!   to a certificate's `notBefore` and `notAfter`; a caller using this module on its own applies it
+//!   itself.
 //! - **Leap second `SS=60` is rejected** (second `00..=59`) — a deliberate deviation for the X.509
 //!   anti-differential profile (X.680 permits `60`; real signers never emit it). Documented, contestable.
 //! - **Calendar validity is out of scope** — fields are range-checked independently; `day` is uniformly
@@ -157,6 +159,28 @@ fn fields_in_range(t: &GeneralizedTime<'_>) -> bool {
 /// over `content` with no allocation or amplification, so bounding total input size against resource
 /// exhaustion is a caller / upstream concern (the TLV length codec already bounds the content), in
 /// keeping with the encoding-only scope (`DECISIONS.md` D10).
+///
+/// **Error precedence (documented, not left to inference).** When an input has more than one
+/// defect, the reported [`GeneralizedTimeError`] is the first applicable one in this order -- the
+/// mandatory part first, then the field ranges in field order, then the optional fraction:
+/// 1. [`GeneralizedTimeError::BadLength`] -- fewer than 15 octets;
+/// 2. [`GeneralizedTimeError::NonDigit`] -- any of the mandatory positions `0..=13` is not an ASCII
+///    digit;
+/// 3. [`GeneralizedTimeError::NotZulu`] -- the final octet is not `'Z'`;
+/// 4. the field ranges, in field order `MM DD HH MM SS`: [`GeneralizedTimeError::MonthRange`], then
+///    [`GeneralizedTimeError::DayRange`], then [`GeneralizedTimeError::HourRange`], then
+///    [`GeneralizedTimeError::MinuteRange`], then [`GeneralizedTimeError::SecondRange`] (the
+///    four-digit year has no range check);
+/// 5. the fraction checks, reached only when the input is longer than 15 octets, in this order:
+///    [`GeneralizedTimeError::BadFractionSeparator`] (octet 14 is not `'.'` -- this includes a `'Z'`
+///    at octet 14 with further octets after it), then [`GeneralizedTimeError::FractionEmpty`] (`'.'`
+///    directly followed by the terminating `'Z'`), then [`GeneralizedTimeError::NonDigit`] (a
+///    non-digit among the fraction digits), then [`GeneralizedTimeError::FractionTrailingZero`].
+///
+/// So a fraction defect never outranks a mandatory-part or field-range defect, and a `NonDigit` in
+/// the fraction ranks after `NotZulu` and the range errors (while a `NonDigit` in the mandatory
+/// part ranks before them). A Kani harness (`proofs::decode_is_exactly_the_reference`) pins this
+/// order against an independent reference.
 pub fn decode_generalized_time(content: &[u8]) -> Result<GeneralizedTime<'_>, GeneralizedTimeError> {
     // Minimal canonical form is `YYYYMMDDHHMMSS` + `Z` = 15 octets.
     if content.len() < 15 {
@@ -230,6 +254,8 @@ pub fn decode_generalized_time(content: &[u8]) -> Result<GeneralizedTime<'_>, Ge
 /// Returns the number of octets written, or `None` if any field is out of range, the fraction is not
 /// canonical (non-digit or trailing zero), or `out` is too small. The guards make this the exact
 /// inverse of [`decode_generalized_time`].
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_generalized_time_into(t: &GeneralizedTime<'_>, out: &mut [u8]) -> Option<usize> {
     if !fields_in_range(t) {
         return None;
@@ -270,7 +296,7 @@ pub fn encode_generalized_time_into(t: &GeneralizedTime<'_>, out: &mut [u8]) -> 
 
 /// Require the **RFC 5280 §4.1.2.5.2** profile form: no fractional seconds. Generic DER permits a
 /// canonical fraction, but X.509 certificates must not carry one; a caller in that context applies
-/// this. Returns `true` iff `t` has no fraction (mirrors [`crate::bit_string::require_octet_aligned`]).
+/// this ([`crate::profile::validate_profile`] does so for `validity`). Returns `true` iff `t` has no fraction (mirrors [`crate::bit_string::require_octet_aligned`]).
 pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {
     t.fraction.is_empty()
 }
@@ -436,9 +462,322 @@ mod proofs {
         let buf: [u8; 19] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 19);
-        assert!(
-            decode_generalized_time(&buf[..n]).is_ok() == is_canonical_der_generalizedtime(&buf[..n])
+        let result = decode_generalized_time(&buf[..n]);
+        assert!(result.is_ok() == is_canonical_der_generalizedtime(&buf[..n]));
+        kani::cover!(result.is_ok());
+        // Value faithfulness: each decoded field is the ASCII digits at its own byte positions
+        // (YYYY MM DD HH MM SS, then the fraction between the '.' and the 'Z'), stated directly on
+        // the input rather than as the inverse of `encode` -- so a field read from the wrong
+        // position is caught even if `encode` mirrors it.
+        if let Ok(t) = result {
+            let d = |i: usize| (buf[i] - b'0') as u16;
+            assert!(t.year == d(0) * 1000 + d(1) * 100 + d(2) * 10 + d(3));
+            assert!(t.month as u16 == d(4) * 10 + d(5));
+            assert!(t.day as u16 == d(6) * 10 + d(7));
+            assert!(t.hour as u16 == d(8) * 10 + d(9));
+            assert!(t.minute as u16 == d(10) * 10 + d(11));
+            assert!(t.second as u16 == d(12) * 10 + d(13));
+            if n == 15 {
+                assert!(t.fraction.is_empty());
+            } else {
+                assert!(t.fraction == &buf[15..n - 1]);
+            }
+        }
+    }
+
+    /// TOTAL reference for GeneralizedTime content: the exact `Result`, every error variant, with a
+    /// precedence taken from the documentation (decoder rustdoc, "Error precedence"), NOT from the
+    /// decoder's control flow. The order used:
+    ///
+    /// 1. `BadLength` (fewer than 15 octets) -- `GeneralizedTimeError::BadLength` doc.
+    /// 2. `NonDigit` in a mandatory position `0..=13`, then
+    /// 3. `NotZulu` (final octet), then
+    /// 4. the first out-of-range field in the documented field order `MonthRange`, `DayRange`,
+    ///    `HourRange`, `MinuteRange`, `SecondRange` -- the module's bullet list puts `'Z'` and the
+    ///    mandatory digits ahead of the field ranges, and the enum declares them in this order.
+    /// 5. The optional fraction, judged only after the mandatory part: `BadFractionSeparator`
+    ///    (octet 14 is not `'.'` although more octets follow), `FractionEmpty` (`'.'` directly before
+    ///    the final `'Z'`), `NonDigit` (a non-digit among the fraction digits -- the `NonDigit` doc
+    ///    names fraction digits too), `FractionTrailingZero`.
+    ///
+    /// The whole order, including that the fraction-part checks (step 5) come after the field-range
+    /// checks and their internal order, is stated in the "Error precedence" section of
+    /// `decode_generalized_time`'s rustdoc (it is the module's adopted precedence; the enum
+    /// declaration order alone would rank a fraction-digit `NonDigit` ahead of `NotZulu` and the
+    /// ranges, which is NOT the documented order).
+    ///
+    /// Built unlike the decoder: a table of the five ranged fields, computed digit values for every
+    /// pair, then one precedence-ordered `if` chain; the fraction facts come from per-position
+    /// scans, not an early-return walk.
+    fn reference_generalized_time(c: &[u8]) -> Result<GeneralizedTime<'_>, GeneralizedTimeError> {
+        // (byte position of the pair, lowest legal value, highest legal value, error if outside).
+        const RANGED: [(usize, i32, i32, GeneralizedTimeError); 5] = [
+            (4, 1, 12, GeneralizedTimeError::MonthRange),
+            (6, 1, 31, GeneralizedTimeError::DayRange),
+            (8, 0, 23, GeneralizedTimeError::HourRange),
+            (10, 0, 59, GeneralizedTimeError::MinuteRange),
+            (12, 0, 59, GeneralizedTimeError::SecondRange),
+        ];
+        let len = c.len();
+        let long_enough = len >= 15;
+        let mut mandatory_digits_ok = true;
+        let mut pair = [0i32; 7]; // pair[k] = value of the digits at 2k, 2k+1
+        let mut zulu = false;
+        let mut dot = false; // octet 14 is '.' AND more octets follow
+        let mut fraction_digits_ok = true;
+        let mut first_bad_field = None;
+        if long_enough {
+            let mut k = 0;
+            while k < 14 {
+                if !(c[k] >= 48 && c[k] <= 57) {
+                    mandatory_digits_ok = false;
+                }
+                k += 1;
+            }
+            let mut f = 0;
+            while f < 7 {
+                pair[f] = (c[2 * f] as i32 - 48) * 10 + (c[2 * f + 1] as i32 - 48);
+                f += 1;
+            }
+            zulu = c[len - 1] == 90;
+            dot = len > 15 && c[14] == 46;
+            let mut j = 15;
+            while j + 1 < len {
+                if !(c[j] >= 48 && c[j] <= 57) {
+                    fraction_digits_ok = false;
+                }
+                j += 1;
+            }
+            let mut r = 0;
+            while r < 5 {
+                let (at, lo, hi, err) = RANGED[r];
+                let v = pair[at / 2];
+                if first_bad_field.is_none() && (v < lo || v > hi) {
+                    first_bad_field = Some(err);
+                }
+                r += 1;
+            }
+        }
+        if !long_enough {
+            Err(GeneralizedTimeError::BadLength)
+        } else if !mandatory_digits_ok {
+            Err(GeneralizedTimeError::NonDigit)
+        } else if !zulu {
+            Err(GeneralizedTimeError::NotZulu)
+        } else if let Some(e) = first_bad_field {
+            Err(e)
+        } else if len > 15 && !dot {
+            Err(GeneralizedTimeError::BadFractionSeparator)
+        } else if len == 16 {
+            Err(GeneralizedTimeError::FractionEmpty)
+        } else if !fraction_digits_ok {
+            Err(GeneralizedTimeError::NonDigit)
+        } else if len > 16 && c[len - 2] == 48 {
+            Err(GeneralizedTimeError::FractionTrailingZero)
+        } else {
+            Ok(GeneralizedTime {
+                year: (pair[0] * 100 + pair[1]) as u16,
+                month: pair[2] as u8,
+                day: pair[3] as u8,
+                hour: pair[4] as u8,
+                minute: pair[5] as u8,
+                second: pair[6] as u8,
+                fraction: if len == 15 { &c[0..0] } else { &c[15..len - 1] },
+            })
+        }
+    }
+
+    /// **Exact-result classification:** over a fully symbolic
+    /// 19-octet buffer and every length `0..=19` (the existing bound: up to a three-digit fraction),
+    /// `decode_generalized_time(content) == reference_generalized_time(content)` -- the exact
+    /// `Result`: a remapped error variant, a changed precedence on overlapping invalidity, or a wrong
+    /// field / fraction on `Ok` fails here, not only the accept/reject boundary. Covers: every error
+    /// variant and both accepting shapes (with / without fraction) reach the assert, plus inputs where
+    /// two invalidity conditions overlap.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn decode_is_exactly_the_reference() {
+        let buf: [u8; 19] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 19);
+        let c = &buf[..n];
+        let got = decode_generalized_time(c);
+        let want = reference_generalized_time(c);
+        assert!(got == want);
+        kani::cover(got == Err(GeneralizedTimeError::BadLength), "BadLength reaches the exact-result assert");
+        kani::cover(got == Err(GeneralizedTimeError::NonDigit), "NonDigit reaches the exact-result assert");
+        kani::cover(got == Err(GeneralizedTimeError::NotZulu), "NotZulu reaches the exact-result assert");
+        kani::cover(got == Err(GeneralizedTimeError::MonthRange), "MonthRange reaches the exact-result assert");
+        kani::cover(got == Err(GeneralizedTimeError::DayRange), "DayRange reaches the exact-result assert");
+        kani::cover(got == Err(GeneralizedTimeError::HourRange), "HourRange reaches the exact-result assert");
+        kani::cover(got == Err(GeneralizedTimeError::MinuteRange), "MinuteRange reaches the exact-result assert");
+        kani::cover(got == Err(GeneralizedTimeError::SecondRange), "SecondRange reaches the exact-result assert");
+        kani::cover(
+            got == Err(GeneralizedTimeError::BadFractionSeparator),
+            "BadFractionSeparator reaches the exact-result assert",
         );
+        kani::cover(got == Err(GeneralizedTimeError::FractionEmpty), "FractionEmpty reaches the exact-result assert");
+        kani::cover(
+            got == Err(GeneralizedTimeError::FractionTrailingZero),
+            "FractionTrailingZero reaches the exact-result assert",
+        );
+        kani::cover(matches!(got, Ok(t) if t.fraction.is_empty()), "an accepted value without a fraction");
+        kani::cover(matches!(got, Ok(t) if !t.fraction.is_empty()), "an accepted value with a fraction");
+        kani::cover(
+            got == Err(GeneralizedTimeError::NonDigit) && n >= 15 && buf[n - 1] != b'Z',
+            "overlap: a non-digit together with a non-'Z' terminator is NonDigit",
+        );
+        kani::cover(
+            got == Err(GeneralizedTimeError::NotZulu) && n >= 15 && buf[4] == b'9' && buf[5] == b'9',
+            "overlap: a non-'Z' terminator together with an out-of-range month is NotZulu",
+        );
+        kani::cover(
+            got == Err(GeneralizedTimeError::MonthRange) && n >= 17 && buf[14] != b'.',
+            "overlap: an out-of-range month together with a bad fraction separator is MonthRange",
+        );
+    }
+
+    /// **`require_no_fraction` biconditional.** Over symbolic content decoded by
+    /// `decode_generalized_time` (every length `0..=19`), whenever decoding succeeds,
+    /// `require_no_fraction(&t)` is true exactly when the input carries no fraction. "No fraction" is
+    /// stated from the INPUT, independently of `t.fraction`: the content has exactly 15 octets (the
+    /// mandatory 14 digits plus the `'Z'`), i.e. nothing between the seconds and the terminator.
+    /// The same biconditional is also asserted on a hand-built `GeneralizedTime` whose `fraction` is
+    /// a symbolic slice of length `0..=3`, so the helper is pinned on non-canonical fractions too
+    /// (it only looks at emptiness). Covers both polarities for decoded values.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn require_no_fraction_iff_no_fraction_octets() {
+        let buf: [u8; 19] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 19);
+        if let Ok(t) = decode_generalized_time(&buf[..n]) {
+            let no_fraction_in_input = n == 15;
+            assert!(require_no_fraction(&t) == no_fraction_in_input);
+            kani::cover(require_no_fraction(&t), "a decoded time without a fraction satisfies the profile");
+            kani::cover(!require_no_fraction(&t), "a decoded time with a fraction violates the profile");
+        }
+        // hand-built value, symbolic fraction slice
+        let frac: [u8; 3] = kani::any();
+        let fl: usize = kani::any();
+        kani::assume(fl <= 3);
+        let built = GeneralizedTime {
+            year: kani::any(),
+            month: kani::any(),
+            day: kani::any(),
+            hour: kani::any(),
+            minute: kani::any(),
+            second: kani::any(),
+            fraction: &frac[..fl],
+        };
+        assert!(require_no_fraction(&built) == (fl == 0));
+    }
+
+    /// **Total encoder oracle.** Over fully symbolic fields (every `u16` year
+    /// and every `u8` per other field, in or out of range), a symbolic fraction slice of length
+    /// `0..=3` (arbitrary bytes: non-digits and trailing zeros included) and a symbolic output
+    /// capacity `0..=20` over a symbolic 20-octet backing, `encode_generalized_time_into` returns
+    /// EXACTLY `Some(total)` when the fields are in range, the fraction is canonical (all digits, no
+    /// trailing zero) and the capacity is at least `total` (`15` without a fraction, `16 + len`
+    /// with one), and `None` otherwise. On `Some` the emitted octets equal an independently built
+    /// `YYYYMMDDHHMMSS[.fff]Z` (digits by a right-to-left remainder loop), and the octets past
+    /// `total` are untouched. The documented write contract ("on `None` nothing is written to `out`;
+    /// on `Some(n)` only `out[..n]` is written") is asserted for every input: `out` is unchanged on
+    /// `None`, `out[n..]` unchanged on `Some(n)`. Every predicate here is spelled from the documented
+    /// canonical form.
+    /// Covers: success with and without a fraction, a valid value rejected only for capacity, a
+    /// non-canonical fraction (non-digit; trailing zero) rejected with ample capacity, and an
+    /// out-of-range field rejected with ample capacity.
+    #[kani::proof]
+    #[kani::unwind(21)]
+    fn encode_is_total_exact_oracle() {
+        let frac: [u8; 3] = kani::any();
+        let fl: usize = kani::any();
+        kani::assume(fl <= 3);
+        let t = GeneralizedTime {
+            year: kani::any(),
+            month: kani::any(),
+            day: kani::any(),
+            hour: kani::any(),
+            minute: kani::any(),
+            second: kani::any(),
+            fraction: &frac[..fl],
+        };
+        let backing: [u8; 20] = kani::any();
+        let mut out = backing;
+        let cap: usize = kani::any();
+        kani::assume(cap <= 20);
+        let r = encode_generalized_time_into(&t, &mut out[..cap]);
+        // Rustdoc write contract: `None` => nothing written; `Some(n)` => only `out[..n]` written.
+        match r {
+            None => assert!(out == backing),
+            Some(n) => assert!(out[n..] == backing[n..]),
+        }
+
+        let fields_ok = t.year <= 9999
+            && (t.month >= 1 && t.month <= 12)
+            && (t.day >= 1 && t.day <= 31)
+            && t.hour <= 23
+            && t.minute <= 59
+            && t.second <= 59;
+        let mut digits_ok = true;
+        let mut k = 0;
+        while k < fl {
+            if !(frac[k] >= 48 && frac[k] <= 57) {
+                digits_ok = false;
+            }
+            k += 1;
+        }
+        let frac_ok = digits_ok && (fl == 0 || frac[fl - 1] != 48);
+        let total = if fl == 0 { 15 } else { 16 + fl };
+        if fields_ok && frac_ok && cap >= total {
+            assert!(r == Some(total));
+            // independent expected bytes
+            let mut want = [0u8; 20];
+            let mut v = t.year;
+            let mut k = 4;
+            while k > 0 {
+                k -= 1;
+                want[k] = 48 + (v % 10) as u8;
+                v /= 10;
+            }
+            let fields = [t.month, t.day, t.hour, t.minute, t.second];
+            let mut f = 0;
+            while f < 5 {
+                let mut v = fields[f];
+                let mut k = 2;
+                while k > 0 {
+                    k -= 1;
+                    want[4 + 2 * f + k] = 48 + v % 10;
+                    v /= 10;
+                }
+                f += 1;
+            }
+            if fl == 0 {
+                want[14] = 90;
+            } else {
+                want[14] = 46;
+                let mut j = 0;
+                while j < fl {
+                    want[15 + j] = frac[j];
+                    j += 1;
+                }
+                want[15 + fl] = 90;
+            }
+            assert!(out[..total] == want[..total]);
+            assert!(out[total..] == backing[total..]);
+        } else {
+            assert!(r.is_none());
+        }
+        kani::cover(r == Some(15), "a valid time without a fraction is encoded");
+        kani::cover(matches!(r, Some(w) if w > 15), "a valid time with a fraction is encoded");
+        kani::cover(r.is_none() && fields_ok && frac_ok && cap < total, "a valid time into insufficient capacity is None");
+        kani::cover(r.is_none() && fields_ok && !digits_ok && cap >= 19, "a non-digit fraction with ample capacity is None");
+        kani::cover(
+            r.is_none() && fields_ok && digits_ok && fl > 0 && frac[fl - 1] == 48 && cap >= 19,
+            "a trailing-zero fraction with ample capacity is None",
+        );
+        kani::cover(r.is_none() && !fields_ok && frac_ok && cap >= 19, "an out-of-range field with ample capacity is None");
     }
 
     // --- Error-class correctness (one harness per rejection reason). ---

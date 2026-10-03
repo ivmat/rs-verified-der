@@ -689,6 +689,79 @@ class EntryPointAttributionScoping(unittest.TestCase):
         self.assertIn('other_fn', f['harnessed_entry_points'])
 
 
+class HelperRoleAttribution(unittest.TestCase):
+    """Non-harness fns of `mod proofs` play two roles that must not be conflated. A
+    `#[kani::stub(orig, repl)]` replacement is a STUB BODY: its assumes constrain a stub's return.
+    Any other helper is an input generator: its assumes narrow the domain of the harnesses that
+    call it, so they belong with the harness-domain totals and, when they restrict content, in the
+    named content list. And an assert/cover that lives in a helper a harness calls is that
+    harness's check, so such a wrapper is not 'implicit checks only'.
+    """
+
+    FIXTURE = '\n'.join([
+        'pub fn target_fn(x: &[u8]) -> bool { x.is_empty() }',
+        '',
+        '#[cfg(kani)]',
+        'mod proofs {',
+        '    use super::*;',
+        '    #[allow(dead_code)]',
+        '    fn replacement(_x: &[u8]) -> bool { kani::assume(kani::any::<bool>()); true }',
+        '    fn any_digit() -> u8 {',
+        '        let d: u8 = kani::any();',
+        '        kani::assume(d >= b\'0\' && d <= b\'9\' && d != b\'5\');',  # a CONTENT restriction
+        '        d',
+        '    }',
+        '    fn case_helper() {',
+        '        let d = any_digit();',
+        '        assert!(d != 0);',
+        '        kani::cover(d == b\'1\', "one");',
+        '    }',
+        '    #[kani::proof]',
+        '    #[kani::stub(target_fn, replacement)]',
+        '    fn wrapper() {',
+        '        case_helper();',
+        '    }',
+        '    #[kani::proof]',
+        '    fn really_implicit_only() {',
+        '        let b: [u8; 4] = kani::any();',
+        '        let _ = target_fn(&b);',
+        '    }',
+        '}',
+        '',
+        '#[cfg(test)]',
+        'mod tests {}',
+        '',
+    ])
+
+    def _facts(self):
+        with tempfile.NamedTemporaryFile('w', suffix='.rs', delete=False, encoding='utf-8') as fh:
+            fh.write(self.FIXTURE)
+            path = fh.name
+        try:
+            return gen.module_facts(path)
+        finally:
+            os.unlink(path)
+
+    def test_stub_target_is_a_stub_and_generator_is_not(self):
+        f = self._facts()
+        self.assertEqual(f['stub_helper_names'], ['replacement'])
+        self.assertEqual(f['n_stub_assumes'], 1, 'only the stub body\'s assume is a stub assume')
+        self.assertEqual(f['n_generator_assumes'], 1)
+
+    def test_generator_assumes_count_in_the_domain_total_and_the_content_list(self):
+        f = self._facts()
+        self.assertEqual(f['n_assumes'], 1, 'a generator helper\'s assume narrows the input domain')
+        self.assertEqual([n for n, _e in f['content_assumes']], ['any_digit'])
+
+    def test_assert_and_cover_in_a_called_helper_are_the_harnesss_checks(self):
+        f = self._facts()
+        self.assertNotIn('wrapper', f['implicit_only'])
+        self.assertIn('really_implicit_only', f['implicit_only'])
+
+    def test_helper_covers_are_counted_once_at_module_level(self):
+        self.assertEqual(self._facts()['n_covers'], 1)
+
+
 class RegionPlumbing(unittest.TestCase):
     def test_advisory_region_is_still_generated_and_still_marker_checked(self):
         # Advisory means "not byte-compared", NOT "not maintained": --write must still write it,

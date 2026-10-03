@@ -8,7 +8,7 @@
 //! independently-canonical values, and nothing in the ASN.1 grammar itself ties one to the other
 //! (see [`crate::x509_certificate`]'s and [`crate::x509_tbs_certificate`]'s module docs, which name
 //! this exact split and explicitly leave such rules "to the caller"). This module is that caller,
-//! for the first three such rules:
+//! for the first four such rules:
 //!
 //! 1. **RFC 5280 §4.1.1.2**: the outer `Certificate.signatureAlgorithm` MUST be identical to the
 //!    `signature` field inside the signed `TBSCertificate`. A mismatch is a classic
@@ -37,11 +37,25 @@
 //!    the call site, and `proofs::utc_time_can_never_denote_2050_or_later` for the machine-checked
 //!    proof of the structural half this module relies on (whose own premise, `year2 <= 99`, is
 //!    discharged for decoder output by `crate::utc_time`'s `decode_postcondition_fields_in_range`).
+//! 4. **RFC 5280 §4.1.2.5.2**: a `GeneralizedTime` used in `validity` MUST NOT include fractional
+//!    seconds ("YYYYMMDDHHMMSSZ"). X.690 DER itself permits a canonical fraction, and
+//!    [`crate::generalized_time`] accepts one, so a certificate whose `notBefore` or `notAfter` is a
+//!    GeneralizedTime with a fraction decodes without error and is rejected only here, through
+//!    [`crate::generalized_time::require_no_fraction`]. The rule applies to the `Time::Generalized`
+//!    arm only: a `Time::Utc` value has no fraction field at all, so that arm is structurally
+//!    compliant. Rule 4 is independent of rule 3's year check (a 2050-or-later GeneralizedTime with
+//!    a fraction passes rule 3 and fails rule 4), and it is checked after rule 3 for both fields (see
+//!    [`validate_profile`] for the exact order).
 //!
-//! **Scope.** Both `Certificate` and `TbsCertificate` are already fully structurally parsed by the
-//! time [`validate_profile`] runs — this module inspects already-materialized fields
-//! (`AlgorithmIdentifier` values, the `version` `u8`, the `extensions` `Option`, the `Validity`'s two
-//! `Time` CHOICE arms and their year fields) and performs no byte-level decoding of its own. It
+//! **Scope.** For a *parser-produced* `Certificate` (the output of
+//! [`crate::x509_certificate::parse_certificate`]), both `Certificate` and `TbsCertificate` are
+//! already fully structurally parsed by the time [`validate_profile`] runs — this module inspects
+//! already-materialized fields (`AlgorithmIdentifier` values, the `version` `u8`, the `extensions`
+//! `Option`, the `Validity`'s two `Time` CHOICE arms, their year fields, and the emptiness of a
+//! GeneralizedTime's fraction) and performs no byte-level decoding of its own. The structural claims in
+//! these docs hold for parser-produced values only: the fields of `Certificate` and its parts are
+//! public, so a caller can also build a value by hand that no parser would produce, and
+//! `validate_profile` reads such a value's fields exactly as it reads any other. It
 //! establishes the pattern the rest of the profile layer (key usage, basic constraints, name
 //! constraints, path validation, …) is expected to follow: a separate module, downstream of the
 //! structural parsers, that never modifies their logic.
@@ -84,15 +98,22 @@
 //! assert_eq!(validate_profile(&cert), Ok(()));
 //! ```
 
+use crate::generalized_time::require_no_fraction;
 use crate::x509_certificate::Certificate;
 use crate::x509_validity::Time;
 
 /// Why a structurally-valid [`Certificate`] failed an RFC 5280 profile check. Every variant names
 /// a specific cross-field rule this module enforces (see the module docs), citing the RFC clause,
 /// distinct from the structural [`crate::x509_certificate::CertificateError`] /
-/// [`crate::x509_tbs_certificate::TbsCertificateError`] the certificate already had to pass to be
-/// representable as a [`Certificate`] at all.
+/// [`crate::x509_tbs_certificate::TbsCertificateError`] that bytes already had to pass for the
+/// parsers to produce a [`Certificate`] at all (a value built by hand from the public fields skips
+/// those checks).
+///
+/// This enum is `#[non_exhaustive]`: later releases may add error variants, so a `match` over it
+/// outside this crate needs a wildcard arm. The attribute only protects `match` expressions from
+/// breaking on a new variant; stricter validation can still change behaviour incompatibly.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[non_exhaustive]
 pub enum ProfileError {
     /// RFC 5280 §4.1.1.2: `Certificate.signatureAlgorithm` MUST equal
     /// `Certificate.tbsCertificate.signature`. Both are structurally valid `AlgorithmIdentifier`s
@@ -107,6 +128,12 @@ pub enum ProfileError {
     /// RFC 5280 §4.1.2.5.2: `tbsCertificate.validity.notAfter` is encoded as GeneralizedTime, but
     /// its year is `<= 2049` — years through 2049 MUST use UTCTime, not GeneralizedTime.
     NotAfterGeneralizedTimeYearTooEarly,
+    /// RFC 5280 §4.1.2.5.2: `tbsCertificate.validity.notBefore` is encoded as GeneralizedTime and
+    /// carries fractional seconds — a GeneralizedTime in `validity` MUST NOT include them.
+    NotBeforeGeneralizedTimeHasFraction,
+    /// RFC 5280 §4.1.2.5.2: `tbsCertificate.validity.notAfter` is encoded as GeneralizedTime and
+    /// carries fractional seconds — a GeneralizedTime in `validity` MUST NOT include them.
+    NotAfterGeneralizedTimeHasFraction,
 }
 
 /// RFC 5280 §4.1.2.5 / §4.1.2.5.1 / §4.1.2.5.2: check one already-decoded `Time` CHOICE value
@@ -138,15 +165,32 @@ fn check_time_encoding_year(
     Ok(())
 }
 
+/// RFC 5280 §4.1.2.5.2: check one already-decoded `Time` CHOICE value against the no-fractional-
+/// seconds rule. Only the `Time::Generalized` arm can violate it (`Time::Utc` carries no fraction
+/// field); the decision is [`crate::generalized_time::require_no_fraction`], whose biconditional
+/// with "the input carried no fraction octets" is proved in `crate::generalized_time`.
+/// `on_fraction` lets the caller report which of `notBefore` / `notAfter` was the offending field.
+fn check_time_no_fraction(time: &Time<'_>, on_fraction: ProfileError) -> Result<(), ProfileError> {
+    if let Time::Generalized(t) = time {
+        if !require_no_fraction(t) {
+            return Err(on_fraction);
+        }
+    }
+    Ok(())
+}
+
 /// Check `cert` against this module's RFC 5280 profile rules (see the module docs for exactly
-/// which three).
+/// which four).
 ///
-/// `cert` must already be a structurally-valid [`Certificate`] (i.e. the output of
-/// [`crate::x509_certificate::parse_certificate`]) — this function performs no DER decoding of its
-/// own, only comparisons over already-materialized fields. Returns `Ok(())` if all rules hold, else
+/// `cert` is expected to be a structurally-valid [`Certificate`] (i.e. the output of
+/// [`crate::x509_certificate::parse_certificate`]; the public fields also allow a hand-built value,
+/// which is not checked structurally) — this function performs no DER decoding of its own, only
+/// comparisons over already-materialized fields. Returns `Ok(())` if all rules hold, else
 /// the first violated rule's [`ProfileError`] (checked in the order the variants are declared:
 /// signature-algorithm equality, then the extensions/version rule, then `notBefore`'s
-/// encoding-choice year rule, then `notAfter`'s).
+/// encoding-choice year rule, then `notAfter`'s, then `notBefore`'s no-fractional-seconds rule, then
+/// `notAfter`'s). Rule 4 is checked after both rule 3 fields so that the errors reported for
+/// certificates that were already rejected before rule 4 existed are unchanged.
 pub fn validate_profile(cert: &Certificate<'_>) -> Result<(), ProfileError> {
     // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature. `AlgorithmIdentifier`
     // derives `PartialEq`/`Eq`, comparing both `algorithm_oid` (byte slice) and `parameters`
@@ -168,6 +212,12 @@ pub fn validate_profile(cert: &Certificate<'_>) -> Result<(), ProfileError> {
     let validity = &cert.tbs_certificate.validity;
     check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;
     check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;
+
+    // Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.
+    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both
+    // rule-3 fields (declaration order), notBefore first.
+    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
+    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
 
     Ok(())
 }
@@ -194,7 +244,7 @@ mod proofs {
     /// need a symbolic DER buffer and a parse — it needs a symbolic *value*. The opaque byte-span
     /// fields (`serial_number`, `issuer`, `subject`, key material) are never read by
     /// `validate_profile`, so fixing them to an empty slice loses no generality; what stays symbolic
-    /// is exactly what the three rules inspect.
+    /// is exactly what the four rules inspect.
     fn symbolic_cert<'a>(
         sig_alg: AlgorithmIdentifier<'a>,
         tbs_sig: AlgorithmIdentifier<'a>,
@@ -249,6 +299,51 @@ mod proofs {
         }
     }
 
+    /// A symbolic window `&b[..n]` with `n` symbolic over `0..=2` (the whole backing).
+    fn window(b: &[u8; 2]) -> &[u8] {
+        let n: usize = kani::any();
+        kani::assume(n <= 2);
+        &b[..n]
+    }
+
+    /// A `Time` with EVERY field symbolic, for the whole-function oracle: which arm; for the
+    /// UTCTime arm every `UtcTime` field over its full `u8` range (no `year2 <= 99` assumption: the
+    /// fields are `pub` and `validate_profile` does not read them); for the GeneralizedTime arm every
+    /// field symbolic (`year: u16`, `month`/`day`/`hour`/`minute`/`second: u8`, and a fraction that is
+    /// a symbolic window of `0..=4` octets over `frac_back`, i.e. empty or 1 to 4 arbitrary octets, not
+    /// restricted to canonical digits). Returns the time and the three facts the reference needs (the
+    /// arm, the Generalized year, and the fraction's length in octets, 0 for the UTCTime arm; the
+    /// reference reads nothing else, per the module docs). The fraction length is taken from the
+    /// window's own `n`, not from `require_no_fraction` or `slice::is_empty` on the built value.
+    fn any_time<'a>(frac_back: &'a [u8; 4]) -> (Time<'a>, bool, u16, usize) {
+        let is_gen: bool = kani::any();
+        let year: u16 = kani::any();
+        if is_gen {
+            let flen: usize = kani::any();
+            kani::assume(flen <= 4);
+            let t = GeneralizedTime {
+                year,
+                month: kani::any(),
+                day: kani::any(),
+                hour: kani::any(),
+                minute: kani::any(),
+                second: kani::any(),
+                fraction: &frac_back[..flen],
+            };
+            (Time::Generalized(t), true, year, flen)
+        } else {
+            let u = UtcTime {
+                year2: kani::any(),
+                month: kani::any(),
+                day: kani::any(),
+                hour: kani::any(),
+                minute: kani::any(),
+                second: kani::any(),
+            };
+            (Time::Utc(u), false, year, 0)
+        }
+    }
+
     // ---- P2: the structural half `profile` leans on ----
 
     /// RFC 5280 §4.1.2.5.1's window, as a proof rather than a loop-over-100-cases test: for every
@@ -275,32 +370,266 @@ mod proofs {
 
     // ---- P3: rule 1, as a biconditional ----
 
+    /// Raw byte-by-byte inequality of two slices with an explicit length check -- the oracle's own
+    /// equality, deliberately *not* the derived `PartialEq` the implementation relies on.
+    fn raw_bytes_differ(x: &[u8], y: &[u8]) -> bool {
+        if x.len() != y.len() {
+            return true;
+        }
+        let mut i = 0;
+        while i < x.len() {
+            if x[i] != y[i] {
+                return true;
+            }
+            i += 1;
+        }
+        false
+    }
+
     /// Rule 1 (§4.1.1.2), **exactly**: `validate_profile` rejects with `SignatureAlgorithmMismatch`
-    /// if and only if the outer `signatureAlgorithm` differs from `tbsCertificate.signature` — over
-    /// symbolic OID bytes and a symbolic present/absent `parameters` on both sides. A biconditional,
-    /// so neither an over-eager nor a missing check can pass.
+    /// if and only if the outer `signatureAlgorithm` differs from `tbsCertificate.signature` --
+    /// the OID octets differ (by length or by a byte), or exactly one side carries `parameters`,
+    /// or both do and their octets differ. The oracle is computed from the raw OID / parameter
+    /// bytes with `raw_bytes_differ`, not with `AlgorithmIdentifier`'s derived `PartialEq`. The
+    /// OIDs and parameters are symbolic over a 4-octet backing with symbolic lengths `0..=4` (so
+    /// unequal-length comparison is exercised), and `parameters` is symbolically present/absent on
+    /// both sides. The assertion pins the EXACT result (`Err(SignatureAlgorithmMismatch)` when the
+    /// identifiers differ, `Ok(())` when they are equal -- rules 2 and 3 are held satisfied), so
+    /// neither an over-eager nor a missing check, nor a different error for an equal pair, can pass.
     #[kani::proof]
-    #[kani::unwind(4)]
+    #[kani::unwind(6)]
     fn rule1_mismatch_iff_algorithms_differ() {
-        let oid_a: [u8; 2] = kani::any();
-        let oid_b: [u8; 2] = kani::any();
-        let par_a: [u8; 1] = kani::any();
-        let par_b: [u8; 1] = kani::any();
+        let oid_a: [u8; 4] = kani::any();
+        let oid_b: [u8; 4] = kani::any();
+        let par_a: [u8; 4] = kani::any();
+        let par_b: [u8; 4] = kani::any();
+        let la: usize = kani::any();
+        let lb: usize = kani::any();
+        let lpa: usize = kani::any();
+        let lpb: usize = kani::any();
+        kani::assume(la <= 4 && lb <= 4 && lpa <= 4 && lpb <= 4);
         let has_a: bool = kani::any();
         let has_b: bool = kani::any();
-        let a = symbolic_alg(&oid_a, &par_a, has_a);
-        let b = symbolic_alg(&oid_b, &par_b, has_b);
+        let a = AlgorithmIdentifier {
+            algorithm_oid: &oid_a[..la],
+            parameters: if has_a { Some(&par_a[..lpa]) } else { None },
+        };
+        let b = AlgorithmIdentifier {
+            algorithm_oid: &oid_b[..lb],
+            parameters: if has_b { Some(&par_b[..lpb]) } else { None },
+        };
         // Hold rules 2 and 3 satisfied so the result isolates rule 1: v3 with extensions present,
         // and both Times a UTCTime (never a rule-3 violation, by P2).
         let t = Time::Utc(UtcTime { year2: 24, month: 1, day: 1, hour: 0, minute: 0, second: 0 });
         const EXT: &[u8] = &[0x30, 0x00];
         let cert = symbolic_cert(a, b, 2, Some(EXT), Validity { not_before: t, not_after: t });
         let r = validate_profile(&cert);
-        assert!((r == Err(ProfileError::SignatureAlgorithmMismatch)) == (a != b));
+        // Independent oracle: raw OID bytes, then parameter presence, then raw parameter bytes.
+        let differ = raw_bytes_differ(&oid_a[..la], &oid_b[..lb])
+            || has_a != has_b
+            || (has_a && raw_bytes_differ(&par_a[..lpa], &par_b[..lpb]));
+        // Rules 2 and 3 cannot fire here (v3 with extensions; both Times UTCTime), so the exact
+        // result is the mismatch error when the identifiers differ and `Ok(())` otherwise -- any
+        // OTHER error for an equal pair is caught too, not only a missing mismatch.
+        assert!(
+            r == if differ {
+                Err(ProfileError::SignatureAlgorithmMismatch)
+            } else {
+                Ok(())
+            }
+        );
         kani::cover(r.is_ok(), "an equal algorithm pair reaches validate_profile's Ok tail");
         kani::cover(
-            r == Err(ProfileError::SignatureAlgorithmMismatch) && oid_a == oid_b,
+            r == Err(ProfileError::SignatureAlgorithmMismatch)
+                && la == lb
+                && !raw_bytes_differ(&oid_a[..la], &oid_b[..lb])
+                && has_a
+                && has_b,
             "a mismatch is detected on `parameters` alone, not only on the OID",
+        );
+        kani::cover(
+            r == Err(ProfileError::SignatureAlgorithmMismatch) && la != lb && oid_a[..la.min(lb)] == oid_b[..la.min(lb)],
+            "a mismatch is detected on OID length alone (one OID a strict prefix of the other)",
+        );
+        kani::cover(
+            r == Err(ProfileError::SignatureAlgorithmMismatch)
+                && has_a != has_b
+                && !raw_bytes_differ(&oid_a[..la], &oid_b[..lb]),
+            "a mismatch is detected on `parameters` presence alone (the OID octets are equal)",
+        );
+        kani::cover(r.is_ok() && has_a && has_b && lpa > 0, "equal non-empty parameters are accepted");
+    }
+
+    /// **Whole-function exact-result oracle.** Over
+    /// symbolic algorithm identifiers (4-octet OID and parameter backings with symbolic lengths
+    /// `0..=4` and symbolic parameter presence on each side), a symbolic `version` (all 256 values),
+    /// symbolic `extensions` presence, and both `Time`s with EVERY field symbolic (`any_time`: the
+    /// UTCTime arm over all `u8` field values, no `year2 <= 99` assumption; the GeneralizedTime arm
+    /// with a symbolic `u16` year -- which includes the 2049/2050 boundary -- symbolic
+    /// month/day/hour/minute/second and a symbolic 0..=4-octet fraction), `validate_profile(cert)`
+    /// equals `expected(..)` EXACTLY. The profile-irrelevant certificate fields are symbolic too:
+    /// `serial_number`, `issuer`, `subject`, the SPKI (OID, optional parameters, key window, unused
+    /// count), `signature_value`, and the `extensions` content are each a symbolic 0..=2-octet window
+    /// over a 2-octet symbolic backing (`unused` is any `u8`), so no "never read" argument by
+    /// inspection is needed: the reference below depends only on what the module docs say is
+    /// inspected (algorithm identifiers, `version`, extensions PRESENCE, each Time's arm, year and
+    /// fraction emptiness), and the assertion proves nothing else changes the result.
+    /// `expected` is an independent total reference written from the documented rule precedence (the
+    /// `validate_profile` doc comment and the `ProfileError` declaration order: signature-algorithm,
+    /// then extensions/version, then `notBefore`'s year rule, then `notAfter`'s, then `notBefore`'s
+    /// no-fraction rule, then `notAfter`'s): algorithm equality is computed from the raw bytes with
+    /// `raw_bytes_differ` (not the derived `PartialEq`), the extensions and year rules are spelled
+    /// from their RFC statements, and the no-fraction rule (§4.1.2.5.2) is spelled as "a
+    /// GeneralizedTime whose fraction window is non-empty" from the window length, not from
+    /// `require_no_fraction`. So the rules interact here, not only each in isolation: in particular
+    /// rule 1 must win over rules 2 to 4 for every combination of parameter presence, rule 3 (both
+    /// fields) must win over rule 4, and `notBefore`'s variant must win over `notAfter`'s within each
+    /// rule.
+    ///
+    /// Bounds (disclosed): 4-octet backings and lengths `0..=4` for the identifier bytes (the same
+    /// domain as `rule1_mismatch_iff_algorithms_differ`); 2-octet backings, lengths `0..=2`, for the
+    /// irrelevant spans; a 4-octet backing, length `0..=4`, for each Generalized fraction. Slices
+    /// longer than that are not enumerated (for the fraction: lengths above 4 are covered by unit tests
+    /// only, and the code reads emptiness, not length); the function performs no per-octet reads of
+    /// these spans, so this is a representative window, not a proof for arbitrary span lengths.
+    #[kani::proof]
+    #[kani::unwind(6)]
+    fn validate_profile_is_exactly_the_documented_precedence() {
+        let oid_a: [u8; 4] = kani::any();
+        let oid_b: [u8; 4] = kani::any();
+        let par_a: [u8; 4] = kani::any();
+        let par_b: [u8; 4] = kani::any();
+        let la: usize = kani::any();
+        let lb: usize = kani::any();
+        let lpa: usize = kani::any();
+        let lpb: usize = kani::any();
+        kani::assume(la <= 4 && lb <= 4 && lpa <= 4 && lpb <= 4);
+        let has_a: bool = kani::any();
+        let has_b: bool = kani::any();
+        let a = AlgorithmIdentifier {
+            algorithm_oid: &oid_a[..la],
+            parameters: if has_a { Some(&par_a[..lpa]) } else { None },
+        };
+        let b = AlgorithmIdentifier {
+            algorithm_oid: &oid_b[..lb],
+            parameters: if has_b { Some(&par_b[..lpb]) } else { None },
+        };
+        let version: u8 = kani::any();
+        let has_ext: bool = kani::any();
+        let frac_nb: [u8; 4] = kani::any();
+        let frac_na: [u8; 4] = kani::any();
+        let (nb, nb_gen, nb_year, nb_flen) = any_time(&frac_nb);
+        let (na, na_gen, na_year, na_flen) = any_time(&frac_na);
+        // Profile-irrelevant spans: symbolic windows over symbolic backings.
+        let serial: [u8; 2] = kani::any();
+        let issuer: [u8; 2] = kani::any();
+        let subject: [u8; 2] = kani::any();
+        let spki_oid: [u8; 2] = kani::any();
+        let spki_par: [u8; 2] = kani::any();
+        let spki_key: [u8; 2] = kani::any();
+        let sig_val: [u8; 2] = kani::any();
+        let ext_back: [u8; 2] = kani::any();
+        let spki_has_par: bool = kani::any();
+        let cert = Certificate {
+            tbs_certificate: TbsCertificate {
+                version,
+                serial_number: window(&serial),
+                signature: b,
+                issuer: window(&issuer),
+                validity: Validity { not_before: nb, not_after: na },
+                subject: window(&subject),
+                subject_public_key_info: SubjectPublicKeyInfo {
+                    algorithm_oid: window(&spki_oid),
+                    parameters: if spki_has_par { Some(window(&spki_par)) } else { None },
+                    subject_public_key: BitString { data: window(&spki_key), unused: kani::any() },
+                },
+                extensions: if has_ext { Some(window(&ext_back)) } else { None },
+            },
+            signature_algorithm: a,
+            signature_value: BitString { data: window(&sig_val), unused: kani::any() },
+        };
+        let r = validate_profile(&cert);
+
+        // Independent total reference, documented precedence.
+        let alg_differ = raw_bytes_differ(&oid_a[..la], &oid_b[..lb])
+            || has_a != has_b
+            || (has_a && raw_bytes_differ(&par_a[..lpa], &par_b[..lpb]));
+        let ext_bad = has_ext && version != 2;
+        let nb_bad = nb_gen && nb_year <= 2049;
+        let na_bad = na_gen && na_year <= 2049;
+        let nb_frac = nb_gen && nb_flen > 0;
+        let na_frac = na_gen && na_flen > 0;
+        let expected = if alg_differ {
+            Err(ProfileError::SignatureAlgorithmMismatch)
+        } else if ext_bad {
+            Err(ProfileError::ExtensionsRequireV3)
+        } else if nb_bad {
+            Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)
+        } else if na_bad {
+            Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)
+        } else if nb_frac {
+            Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)
+        } else if na_frac {
+            Err(ProfileError::NotAfterGeneralizedTimeHasFraction)
+        } else {
+            Ok(())
+        };
+        assert!(r == expected);
+
+        kani::cover(
+            r == Err(ProfileError::SignatureAlgorithmMismatch) && has_a && has_b && ext_bad,
+            "a mismatch with parameters on both sides wins over an extensions/version violation",
+        );
+        kani::cover(
+            r == Err(ProfileError::SignatureAlgorithmMismatch) && (has_a || has_b) && ext_bad && (nb_bad || na_bad),
+            "a mismatch with parameters present wins over BOTH an extensions and a time violation",
+        );
+        kani::cover(
+            r == Err(ProfileError::ExtensionsRequireV3) && has_a && has_b && !alg_differ && (nb_bad || na_bad),
+            "equal identifiers with parameters present: rule 2 wins over rule 3",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly) && nb_year == 2049 && has_a && has_b,
+            "the 2049 boundary year is rejected with parameters present",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly) && na_year == 2049,
+            "notAfter's variant at the 2049 boundary year",
+        );
+        kani::cover(r.is_ok() && nb_gen && nb_year == 2050 && has_a && has_b, "the 2050 boundary year is accepted");
+        kani::cover(r.is_ok() && has_ext && version == 2 && has_a && has_b && lpa > 0, "a fully conforming certificate with parameters is accepted");
+        kani::cover(
+            r == Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)
+                && matches!(nb, Time::Generalized(g) if !g.fraction.is_empty()),
+            "a too-early GeneralizedTime WITH a non-empty fraction is a year error",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotBeforeGeneralizedTimeHasFraction) && nb_year == 2050 && has_a && has_b,
+            "a 2050 notBefore GeneralizedTime WITH a fraction is rejected by rule 4 (the year rule passes it)",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotAfterGeneralizedTimeHasFraction) && na_year >= 2050 && !nb_frac,
+            "notAfter's own fraction variant is reachable (notBefore clean)",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotBeforeGeneralizedTimeHasFraction) && na_frac,
+            "both fields carry a fraction -- notBefore's variant is the one reported",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly) && nb_frac,
+            "a notBefore fraction does not pre-empt notAfter's year error (rule 3 wins over rule 4)",
+        );
+        kani::cover(
+            r.is_ok() && matches!(nb, Time::Generalized(g) if g.fraction.is_empty()) && nb_year >= 2050,
+            "an accepted (2050+) GeneralizedTime with an EMPTY fraction",
+        );
+        kani::cover(
+            r.is_ok() && matches!(nb, Time::Utc(u) if u.year2 > 99),
+            "an accepted UTCTime whose hand-built year2 is outside 00..=99",
+        );
+        kani::cover(
+            r.is_ok() && has_ext && matches!(cert.tbs_certificate.extensions, Some(e) if e.is_empty()),
+            "an accepted certificate with present-but-empty extensions content",
         );
     }
 
@@ -334,7 +663,7 @@ mod proofs {
     // ---- P5: rule 3, as a biconditional, per field ----
 
     /// Rule 3 (§4.1.2.5.2), **exactly**, and with the two fields' precedence pinned: with rules 1–2
-    /// satisfied, `validate_profile` rejects iff at least one of `notBefore` / `notAfter` is a
+    /// satisfied (and rule 4 satisfied: every GeneralizedTime here has an empty fraction), `validate_profile` rejects iff at least one of `notBefore` / `notAfter` is a
     /// GeneralizedTime with year `<= 2049`, and it reports `notBefore`'s variant when both are bad —
     /// the order `validate_profile`'s doc comment promises.
     #[kani::proof]
@@ -373,11 +702,61 @@ mod proofs {
         );
     }
 
-    // ---- P6: precedence across all three rules ----
+    // ---- P5b: rule 4, as a biconditional, per field ----
+
+    /// Rule 4 (§4.1.2.5.2), **exactly**, per field: with rules 1-3 satisfied (equal algorithm
+    /// identifiers; a v3 certificate with extensions present; every GeneralizedTime a year `>= 2050`,
+    /// every UTCTime unconstrained), `validate_profile` returns `NotBeforeGeneralizedTimeHasFraction`
+    /// iff `notBefore` is a GeneralizedTime whose fraction window is non-empty; otherwise
+    /// `NotAfterGeneralizedTimeHasFraction` iff `notAfter` is one; otherwise `Ok(())`. The fraction
+    /// is a symbolic window of `0..=4` arbitrary octets (the rule inspects emptiness only; lengths above 4
+    /// are covered by unit tests, not by this proof) and the
+    /// reference is computed from the window length, not from `require_no_fraction`. A UTCTime on
+    /// either side (which has no fraction field) is never rejected by this rule.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn rule4_fraction_iff_generalized_with_fraction() {
+        let frac_nb: [u8; 4] = kani::any();
+        let frac_na: [u8; 4] = kani::any();
+        let (nb, nb_gen, nb_year, nb_flen) = any_time(&frac_nb);
+        let (na, na_gen, na_year, na_flen) = any_time(&frac_na);
+        kani::assume(!nb_gen || nb_year >= 2050); // rule 3 satisfied
+        kani::assume(!na_gen || na_year >= 2050);
+        let oid: [u8; 2] = kani::any();
+        let alg = symbolic_alg(&oid, &[0], false);
+        const EXT: &[u8] = &[0x30, 0x00];
+        let cert = symbolic_cert(alg, alg, 2, Some(EXT), Validity { not_before: nb, not_after: na });
+        let r = validate_profile(&cert);
+
+        let nb_frac = nb_gen && nb_flen > 0;
+        let na_frac = na_gen && na_flen > 0;
+        let expected = if nb_frac {
+            Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)
+        } else if na_frac {
+            Err(ProfileError::NotAfterGeneralizedTimeHasFraction)
+        } else {
+            Ok(())
+        };
+        assert!(r == expected);
+        kani::cover(nb_frac && na_frac, "both fields carry a fraction -- notBefore's variant is reported");
+        kani::cover(
+            r == Err(ProfileError::NotAfterGeneralizedTimeHasFraction) && nb_gen && nb_flen == 0,
+            "notAfter's own variant is reachable with a clean GeneralizedTime notBefore",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotBeforeGeneralizedTimeHasFraction) && !na_gen,
+            "notBefore's variant with a UTCTime notAfter",
+        );
+        kani::cover(r.is_ok() && nb_gen && na_gen, "two fraction-free GeneralizedTimes (2050+) are accepted");
+        kani::cover(r.is_ok() && !nb_gen && !na_gen, "two UTCTimes are accepted");
+    }
+
+    // ---- P6: precedence across all four rules ----
 
     /// The declared rule ORDER is part of the contract (`validate_profile`'s doc comment states it):
-    /// signature-algorithm, then extensions/version, then `notBefore`, then `notAfter`. With every
-    /// rule independently violable, the reported error is always the first violated one.
+    /// signature-algorithm, then extensions/version, then `notBefore`'s year rule, then `notAfter`'s,
+    /// then `notBefore`'s no-fraction rule, then `notAfter`'s. With every rule independently
+    /// violable, the reported error is always the first violated one.
     #[kani::proof]
     #[kani::unwind(4)]
     fn error_precedence_follows_declaration_order() {
@@ -389,11 +768,13 @@ mod proofs {
         let na_gen: bool = kani::any();
         let nb_year: u16 = kani::any();
         let na_year: u16 = kani::any();
+        let nb_has_frac: bool = kani::any();
+        let na_has_frac: bool = kani::any();
         let a = symbolic_alg(&oid_a, &[0], false);
         let b = symbolic_alg(&oid_b, &[0], false);
         let frac: [u8; 1] = [0];
-        let nb = symbolic_time(nb_gen, nb_year, 24, &frac, false);
-        let na = symbolic_time(na_gen, na_year, 24, &frac, false);
+        let nb = symbolic_time(nb_gen, nb_year, 24, &frac, nb_has_frac);
+        let na = symbolic_time(na_gen, na_year, 24, &frac, na_has_frac);
         const EXT: &[u8] = &[0x30, 0x00];
         let cert = symbolic_cert(a, b, version, if has_ext { Some(EXT) } else { None },
                                  Validity { not_before: nb, not_after: na });
@@ -403,6 +784,8 @@ mod proofs {
         let bad2 = has_ext && version != 2;
         let bad3 = nb_gen && nb_year <= 2049;
         let bad4 = na_gen && na_year <= 2049;
+        let bad5 = nb_gen && nb_has_frac;
+        let bad6 = na_gen && na_has_frac;
         let expected = if bad1 {
             Err(ProfileError::SignatureAlgorithmMismatch)
         } else if bad2 {
@@ -411,19 +794,29 @@ mod proofs {
             Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)
         } else if bad4 {
             Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)
+        } else if bad5 {
+            Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)
+        } else if bad6 {
+            Err(ProfileError::NotAfterGeneralizedTimeHasFraction)
         } else {
             Ok(())
         };
         assert!(r == expected);
-        kani::cover(bad1 && bad2 && bad3 && bad4, "all four violations at once -- rule 1 still wins");
+        kani::cover(
+            bad1 && bad2 && bad3 && bad4 && bad5 && bad6,
+            "all six violations at once -- rule 1 still wins",
+        );
         kani::cover(!bad1 && bad2 && bad3, "rule 2 wins over rule 3");
+        kani::cover(!bad1 && !bad2 && !bad3 && bad4 && bad5, "notAfter's year error wins over notBefore's fraction error");
+        kani::cover(!bad1 && !bad2 && !bad3 && !bad4 && bad5 && bad6, "notBefore's fraction error wins over notAfter's");
+        kani::cover(!bad1 && !bad2 && !bad3 && !bad4 && !bad5 && bad6, "notAfter's fraction error is reachable alone");
         kani::cover(r.is_ok(), "a fully conforming certificate is accepted");
     }
 
     // ---- P7: totality ----
 
     /// `validate_profile` is total on symbolic profile-relevant fields: no panic, no arithmetic
-    /// overflow, for any combination of the fields the three rules inspect.
+    /// overflow, for any combination of the fields the four rules inspect.
     ///
     /// **Every harness in this module carries an explicit `#[kani::unwind]`, and that is load-bearing
     /// rather than stylistic.** Rule 1 compares two `AlgorithmIdentifier`s, whose `parameters` field
@@ -911,5 +1304,177 @@ mod tests {
         let bytes = build_certificate(&tbs, &SIGNATURE_ED25519);
         let cert = parse_certificate(&bytes).unwrap();
         assert_eq!(validate_profile(&cert), Err(ProfileError::ExtensionsRequireV3));
+    }
+
+    // --- Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.
+
+    /// A `Time` TLV: UTCTime (tag 0x17) when `generalized` is false, GeneralizedTime (0x18) otherwise.
+    fn time_tlv(generalized: bool, ascii: &[u8]) -> Vec<u8> {
+        wrap(if generalized { 0x18 } else { 0x17 }, ascii)
+    }
+
+    /// A `Validity` SEQUENCE over two already-encoded `Time` TLVs.
+    fn validity_of(not_before: &[u8], not_after: &[u8]) -> Vec<u8> {
+        let mut content = not_before.to_vec();
+        content.extend_from_slice(not_after);
+        wrap(0x30, &content)
+    }
+
+    /// Parse a v3 certificate carrying `validity` and return `validate_profile`'s result, after
+    /// checking that the fixture really parsed (so a rejection can only come from the profile rules).
+    fn profile_result_for_validity(validity: &[u8]) -> Result<(), ProfileError> {
+        let tbs = build_tbs_with_validity(&VERSION_V3, Some(&EXT_BASIC_CONSTRAINTS_DEFAULT), validity);
+        let bytes = build_certificate(&tbs, &SIGNATURE_ED25519);
+        let cert = parse_certificate(&bytes).expect("fixture must be structurally valid");
+        validate_profile(&cert)
+    }
+
+    #[test]
+    fn rejects_not_before_generalized_time_with_fraction() {
+        // notBefore 2050-01-01T00:00:00.5Z: year rule satisfied, fraction present.
+        let v = validity_of(
+            &time_tlv(true, b"20500101000000.5Z"),
+            &time_tlv(true, b"20991231235959Z"),
+        );
+        assert_eq!(
+            profile_result_for_validity(&v),
+            Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)
+        );
+    }
+
+    #[test]
+    fn rejects_not_after_generalized_time_with_fraction() {
+        // The documented example: notAfter 2099-12-31T23:59:59.5Z.
+        let v = validity_of(
+            &time_tlv(false, b"990101000000Z"),
+            &time_tlv(true, b"20991231235959.5Z"),
+        );
+        assert_eq!(
+            profile_result_for_validity(&v),
+            Err(ProfileError::NotAfterGeneralizedTimeHasFraction)
+        );
+    }
+
+    #[test]
+    fn rejects_fraction_of_any_length_and_value() {
+        for frac in [&b".1"[..], b".123456789", b".99"] {
+            let mut na = b"20991231235959".to_vec();
+            na.extend_from_slice(frac);
+            na.push(b'Z');
+            let v = validity_of(&time_tlv(false, b"990101000000Z"), &time_tlv(true, &na));
+            assert_eq!(
+                profile_result_for_validity(&v),
+                Err(ProfileError::NotAfterGeneralizedTimeHasFraction),
+                "fraction {frac:?}"
+            );
+        }
+    }
+
+    /// Fraction lengths 3 and 4 (and a few neighbours) on BOTH fields. The proofs cover fraction
+    /// lengths up to their stated bound; these tests pin the lengths around it by exact result, so a
+    /// check that is skipped for one particular length cannot pass.
+    #[test]
+    fn rejects_fractions_of_length_three_and_four_on_both_fields() {
+        for frac in [&b".123"[..], b".1234", b".001", b".9999", b".12345", b".5"] {
+            let mut gen = b"20500101000000".to_vec();
+            gen.extend_from_slice(frac);
+            gen.push(b'Z');
+            let clean = b"20991231235959Z";
+            let v = validity_of(&time_tlv(true, &gen), &time_tlv(true, clean));
+            assert_eq!(
+                profile_result_for_validity(&v),
+                Err(ProfileError::NotBeforeGeneralizedTimeHasFraction),
+                "notBefore fraction {frac:?}"
+            );
+            let v = validity_of(&time_tlv(false, b"990101000000Z"), &time_tlv(true, &gen));
+            assert_eq!(
+                profile_result_for_validity(&v),
+                Err(ProfileError::NotAfterGeneralizedTimeHasFraction),
+                "notAfter fraction {frac:?}"
+            );
+            // Both fields fractional with different lengths: notBefore's variant is reported.
+            let v = validity_of(&time_tlv(true, &gen), &time_tlv(true, &gen));
+            assert_eq!(
+                profile_result_for_validity(&v),
+                Err(ProfileError::NotBeforeGeneralizedTimeHasFraction),
+                "both fields fraction {frac:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn accepts_generalized_times_from_2050_without_fraction() {
+        // Both fields GeneralizedTime, years >= 2050, no fraction: the compliant spelling.
+        let v = validity_of(
+            &time_tlv(true, b"20500101000000Z"),
+            &time_tlv(true, b"20991231235959Z"),
+        );
+        assert_eq!(profile_result_for_validity(&v), Ok(()));
+        // Mixed: UTCTime notBefore, GeneralizedTime 2050+ notAfter without fraction.
+        let v = validity_of(
+            &time_tlv(false, b"490101000000Z"),
+            &time_tlv(true, b"20500101000000Z"),
+        );
+        assert_eq!(profile_result_for_validity(&v), Ok(()));
+    }
+
+    #[test]
+    fn rule4_not_before_fraction_wins_over_not_after_fraction() {
+        let v = validity_of(
+            &time_tlv(true, b"20500101000000.5Z"),
+            &time_tlv(true, b"20991231235959.5Z"),
+        );
+        assert_eq!(
+            profile_result_for_validity(&v),
+            Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)
+        );
+    }
+
+    #[test]
+    fn rule3_year_error_is_reported_before_rule4_fraction_error() {
+        // notBefore: GeneralizedTime 2049 WITH a fraction -> the year rule (rule 3) fires first.
+        let v = validity_of(
+            &time_tlv(true, b"20490101000000.5Z"),
+            &time_tlv(true, b"20991231235959Z"),
+        );
+        assert_eq!(
+            profile_result_for_validity(&v),
+            Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)
+        );
+        // notBefore: valid 2050 with a fraction, notAfter: GeneralizedTime 2049 -> notAfter's year
+        // error (rule 3, both fields) is still reported before notBefore's fraction error.
+        let v = validity_of(
+            &time_tlv(true, b"20500101000000.5Z"),
+            &time_tlv(true, b"20491231235959Z"),
+        );
+        assert_eq!(
+            profile_result_for_validity(&v),
+            Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)
+        );
+    }
+
+    #[test]
+    fn extensions_rule_checked_before_fraction_rule() {
+        // Extensions with DEFAULT v1 (rule 2) AND a fractional notAfter (rule 4): rule 2 first.
+        let v = validity_of(
+            &time_tlv(false, b"990101000000Z"),
+            &time_tlv(true, b"20991231235959.5Z"),
+        );
+        let tbs = build_tbs_with_validity(&[], Some(&EXT_BASIC_CONSTRAINTS_DEFAULT), &v);
+        let bytes = build_certificate(&tbs, &SIGNATURE_ED25519);
+        let cert = parse_certificate(&bytes).unwrap();
+        assert_eq!(validate_profile(&cert), Err(ProfileError::ExtensionsRequireV3));
+    }
+
+    #[test]
+    fn signature_mismatch_checked_before_fraction_rule() {
+        let v = validity_of(
+            &time_tlv(false, b"990101000000Z"),
+            &time_tlv(true, b"20991231235959.5Z"),
+        );
+        let tbs = build_tbs_with_validity(&VERSION_V3, Some(&EXT_BASIC_CONSTRAINTS_DEFAULT), &v);
+        let bytes = build_certificate(&tbs, &SIGNATURE_RSA_SHA256);
+        let cert = parse_certificate(&bytes).unwrap();
+        assert_eq!(validate_profile(&cert), Err(ProfileError::SignatureAlgorithmMismatch));
     }
 }

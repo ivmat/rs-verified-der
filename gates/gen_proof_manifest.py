@@ -477,6 +477,20 @@ def parse_harnesses(proofs, consts):
                        proofs[top:fi], proofs[fi:stop]))
 
     out = []
+    # Non-harness fns of `mod proofs`, by name: comment-stripped body. Two roles, told apart by what
+    # REFERENCES them, not by what they are called: a `#[kani::stub(orig, repl)]` replacement is a
+    # STUB BODY (its assumes constrain a return value); every other helper is an input generator /
+    # oracle (its assumes narrow the domain the harnesses that call it are proved over).
+    helper_code = {}
+    stub_targets = set()
+    for name, attrs, body in blocks:
+        if any(re.match(r'\s*#\[kani::proof(_for_contract)?', a) for a in attrs):
+            for l in attrs:
+                m = re.match(r'\s*#\[kani::stub\(\s*[^,]+,\s*([A-Za-z0-9_:]+)\s*\)\]', l)
+                if m:
+                    stub_targets.add(m.group(1).split('::')[-1])
+        else:
+            helper_code[name] = strip_comments(body)
     for name, attrs, body in blocks:
         code = strip_comments(body)
         if not any(re.match(r'\s*#\[kani::proof(_for_contract)?', a) for a in attrs):
@@ -484,6 +498,10 @@ def parse_harnesses(proofs, consts):
             if ha:
                 helper_assumes.append((name, ha))
             continue
+        joined = '\n'.join(code)
+        # Same-module helpers this harness calls (one level deep): an assert/cover that lives in
+        # a shared case helper is still one of THIS harness's checks.
+        called = [n for n in helper_code if re.search(r'\b%s\s*\(' % re.escape(n), joined)]
         out.append({
             'name': name,
             # The harness's own body (comment-stripped). `analyze` matches entry points against the
@@ -495,6 +513,9 @@ def parse_harnesses(proofs, consts):
             'stubs': [m.group(1).strip() for l in attrs
                       for m in [re.match(r'\s*#\[kani::stub\(([^,]+),', l)] if m],
             'covers': sum(l.count('kani::cover(') for l in code),
+            'covers_via_helpers': sum(l.count('kani::cover(') for n in called for l in helper_code[n]),
+            'asserts_via_helpers': sum(l.count('assert!(') + l.count('assert_eq!(') + l.count('assert_ne!(')
+                                       for n in called for l in helper_code[n]),
             'assumes': sum(l.count('kani::assume(') for l in code),
             'assume_exprs': balanced_args(code, 'kani::assume('),
             'asserts': sum(l.count('assert!(') + l.count('assert_eq!(') +
@@ -506,7 +527,7 @@ def parse_harnesses(proofs, consts):
                                for m in re.finditer(r'\[\s*u8\s*;\s*([A-Za-z0-9_]+)\s*\]', l)
                                if m.group(1).isdigit() or m.group(1) in consts}),
         })
-    return out, helper_assumes
+    return out, helper_assumes, helper_code, stub_targets
 
 
 def module_facts(path):
@@ -519,7 +540,7 @@ def module_facts(path):
     tail = lines[ti:] if ti is not None else (lines[pi:] if pi is not None else [])
     entry_points += [m.group(1) for l in tail
                      for m in [re.match(r'pub (?:const |unsafe )?fn ([A-Za-z0-9_]+)', l)] if m]
-    harnesses, helper_assumes = parse_harnesses(proofs, const_widths(lines))
+    harnesses, helper_assumes, helper_code, stub_targets = parse_harnesses(proofs, const_widths(lines))
     proof_code = strip_comments(proofs)
     # Match entry points against the union of the `#[kani::proof]` HARNESS bodies only -- NOT the
     # whole `mod proofs` (which also contains `#[kani::stub]` helper bodies). A `pub fn` merely named
@@ -533,7 +554,17 @@ def module_facts(path):
                  if re.search(r'\b%s\b' % re.escape(e.split('::')[-1]), harness_text)]
     unwinds = sorted({u for h in harnesses for u in h['unwind']})
     n_harness_assumes = sum(h['assumes'] for h in harnesses)
-    n_region_assumes = sum(l.count('kani::assume(') for l in proof_code)
+    # Helper assumes split by ROLE. A stub body's assumes constrain a stub's RETURN value; an input
+    # generator's assumes narrow the domain the calling harnesses are proved over, so they belong
+    # with the harness-domain totals (and, when they restrict content, in the named content list).
+    def _is_stub(name):
+        return name in stub_targets or name.startswith('stub_')
+    n_stub_assumes = sum(len(e) for n, e in helper_assumes if _is_stub(n))
+    gen_assume_exprs = [(n, x) for n, exprs in helper_assumes if not _is_stub(n) for x in exprs]
+    n_gen_assumes = len(gen_assume_exprs)
+    n_helper_covers = sum(l.count('kani::cover(') for code in helper_code.values() for l in code)
+    _eff_covers = lambda h: h['covers'] + h['covers_via_helpers']
+    _eff_asserts = lambda h: h['asserts'] + h['asserts_via_helpers']
     return {
         'module': os.path.basename(path)[:-3],
         'entry_points': entry_points,
@@ -545,9 +576,11 @@ def module_facts(path):
         'unwinds': unwinds,
         'buffers': sorted({b for h in harnesses for b in h['buffers']}),
         'no_unwind': [h['name'] for h in harnesses if not h['unwind']],
-        'n_assumes': n_harness_assumes,
-        'n_stub_assumes': n_region_assumes - n_harness_assumes,
-        'n_covers': sum(h['covers'] for h in harnesses),
+        'n_assumes': n_harness_assumes + n_gen_assumes,
+        'n_generator_assumes': n_gen_assumes,
+        'n_stub_assumes': n_stub_assumes,
+        'stub_helper_names': sorted(n for n, _e in helper_assumes if _is_stub(n)),
+        'n_covers': sum(h['covers'] for h in harnesses) + n_helper_covers,
         # Non-vacuity audit, in two tiers.
         #
         # `assume_without_cover` — narrowed by `assume`, no `cover`. Mostly benign: a harness
@@ -559,13 +592,16 @@ def module_facts(path):
         # symbolic construction never reaches the deep code the harness claims to exercise, it
         # is green-but-shallow with nothing to say so. This set should stay empty.
         'assume_without_cover': [h['name'] for h in harnesses
-                                 if h['assumes'] and not h['covers']],
+                                 if h['assumes'] and not _eff_covers(h)],
+        # Covers and asserts that live in a same-module helper the harness calls (one level deep)
+        # are that harness's checks too; ignoring them listed arm-pair wrappers as implicit-only.
         'implicit_only': [h['name'] for h in harnesses
-                          if not h['covers'] and not h['asserts']],
+                          if not _eff_covers(h) and not _eff_asserts(h)],
         # Assumptions that restrict input CONTENT rather than size/range. These are the ones a
         # reader must inspect individually, so they are named rather than counted.
         'content_assumes': [(h['name'], e) for h in harnesses for e in h['assume_exprs']
-                            if not is_range_bound(e)],
+                            if not is_range_bound(e)]
+                           + [(n, e) for n, e in gen_assume_exprs if not is_range_bound(e)],
         'stubs': [(h['name'], h['stubs']) for h in harnesses if h['stubs']],
         'disclosed_vacuities': [m.groups() for l in lines for m in [VACUITY_RE.search(l)] if m],
         # Which harnesses use a stub matters for how a *witness* should be read: a cover satisfied
@@ -795,6 +831,7 @@ def collect():
             'harnesses': sum(m['n_harnesses'] for m in mods),
             'assumes': sum(m['n_assumes'] for m in mods),
             'stub_assumes': sum(m['n_stub_assumes'] for m in mods),
+            'generator_assumes': sum(m['n_generator_assumes'] for m in mods),
             'covers': sum(m['n_covers'] for m in mods),
             'stubs': sum(len(s[1]) for m in mods for s in m['stubs']),
             'stub_harnesses': sum(len(m['stubs']) for m in mods),
@@ -886,7 +923,9 @@ def r_inventory(f):
         '| …named by at least one Kani harness | %d |' % t['harnessed_entry_points'],
         '| …named by **no** Kani harness | **%d** |' % t['unharnessed_entry_points'],
         '| `#[kani::proof]` harnesses | %d |' % t['harnesses'],
-        '| `kani::assume` harness preconditions (narrow the proved domain) | %d |' % t['assumes'],
+        '| `kani::assume` harness preconditions, in harness bodies and in the input-generator helpers '
+        'they call (narrow the proved domain; %d of the total are in generator helpers) | %d |'
+        % (t['generator_assumes'], t['assumes']),
         '| `kani::assume` inside stub bodies (constrain a stub\'s *return*, not an input) | %d |'
         % t['stub_assumes'],
         '| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, '
@@ -957,17 +996,18 @@ def r_stubs(f):
             L.append('| `%s::%s` | %s |' % (m['module'], name,
                                             ', '.join('`%s`' % s for s in stubs)))
     stub_side = [(m['module'], fn, e) for m in f['modules'] for fn, e in m['helper_assumes']
-                 if fn.startswith('stub_')]
+                 if fn in m['stub_helper_names']]
     gen_side = [(m['module'], fn, e) for m in f['modules'] for fn, e in m['helper_assumes']
-                if not fn.startswith('stub_')]
+                if fn not in m['stub_helper_names']]
     L += ['', 'Every `kani::assume` inside a **stub body** — each constrains what the stub is allowed '
           'to *return*, so each must be discharged by a separate harness or it is an unsound hole:', '']
     L += ['- `%s::%s` — `assume(%s)`' % r for r in stub_side] or ['- none: no stub constrains its '
                                                                  'return value.']
     if gen_side:
         L += ['', 'For contrast, the other `kani::assume`s outside harness bodies live in input '
-              'generators and narrow a nondeterministic selector — ordinary harness setup, nothing '
-              'to discharge:', '']
+              'generators: they narrow the symbolic input of every harness that calls them, so they '
+              'are counted with the harness-domain assumptions (and listed there when they restrict '
+              'content), but they constrain no stub, so there is nothing to discharge:', '']
         L += ['- `%s::%s` — `assume(%s)`' % r for r in gen_side]
     return L
 

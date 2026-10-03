@@ -68,6 +68,8 @@ pub fn decode_octet_string(input: &[u8]) -> Result<(&[u8], usize), OctetStringEr
 ///
 /// Returns the number of bytes written, or `None` if `out` is too small or `content` is longer
 /// than the length codec supports (`> u32::MAX`). Delegates the envelope to [`encode_tlv_into`].
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_octet_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
     let tag = Tag { class: Class::Universal, constructed: false, number: TAG };
     encode_tlv_into(tag, content, out)
@@ -93,6 +95,53 @@ mod proofs {
         let (dec, used) = decode_octet_string(&out[..written]).unwrap();
         assert!(used == written);
         assert!(dec == &content[..n]);
+    }
+
+    /// **Encoder with symbolic capacity.** Over symbolic content of length
+    /// `0..=14` (14-octet symbolic backing; lengths below 128, so the header is exactly the two
+    /// octets `04 LL`) and a symbolic output capacity `0..=16` over a symbolic 16-octet backing,
+    /// `encode_octet_string_into` returns EXACTLY `Some(2 + len)` when `cap >= 2 + len` and `None`
+    /// otherwise -- so a mutant that rejects (or over-accepts) any capacity other than one fixed
+    /// value is a failure. On `Some` the written octets are `04`, the length octet `len`, then
+    /// `content` verbatim, and the octets past `2 + len` are untouched. The documented write contract
+    /// (rustdoc: "on `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written") is
+    /// asserted uniformly for every input: all bytes unchanged on `None`, `out[n..]` unchanged on
+    /// `Some(n)`. The expected result and bytes are spelled from X.690 §8.7/§10.2 literals, not from
+    /// `encode_tlv_into`.
+    ///
+    /// Bounds: content `<= 14` octets and capacity `<= 16`; the long-form length path (content
+    /// `>= 128` octets) is NOT covered by this harness (the `roundtrips_long_form_length` unit test
+    /// pins one instance).
+    #[kani::proof]
+    #[kani::unwind(17)]
+    fn encode_with_symbolic_capacity_is_exact() {
+        let content: [u8; 14] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 14);
+        let backing: [u8; 16] = kani::any();
+        let mut out = backing;
+        let cap: usize = kani::any();
+        kani::assume(cap <= 16);
+        let r = encode_octet_string_into(&content[..len], &mut out[..cap]);
+        // Rustdoc write contract: `None` => nothing written; `Some(n)` => only `out[..n]` written.
+        match r {
+            None => assert!(out == backing),
+            Some(n) => assert!(out[n..] == backing[n..]),
+        }
+        if cap >= 2 + len {
+            assert!(r == Some(2 + len));
+            assert!(out[0] == 0x04);
+            assert!(out[1] as usize == len);
+            assert!(out[2..2 + len] == content[..len]);
+            assert!(out[2 + len..] == backing[2 + len..]);
+        } else {
+            assert!(r.is_none());
+        }
+        kani::cover(r == Some(2), "the empty OCTET STRING is encoded");
+        kani::cover(matches!(r, Some(w) if w > 2), "a non-empty OCTET STRING is encoded");
+        kani::cover(r.is_none() && cap >= 2, "an insufficient capacity that still holds the header is None");
+        kani::cover(r == Some(2 + len) && cap != 16, "a capacity other than 16 is accepted");
+        kani::cover(r == Some(2 + len) && cap == 2 + len && len > 0, "the exact-fit capacity is accepted");
     }
 
     /// Robustness: `decode_octet_string` never panics or overflows on *any* input.
@@ -139,6 +188,54 @@ mod proofs {
             assert!(used <= input.len());
             assert!(dec.len() == tlv.value.len());
             assert!(dec == tlv.value);
+            // window identity: the returned value is the TLV reader's own sub-slice of `input`,
+            // not a copy
+            assert!(core::ptr::eq(dec.as_ptr(), tlv.value.as_ptr()));
+        }
+    }
+
+    /// Full classification over the whole `0..=16`-octet domain: every TLV-layer error is passed
+    /// through unchanged as `Tlv(e)` (with `e` the error of the separately verified `decode_tlv`);
+    /// when the envelope parses, the result is `WrongTag` / `Constructed` / `Ok` exactly according
+    /// to the identifier octet (`0x04` accepted, `0x24` constructed, anything else wrong tag --
+    /// spelled from literals, not from the decoder's tag test); and an accepted value is the
+    /// window of `input` right after the 2-octet header (for an accepted OCTET STRING encoding the
+    /// header is two octets: the identifier is the single octet `0x04`, and a long-form length would
+    /// need a value of at least 128 octets. Other parseable TLVs -- e.g. high-tag identifiers --
+    /// can have longer headers within 16 octets, but those are `WrongTag` here, never accepted).
+    #[kani::proof]
+    #[kani::unwind(17)]
+    fn classification_is_exact() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let r = decode_octet_string(input);
+        match decode_tlv(input) {
+            Err(e) => {
+                kani::cover(true, "a TLV-layer error is passed through");
+                assert!(r == Err(OctetStringError::Tlv(e)));
+            }
+            Ok((tlv, tused)) => {
+                // an envelope that parses has at least tag + length octets
+                assert!(input.len() >= 2);
+                let id = input[0];
+                if id != 0x04 && id != 0x24 {
+                    kani::cover(true, "a well-formed non-OCTET-STRING TLV is WrongTag");
+                    assert!(r == Err(OctetStringError::WrongTag));
+                } else if id == 0x24 {
+                    kani::cover(true, "the constructed OCTET STRING identifier is Constructed");
+                    assert!(r == Err(OctetStringError::Constructed));
+                } else {
+                    kani::cover(true, "a primitive OCTET STRING is accepted");
+                    let (dec, used) = r.unwrap();
+                    assert!(used == tused);
+                    assert!(used == 2 + input[1] as usize);
+                    assert!(dec.len() == input[1] as usize);
+                    assert!(core::ptr::eq(dec.as_ptr(), input[2..].as_ptr()));
+                    assert!(dec == tlv.value);
+                }
+            }
         }
     }
 

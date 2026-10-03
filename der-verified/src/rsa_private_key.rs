@@ -529,8 +529,9 @@ pub fn parse_rsa_private_key_strict(input: &[u8]) -> Result<RsaPrivateKey<'_>, R
 // harnesses for shapes their symbolic bound cannot reach. The version==1/otherPrimeInfos-present
 // `Ok` path, and the deep reject classes (`VersionMismatch`, `OtherPrimeInfos*`, per-member
 // `OtherPrimeInfoMember`, `TrailingElements` after otherPrimeInfos) are all past this floor too, and
-// are covered by `#[cfg(test)]` tests below rather than a Kani harness (see the modular-proof
-// discussion next for why a Kani witness on that path is not kept).
+// are covered by `#[cfg(test)]` tests below rather than by these three panic-freedom harnesses
+// (the contract-surface harnesses at the end of this module run the real member walk on a
+// one-member shape; see the harness count below and the modular-proof discussion next).
 //
 // `otherPrimeInfos`'s MEMBER WALK (`validate_other_prime_infos`) is proven panic-free MODULARLY,
 // exactly like `x509_name::validate_name` stubs `validate_rdn` for its own SET-OF/RDN walk. A
@@ -561,11 +562,13 @@ pub fn parse_rsa_private_key_strict(input: &[u8]) -> Result<RsaPrivateKey<'_>, R
 //    walk's unroll cost from their symbolic-execution graph. All `#[kani::stub]` harnesses below
 //    require `-Z stubbing`, already the crate's default in `check.sh`/CI.
 // A concrete Kani witness for the version==1/otherPrimeInfos-present `Ok` path itself was
-// deliberately NOT kept for the same underlying reason: routing even a *concrete* multi-prime
-// specimen through the REAL (unstubbed) `validate_other_prime_infos` inside a full `parse_fields`
-// call, under the module's `unwind(20)`, measured intractable (>9 min, killed) — the `#[cfg(test)]`
-// multiprime tests cover that path instead, consistent with this module's disclosed
-// "concrete/tested past the floor" stance.
+// deliberately NOT kept in the three harnesses above, for the same underlying reason: routing even a
+// *concrete* multi-prime specimen through the REAL (unstubbed) `validate_other_prime_infos` inside a
+// full `parse_fields` call, under the module's `unwind(20)`, measured intractable (>9 min, killed).
+// The multi-prime path is reached instead by the contract-surface harnesses at the end of this
+// module (concrete framing, `#[kani::unwind(5)]`, real member walk, one member of three one-octet
+// INTEGERs); the `#[cfg(test)]` tests cover what those harnesses do not (a walk with more than one
+// member, multi-octet member INTEGERs, and the strict entry point on a multi-prime input).
 //
 // The call chain performs up to eleven independent `decode_tlv`/`decode_tag` calls of its own
 // (outer SEQUENCE, `version`, the eight key-material fields, the otherPrimeInfos tag peek) plus one
@@ -577,27 +580,40 @@ pub fn parse_rsa_private_key_strict(input: &[u8]) -> Result<RsaPrivateKey<'_>, R
 // matching every other module's bound; if Kani reports an unwinding-assertion failure, raise this
 // bound (do not weaken scope).
 //
-// Harness count: **5** — `parse_never_panics`, `parse_strict_never_panics`, `parse_ok_2prime_witnessed`
-// (all three now STUBBING `validate_other_prime_infos`), `validate_other_prime_info_never_panics`
-// (the leaf lemma, UNCHANGED by this fold), and `validate_other_prime_infos_never_panics` (the new
-// walk lemma, STUBBING `validate_other_prime_info`).
+// Harness count: **23**.
 //
-// MEASURED (`cargo kani -Z stubbing --harness rsa_private_key::`, Kani 0.67.0; crate non-vacuity
-// discipline — never claim a cover is satisfied without reading the real number): all **5 harnesses
-// SUCCESSFUL, 0 failures** in ~258 s total wall-clock (with the modular stubs; without them the parse
-// harnesses each exceeded 270 s). Per-harness cover counts, all satisfied — none vacuous:
-// `parse_never_panics` **11 of 11** (the `Ok`-free reachable reject set); `parse_strict_never_panics`
-// no cover (panic-freedom only, by design); `parse_ok_2prime_witnessed` **1 of 1** (the real two-prime
-// `Ok` witness); `validate_other_prime_infos_never_panics` **2 of 2** (the member-walk lemma's `Ok`
-// plus a propagated member `Err`, with the per-member validator stubbed); and
-// `validate_other_prime_info_never_panics` **4 of 4** (the leaf member validator's `Ok` plus its three
-// member-reject classes). No disclosed-unsatisfiable cover is introduced, so the crate's LIGHT-tier
-// one-unsatisfiable-cover budget is untouched. The whole five-harness `rsa_private_key::` run completes
-// in ~250 s with no OOM at a MEASURED peak of ~4.9 GB (cgroup `memory.peak` for the whole CBMC process
-// tree, under a fixed 22 GB cap) — comfortably inside the ~7 GB LIGHT envelope (`gates/tiers.txt`), so
-// LIGHT placement holds by this five-harness measurement (not the earlier pre-stub four-harness ~3.5 GB
-// figure). The leaf lemma's 16-octet buffer is what raised the peak above the pre-stub number while
-// keeping it LIGHT.
+// Five panic-freedom harnesses (symbolic input of at most 20 octets, or 16 for the leaf lemma):
+// `parse_never_panics`, `parse_strict_never_panics`, `parse_ok_2prime_witnessed` (all three
+// STUBBING `validate_other_prime_infos`), `validate_other_prime_info_never_panics` (the leaf lemma)
+// and `validate_other_prime_infos_never_panics` (the walk lemma, STUBBING `validate_other_prime_info`).
+//
+// Eighteen contract-surface harnesses (bounded-backing evidence, `#[kani::unwind(5)]`, defined after
+// the panic-freedom harnesses): `parse_faithful_two_prime_s1`, `parse_faithful_two_prime_s2`,
+// `parse_rejects_missing_fields`, `parse_rejects_two_octet_version`, the five
+// `parse_other_prime_infos_tail_*`, `parse_multi_prime_faithful`, `parse_rejects_outer_identifier`,
+// `parse_rejects_field_identifier`, `parse_rejects_field_length`, and the five
+// `parse_multi_prime_rejects_member_*` (identifier, length, field_identifier, field_length, shape).
+// The harnesses that must not reach the member walk install a sentinel stub that fails the proof if
+// it is reached; `parse_multi_prime_faithful` and the five `parse_multi_prime_rejects_member_*`
+// run the real member walk with NO stub.
+//
+// MEASURED for the five panic-freedom harnesses (`cargo kani -Z stubbing --harness
+// rsa_private_key::`, Kani 0.67.0, before the contract-surface harnesses existed; crate
+// non-vacuity discipline — never claim a cover is satisfied without reading the real number): all
+// 5 SUCCESSFUL, 0 failures, ~258 s total wall-clock (with the modular stubs; without them the parse
+// harnesses each exceeded 270 s), measured peak ~4.9 GB. Per-harness cover counts, all satisfied —
+// none vacuous: `parse_never_panics` **11 of 11** (the `Ok`-free reachable reject set);
+// `parse_strict_never_panics` no cover (panic-freedom only, by design); `parse_ok_2prime_witnessed`
+// **1 of 1** (the real two-prime `Ok` witness); `validate_other_prime_infos_never_panics` **2 of 2**
+// (the member-walk lemma's `Ok` plus a propagated member `Err`, with the per-member validator
+// stubbed); `validate_other_prime_info_never_panics` **4 of 4** (the leaf member validator's `Ok`
+// plus its three member-reject classes).
+//
+// TIER: this module is HEAVY (`gates/tiers.txt`). The harnesses that run the real member walk peak
+// at about 8-9 GiB for the whole Kani service (front end included), above the ~7 GB light
+// envelope; `parse_faithful_two_prime_s1` alone is about 7 GiB. They are run by `./check.sh` on a
+// large-memory machine and are not part of the sharded CI filter. The ~4.9 GB figure above belongs
+// to the five panic-freedom harnesses only and does not describe the module as a whole.
 #[cfg(kani)]
 mod proofs {
     use super::*;
@@ -633,15 +649,17 @@ mod proofs {
     ///
     /// Deliberately carries **no `Ok` cover**: the minimal two-prime floor (~29 octets) provably
     /// exceeds this 20-octet bound (see the sizing comment) -- `Ok` is instead witnessed
-    /// concretely by `parse_ok_2prime_witnessed` below (and the version==1 path by `#[cfg(test)]`
+    /// concretely by `parse_ok_2prime_witnessed` below (and the version==1 path by the
+    /// multi-prime contract-surface harnesses at the end of this module and by `#[cfg(test)]`
     /// tests). Covers
     /// ONLY the reject classes reachable within 20 octets: the outer envelope, `version` (incl.
     /// `UnsupportedVersion`), and the generic `MissingField`/`Field` classes (satisfiable as early
     /// as `modulus`, immediately after `version`). `VersionMismatch`, `OtherPrimeInfos*`, and
     /// `TrailingElements` are NOT covered here -- they need the otherPrimeInfos tail, past the
-    /// 29-octet floor, and are exercised by `#[cfg(test)]` tests instead (adding an unsatisfiable
-    /// cover for any of them here would trip the crate's LIGHT-tier "one disclosed-unsatisfiable
-    /// cover" ceiling for no benefit, since they are already covered concretely).
+    /// 29-octet floor, and are exercised by the contract-surface harnesses and `#[cfg(test)]` tests
+    /// instead (adding an unsatisfiable cover for any of them here would trip the crate's
+    /// "one disclosed-unsatisfiable cover" ceiling for no benefit, since they are already covered
+    /// concretely).
     #[kani::proof]
     #[kani::stub(validate_other_prime_infos, stub_validate_other_prime_infos)]
     #[kani::unwind(20)]
@@ -708,8 +726,9 @@ mod proofs {
     /// Robustness: `parse_rsa_private_key_strict` never panics on any input **of any length up to
     /// 20 octets** (buffer and length both symbolic, matching `parse_never_panics` above). No
     /// `Ok`/`TrailingData` covers here either, for the same reason `parse_never_panics` carries no
-    /// `Ok` cover: the floor is past 20 octets. Both are exercised by `#[cfg(test)]` tests
-    /// (`strict_rejects_trailing_byte_after_key`, and the strict-parse positive tests) instead. The
+    /// `Ok` cover: the floor is past 20 octets. Both are exercised instead by the strict legs of
+    /// `parse_faithful_two_prime_s1` and `parse_faithful_two_prime_s2` and by `#[cfg(test)]` tests
+    /// (`strict_rejects_trailing_byte_after_key`, and the strict-parse positive tests). The
     /// otherPrimeInfos MEMBER WALK is MODULARLY STUBBED here too, for the same reason and with the
     /// same "changes nothing verified" argument as `parse_never_panics` above.
     #[kani::proof]
@@ -876,8 +895,9 @@ mod proofs {
     /// fully-symbolic UNSTUBBED nested walk (the outer loop with the real member validator inlined):
     /// that variable-count-nested walk explodes CBMC's state (the `x509_name`-class cost -- an earlier
     /// 14-octet attempt at it exceeded a 20 GB cap; and even a *concrete* multi-prime specimen through
-    /// the loop measured intractable, >9 min). The unstubbed multi-member composition is instead
-    /// witnessed by the `#[cfg(test)]` one-/two-member tests. That is sound: the loop
+    /// the loop measured intractable, >9 min). The unstubbed one-member composition is instead
+    /// reached by the `parse_multi_prime_*` contract-surface harnesses, and the multi-member
+    /// composition is witnessed by the `#[cfg(test)]` one-/two-member tests. That is sound: the loop
     /// body only composes two
     /// independently-proven-panic-free functions (`decode_sequence_tlv` -- a verified primitive -- and
     /// this validator) and advances by a primitive-guaranteed `used >= 2`, so the loop itself adds no
@@ -913,6 +933,809 @@ mod proofs {
         );
 
         let _ = result;
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // Contract-surface harnesses (exact-result; bounded-backing evidence). Structured skeletons:
+    // concrete TLV framing, SYMBOLIC content bytes.
+    // ------------------------------------------------------------------------------------------
+    //
+    // Common domain (disclosed): every key-material field and the version are INTEGER TLVs
+    // `02 <flen> <content>`; shape S1 has `flen == 1` (version `02 01 v`, 8 x `02 01 c_i`, outer
+    // content 27, total 29 octets), shape S2 has `flen == 2` (8 x `02 02 a_i b_i`, outer content
+    // 35, total 37 octets). Backing buffers are at most 44 octets (43 for S1/S2, 32 for the tail
+    // harnesses, 42 for `parse_multi_prime_faithful`, 44 for the framing and member harnesses). All content bytes are fully
+    // symbolic; the only assumptions are the literal predicate `tail[0] ∉ {0x10, 0x30}` where a
+    // non-SEQUENCE tail is required, and `version <= 1` where the multi-prime shape is built. The
+    // otherPrimeInfos member walk is replaced, in every harness that must not reach it, by a
+    // SENTINEL stub that FAILS the proof if the walk is ever reachable, so the stub assumes
+    // nothing. Key-material values are opaque (no RSA arithmetic).
+    // `#[kani::unwind(5)]` suffices (concrete framing: every loop on the path runs at most a few
+    // times; CBMC's unwinding assertions are enabled and report SUCCESS in the logs); a bound of 20
+    // is needlessly expensive on concrete framing (measured on the x509_extension walk).
+
+    #[allow(dead_code)]
+    fn sentinel_validate_other_prime_infos(_content: &[u8]) -> Result<(), RsaPrivateKeyError> {
+        kani::assert(false, "otherPrimeInfos member walk reached in a shape that must not reach it");
+        Err(RsaPrivateKeyError::OtherPrimeInfosEmpty)
+    }
+
+    /// The content slice of key-material field `i` (0 = modulus .. 7 = coefficient) in a skeleton
+    /// whose INTEGER contents are `flen` octets: field TLVs start at offset `5 + (2 + flen) * i`
+    /// (outer header 2 + version TLV 3), the content at `+ 2`.
+    fn field_at(input: &[u8], i: usize, flen: usize) -> &[u8] {
+        &input[5 + (2 + flen) * i + 2..][..flen]
+    }
+
+    fn same_slice(a: &[u8], b: &[u8]) -> bool {
+        core::ptr::eq(a.as_ptr(), b.as_ptr()) && a.len() == b.len()
+    }
+
+    /// The expected `RsaPrivateKey` borrowed from the skeleton (offsets known by construction).
+    fn key_at(input: &[u8], flen: usize) -> RsaPrivateKey<'_> {
+        RsaPrivateKey {
+            modulus: field_at(input, 0, flen),
+            public_exponent: field_at(input, 1, flen),
+            private_exponent: field_at(input, 2, flen),
+            prime1: field_at(input, 3, flen),
+            prime2: field_at(input, 4, flen),
+            exponent1: field_at(input, 5, flen),
+            exponent2: field_at(input, 6, flen),
+            coefficient: field_at(input, 7, flen),
+            other_prime_infos: None,
+        }
+    }
+
+    /// Pointer identity of every key-material field against the skeleton offsets.
+    fn key_is_borrowed_at(k: &RsaPrivateKey<'_>, input: &[u8], flen: usize) -> bool {
+        same_slice(k.modulus, field_at(input, 0, flen))
+            && same_slice(k.public_exponent, field_at(input, 1, flen))
+            && same_slice(k.private_exponent, field_at(input, 2, flen))
+            && same_slice(k.prime1, field_at(input, 3, flen))
+            && same_slice(k.prime2, field_at(input, 4, flen))
+            && same_slice(k.exponent1, field_at(input, 5, flen))
+            && same_slice(k.exponent2, field_at(input, 6, flen))
+            && same_slice(k.coefficient, field_at(input, 7, flen))
+            && k.other_prime_infos.is_none()
+    }
+
+    /// Exact-result oracle for a well-framed skeleton (outer envelope, version TLV and the eight
+    /// field TLVs all well-formed by construction; `input[4]` is the version content octet; a
+    /// non-SEQUENCE tail of `tail_len` octets inside the outer content). Re-derived only from the
+    /// verified primitive `validate_integer_content`; never calls `parse_fields`/`decode_field`.
+    /// Order (documented in `parse_fields`): version value -> each field's INTEGER content (first
+    /// failure wins) -> trailing element -> version/otherPrimeInfos cross-field rule.
+    fn expected_skeleton(
+        input: &[u8],
+        flen: usize,
+        tail_len: usize,
+    ) -> Result<RsaPrivateKey<'_>, RsaPrivateKeyError> {
+        let v = input[4];
+        if v > 1 {
+            return Err(RsaPrivateKeyError::UnsupportedVersion);
+        }
+        macro_rules! check_field {
+            ($i:expr, $f:expr) => {
+                if let Err(e) = validate_integer_content(field_at(input, $i, flen)) {
+                    return Err(RsaPrivateKeyError::Field($f, IntegerFieldError::Content(e)));
+                }
+            };
+        }
+        check_field!(0, RsaField::Modulus);
+        check_field!(1, RsaField::PublicExponent);
+        check_field!(2, RsaField::PrivateExponent);
+        check_field!(3, RsaField::Prime1);
+        check_field!(4, RsaField::Prime2);
+        check_field!(5, RsaField::Exponent1);
+        check_field!(6, RsaField::Exponent2);
+        check_field!(7, RsaField::Coefficient);
+        if tail_len > 0 {
+            return Err(RsaPrivateKeyError::TrailingElements);
+        }
+        if v == 1 {
+            return Err(RsaPrivateKeyError::VersionMismatch);
+        }
+        Ok(key_at(input, flen))
+    }
+
+    /// Writes the S1/S2 framing into `buf` (outer header + version TLV + eight field TLV headers),
+    /// leaving every content octet (and the tail/post region) symbolic. The outer length octet is
+    /// `3 + 8 * (2 + flen) + tail_len`.
+    macro_rules! frame_skeleton {
+        ($buf:ident, $flen:expr, $tail_len:expr) => {
+            $buf[0] = 0x30;
+            $buf[1] = (3 + 8 * (2 + $flen) + $tail_len) as u8;
+            $buf[2] = 0x02;
+            $buf[3] = 0x01;
+            $buf[5] = 0x02;
+            $buf[6] = $flen as u8;
+            $buf[5 + (2 + $flen)] = 0x02;
+            $buf[6 + (2 + $flen)] = $flen as u8;
+            $buf[5 + (2 + $flen) * 2] = 0x02;
+            $buf[6 + (2 + $flen) * 2] = $flen as u8;
+            $buf[5 + (2 + $flen) * 3] = 0x02;
+            $buf[6 + (2 + $flen) * 3] = $flen as u8;
+            $buf[5 + (2 + $flen) * 4] = 0x02;
+            $buf[6 + (2 + $flen) * 4] = $flen as u8;
+            $buf[5 + (2 + $flen) * 5] = 0x02;
+            $buf[6 + (2 + $flen) * 5] = $flen as u8;
+            $buf[5 + (2 + $flen) * 6] = 0x02;
+            $buf[6 + (2 + $flen) * 6] = $flen as u8;
+            $buf[5 + (2 + $flen) * 7] = 0x02;
+            $buf[6 + (2 + $flen) * 7] = $flen as u8;
+        };
+    }
+
+    /// Shape S1 (1-octet contents) with a symbolic inside-outer tail (`tail_len <= 3`,
+    /// `tail[0] ∉ {0x10, 0x30}`) and symbolic after-outer bytes (`post_len <= 2`). Asserts:
+    /// `parse_rsa_private_key` EQUALS the total expected `Result` (error variant and documented
+    /// precedence included; `Ok((key, 29 + tail_len))`, post bytes not consumed), pointer identity
+    /// of every field with `input[5 + 3 * i + 2..][..1]` and `other_prime_infos == None`; and
+    /// `parse_rsa_private_key_strict` equals `Err(BadOuterSeq(TrailingData))` when `post_len > 0`
+    /// (the envelope precedes every field error), otherwise the composable key (with the same
+    /// pointer identities).
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 43]`, concrete framing, symbolic
+    /// content/tail/post octets, `#[kani::unwind(5)]`, sentinel stub on `validate_other_prime_infos`
+    /// (assumes nothing). Covers: `Ok`, `UnsupportedVersion`, `VersionMismatch`, `TrailingElements`,
+    /// strict `TrailingData`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_faithful_two_prime_s1() {
+        let tail_len: usize = kani::any();
+        kani::assume(tail_len <= 3);
+        let post_len: usize = kani::any();
+        kani::assume(post_len <= 2);
+        let mut buf: [u8; 43] = kani::any();
+        frame_skeleton!(buf, 1usize, tail_len);
+        if tail_len > 0 {
+            kani::assume(buf[29] != 0x10 && buf[29] != 0x30);
+        }
+        let total = 29 + tail_len + post_len;
+        let input = &buf[..total];
+
+        let r = parse_rsa_private_key(input);
+        let expected = match expected_skeleton(input, 1, tail_len) {
+            Ok(k) => Ok((k, 29 + tail_len)),
+            Err(e) => Err(e),
+        };
+        assert!(r == expected, "parse_rsa_private_key result differs from the total expected result");
+        if let Ok((k, used)) = r {
+            assert!(used == 29 + tail_len);
+            assert!(key_is_borrowed_at(&k, input, 1));
+        }
+
+        let s = parse_rsa_private_key_strict(input);
+        let expected_s = if post_len > 0 {
+            Err(RsaPrivateKeyError::BadOuterSeq(SequenceError::TrailingData))
+        } else {
+            match expected_skeleton(input, 1, tail_len) {
+                Ok(k) => Ok(k),
+                Err(e) => Err(e),
+            }
+        };
+        assert!(s == expected_s, "parse_rsa_private_key_strict result differs from the total expected result");
+        if let Ok(k) = s {
+            assert!(key_is_borrowed_at(&k, input, 1));
+        }
+
+        kani::cover(r.is_ok(), "S1: Ok");
+        kani::cover(r == Err(RsaPrivateKeyError::UnsupportedVersion), "S1: UnsupportedVersion");
+        kani::cover(r == Err(RsaPrivateKeyError::VersionMismatch), "S1: VersionMismatch");
+        kani::cover(r == Err(RsaPrivateKeyError::TrailingElements), "S1: TrailingElements");
+        kani::cover(
+            s == Err(RsaPrivateKeyError::BadOuterSeq(SequenceError::TrailingData)),
+            "S1: strict TrailingData",
+        );
+    }
+
+    /// Shape S2 (2-octet contents `a_i b_i`), no tail, no post. The oracle's
+    /// `validate_integer_content` on each 2-octet content exercises `Field(f, Content(NonMinimal))`
+    /// with first-field precedence; on `Ok` every 2-octet field is pointer-identical to
+    /// `input[5 + 4 * i + 2..][..2]`.
+    ///
+    /// Both `parse_rsa_private_key` and `parse_rsa_private_key_strict` are asserted equal to the
+    /// total expected result (on this no-post shape the strict result is the composable result
+    /// without the length).
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 43]` (37 used), concrete framing,
+    /// symbolic content octets, `#[kani::unwind(5)]`, sentinel stub. Covers: `Ok`,
+    /// `Field(Modulus, Content(NonMinimal))`, `Field(Coefficient, Content(NonMinimal))`,
+    /// `UnsupportedVersion`, `VersionMismatch`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_faithful_two_prime_s2() {
+        let mut buf: [u8; 43] = kani::any();
+        frame_skeleton!(buf, 2usize, 0usize);
+        let input = &buf[..37];
+
+        let r = parse_rsa_private_key(input);
+        let expected = match expected_skeleton(input, 2, 0) {
+            Ok(k) => Ok((k, 37)),
+            Err(e) => Err(e),
+        };
+        assert!(r == expected, "parse_rsa_private_key result differs from the total expected result");
+        if let Ok((k, used)) = r {
+            assert!(used == 37);
+            assert!(key_is_borrowed_at(&k, input, 2));
+        }
+        let s = parse_rsa_private_key_strict(input);
+        let expected_s = match expected_skeleton(input, 2, 0) {
+            Ok(k) => Ok(k),
+            Err(e) => Err(e),
+        };
+        assert!(s == expected_s, "parse_rsa_private_key_strict result differs from the total expected result");
+
+        kani::cover(r.is_ok(), "S2: Ok");
+        kani::cover(
+            r == Err(RsaPrivateKeyError::Field(
+                RsaField::Modulus,
+                IntegerFieldError::Content(BigIntError::NonMinimal),
+            )),
+            "S2: Field(Modulus, Content(NonMinimal))",
+        );
+        kani::cover(
+            r == Err(RsaPrivateKeyError::Field(
+                RsaField::Coefficient,
+                IntegerFieldError::Content(BigIntError::NonMinimal),
+            )),
+            "S2: Field(Coefficient, Content(NonMinimal))",
+        );
+        kani::cover(r == Err(RsaPrivateKeyError::UnsupportedVersion), "S2: UnsupportedVersion");
+        kani::cover(r == Err(RsaPrivateKeyError::VersionMismatch), "S2: VersionMismatch");
+    }
+
+    /// S1 framing truncated to `kk <= 9` INTEGER TLVs (the version plus `kk - 1` fields),
+    /// outer length `3 * kk`. Expected: `kk == 0` -> `MissingVersion`; version value `> 1` ->
+    /// `UnsupportedVersion`; `1 <= kk <= 8` -> `MissingField(FIELDS[kk - 1])`; `kk == 9` -> the
+    /// skeleton oracle (`Ok` / `VersionMismatch`).
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 29]`, symbolic `kk`, concrete
+    /// per-slot framing, symbolic content, `#[kani::unwind(5)]`, sentinel stub. Covers:
+    /// `MissingVersion`, `MissingField(Modulus)`, `MissingField(Coefficient)`, `UnsupportedVersion`,
+    /// `Ok`, `VersionMismatch`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_rejects_missing_fields() {
+        let kk: usize = kani::any();
+        kani::assume(kk <= 9);
+        let mut buf: [u8; 29] = kani::any();
+        frame_skeleton!(buf, 1usize, 0usize);
+        buf[1] = (3 * kk) as u8;
+        let input = &buf[..2 + 3 * kk];
+        let r = parse_rsa_private_key(input);
+
+        let fields = [
+            RsaField::Modulus,
+            RsaField::PublicExponent,
+            RsaField::PrivateExponent,
+            RsaField::Prime1,
+            RsaField::Prime2,
+            RsaField::Exponent1,
+            RsaField::Exponent2,
+            RsaField::Coefficient,
+        ];
+        let expected: Result<(RsaPrivateKey<'_>, usize), RsaPrivateKeyError> = if kk == 0 {
+            Err(RsaPrivateKeyError::MissingVersion)
+        } else if input[4] > 1 {
+            Err(RsaPrivateKeyError::UnsupportedVersion)
+        } else if kk <= 8 {
+            Err(RsaPrivateKeyError::MissingField(fields[kk - 1]))
+        } else {
+            match expected_skeleton(input, 1, 0) {
+                Ok(k) => Ok((k, 29)),
+                Err(e) => Err(e),
+            }
+        };
+        assert!(r == expected, "parse_rsa_private_key result differs from the total expected result");
+
+        kani::cover(r == Err(RsaPrivateKeyError::MissingVersion), "kk == 0: MissingVersion");
+        kani::cover(r == Err(RsaPrivateKeyError::MissingField(RsaField::Modulus)), "MissingField(Modulus)");
+        kani::cover(r == Err(RsaPrivateKeyError::MissingField(RsaField::Coefficient)), "MissingField(Coefficient)");
+        kani::cover(r == Err(RsaPrivateKeyError::UnsupportedVersion), "UnsupportedVersion");
+        kani::cover(r.is_ok(), "kk == 9: Ok");
+        kani::cover(r == Err(RsaPrivateKeyError::VersionMismatch), "kk == 9: VersionMismatch");
+    }
+
+    /// A 2-octet version `02 02 v0 v1` followed by the eight S1 fields (outer content 28,
+    /// total 30). `validate_integer_content([v0, v1])` `Err(e)` -> `Version(Content(e))`; otherwise
+    /// `UnsupportedVersion` (a minimal 2-octet INTEGER is never 0 or 1). The version error precedes
+    /// every field.
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 30]`, concrete framing, symbolic
+    /// content, `#[kani::unwind(5)]`, sentinel stub. Covers: `Version(Content(NonMinimal))`,
+    /// `UnsupportedVersion`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_rejects_two_octet_version() {
+        let mut buf: [u8; 30] = kani::any();
+        buf[0] = 0x30;
+        buf[1] = 28;
+        buf[2] = 0x02;
+        buf[3] = 0x02;
+        // eight S1 fields at 6 + 3 * i
+        buf[6] = 0x02;
+        buf[7] = 0x01;
+        buf[9] = 0x02;
+        buf[10] = 0x01;
+        buf[12] = 0x02;
+        buf[13] = 0x01;
+        buf[15] = 0x02;
+        buf[16] = 0x01;
+        buf[18] = 0x02;
+        buf[19] = 0x01;
+        buf[21] = 0x02;
+        buf[22] = 0x01;
+        buf[24] = 0x02;
+        buf[25] = 0x01;
+        buf[27] = 0x02;
+        buf[28] = 0x01;
+        let r = parse_rsa_private_key(&buf);
+        let expected = match validate_integer_content(&[buf[4], buf[5]]) {
+            Err(e) => Err(RsaPrivateKeyError::Version(IntegerFieldError::Content(e))),
+            Ok(()) => Err(RsaPrivateKeyError::UnsupportedVersion),
+        };
+        assert!(r == expected, "parse_rsa_private_key result differs from the total expected result");
+        kani::cover(
+            r == Err(RsaPrivateKeyError::Version(IntegerFieldError::Content(BigIntError::NonMinimal))),
+            "2-octet version: Version(Content(NonMinimal))",
+        );
+        kani::cover(r == Err(RsaPrivateKeyError::UnsupportedVersion), "2-octet version: UnsupportedVersion");
+    }
+
+    /// Shared body of the `parse_other_prime_infos_tail_*` harnesses: S1 plus a symbolic version octet plus a concrete tail of `tail_len`
+    /// octets inside the outer content (already written into `buf[29..]` by the caller). Expected
+    /// (the tail's expected error applies AFTER the version check, because S1 fields are always
+    /// minimal): `v > 1` -> `UnsupportedVersion`, else `want`. The sentinel stub proves the member
+    /// walk is never reached in any of these shapes.
+    fn tail_case(buf: &[u8; 32], tail_len: usize, want: RsaPrivateKeyError) -> Result<(RsaPrivateKey<'_>, usize), RsaPrivateKeyError> {
+        let input = &buf[..29 + tail_len];
+        let r = parse_rsa_private_key(input);
+        let expected = if input[4] > 1 {
+            Err(RsaPrivateKeyError::UnsupportedVersion)
+        } else {
+            Err(want)
+        };
+        assert!(r == expected, "parse_rsa_private_key result differs from the expected tail outcome");
+        r
+    }
+
+    /// Tail `30 00` (an empty SEQUENCE) -> `OtherPrimeInfosEmpty`.
+    ///
+    /// The five `parse_other_prime_infos_tail_*` harnesses are CONTRACT SURFACE / bounded-backing
+    /// evidence: backing `[u8; 32]`, S1 plus a symbolic version octet and one concrete tail inside the outer content, symbolic `xx`/`yy`
+    /// octets, `#[kani::unwind(5)]`, sentinel stub on the member walk (reaching it fails the proof).
+    /// Each covers its own outcome with `v <= 1`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_other_prime_infos_tail_empty() {
+        let mut buf: [u8; 32] = kani::any();
+        frame_skeleton!(buf, 1usize, 2usize);
+        buf[29] = 0x30;
+        buf[30] = 0x00;
+        let r = tail_case(&buf, 2, RsaPrivateKeyError::OtherPrimeInfosEmpty);
+        kani::cover(buf[4] <= 1 && r == Err(RsaPrivateKeyError::OtherPrimeInfosEmpty), "tail 30 00: OtherPrimeInfosEmpty");
+        kani::cover(buf[4] > 1 && r == Err(RsaPrivateKeyError::UnsupportedVersion), "tail 30 00: version check first");
+    }
+
+    /// Tail `10 00` (primitive-form SEQUENCE identifier) -> `OtherPrimeInfos(NotConstructed)`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_other_prime_infos_tail_primitive() {
+        let mut buf: [u8; 32] = kani::any();
+        frame_skeleton!(buf, 1usize, 2usize);
+        buf[29] = 0x10;
+        buf[30] = 0x00;
+        let want = RsaPrivateKeyError::OtherPrimeInfos(SequenceError::NotConstructed);
+        let r = tail_case(&buf, 2, want);
+        kani::cover(buf[4] <= 1 && r == Err(want), "tail 10 00: OtherPrimeInfos(NotConstructed)");
+        kani::cover(buf[4] > 1 && r == Err(RsaPrivateKeyError::UnsupportedVersion), "tail 10 00: version check first");
+    }
+
+    /// Tail `30 03 xx` (declared length 3, one octet present) ->
+    /// `OtherPrimeInfos(Tlv(Truncated))`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_other_prime_infos_tail_truncated() {
+        let mut buf: [u8; 32] = kani::any();
+        frame_skeleton!(buf, 1usize, 3usize);
+        buf[29] = 0x30;
+        buf[30] = 0x03;
+        let want = RsaPrivateKeyError::OtherPrimeInfos(SequenceError::Tlv(TlvError::Truncated));
+        let r = tail_case(&buf, 3, want);
+        kani::cover(buf[4] <= 1 && r == Err(want), "tail 30 03 xx: OtherPrimeInfos(Tlv(Truncated))");
+        kani::cover(buf[4] > 1 && r == Err(RsaPrivateKeyError::UnsupportedVersion), "tail 30 03 xx: version check first");
+    }
+
+    /// Tail `30 00 yy` (a well-formed empty SEQUENCE followed by an extra octet:
+    /// `used != rest.len()`) -> `TrailingElements`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_other_prime_infos_tail_trailing() {
+        let mut buf: [u8; 32] = kani::any();
+        frame_skeleton!(buf, 1usize, 3usize);
+        buf[29] = 0x30;
+        buf[30] = 0x00;
+        let r = tail_case(&buf, 3, RsaPrivateKeyError::TrailingElements);
+        kani::cover(buf[4] <= 1 && r == Err(RsaPrivateKeyError::TrailingElements), "tail 30 00 yy: TrailingElements");
+        kani::cover(buf[4] > 1 && r == Err(RsaPrivateKeyError::UnsupportedVersion), "tail 30 00 yy: version check first");
+    }
+
+    /// Tail `31 00` (a SET, not a SEQUENCE: falls through the tag-first classification)
+    /// -> `TrailingElements`.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_other_prime_infos_tail_set() {
+        let mut buf: [u8; 32] = kani::any();
+        frame_skeleton!(buf, 1usize, 2usize);
+        buf[29] = 0x31;
+        buf[30] = 0x00;
+        let r = tail_case(&buf, 2, RsaPrivateKeyError::TrailingElements);
+        kani::cover(buf[4] <= 1 && r == Err(RsaPrivateKeyError::TrailingElements), "tail 31 00: TrailingElements");
+        kani::cover(buf[4] > 1 && r == Err(RsaPrivateKeyError::UnsupportedVersion), "tail 31 00: version check first");
+    }
+
+    /// Multi-prime acceptance (real member walk, NO stub): S1, a symbolic version `v in {0x00, 0x01}`, and the tail
+    /// `30 0B 30 09 02 01 a 02 01 b 02 01 c` (one `OtherPrimeInfo` member with symbolic `a, b, c`)
+    /// inside the outer content: outer content 40 (`30 28`), total 42. Expected: `v == 1` -> `Ok`
+    /// with `other_prime_infos == Some(input[31..42])` (pointer-identical) and `used == 42`;
+    /// `v == 0` -> `VersionMismatch`. The member harnesses at the end of this module (`parse_multi_prime_rejects_*`)
+    /// also run the real walk, with concrete content and one symbolic framing octet. Not covered: a
+    /// walk with more than one member, and member INTEGERs of more than one octet.
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 42]`, concrete framing, symbolic
+    /// content, NO stubs, `#[kani::unwind(5)]`.
+    /// Covers: `Ok`, `VersionMismatch`.
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn parse_multi_prime_faithful() {
+        let mut buf: [u8; 42] = kani::any();
+        frame_skeleton!(buf, 1usize, 13usize);
+        kani::assume(buf[4] <= 1);
+        buf[29] = 0x30;
+        buf[30] = 0x0B;
+        buf[31] = 0x30;
+        buf[32] = 0x09;
+        buf[33] = 0x02;
+        buf[34] = 0x01;
+        buf[36] = 0x02;
+        buf[37] = 0x01;
+        buf[39] = 0x02;
+        buf[40] = 0x01;
+        let input = &buf[..];
+        let r = parse_rsa_private_key(input);
+        // Exact result, stated per outcome. Slice fields are compared by POINTER IDENTITY plus
+        // length (strictly stronger than value equality, and it keeps CBMC's memcmp loop out of the
+        // proof): `v == 1` -> `Ok((key, 42))` with `other_prime_infos == Some(input[31..42])`;
+        // `v == 0` -> exactly `Err(VersionMismatch)`.
+        match r {
+            Ok((k, used)) => {
+                assert!(buf[4] == 1, "multi-prime tail accepted only with version 1");
+                assert!(used == 42);
+                assert!(key_is_borrowed_at(&RsaPrivateKey { other_prime_infos: None, ..k }, input, 1));
+                match k.other_prime_infos {
+                    Some(opi) => assert!(same_slice(opi, &input[31..42])),
+                    None => assert!(false, "version 1 key must carry otherPrimeInfos"),
+                }
+            }
+            Err(e) => {
+                assert!(buf[4] == 0, "a version-1 multi-prime key must be accepted");
+                assert!(e == RsaPrivateKeyError::VersionMismatch);
+            }
+        }
+        kani::cover(r.is_ok(), "multi-prime: Ok");
+        kani::cover(r == Err(RsaPrivateKeyError::VersionMismatch), "multi-prime tail with v == 0: VersionMismatch");
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // Framing-rejection harnesses (CONTRACT SURFACE / bounded-backing evidence). Where the harnesses
+    // above keep the framing concrete and the content symbolic, these keep the content concrete and
+    // valid (every INTEGER content octet is `01`, version `00`, or `01` for the multi-prime shape)
+    // and make ONE framing octet symbolic: an identifier, a length, or the number of present
+    // elements. Content validity is covered above; concrete content keeps these cheap. Expected
+    // results are literal-octet or taken from the verified primitive `decode_tlv`. Slot `s` is
+    // 0 = version, 1..=8 = the key-material fields (header at `2 + 3 * s`). `#[kani::unwind(5)]`.
+    // ------------------------------------------------------------------------------------------
+
+    const RSA_FIELDS: [RsaField; 8] = [
+        RsaField::Modulus,
+        RsaField::PublicExponent,
+        RsaField::PrivateExponent,
+        RsaField::Prime1,
+        RsaField::Prime2,
+        RsaField::Exponent1,
+        RsaField::Exponent2,
+        RsaField::Coefficient,
+    ];
+    const OPI_FIELDS: [OpiField; 3] = [OpiField::Prime, OpiField::Exponent, OpiField::Coefficient];
+
+    /// The two-prime skeleton with concrete valid content: `30 1B | 02 01 00 | 8 x 02 01 01`
+    /// (29 octets used of 44; the rest zero). A literal, so no loop is unrolled to build it.
+    #[rustfmt::skip]
+    const S1_CONCRETE: [u8; 44] = [
+        0x30, 27, 0x02, 0x01, 0x00,
+        0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01,
+        0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+
+    /// The multi-prime skeleton: version 1 and the tail `30 0B 30 09 02 01 01 02 01 01 02 01 01`
+    /// (one well-formed `OtherPrimeInfo`); outer length 40, 42 octets used of 44.
+    #[rustfmt::skip]
+    const MULTI_CONCRETE: [u8; 44] = [
+        0x30, 40, 0x02, 0x01, 0x01,
+        0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01,
+        0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01,
+        0x30, 0x0B, 0x30, 0x09, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01,
+        0, 0,
+    ];
+
+    fn slot_error(s: usize, e: IntegerFieldError) -> RsaPrivateKeyError {
+        if s == 0 {
+            RsaPrivateKeyError::Version(e)
+        } else {
+            RsaPrivateKeyError::Field(RSA_FIELDS[s - 1], e)
+        }
+    }
+
+    /// Outer identifier: octet `o` symbolic and low-tag. `0x30` -> `Ok` (both entry points);
+    /// `0x10` -> `BadOuterSeq(NotConstructed)`; else `BadOuterSeq(WrongTag)`. Backing 44 octets
+    /// (29 used), sentinel stub.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_rejects_outer_identifier() {
+        let o: u8 = kani::any();
+        kani::assume(o & 0x1F != 0x1F);
+        let mut buf = S1_CONCRETE;
+        buf[0] = o;
+        let input = &buf[..29];
+        let r = parse_rsa_private_key(input);
+        let s = parse_rsa_private_key_strict(input);
+        if o == 0x30 {
+            assert!(r == expected_skeleton(input, 1, 0).map(|k| (k, 29)));
+            assert!(s == expected_skeleton(input, 1, 0));
+        } else {
+            let e = RsaPrivateKeyError::BadOuterSeq(if o == 0x10 {
+                SequenceError::NotConstructed
+            } else {
+                SequenceError::WrongTag
+            });
+            assert!(r == Err(e));
+            assert!(s == Err(e));
+        }
+        kani::cover(o == 0x30 && r.is_ok(), "outer 0x30: Ok");
+        kani::cover(r == Err(RsaPrivateKeyError::BadOuterSeq(SequenceError::NotConstructed)), "outer 0x10: NotConstructed");
+        kani::cover(r == Err(RsaPrivateKeyError::BadOuterSeq(SequenceError::WrongTag)), "outer other: WrongTag");
+    }
+
+    /// INTEGER identifier: slot `s` in `0..=8`, its identifier octet `t` symbolic and low-tag.
+    /// `0x02` -> `Ok`; `0x22` -> `Constructed`; any other low-tag `t` -> `WrongTag`; wrapped as
+    /// `Version(_)` for `s == 0` and `Field(f, _)` otherwise. Backing 44 octets (29 used), sentinel stub.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_rejects_field_identifier() {
+        let s: usize = kani::any();
+        kani::assume(s <= 8);
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let mut buf = S1_CONCRETE;
+        buf[2 + 3 * s] = t;
+        let input = &buf[..29];
+        let r = parse_rsa_private_key(input);
+        let expected = if t == 0x02 {
+            expected_skeleton(input, 1, 0).map(|k| (k, 29))
+        } else if t == 0x22 {
+            Err(slot_error(s, IntegerFieldError::Constructed))
+        } else {
+            Err(slot_error(s, IntegerFieldError::WrongTag))
+        };
+        assert!(r == expected, "field identifier result differs from expected");
+        kani::cover(t == 0x02 && r.is_ok(), "field identifier 0x02: Ok");
+        kani::cover(s == 0 && r == Err(RsaPrivateKeyError::Version(IntegerFieldError::Constructed)), "version 0x22: Constructed");
+        kani::cover(s == 8 && r == Err(RsaPrivateKeyError::Field(RsaField::Coefficient, IntegerFieldError::WrongTag)), "coefficient other: WrongTag");
+        kani::cover(s == 1 && r == Err(RsaPrivateKeyError::Field(RsaField::Modulus, IntegerFieldError::Constructed)), "modulus 0x22: Constructed");
+    }
+
+    /// INTEGER length octet: slot `s` in `0..=8`, its length octet `l` symbolic with `l` larger than
+    /// the octets that remain after it (so the TLV cannot be framed; `l >= 0x80` selects the
+    /// long-form errors). Expected: `Tlv(e)` with `e` the error of the verified primitive
+    /// `decode_tlv` on the slot's bytes, wrapped as in the identifier harness. Backing 44 octets
+    /// (29 used), sentinel stub.
+    #[kani::proof]
+    #[kani::stub(validate_other_prime_infos, sentinel_validate_other_prime_infos)]
+    #[kani::unwind(5)]
+    fn parse_rejects_field_length() {
+        let s: usize = kani::any();
+        kani::assume(s <= 8);
+        let l: u8 = kani::any();
+        kani::assume(l as usize > 29 - (4 + 3 * s));
+        let mut buf = S1_CONCRETE;
+        buf[3 + 3 * s] = l;
+        let input = &buf[..29];
+        let r = parse_rsa_private_key(input);
+        let e = decode_tlv(&input[2 + 3 * s..]).unwrap_err();
+        assert!(r == Err(slot_error(s, IntegerFieldError::Tlv(e))), "field length result differs from expected");
+        kani::cover(s == 0 && l < 0x80, "version: short-form length beyond the content");
+        kani::cover(s == 8 && l >= 0x80, "coefficient: long-form length error");
+    }
+
+    /// Checks a multi-prime outcome: `want == Ok(())` -> accepted with `used == input.len()`, the
+    /// key fields borrowed at the skeleton offsets and `otherPrimeInfos == Some(input[31..])`
+    /// (pointer identity); `want == Err(e)` -> exactly `Err(e)`.
+    fn check_multi(
+        r: Result<(RsaPrivateKey<'_>, usize), RsaPrivateKeyError>,
+        input: &[u8],
+        want: Result<(), RsaPrivateKeyError>,
+    ) {
+        match (r, want) {
+            (Ok((k, used)), Ok(())) => {
+                assert!(used == input.len());
+                assert!(key_is_borrowed_at(&RsaPrivateKey { other_prime_infos: None, ..k }, input, 1));
+                match k.other_prime_infos {
+                    Some(opi) => assert!(same_slice(opi, &input[31..])),
+                    None => assert!(false, "a version-1 key must carry otherPrimeInfos"),
+                }
+            }
+            (Err(e), Err(w)) => assert!(e == w, "member rejection differs from expected"),
+            (Ok(_), Err(_)) => assert!(false, "a malformed member was accepted"),
+            (Err(_), Ok(())) => assert!(false, "a well-formed member was rejected"),
+        }
+    }
+
+    /// Member SEQUENCE identifier (real member walk, NO stub): tail as in `MULTI_CONCRETE`, the
+    /// member's identifier octet `o` symbolic and low-tag. `0x30` -> accepted; `0x10` ->
+    /// `OtherPrimeInfoMember(BadSeq(NotConstructed))`; else `OtherPrimeInfoMember(BadSeq(WrongTag))`.
+    /// Backing 44 octets (42 used).
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn parse_multi_prime_rejects_member_identifier() {
+        let o: u8 = kani::any();
+        kani::assume(o & 0x1F != 0x1F);
+        let mut buf = MULTI_CONCRETE;
+        buf[31] = o;
+        let input = &buf[..42];
+        let r = parse_rsa_private_key(input);
+        let want = if o == 0x30 {
+            Ok(())
+        } else {
+            Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::BadSeq(if o == 0x10 {
+                SequenceError::NotConstructed
+            } else {
+                SequenceError::WrongTag
+            })))
+        };
+        check_multi(r, input, want);
+        kani::cover(o == 0x30 && r.is_ok(), "member 0x30: accepted");
+        kani::cover(matches!(r, Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::BadSeq(SequenceError::NotConstructed)))), "member 0x10: NotConstructed");
+        kani::cover(matches!(r, Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::BadSeq(SequenceError::WrongTag)))), "member other: WrongTag");
+    }
+
+    /// Member SEQUENCE length octet (NO stub): the octet `l` at the member header symbolic with
+    /// `l > 9` (more than the nine octets that remain in the otherPrimeInfos content; `l >= 0x80`
+    /// selects the long-form errors). Expected `OtherPrimeInfoMember(BadSeq(Tlv(e)))` with `e` the
+    /// error of `decode_tlv` on the member's bytes `input[31..]`. Backing 44 octets (42 used).
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn parse_multi_prime_rejects_member_length() {
+        let l: u8 = kani::any();
+        kani::assume(l > 9);
+        let mut buf = MULTI_CONCRETE;
+        buf[32] = l;
+        let input = &buf[..42];
+        let r = parse_rsa_private_key(input);
+        let e = decode_tlv(&input[31..]).unwrap_err();
+        let want = Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::BadSeq(SequenceError::Tlv(e))));
+        check_multi(r, input, want);
+        kani::cover(l < 0x80, "member: short-form length beyond the content");
+        kani::cover(l >= 0x80, "member: long-form length error");
+    }
+
+    /// Member INTEGER identifier (NO stub): member field `k` in `0..=2`, identifier octet `t`
+    /// symbolic and low-tag. `0x02` -> accepted; `0x22` -> `OtherPrimeInfoMember(Field(f_k,
+    /// Constructed))`; else `OtherPrimeInfoMember(Field(f_k, WrongTag))`. Backing 44 octets.
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn parse_multi_prime_rejects_member_field_identifier() {
+        let k: usize = kani::any();
+        kani::assume(k <= 2);
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let mut buf = MULTI_CONCRETE;
+        buf[33 + 3 * k] = t;
+        let input = &buf[..42];
+        let r = parse_rsa_private_key(input);
+        let want = if t == 0x02 {
+            Ok(())
+        } else {
+            Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::Field(
+                OPI_FIELDS[k],
+                if t == 0x22 { IntegerFieldError::Constructed } else { IntegerFieldError::WrongTag },
+            )))
+        };
+        check_multi(r, input, want);
+        kani::cover(t == 0x02 && r.is_ok(), "member field 0x02: accepted");
+        kani::cover(k == 2 && matches!(r, Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::Field(OpiField::Coefficient, IntegerFieldError::Constructed)))), "coefficient 0x22: Constructed");
+        kani::cover(k == 1 && matches!(r, Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::Field(OpiField::Exponent, IntegerFieldError::WrongTag)))), "exponent other: WrongTag");
+    }
+
+    /// Member INTEGER length octet (NO stub): member field `k` in `0..=2`, length octet `l`
+    /// symbolic and larger than the octets that remain in the member after it. Expected
+    /// `OtherPrimeInfoMember(Field(f_k, Tlv(e)))` with `e` the error of `decode_tlv` on the member's
+    /// bytes from field `k`. Backing 44 octets.
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn parse_multi_prime_rejects_member_field_length() {
+        let k: usize = kani::any();
+        kani::assume(k <= 2);
+        let l: u8 = kani::any();
+        kani::assume(l as usize > 9 - (3 * k + 2));
+        let mut buf = MULTI_CONCRETE;
+        buf[34 + 3 * k] = l;
+        let input = &buf[..42];
+        let r = parse_rsa_private_key(input);
+        let e = decode_tlv(&input[33 + 3 * k..]).unwrap_err();
+        let want = Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::Field(
+            OPI_FIELDS[k],
+            IntegerFieldError::Tlv(e),
+        )));
+        check_multi(r, input, want);
+        kani::cover(k == 0 && l < 0x80, "member field 0: short-form length beyond the content");
+        kani::cover(k == 2 && l >= 0x80, "member field 2: long-form length error");
+    }
+
+    /// Member element count (NO stub): the member holds `kk` in `0..=4` elements: `kk <= 3`
+    /// well-formed INTEGERs, and `kk == 4` the three INTEGERs plus a fourth element `05 00`.
+    /// `kk < 3` -> `OtherPrimeInfoMember(MissingField(f_kk))`; `kk == 3` -> accepted; `kk == 4` ->
+    /// `OtherPrimeInfoMember(TrailingElements)`. Backing 44 octets (33 to 44 used; the input
+    /// reaches all 44 octets when `kk == 4`).
+    #[kani::proof]
+    #[kani::unwind(5)]
+    fn parse_multi_prime_rejects_member_shape() {
+        let kk: usize = kani::any();
+        kani::assume(kk <= 4);
+        let ints = if kk > 3 { 3 } else { kk };
+        let mlen = 3 * ints + if kk == 4 { 2 } else { 0 };
+        let mut buf = MULTI_CONCRETE;
+        // rewrite the tail for `kk` elements
+        buf[1] = (31 + mlen) as u8;
+        buf[30] = (2 + mlen) as u8;
+        buf[32] = mlen as u8;
+        let mut i = ints;
+        while i < 3 {
+            buf[33 + 3 * i] = 0;
+            buf[34 + 3 * i] = 0;
+            buf[35 + 3 * i] = 0;
+            i += 1;
+        }
+        if kk == 4 {
+            buf[42] = 0x05;
+            buf[43] = 0x00;
+        }
+        let input = &buf[..33 + mlen];
+        let r = parse_rsa_private_key(input);
+        let want = if kk < 3 {
+            Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::MissingField(OPI_FIELDS[kk])))
+        } else if kk == 3 {
+            Ok(())
+        } else {
+            Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::TrailingElements))
+        };
+        check_multi(r, input, want);
+        kani::cover(kk == 0, "member with 0 elements");
+        kani::cover(kk == 2 && matches!(r, Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::MissingField(OpiField::Coefficient)))), "member missing the coefficient");
+        kani::cover(kk == 3 && r.is_ok(), "member with 3 INTEGERs: accepted");
+        kani::cover(r == Err(RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::TrailingElements)), "member with a fourth element");
     }
 }
 

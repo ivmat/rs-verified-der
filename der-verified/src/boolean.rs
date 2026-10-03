@@ -58,7 +58,13 @@ mod proofs {
     fn one_octet_is_canonical() {
         let b: u8 = kani::any();
         match decode_bool(&[b]) {
-            Ok(v) => assert!(b == encode_bool(v)), // only 0x00/0xFF accepted, and it re-encodes
+            Ok(v) => {
+                // only 0x00/0xFF accepted, with the spec polarity (TRUE = 0xFF, FALSE = 0x00),
+                // stated from the literals and independently of `encode_bool`
+                assert!(b == 0x00 || b == 0xFF);
+                assert!(v == (b == 0xFF));
+                assert!(b == encode_bool(v)); // and it re-encodes
+            }
             Err(e) => {
                 assert!(e == BoolError::NonCanonical);
                 assert!(b != 0x00 && b != 0xFF);
@@ -73,15 +79,16 @@ mod proofs {
         assert!(decode_bool(&[encode_bool(v)]) == Ok(v));
     }
 
-    /// Any content whose length isn't 1 is `BadLength` (length 0, 2, 3 exercised).
+    /// Any content whose length isn't 1 is `BadLength` (every length 0..=16, symbolic content).
     #[kani::proof]
     fn wrong_length_is_bad_length() {
-        let a: u8 = kani::any();
-        let b: u8 = kani::any();
-        let c: u8 = kani::any();
-        assert!(decode_bool(&[]) == Err(BoolError::BadLength));
-        assert!(decode_bool(&[a, b]) == Err(BoolError::BadLength));
-        assert!(decode_bool(&[a, b, c]) == Err(BoolError::BadLength));
+        let buf: [u8; 16] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 16 && n != 1);
+        kani::cover!(n == 0);
+        kani::cover!(n == 2);
+        kani::cover!(n == 16);
+        assert!(decode_bool(&buf[..n]) == Err(BoolError::BadLength));
     }
 }
 

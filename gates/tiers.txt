@@ -7,7 +7,8 @@
 #
 # LIGHT  = peak CBMC memory fits a ~7 GB runner. Run by GitHub CI (sharded) and by
 #          ./check_tractable.sh on any ordinary machine.
-# HEAVY  = peak exceeds 7 GB (up to ~20 GB; x509_name's validate_rdn lemma ~17 GB). Verified
+# HEAVY  = peak exceeds 7 GB (up to ~20 GB; x509_name's validate_rdn lemma ~17 GB; rsa_private_key's
+#          member-walk harnesses ~9 GB measured including the Kani front end). Verified
 #          locally by ./check.sh on a >=24 GB box. NOT run by CI -- see the commented `kani-heavy`
 #          job in .github/workflows/ci.yml.
 #
@@ -34,7 +35,6 @@ LIGHT x509_validity
 LIGHT ecdsa_sig_value
 LIGHT ec_private_key
 LIGHT rsa_public_key
-LIGHT rsa_private_key
 LIGHT pkcs8
 LIGHT encrypted_private_key_info
 LIGHT profile
@@ -47,3 +47,4 @@ HEAVY x509_name
 HEAVY x509_tbs_certificate
 HEAVY x509_certificate
 HEAVY x509_extension
+HEAVY rsa_private_key

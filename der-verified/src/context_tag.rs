@@ -124,6 +124,119 @@ mod proofs {
         }
         let _ = result;
     }
+
+    /// Typed-decoder faithfulness: `decode_explicit_context`'s Ok/Err split is
+    /// exactly TLV-well-formed ∧ class == ContextSpecific ∧ tag number == `expected_number`
+    /// **exactly** ∧ constructed, with the returned inner slice and consumed length tied exactly
+    /// (exact tiling) to the underlying TLV: `used == decode_tlv`'s own consumed length, and the
+    /// returned inner content IS `tlv.value` -- checked as pointer+length identity
+    /// (`core::ptr::eq` on the slice starts, plus equal `len()`), not mere byte equality, so a
+    /// re-derived or re-sliced copy with the same bytes would NOT pass.
+    /// `decode_explicit_context_never_panics` above never checks that a WRONG tag number is
+    /// actually rejected, nor that the returned slice is exactly the TLV's value — this harness
+    /// closes both gaps. For `n <= 30` (low-tag form) it also pins the concrete identifier octet.
+    /// Control: widen the tag-number guard's `!=` to `>` (so a wrapper whose number is `<=` the
+    /// expected number, not only an EXACT match, would satisfy the check) -> predicted RED.
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence for the Ok/Err split only (the exact error
+    /// variants are pinned by `decode_explicit_context_exact_result`). Backing `[u8; 16]`, symbolic
+    /// `len <= 16`, symbolic `n: u32` (full range), `#[kani::unwind(20)]`, no assumptions beyond
+    /// `len <= 16`, no stubs.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn decode_explicit_context_faithful() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let n: u32 = kani::any();
+        let input = &buf[..len];
+        let result = decode_explicit_context(n, input);
+        let tlv_result = decode_tlv(input);
+        let expected_ok = matches!(&tlv_result, Ok((tlv, _))
+            if tlv.tag.class == Class::ContextSpecific
+                && tlv.tag.number == n
+                && tlv.tag.constructed);
+        assert!(result.is_ok() == expected_ok);
+        if let Ok((v, u)) = result {
+            let (tlv, tused) = tlv_result.unwrap();
+            // Exact tiling: the wrapper consumes precisely what `decode_tlv` itself consumed, and
+            // the returned inner content is exactly the underlying TLV's value BORROW -- not merely
+            // byte-equal to it (a re-derived or re-sliced copy with the same bytes would also pass
+            // `v == tlv.value`; pointer+length identity is what rules that out).
+            assert!(u == tused);
+            assert!(core::ptr::eq(v.as_ptr(), tlv.value.as_ptr()) && v.len() == tlv.value.len());
+            if n <= 30 {
+                assert!(input[0] == 0xA0 | (n as u8));
+            }
+        }
+        kani::cover(result.is_ok(), "a well-formed EXPLICIT [n] wrapper reaches Ok under the faithful oracle");
+    }
+
+    /// Exact-result contract: `decode_explicit_context(n, input)`
+    /// equals a TOTAL expected `Result`, error variant and documented check order included
+    /// (framing -> class -> number -> constructed), not merely
+    /// the Ok/Err split pinned by `decode_explicit_context_faithful`.
+    ///
+    /// Oracle: `decode_tlv(input)` is `Err(e)` -> `Err(BadTlv(e))`. Otherwise, in the low-tag form
+    /// (`input[0] & 0x1F != 0x1F`) the class, constructed flag and number are computed from the
+    /// LITERAL bits of `input[0]` (`t >> 6`, `t & 0x20`, `t & 0x1F`), not from the implementation's
+    /// own tag-match expression; in the high-tag form the class and constructed flag are still the
+    /// literal bits and only the number comes from `decode_tlv`'s `tlv.tag` (the `tag` lid). Then class != 2 -> `WrongClass`; number != `n` -> `WrongNumber`; primitive
+    /// -> `NotConstructed`; else `Ok((tlv.value, tused))`, with pointer identity on the value.
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 16]`, symbolic `len <= 16`,
+    /// symbolic `n: u32` (full range), `#[kani::unwind(20)]`, no assumptions beyond `len <= 16`,
+    /// no stubs. Only the EXPLICIT form is covered (IMPLICIT is not modelled); TLV framing
+    /// correctness is trusted from the `decode_tlv` lid. An `Ok` does not require the value octets to
+    /// be one complete inner TLV (`A0 00` and `A0 01 FF` are accepted): inner well-formedness and
+    /// tiling are the caller's, not checked here.
+    /// Covers: one per outcome class (`BadTlv`, `WrongClass`, `WrongNumber`, `NotConstructed`,
+    /// `Ok`) plus a high-tag-form `Ok`.
+    #[kani::proof]
+    #[kani::unwind(20)]
+    fn decode_explicit_context_exact_result() {
+        let buf: [u8; 16] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let n: u32 = kani::any();
+        let input = &buf[..len];
+        let r = decode_explicit_context(n, input);
+
+        let expected: Result<(&[u8], usize), ContextTagError> = match decode_tlv(input) {
+            Err(e) => Err(ContextTagError::BadTlv(e)),
+            Ok((tlv, tused)) => {
+                let t = input[0];
+                // Class and constructed flag are literal bits of the first octet in BOTH identifier
+                // forms; only the number of a high-tag identifier comes from `decode_tlv`.
+                let number = if t & 0x1F != 0x1F { (t & 0x1F) as u32 } else { tlv.tag.number };
+                let (class_bits, constructed) = (t >> 6, t & 0x20 != 0);
+                if class_bits != 2 {
+                    Err(ContextTagError::WrongClass)
+                } else if number != n {
+                    Err(ContextTagError::WrongNumber)
+                } else if !constructed {
+                    Err(ContextTagError::NotConstructed)
+                } else {
+                    Ok((tlv.value, tused))
+                }
+            }
+        };
+        assert!(r == expected, "decode_explicit_context result differs from the total expected result");
+        if let (Ok((v, u)), Ok((ev, eu))) = (r, expected) {
+            assert!(u == eu);
+            assert!(core::ptr::eq(v.as_ptr(), ev.as_ptr()) && v.len() == ev.len());
+        }
+
+        kani::cover(matches!(r, Err(ContextTagError::BadTlv(_))), "BadTlv outcome reached");
+        kani::cover(matches!(r, Err(ContextTagError::WrongClass)), "WrongClass outcome reached");
+        kani::cover(matches!(r, Err(ContextTagError::WrongNumber)), "WrongNumber outcome reached");
+        kani::cover(matches!(r, Err(ContextTagError::NotConstructed)), "NotConstructed outcome reached");
+        kani::cover(r.is_ok(), "Ok outcome reached");
+        kani::cover(
+            r.is_ok() && len > 0 && input[0] & 0x1F == 0x1F,
+            "Ok outcome reached through the high-tag identifier form",
+        );
+    }
 }
 
 // ---------------------------------------------------------------------------

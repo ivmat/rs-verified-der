@@ -141,6 +141,12 @@ pub fn cmp_padded(a: &[u8], b: &[u8]) -> Ordering {
 /// that raw span. On the first adjacent pair that violates the order, returns
 /// [`SetOfError::Unsorted`] naming the earlier element's index; a malformed child is
 /// [`SetOfError::Element`].
+///
+/// Children are checked strictly in order, and the first failure of that walk is the one reported:
+/// each child is decoded and then compared with its predecessor, so an out-of-order pair among the
+/// children before a malformed child is reported as `Unsorted`, in preference to the `Element` error
+/// of that later malformed child (a malformed child itself is never compared, so it is reported as
+/// `Element`).
 pub fn decode_set_of(content: &[u8]) -> Result<usize, SetOfError> {
     let mut off = 0usize;
     let mut count = 0usize;
@@ -193,6 +199,13 @@ pub fn decode_set_of_tlv(input: &[u8]) -> Result<(&[u8], usize), SetOfError> {
 /// Mirrors [`crate::sequence::decode_sequence_tlv_strict`]: use this at the top level, where
 /// [`decode_set_of_tlv`]'s trailing-bytes tolerance would otherwise let an attacker append ignored
 /// data (the classic trailing-data parser differential).
+///
+/// **Error precedence.** This is [`decode_set_of_tlv`] followed by a trailing-data check, so the
+/// trailing-data check runs last: every error of the non-strict decoder (envelope, tag/form and
+/// content errors) is returned unchanged and passes through before trailing bytes are looked at, and
+/// [`SetOfError::TrailingData`] is returned only for input that [`decode_set_of_tlv`] accepts and
+/// that has bytes after the SET OF. A malformed or unsorted SET OF followed by extra bytes therefore
+/// reports its own error, not `TrailingData`.
 pub fn decode_set_of_tlv_strict(input: &[u8]) -> Result<&[u8], SetOfError> {
     let (content, used) = decode_set_of_tlv(input)?;
     if used != input.len() {
@@ -208,6 +221,8 @@ pub fn decode_set_of_tlv_strict(input: &[u8]) -> Result<&[u8], SetOfError> {
 /// not validate or sort the children; the caller is responsible for pre-sorting under
 /// [`cmp_padded`] (§11.6) before calling this. Returns the number of bytes written, or `None` if
 /// `out` is too small or the content is longer than the length codec supports (`> u32::MAX`).
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_set_of_into(children_content: &[u8], out: &mut [u8]) -> Option<usize> {
     let tag = Tag { class: Class::Universal, constructed: true, number: TAG };
     encode_tlv_into(tag, children_content, out)
@@ -541,6 +556,268 @@ mod proofs {
         assert!(used == n);
         assert!(content == &children[..]);
         assert!(decode_set_of(content) == Ok(2));
+    }
+
+    // -----------------------------------------------------------------------
+    // §11.6 ordering over WHOLE child encodings, at symbolic framing (the fixed-`05 01` header of
+    // `ordering_iff_oracle` cannot tell "compare whole encodings" from "compare contents only").
+    // The expected result below is computed by an oracle that shares NO code with `decode_set_of` /
+    // `cmp_padded`: a two-phase formulation (tile first, then scan the pairs), a fresh
+    // index-wise padded comparison, and `decode_tlv` (the separately-verified framing primitive)
+    // only to find each child's extent.
+    // -----------------------------------------------------------------------
+
+    /// §11.6 comparison of two raw child encodings, formulated index-wise over `0..max(len)` with a
+    /// virtual zero fetched for the shorter operand (no materialized arrays, no shared-prefix-then-
+    /// tail split) -- a third shape beside `cmp_padded` and `cmp_padded_oracle`.
+    fn oracle_encoding_cmp(a: &[u8], b: &[u8]) -> Ordering {
+        let m = if a.len() > b.len() { a.len() } else { b.len() };
+        let mut k = 0;
+        while k < m {
+            let x = if k < a.len() { a[k] } else { 0 };
+            let y = if k < b.len() { b[k] } else { 0 };
+            if x < y {
+                return Ordering::Less;
+            }
+            if x > y {
+                return Ordering::Greater;
+            }
+            k += 1;
+        }
+        Ordering::Equal
+    }
+
+    /// Expected `decode_set_of(content)` (content <= 8 octets => at most 4 children).
+    /// Phase 1 tiles `content` into raw child spans `[starts[i], ends[i])` (header + value) with
+    /// `decode_tlv`, stopping at the first framing failure. Phase 2 scans the adjacent pairs of the
+    /// children decoded so far for the FIRST pair whose encodings are padded-descending
+    /// (`Unsorted { index: i }`); only if there is none does a framing failure surface as
+    /// `Element(e)`, else `Ok(child count)`. (That precedence -- a descending pair that precedes a
+    /// bad child is reported before the bad child -- is stated in `decode_set_of`'s rustdoc: children
+    /// are checked in order and the first failure of the walk is reported.)
+    fn oracle_set_of(content: &[u8]) -> Result<usize, SetOfError> {
+        let mut starts = [0usize; 4];
+        let mut ends = [0usize; 4];
+        let mut c = 0usize;
+        let mut off = 0usize;
+        let mut framing_err: Option<TlvError> = None;
+        while off < content.len() {
+            match decode_tlv(&content[off..]) {
+                Err(e) => {
+                    framing_err = Some(e);
+                    break;
+                }
+                Ok((_, used)) => {
+                    assert!(c < 4, "oracle_set_of: more children than the 8-octet bound allows");
+                    starts[c] = off;
+                    ends[c] = off + used;
+                    c += 1;
+                    off += used;
+                }
+            }
+        }
+        let mut i = 0;
+        while i + 1 < c {
+            let a = &content[starts[i]..ends[i]];
+            let b = &content[starts[i + 1]..ends[i + 1]];
+            if oracle_encoding_cmp(a, b) == Ordering::Greater {
+                return Err(SetOfError::Unsorted { index: i });
+            }
+            i += 1;
+        }
+        match framing_err {
+            Some(e) => Err(SetOfError::Element(e)),
+            None => Ok(c),
+        }
+    }
+
+    /// **§11.6 over whole child encodings, symbolic framing.** For every content of `0..=8` octets
+    /// (fully symbolic bytes and length -- children may differ in identifier octet, length octets
+    /// and value), `decode_set_of` returns EXACTLY what the independent two-phase oracle says:
+    /// `Ok(k)` iff the children tile the content and every consecutive pair of FULL encodings is
+    /// non-descending under the padded comparison; `Unsorted { index }` names the FIRST descending
+    /// pair; `Element(e)` carries the framing error of the first undecodable child.
+    ///
+    /// Bounded-backing (8 octets): the differential input `02 02 00 80 02 01 05` (INTEGER 128 before
+    /// INTEGER 5: descending as encodings, yet ascending as contents `00 80` < `05`) is in the domain
+    /// -- see the cover below -- as is every mix of children fitting the eight-octet content bound.
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn ordering_matches_whole_encoding_oracle() {
+        let buf: [u8; 8] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let content = &buf[..len];
+        let result = decode_set_of(content);
+        assert!(result == oracle_set_of(content));
+        kani::cover(
+            matches!(result, Ok(k) if k >= 2),
+            "an accepted SET OF with at least two children is reached",
+        );
+        kani::cover(
+            matches!(result, Err(SetOfError::Unsorted { index: 0 })),
+            "a descending first pair is rejected",
+        );
+        kani::cover(
+            matches!(result, Err(SetOfError::Unsorted { index: 1 })),
+            "a descending second pair (first pair ordered) is rejected",
+        );
+        kani::cover(
+            matches!(result, Err(SetOfError::Element(_))),
+            "a framing failure inside the content is reached",
+        );
+        kani::cover(
+            len == 7 && content == &[0x02u8, 0x02, 0x00, 0x80, 0x02, 0x01, 0x05][..],
+            "the differential input (INTEGER 128 before INTEGER 5) is in the reachable domain",
+        );
+    }
+
+    /// **The TLV entry point enforces §11.6** (and is classified exactly). Over a symbolic 9-octet
+    /// buffer with symbolic length `0..=9` -- so the content of a short-form SET OF reaches 7 octets,
+    /// which contains the differential `31 07 02 02 00 80 02 01 05` -- `decode_set_of_tlv` equals:
+    /// envelope error (reference `decode_tlv`) -> `WrongTag` -> `NotConstructed` -> the independent
+    /// content oracle's error -> `Ok((tlv.value, used))`. In particular an unsorted (or malformed)
+    /// content is never accepted at this entry point.
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn tlv_entry_enforces_ordering_exactly() {
+        let buf: [u8; 9] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let r = decode_set_of_tlv(input);
+        match decode_tlv(input) {
+            Err(e) => {
+                kani::cover(true, "envelope error branch reached");
+                assert!(r == Err(SetOfError::Tlv(e)));
+            }
+            Ok((tlv, used)) => {
+                if tlv.tag.class != Class::Universal || tlv.tag.number != 17 {
+                    kani::cover(true, "well-formed TLV of another type reached");
+                    assert!(r == Err(SetOfError::WrongTag));
+                } else if !tlv.tag.constructed {
+                    kani::cover(true, "primitive-form UNIVERSAL 17 reached");
+                    assert!(r == Err(SetOfError::NotConstructed));
+                } else {
+                    match oracle_set_of(tlv.value) {
+                        Err(e) => {
+                            kani::cover(
+                                matches!(e, SetOfError::Unsorted { .. }),
+                                "an unsorted SET OF content is rejected at the TLV entry",
+                            );
+                            assert!(r == Err(e));
+                        }
+                        Ok(k) => {
+                            kani::cover(k >= 2, "a sorted multi-child SET OF is accepted at the TLV entry");
+                            match r {
+                                Ok((content, consumed)) => {
+                                    assert!(consumed == used);
+                                    assert!(content == tlv.value);
+                                }
+                                Err(_) => panic!("well-formed sorted SET OF rejected"),
+                            }
+                        }
+                    }
+                }
+                kani::cover(
+                    len == 9 && input == &[0x31u8, 0x07, 0x02, 0x02, 0x00, 0x80, 0x02, 0x01, 0x05][..],
+                    "the differential TLV `31 07 02 02 00 80 02 01 05` is in the reachable domain",
+                );
+            }
+        }
+    }
+
+    /// **Strict decoder, exact result**. Over a fully symbolic 9-octet
+    /// buffer with symbolic length `0..=9` (the bound of `tlv_entry_enforces_ordering_exactly`),
+    /// `decode_set_of_tlv_strict(input)` is derived from the non-strict decoder's already-verified
+    /// contract plus an independent trailing-byte computation:
+    /// - non-strict `Err(e)` -> strict `Err(e)` (same error, nothing remapped: envelope, tag/form and
+    ///   content errors pass through BEFORE trailing data is checked, as the strict rustdoc's
+    ///   "Error precedence" paragraph states, so a bad SET OF followed by extra bytes is never
+    ///   reported as `TrailingData`);
+    /// - non-strict `Ok((content, used))` -> the accepted TLV is `31 L ..` with a short-form length
+    ///   (`L < 0x80`, since `len <= 9`), so `used` is recomputed as `2 + input[1]` (asserted equal to
+    ///   the decoder's `used`); then strict is `Err(TrailingData)` iff `len > 2 + input[1]` (bytes
+    ///   remain), else `Ok(content)` with the very same content window as the non-strict decoder.
+    /// Covers: strict Ok with non-empty content, strict Ok on the empty SET OF, `TrailingData` after
+    /// a non-empty SET OF, `TrailingData` after the empty SET OF, an error passed through.
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn strict_is_exact_composition() {
+        let buf: [u8; 9] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let strict = decode_set_of_tlv_strict(input);
+        match decode_set_of_tlv(input) {
+            Err(e) => {
+                kani::cover(true, "a non-strict error is passed through");
+                assert!(strict == Err(e));
+            }
+            Ok((content, used)) => {
+                // independent consumed-length computation from the accepted bytes
+                assert!(input[0] == 0x31 && input[1] < 0x80);
+                let framed = 2 + input[1] as usize;
+                assert!(used == framed);
+                assert!(content.len() == input[1] as usize);
+                if len > framed {
+                    kani::cover(!content.is_empty(), "trailing data after a non-empty SET OF");
+                    kani::cover(content.is_empty(), "trailing data after the empty SET OF");
+                    assert!(strict == Err(SetOfError::TrailingData));
+                } else {
+                    kani::cover(!content.is_empty(), "strict accepts a non-empty SET OF");
+                    kani::cover(content.is_empty(), "strict accepts the empty SET OF");
+                    assert!(len == framed);
+                    assert!(strict == Ok(content));
+                }
+            }
+        }
+    }
+
+    /// **Encoder, exact result**. Content is symbolic `0..=8` octets
+    /// (including EMPTY content; the encoder is a thin envelope wrapper and does not validate or
+    /// sort, so any bytes are legal), capacity symbolic `0..=12`, output initially symbolic.
+    /// `encode_set_of_into(content, &mut out[..cap])` returns EXACTLY `None` iff `cap < 2 + n`, else
+    /// `Some(2 + n)` with bytes `31 n content` (constructed UNIVERSAL 17, short-form length since
+    /// `n <= 8`) and every octet past the written length untouched; on `None` the output is
+    /// untouched (the documented write contract: "on `None` nothing is written to `out`; on `Some(n)`
+    /// only `out[..n]` is written"). Covers: empty content encoded, non-empty encoded, minimal capacity, `None` for
+    /// capacity one short.
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn encode_is_exact_over_content_and_capacity() {
+        let content: [u8; 8] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 8);
+        let content = &content[..n];
+        let cap: usize = kani::any();
+        kani::assume(cap <= 12);
+        let init: [u8; 12] = kani::any();
+        let mut out = init;
+        let r = encode_set_of_into(content, &mut out[..cap]);
+        let total = 2 + n;
+        if cap < total {
+            kani::cover(cap + 1 == total, "capacity one octet short is rejected");
+            assert!(r == None);
+            assert!(out == init);
+        } else {
+            kani::cover(n == 0, "empty content encoded");
+            kani::cover(n > 0, "non-empty content encoded");
+            kani::cover(cap == total, "encoded at exactly the minimal capacity");
+            assert!(r == Some(total));
+            assert!(out[0] == 0x31);
+            assert!(out[1] as usize == n);
+            let mut i = 0;
+            while i < n {
+                assert!(out[2 + i] == content[i]);
+                i += 1;
+            }
+            let mut j = total;
+            while j < 12 {
+                assert!(out[j] == init[j]);
+                j += 1;
+            }
+        }
     }
 }
 

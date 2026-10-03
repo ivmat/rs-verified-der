@@ -7,19 +7,19 @@
 A DER (X.690) encoding/decoding core in Rust **under formal verification**, with re-runnable
 evidence and an explicit claim-by-claim assurance map.
 
-**Status:** pre-1.0 (`0.1.1`). Today **20 of 39** manifest claims reach the target assurance band A3
+**Status:** pre-1.0 (`0.2.0`). Today **20 of 39** manifest claims reach the target assurance band A3
 or better; **19 do not** (7 are A1 and 12 are A0). The crate is therefore not uniformly formally
 verified and is not done. Proofs are bounded except for the selected Lean properties below; the API
 is unstable, with no production deployment record. Evaluate it as a building block, not a hardened parser.
 
 ## Evidence at a glance
 
-- **L3 — Kani:** 210 proof harnesses over 33 modules establish default safety checks on their
+- **L3 — Kani:** 297 proof harnesses over 33 modules establish default safety checks on their
   bounded domains; functional claims vary by harness and are listed in the proof manifest.
 - **L4/L5 — Aeneas → Lean 4:** selected properties of six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) hold for any input length; `sequence` also covers any child count. The
   lids are `sorry`-free; `tag` canonicality rejection remains Kani-bounded at 7 bytes.
-- **Tests:** 530 unit and regression tests plus 34 doc-tests cover concrete vectors. Counts are
+- **Tests:** 539 unit and regression tests plus 34 doc-tests cover concrete vectors. Counts are
   inventory, not coverage.
 
 Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the exact properties, bounds, stubs and non-goals;
@@ -36,7 +36,7 @@ validator-closure commit.
   `SET OF` member ordering. Read “primitive” strictly: properties and bounds differ by codec.
 - **Structural containers:** `x509_*` and the signature/private-key containers compose the core.
   Their evidence is bounded framing, not algorithm, key, signature, or certificate semantics.
-- **Profile:** three value-level RFC 5280 cross-field rules are covered; this is not full profile or
+- **Profile:** four value-level RFC 5280 cross-field rules are covered; this is not full profile or
   path validation.
 - **Out of scope:** cryptographic verification, trust/path validation, remaining RFC 5280 profile
   rules, and general `SET` (§10.3). See [`DECISIONS.md`](DECISIONS.md), `PROOF_MANIFEST.md` §6, and
@@ -178,10 +178,10 @@ records, not re-run. Neither mode runs the full Kani floor or establishes X.509 
 ### Tests and full gates
 
 ```sh
-cargo test                                      # 530 tests + 34 doc-tests
+cargo test                                      # 539 tests + 34 doc-tests
 cargo install --locked kani-verifier --version 0.67.0
 cargo kani setup
-cargo kani -Z stubbing                          # 210 proof harnesses, needs a large machine
+cargo kani -Z stubbing                          # 297 proof harnesses, needs a large machine
 ```
 
 ```sh
@@ -205,7 +205,7 @@ are listed in `PROOF_MANIFEST.md` §8.4. The Lean step re-extracts the shipped R
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs hygiene and parity gates, tests, clippy, and the
-memory-tractable **175 of 210** Kani harnesses. The remaining heavy modules are a local milestone via
+memory-tractable **221 of 297** Kani harnesses. The remaining heavy modules are a local milestone via
 `./check.sh`; the full floor needs roughly 24 GB available (largest harness peaks ~20 GB). Indicative shard timings and
 memory measurements live in [`docs/verification-cost.md`](docs/verification-cost.md).
 

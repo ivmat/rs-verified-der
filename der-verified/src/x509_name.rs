@@ -323,6 +323,394 @@ mod proofs {
         );
         let _ = result;
     }
+
+    // ------------------------------------------------------------------------------------------
+    // Contract-surface harnesses (exact-result; bounded-backing evidence). `validate_name` returns
+    // `()`, so its contract is the EXACT RESULT (accept/reject, the error variant and the documented
+    // check order) over structured shapes: concrete TLV framing, symbolic content bytes.
+    // ------------------------------------------------------------------------------------------
+    //
+    // Shapes. ATV `A(o, v) = 30 05 06 01 o v 00` (7 octets; 1-octet OID content `o`, then a
+    // zero-length value TLV whose identifier octet `v` is symbolic with the literal low-tag
+    // predicate `v & 0x1F != 0x1F`, so it is always well-framed). RDN `R(..) = 31 <len> ATVs`.
+    // Outer `30 <len> RDNs`. Identifier perturbation octets (`t_*`) are symbolic with
+    // `t & 0x1F != 0x1F` (low-tag). Attribute values are uninterpreted (module scope).
+    //
+    // Every harness: concrete framing, `#[kani::unwind(N)]` stated per harness (CBMC's unwinding
+    // assertions are enabled and report SUCCESS in the logs), no stubs, no assumptions beyond the
+    // stated low-tag predicates.
+    //
+    // Scope (disclosed). Multi-valued RDNs are covered for exactly TWO ATVs of DIFFERENT encoded
+    // lengths (`30 05 ..` against `30 06 ..`): the SET OF ordering compare then decides at the
+    // second octet, which keeps the compare loop inside the harness's unwind bound. The sorted pair
+    // validates BOTH ATVs; the swapped pair is `BadRdn(Unsorted { index: 0 })`. NOT covered here:
+    // two ATVs of EQUAL encoded length (the ordering compare then runs over symbolic content), and
+    // RDNs with more than two ATVs. The equal-length case is a tool limit: the fully symbolic
+    // 18-octet harness exceeded 16 GB under one global `#[kani::unwind]` bound (8 is the least bound
+    // that unwinds `set_of::cmp_padded`'s seven-iteration loop, and that bound multiplies every other
+    // nested loop), while a per-loop CBMC bound on that one loop verified it in about 2 minutes at
+    // about 7.6 GB. `check.sh` has no per-harness solver arguments, so it is not shipped. Ordering
+    // correctness itself is the `set_of` claim.
+
+    /// Expected result for the single-ATV skeleton
+    /// `[t_outer, 09, t_rdn, 07, t_atv, 05, t_oid, 01, o, v, 00]` for ANY identifier octets with
+    /// the documented outer-to-inner precedence: outer SEQUENCE identifier (`0x30` ok / `0x10`
+    /// `NotConstructed` / else `WrongTag`), RDN SET identifier (`0x31` / `0x11` / else), ATV
+    /// SEQUENCE identifier (`0x30` / `0x10` -> `AtvNotConstructed` / else `AtvWrongTag`), OID
+    /// identifier (`0x06` / `0x26` -> `AtvOidConstructed` / else `AtvOidWrongTag`), then the OID
+    /// content via the verified primitive `validate_oid`. Identifier checks are stated from the
+    /// literal octets, not from the implementation's tag-match expressions.
+    fn expected_single(t_outer: u8, t_rdn: u8, t_atv: u8, t_oid: u8, o: u8) -> Result<(), NameError> {
+        if t_outer != 0x30 {
+            return Err(NameError::BadOuterSeq(if t_outer == 0x10 {
+                SequenceError::NotConstructed
+            } else {
+                SequenceError::WrongTag
+            }));
+        }
+        if t_rdn != 0x31 {
+            return Err(NameError::BadRdn(if t_rdn == 0x11 {
+                SetOfError::NotConstructed
+            } else {
+                SetOfError::WrongTag
+            }));
+        }
+        if t_atv != 0x30 {
+            return Err(if t_atv == 0x10 { NameError::AtvNotConstructed } else { NameError::AtvWrongTag });
+        }
+        if t_oid != 0x06 {
+            return Err(if t_oid == 0x26 { NameError::AtvOidConstructed } else { NameError::AtvOidWrongTag });
+        }
+        match validate_oid(&[o]) {
+            Err(e) => Err(NameError::BadAtvOid(e)),
+            Ok(()) => Ok(()),
+        }
+    }
+
+    fn single_atv_case(t_outer: u8, t_rdn: u8, t_atv: u8, t_oid: u8, o: u8, v: u8) -> Result<(), NameError> {
+        let input: [u8; 11] = [t_outer, 0x09, t_rdn, 0x07, t_atv, 0x05, t_oid, 0x01, o, v, 0x00];
+        let r = validate_name(&input);
+        assert!(
+            r == expected_single(t_outer, t_rdn, t_atv, t_oid, o),
+            "validate_name result differs from the total expected result"
+        );
+        r
+    }
+
+    /// (base): `30 09 31 07 A(o, v)`, 11 octets, symbolic `o` and `v` (low-tag). Expected:
+    /// `validate_oid(&[o])` `Err(e)` -> `Err(BadAtvOid(e))`, else `Ok(())`.
+    ///
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 11]`, `#[kani::unwind(3)]`, no
+    /// stubs. Covers: `Ok`, `BadAtvOid(NonMinimalSubid)`, `BadAtvOid(Truncated)`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_single_atv_exact() {
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        kani::assume(v & 0x1F != 0x1F);
+        let r = single_atv_case(0x30, 0x31, 0x30, 0x06, o, v);
+        kani::cover(r == Ok(()), "single ATV: Ok");
+        kani::cover(r == Err(NameError::BadAtvOid(OidError::NonMinimalSubid)), "single ATV: BadAtvOid(NonMinimalSubid)");
+        kani::cover(r == Err(NameError::BadAtvOid(OidError::Truncated)), "single ATV: BadAtvOid(Truncated)");
+    }
+
+    /// Outer identifier: `t_outer` symbolic low-tag, `o` symbolic (no assumption: an invalid `o`
+    /// is reported only after every identifier check passes). `0x30` -> `Ok`; `0x10` -> `BadOuterSeq(NotConstructed)`; else
+    /// `BadOuterSeq(WrongTag)`. Same backing/unwind/stub statement as the base harness.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_outer_identifier() {
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        kani::assume(v & 0x1F != 0x1F);
+        let r = single_atv_case(t, 0x31, 0x30, 0x06, o, v);
+        kani::cover(t == 0x30 && r == Ok(()), "outer 0x30: Ok");
+        kani::cover(r == Err(NameError::BadOuterSeq(SequenceError::NotConstructed)), "outer 0x10: NotConstructed");
+        kani::cover(r == Err(NameError::BadOuterSeq(SequenceError::WrongTag)), "outer other: WrongTag");
+    }
+
+    /// RDN identifier: `0x31` -> `Ok`; `0x11` -> `BadRdn(NotConstructed)`; else
+    /// `BadRdn(WrongTag)`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_rdn_identifier() {
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        kani::assume(v & 0x1F != 0x1F);
+        let r = single_atv_case(0x30, t, 0x30, 0x06, o, v);
+        kani::cover(t == 0x31 && r == Ok(()), "RDN 0x31: Ok");
+        kani::cover(r == Err(NameError::BadRdn(SetOfError::NotConstructed)), "RDN 0x11: NotConstructed");
+        kani::cover(r == Err(NameError::BadRdn(SetOfError::WrongTag)), "RDN other: WrongTag");
+    }
+
+    /// ATV identifier: `0x30` -> `Ok`; `0x10` -> `AtvNotConstructed`; else `AtvWrongTag`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_atv_identifier() {
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        kani::assume(v & 0x1F != 0x1F);
+        let r = single_atv_case(0x30, 0x31, t, 0x06, o, v);
+        kani::cover(t == 0x30 && r == Ok(()), "ATV 0x30: Ok");
+        kani::cover(r == Err(NameError::AtvNotConstructed), "ATV 0x10: AtvNotConstructed");
+        kani::cover(r == Err(NameError::AtvWrongTag), "ATV other: AtvWrongTag");
+    }
+
+    /// OID identifier: `0x06` -> `Ok`; `0x26` -> `AtvOidConstructed`; else
+    /// `AtvOidWrongTag`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_oid_identifier() {
+        let t: u8 = kani::any();
+        kani::assume(t & 0x1F != 0x1F);
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        kani::assume(v & 0x1F != 0x1F);
+        let r = single_atv_case(0x30, 0x31, 0x30, t, o, v);
+        kani::cover(t == 0x06 && r == Ok(()), "OID 0x06: Ok");
+        kani::cover(r == Err(NameError::AtvOidConstructed), "OID 0x26: AtvOidConstructed");
+        kani::cover(r == Err(NameError::AtvOidWrongTag), "OID other: AtvOidWrongTag");
+    }
+
+    /// Two RDNs `30 12 R(A(o1, v1)) R(A(o2, v2))`, 20 octets (`R(A) = 31 07 A`).
+    /// Expected: the first `validate_oid` failure in order -> `BadAtvOid(e)`, else `Ok(())`, with NO
+    /// ordering constraint ACROSS RDNs (a "greater" first RDN is fine: SET OF ordering applies
+    /// inside one RDN only). Backing `[u8; 20]`, `#[kani::unwind(3)]`, no stubs. Covers:
+    /// `Ok`, `Ok` with the first RDN's `(o, v)` greater than the second's (no spurious cross-RDN
+    /// ordering), `BadAtvOid`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_two_rdns_exact() {
+        let o1: u8 = kani::any();
+        let o2: u8 = kani::any();
+        let v1: u8 = kani::any();
+        let v2: u8 = kani::any();
+        kani::assume(v1 & 0x1F != 0x1F);
+        kani::assume(v2 & 0x1F != 0x1F);
+        let input: [u8; 20] = [
+            0x30, 0x12, 0x31, 0x07, 0x30, 0x05, 0x06, 0x01, o1, v1, 0x00, 0x31, 0x07, 0x30, 0x05, 0x06, 0x01, o2, v2,
+            0x00,
+        ];
+        let r = validate_name(&input);
+        let expected = match validate_oid(&[o1]) {
+            Err(e) => Err(NameError::BadAtvOid(e)),
+            Ok(()) => match validate_oid(&[o2]) {
+                Err(e) => Err(NameError::BadAtvOid(e)),
+                Ok(()) => Ok(()),
+            },
+        };
+        assert!(r == expected, "validate_name result differs from the total expected result");
+        kani::cover(r == Ok(()), "two RDNs: Ok");
+        kani::cover(r == Ok(()) && (o1 > o2 || (o1 == o2 && v1 > v2)), "two RDNs: Ok with the first RDN greater (no cross-RDN ordering)");
+        kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "two RDNs: BadAtvOid");
+    }
+
+    /// `30 02 31 00` -> `Err(EmptyRdn)`. Backing `[u8; 4]`, `#[kani::unwind(3)]`, concrete.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_empty_rdn() {
+        let input: [u8; 4] = [0x30, 0x02, 0x31, 0x00];
+        let r = validate_name(&input);
+        assert!(r == Err(NameError::EmptyRdn));
+        kani::cover(r == Err(NameError::EmptyRdn), "empty RDN: EmptyRdn");
+    }
+
+    /// `30 00` -> `Ok(())`: an empty RDNSequence is ACCEPTED (RFC-legal for
+    /// issuer/subject-empty structures; recorded as the module's actual behaviour). Backing
+    /// `[u8; 2]`, `#[kani::unwind(3)]`, concrete.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_empty_sequence_accepted() {
+        let input: [u8; 2] = [0x30, 0x00];
+        let r = validate_name(&input);
+        assert!(r == Ok(()));
+        kani::cover(r == Ok(()), "empty RDNSequence: Ok");
+    }
+
+    /// A 3-field ATV `30 0B 31 09 30 07 06 01 o v 00 w 00` (13 octets; symbolic `o`, `v`,
+    /// `w` with `v`/`w` low-tag). Expected: `validate_oid(&[o])` `Err(e)` -> `BadAtvOid(e)` (the OID
+    /// is checked before the value fields), else `AtvTrailingElements`. Backing `[u8; 13]`,
+    /// `#[kani::unwind(3)]`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_atv_trailing_exact() {
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        let w: u8 = kani::any();
+        kani::assume(v & 0x1F != 0x1F);
+        kani::assume(w & 0x1F != 0x1F);
+        let input: [u8; 13] = [0x30, 0x0b, 0x31, 0x09, 0x30, 0x07, 0x06, 0x01, o, v, 0x00, w, 0x00];
+        let r = validate_name(&input);
+        let expected = match validate_oid(&[o]) {
+            Err(e) => Err(NameError::BadAtvOid(e)),
+            Ok(()) => Err(NameError::AtvTrailingElements),
+        };
+        assert!(r == expected, "validate_name result differs from the total expected result");
+        kani::cover(r == Err(NameError::AtvTrailingElements), "3-field ATV: AtvTrailingElements");
+        kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "3-field ATV: BadAtvOid first");
+    }
+
+    /// A 1-field ATV `30 07 31 05 30 03 06 01 o` (9 octets; symbolic `o`). Expected:
+    /// `validate_oid(&[o])` `Err(e)` -> `BadAtvOid(e)`, else `MissingAtvValue`. Backing `[u8; 9]`,
+    /// `#[kani::unwind(3)]`.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_atv_missing_value_exact() {
+        let o: u8 = kani::any();
+        let input: [u8; 9] = [0x30, 0x07, 0x31, 0x05, 0x30, 0x03, 0x06, 0x01, o];
+        let r = validate_name(&input);
+        let expected = match validate_oid(&[o]) {
+            Err(e) => Err(NameError::BadAtvOid(e)),
+            Ok(()) => Err(NameError::MissingAtvValue),
+        };
+        assert!(r == expected, "validate_name result differs from the total expected result");
+        kani::cover(r == Err(NameError::MissingAtvValue), "1-field ATV: MissingAtvValue");
+        kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "1-field ATV: BadAtvOid first");
+    }
+
+    /// Two ATVs in ONE RDN, sorted: `30 11 31 0F A1 A2` (19 octets) with `A1 = 30 05 06 01 o1 v1 00`
+    /// and `A2 = 30 06 06 01 o2 v2 01 x`. The encodings differ in length (`05 < 06` at the second
+    /// octet), so the SET OF ordering compare decides at that octet. Symbolic `o1`, `o2`, `x`, and
+    /// low-tag `v1`, `v2`. Expected: the first `validate_oid` failure in ATV order ->
+    /// `BadAtvOid(e)`, else `Ok(())` -- the second ATV is validated too. CONTRACT SURFACE /
+    /// bounded-backing evidence. Backing `[u8; 19]`, `#[kani::unwind(3)]`, no stubs. Covers: `Ok`,
+    /// `BadAtvOid` from the first ATV, `BadAtvOid` from the second ATV only.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_two_atvs_exact() {
+        let o1: u8 = kani::any();
+        let o2: u8 = kani::any();
+        let v1: u8 = kani::any();
+        let v2: u8 = kani::any();
+        let x: u8 = kani::any();
+        kani::assume(v1 & 0x1F != 0x1F);
+        kani::assume(v2 & 0x1F != 0x1F);
+        let input: [u8; 19] = [
+            0x30, 0x11, 0x31, 0x0F, 0x30, 0x05, 0x06, 0x01, o1, v1, 0x00, 0x30, 0x06, 0x06, 0x01, o2, v2, 0x01, x,
+        ];
+        let r = validate_name(&input);
+        let expected = match validate_oid(&[o1]) {
+            Err(e) => Err(NameError::BadAtvOid(e)),
+            Ok(()) => match validate_oid(&[o2]) {
+                Err(e) => Err(NameError::BadAtvOid(e)),
+                Ok(()) => Ok(()),
+            },
+        };
+        assert!(r == expected, "validate_name result differs from the total expected result");
+        kani::cover(r == Ok(()), "two ATVs: Ok");
+        kani::cover(matches!(r, Err(NameError::BadAtvOid(_))) && validate_oid(&[o1]).is_err(), "two ATVs: first ATV's OID fails");
+        kani::cover(matches!(r, Err(NameError::BadAtvOid(_))) && validate_oid(&[o1]).is_ok(), "two ATVs: only the second ATV's OID fails");
+    }
+
+    /// The same two ATVs in descending order: `30 11 31 0F A2 A1`. The SET OF ordering check
+    /// (`30 06 ..` before `30 05 ..`) runs before any ATV is validated, so the exact result is
+    /// `Err(BadRdn(Unsorted { index: 0 }))` for EVERY symbolic content (all of `o1`, `v1`, `o2`,
+    /// `v2`, `x` unconstrained). CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 19]`,
+    /// `#[kani::unwind(3)]`, no stubs.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_two_atvs_unsorted() {
+        let o1: u8 = kani::any();
+        let o2: u8 = kani::any();
+        let v1: u8 = kani::any();
+        let v2: u8 = kani::any();
+        let x: u8 = kani::any();
+        let input: [u8; 19] = [
+            0x30, 0x11, 0x31, 0x0F, 0x30, 0x06, 0x06, 0x01, o2, v2, 0x01, x, 0x30, 0x05, 0x06, 0x01, o1, v1, 0x00,
+        ];
+        let r = validate_name(&input);
+        assert!(r == Err(NameError::BadRdn(SetOfError::Unsorted { index: 0 })));
+        kani::cover(r == Err(NameError::BadRdn(SetOfError::Unsorted { index: 0 })), "two ATVs descending: Unsorted at index 0");
+    }
+
+    /// ATV value framing: `30 09 31 07 30 05 06 01 o v l` (11 octets) with `o`, `l` symbolic and
+    /// `v` low-tag. Expected: `validate_oid(&[o])` `Err(e)` -> `BadAtvOid(e)` (the OID precedes the
+    /// value), else `l == 0` -> `Ok(())`, else the value TLV `[v, l]` lacks its `l` content octets
+    /// and the result is `BadAtvValueTlv(e)` with `e` the error of the verified primitive
+    /// `decode_tlv` on `[v, l]`. CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 11]`,
+    /// `#[kani::unwind(3)]`, no stubs.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_atv_value_length() {
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        let l: u8 = kani::any();
+        kani::assume(v & 0x1F != 0x1F);
+        let input: [u8; 11] = [0x30, 0x09, 0x31, 0x07, 0x30, 0x05, 0x06, 0x01, o, v, l];
+        let r = validate_name(&input);
+        let expected = match validate_oid(&[o]) {
+            Err(e) => Err(NameError::BadAtvOid(e)),
+            Ok(()) => {
+                if l == 0 {
+                    Ok(())
+                } else {
+                    Err(NameError::BadAtvValueTlv(decode_tlv(&[v, l]).unwrap_err()))
+                }
+            }
+        };
+        assert!(r == expected, "validate_name result differs from the total expected result");
+        kani::cover(r == Ok(()), "ATV value length 0: Ok");
+        kani::cover(matches!(r, Err(NameError::BadAtvValueTlv(_))), "ATV value length > 0: BadAtvValueTlv");
+        kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "ATV value length: BadAtvOid first");
+    }
+
+    /// ATV `type` framing: `30 09 31 07 30 05 06 L o v 00` (11 octets) with the OID length octet `L`
+    /// and `o`, `v` fully symbolic. The ATV content is `[06, L, o, v, 00]`; the expected result is
+    /// derived from the verified primitives in the documented order: `decode_tlv` on the content
+    /// `Err(e)` -> `BadAtvOidTlv(e)`; the OID content failing `validate_oid` -> `BadAtvOid(e)`;
+    /// nothing left after the OID -> `MissingAtvValue`; `decode_tlv` on the rest `Err(e)` ->
+    /// `BadAtvValueTlv(e)`; bytes left after that value -> `AtvTrailingElements`; else `Ok(())`.
+    /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 11]`, `#[kani::unwind(3)]`, no
+    /// stubs. The two values `L == 0x03` (a three-octet OID content walk) and `L == 0x83` (a
+    /// three-octet long-form length) need a loop bound of 4, which about doubles the cost, so they
+    /// are excluded; `L == 0x03` is the only value that reaches `MissingAtvValue` here (that outcome
+    /// is pinned by `validate_name_atv_missing_value_exact`), and every other outcome class of
+    /// `L == 0x83` is reached by other values.
+    #[kani::proof]
+    #[kani::unwind(3)]
+    fn validate_name_atv_oid_length() {
+        let l: u8 = kani::any();
+        kani::assume(l != 0x03 && l != 0x83);
+        let o: u8 = kani::any();
+        let v: u8 = kani::any();
+        let input: [u8; 11] = [0x30, 0x09, 0x31, 0x07, 0x30, 0x05, 0x06, l, o, v, 0x00];
+        let r = validate_name(&input);
+        let content: [u8; 5] = [0x06, l, o, v, 0x00];
+        let expected = match decode_tlv(&content) {
+            Err(e) => Err(NameError::BadAtvOidTlv(e)),
+            Ok((oid, used)) => match validate_oid(oid.value) {
+                Err(e) => Err(NameError::BadAtvOid(e)),
+                Ok(()) => {
+                    let rest = &content[used..];
+                    if rest.is_empty() {
+                        Err(NameError::MissingAtvValue)
+                    } else {
+                        match decode_tlv(rest) {
+                            Err(e) => Err(NameError::BadAtvValueTlv(e)),
+                            Ok((_, value_used)) => {
+                                if value_used != rest.len() {
+                                    Err(NameError::AtvTrailingElements)
+                                } else {
+                                    Ok(())
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        };
+        assert!(r == expected, "validate_name result differs from the total expected result");
+        kani::cover(r == Ok(()), "ATV OID length: Ok");
+        kani::cover(matches!(r, Err(NameError::BadAtvOidTlv(_))), "ATV OID length: BadAtvOidTlv");
+        kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "ATV OID length: BadAtvOid");
+        kani::cover(matches!(r, Err(NameError::BadAtvValueTlv(_))), "ATV OID length: BadAtvValueTlv");
+    }
 }
 
 // ---------------------------------------------------------------------------

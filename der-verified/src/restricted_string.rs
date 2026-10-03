@@ -178,6 +178,8 @@ pub fn decode_restricted_string(
 ///
 /// Returns the number of bytes written, or `None` if any content byte is out-of-charset, `out` is
 /// too small, or `content` is longer than the length codec supports (`> u32::MAX`).
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_restricted_string_into(content: &[u8], charset: Charset, out: &mut [u8]) -> Option<usize> {
     if validate_content(content, charset).is_err() {
         return None;
@@ -207,21 +209,29 @@ pub fn decode_visible_string(input: &[u8]) -> Result<(&[u8], usize), StringError
 }
 
 /// Encode a DER PrintableString (UNIVERSAL 19).
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_printable_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
     encode_restricted_string_into(content, Charset::Printable, out)
 }
 
 /// Encode a DER IA5String (UNIVERSAL 22).
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_ia5_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
     encode_restricted_string_into(content, Charset::Ia5, out)
 }
 
 /// Encode a DER NumericString (UNIVERSAL 18).
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_numeric_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
     encode_restricted_string_into(content, Charset::Numeric, out)
 }
 
 /// Encode a DER VisibleString (UNIVERSAL 26).
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_visible_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
     encode_restricted_string_into(content, Charset::Visible, out)
 }
@@ -614,6 +624,287 @@ mod proofs {
         let v: u8 = kani::any();
         kani::assume(oracle_visible(v));
         assert!(decode_restricted_string(&[id, 0x01, v], Charset::Visible) == Err(StringError::WrongTag));
+    }
+
+    // -----------------------------------------------------------------------
+    // 9. Decoder-level faithfulness (the typed TLV decoder's WHOLE acceptance set, not only the
+    //    content validator): over a fully symbolic 6-octet buffer with symbolic length 0..=6,
+    //    `decode_restricted_string` is classified EXACTLY, in the documented order, against
+    //    - the independent per-charset allow-list oracles above (content),
+    //    - an independent literal UNIVERSAL tag number per charset (not `Charset::tag_number`),
+    //    - `decode_tlv` as the separately-verified envelope reference.
+    //    Without this, the content gate at `decode_restricted_string` (`validate_content(tlv.value,
+    //    charset)?`) is reached by no Kani assertion on a non-encoder input.
+    // -----------------------------------------------------------------------
+
+    /// Dispatch to the independent allow-list oracle of `cs` (no call into `Charset::contains`).
+    fn oracle_of(cs: Charset, b: u8) -> bool {
+        match cs {
+            Charset::Printable => oracle_printable(b),
+            Charset::Ia5 => oracle_ia5(b),
+            Charset::Numeric => oracle_numeric(b),
+            Charset::Visible => oracle_visible(b),
+        }
+    }
+
+    /// The X.680 UNIVERSAL tag number of `cs`, restated as literals (independent of
+    /// `Charset::tag_number`).
+    fn oracle_tag_number(cs: Charset) -> u32 {
+        match cs {
+            Charset::Printable => 19,
+            Charset::Ia5 => 22,
+            Charset::Numeric => 18,
+            Charset::Visible => 26,
+        }
+    }
+
+    /// Shared body: classify `decode_restricted_string(buf[..len], cs)` exactly.
+    /// Expected result, in the documented check order: envelope error (reference `decode_tlv`) ->
+    /// `WrongTag` (class != UNIVERSAL or number != charset's) -> `Constructed` -> first
+    /// out-of-charset content octet (position + byte) -> `Ok((tlv.value, used))`.
+    fn check_decode_faithful(cs: Charset) {
+        let buf: [u8; 6] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 6);
+        let input = &buf[..len];
+        let r = decode_restricted_string(input, cs);
+        match decode_tlv(input) {
+            Err(e) => {
+                kani::cover(true, "envelope error branch reached");
+                assert!(r == Err(StringError::Tlv(e)));
+            }
+            Ok((tlv, used)) => {
+                if tlv.tag.class != Class::Universal || tlv.tag.number != oracle_tag_number(cs) {
+                    kani::cover(true, "well-formed TLV of another type reached");
+                    assert!(r == Err(StringError::WrongTag));
+                } else if tlv.tag.constructed {
+                    kani::cover(true, "constructed form of the charset's tag reached");
+                    assert!(r == Err(StringError::Constructed));
+                } else {
+                    let v = tlv.value;
+                    let mut first_bad: Option<usize> = None;
+                    let mut i = 0;
+                    while i < v.len() {
+                        if !oracle_of(cs, v[i]) {
+                            first_bad = Some(i);
+                            break;
+                        }
+                        i += 1;
+                    }
+                    match first_bad {
+                        Some(p) => {
+                            kani::cover(true, "out-of-charset content reached");
+                            assert!(r == Err(StringError::OutOfCharset { position: p, byte: v[p] }));
+                        }
+                        None => {
+                            kani::cover(!v.is_empty(), "non-empty in-charset content accepted");
+                            kani::cover(v.is_empty(), "empty content accepted");
+                            match r {
+                                Ok((content, consumed)) => {
+                                    assert!(consumed == used);
+                                    assert!(content.len() == v.len());
+                                    assert!(content == v);
+                                }
+                                Err(_) => panic!("well-formed in-charset universal primitive rejected"),
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn decode_is_faithful_printable() {
+        check_decode_faithful(Charset::Printable);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn decode_is_faithful_ia5() {
+        check_decode_faithful(Charset::Ia5);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn decode_is_faithful_numeric() {
+        check_decode_faithful(Charset::Numeric);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn decode_is_faithful_visible() {
+        check_decode_faithful(Charset::Visible);
+    }
+
+    // -----------------------------------------------------------------------
+    // 10. the eight convenience wrappers delegate EXACTLY to the generic
+    //     codec with the RIGHT charset, and the generic encoder is a TOTAL oracle per charset.
+    // -----------------------------------------------------------------------
+
+    /// Shared body for the decode wrappers: over a fully symbolic 8-octet buffer with symbolic
+    /// length `0..=8`, the per-type wrapper `f` returns the SAME `Result` as the generic decoder
+    /// with the charset `cs` it must stand for. Inputs exist that tell the charsets apart (e.g. a
+    /// well-formed `16 01 40` is accepted as IA5 but is `WrongTag` as Printable), so a wrapper that
+    /// names the wrong charset is rejected. Cover: the accepted tail is reached for this wrapper.
+    fn check_decode_wrapper(
+        cs: Charset,
+        f: fn(&[u8]) -> Result<(&[u8], usize), StringError>,
+    ) {
+        let buf: [u8; 8] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let input = &buf[..len];
+        let via_wrapper = f(input);
+        let via_generic = decode_restricted_string(input, cs);
+        kani::cover(via_generic.is_ok(), "the wrapper's accepted tail is reached");
+        assert!(via_wrapper == via_generic);
+    }
+
+    /// Shared body for the encode wrappers: same `Option` and same emitted buffer as the generic
+    /// encoder with `cs`, over symbolic content `0..=4`, symbolic capacity `0..=8` and a symbolic
+    /// initial output buffer. Cover: a successful encode through this wrapper.
+    fn check_encode_wrapper(cs: Charset, f: fn(&[u8], &mut [u8]) -> Option<usize>) {
+        let content: [u8; 4] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 4);
+        let cap: usize = kani::any();
+        kani::assume(cap <= 8);
+        let init: [u8; 8] = kani::any();
+        let mut out_w = init;
+        let mut out_g = init;
+        let rw = f(&content[..n], &mut out_w[..cap]);
+        let rg = encode_restricted_string_into(&content[..n], cs, &mut out_g[..cap]);
+        kani::cover(rg.is_some(), "the wrapper's successful encode is reached");
+        assert!(rw == rg);
+        assert!(out_w == out_g);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_decode_printable_delegates() {
+        check_decode_wrapper(Charset::Printable, decode_printable_string);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_decode_ia5_delegates() {
+        check_decode_wrapper(Charset::Ia5, decode_ia5_string);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_decode_numeric_delegates() {
+        check_decode_wrapper(Charset::Numeric, decode_numeric_string);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_decode_visible_delegates() {
+        check_decode_wrapper(Charset::Visible, decode_visible_string);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_encode_printable_delegates() {
+        check_encode_wrapper(Charset::Printable, encode_printable_string_into);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_encode_ia5_delegates() {
+        check_encode_wrapper(Charset::Ia5, encode_ia5_string_into);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_encode_numeric_delegates() {
+        check_encode_wrapper(Charset::Numeric, encode_numeric_string_into);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn wrapper_encode_visible_delegates() {
+        check_encode_wrapper(Charset::Visible, encode_visible_string_into);
+    }
+
+    /// Shared body of the TOTAL encoder oracle for `cs`: content fully symbolic (`0..=4` octets,
+    /// in-charset AND out-of-charset), capacity symbolic (`0..=8`), output buffer initially
+    /// symbolic. `encode_restricted_string_into(content, cs, &mut out[..cap])` returns EXACTLY:
+    /// - `None` if some content octet is outside the charset per the independent allow-list oracle
+    ///   `oracle_of` (no call into `Charset::contains`), whatever the capacity;
+    /// - else `None` if `cap < 2 + n` (identifier octet = the charset's literal UNIVERSAL tag number
+    ///   as a primitive low-tag octet, one short-form length octet since `n <= 4`, then content);
+    /// - else `Some(2 + n)` with emitted bytes exactly `tag n content` and every octet at or past the
+    ///   written length untouched.
+    /// On `None` the output is untouched (the documented write contract, "on `None` nothing is
+    /// written to `out`; on `Some(n)` only `out[..n]` is written").
+    /// Bounded-backing: content `<= 4`, capacity `<= 8`. Covers: out-of-charset content rejected
+    /// despite ample capacity; in-charset rejected for too-small capacity; non-empty / empty
+    /// success; success at exactly the minimal capacity.
+    fn check_encode_exact(cs: Charset) {
+        let content: [u8; 4] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 4);
+        let content = &content[..n];
+        let cap: usize = kani::any();
+        kani::assume(cap <= 8);
+        let init: [u8; 8] = kani::any();
+        let mut out = init;
+        let r = encode_restricted_string_into(content, cs, &mut out[..cap]);
+        let all_in = (0..n).all(|i| oracle_of(cs, content[i]));
+        let total = 2 + n;
+        if !all_in {
+            kani::cover(cap >= total, "out-of-charset content rejected despite ample capacity");
+            assert!(r == None);
+            assert!(out == init);
+        } else if cap < total {
+            kani::cover(true, "in-charset content rejected for insufficient capacity");
+            assert!(r == None);
+            assert!(out == init);
+        } else {
+            kani::cover(n > 0, "non-empty in-charset content encoded");
+            kani::cover(n == 0, "empty content encoded");
+            kani::cover(cap == total, "encoded at exactly the minimal capacity");
+            assert!(r == Some(total));
+            assert!(out[0] == oracle_tag_number(cs) as u8);
+            assert!(out[1] as usize == n);
+            let mut i = 0;
+            while i < n {
+                assert!(out[2 + i] == content[i]);
+                i += 1;
+            }
+            let mut j = total;
+            while j < 8 {
+                assert!(out[j] == init[j]);
+                j += 1;
+            }
+        }
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn encode_is_exact_printable() {
+        check_encode_exact(Charset::Printable);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn encode_is_exact_ia5() {
+        check_encode_exact(Charset::Ia5);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn encode_is_exact_numeric() {
+        check_encode_exact(Charset::Numeric);
+    }
+
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn encode_is_exact_visible() {
+        check_encode_exact(Charset::Visible);
     }
 }
 

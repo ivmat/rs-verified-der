@@ -19,14 +19,14 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 
 | | |
 |---|---|
-| subject | crate `der-verified` 0.1.1, sources at `der-verified/src/` |
+| subject | crate `der-verified` 0.2.0, sources at `der-verified/src/` |
 | commit | `d05d3f2` |
 | tree state | clean at the certified commit; the run log records `git status --porcelain` sampled clean **at launch** (`dirty-tracked-paths-at-launch: 0`), not assumed. This run samples at launch only — earlier runs also sampled at completion; this one does not, and the header says so rather than implying a completion sample it did not take. |
 | spec axis | **X.690 (2021) DER encoding rules**, per type + framing; **RFC 5280** profile surface. See §3. |
 | gate receipt | `./check.sh` exit 0 at `d05d3f2`, `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, run with `DER_REQUIRE_LEAN=1` |
-| proof floor (L3) | **210 of 210 Kani harnesses SUCCESSFUL, 0 FAILED** — `evidence/check-d05d3f2.log` (contract-campaign + x509 Track B tree; +7 `*_parse_faithful`) |
+| proof floor (L3) | **210/210 SUCCESSFUL, 0 FAILED at `d05d3f2`** — `evidence/check-d05d3f2.log` (contract-campaign + x509 Track B tree; +7 `*_parse_faithful`). The harnesses added since then (leaf-oracle strengthening and the composed-contract harnesses for `context_tag`, `x509_validity`, `x509_extension`, `rsa_private_key` and `x509_name`) have individual runs only until the next full floor |
 | unbounded lids (L4) | 6 lids in Lean, `lean lid: PASS (sorry-free)`, re-extracted from the shipped `.rs`; `lid-source-state.txt unchanged (hashes identical)` |
-| tests | 530 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
+| tests | 539 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
 | unsafe | 0 `unsafe` blocks; the crate is `#![forbid(unsafe_code)]` |
 | toolchain | Kani `0.67.0`, CBMC `6.8.0` (kani-bundled, read from the run's own output), CaDiCaL 2.0.0, rustc `1.97.0`, Lean 4 `v4.30.0-rc2` |
 | cost | 1h14m19s wall (04:46:08Z → 06:00:27Z), harnesses run sequentially (no `-j`). **Peak memory was NOT captured for this run** — the systemd `MemoryPeak` for the unit was not retained at read time, and the run header says so; earlier runs recorded ~20.4 GiB, but this run carries no comparable figure and none is invented. The ≥24 GiB RAM floor in the `G` recipe (§4) still bounds it. |
@@ -111,7 +111,7 @@ same green check. This table's job is to stop them reading alike.
 | **out-of-scope** | the rule is deliberately outside what this crate sets out to do, and that boundary is declared in the crate's own documents. Not a gap; a fence. |
 
 > **`CONTRACT` here is NOT Kani's `#[kani::requires]`/`#[kani::ensures]` machinery.** This crate uses
-> **zero** function contracts — its 210 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
+> **zero** function contracts — its 297 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
 > built with `#[kani::stub]` + `-Z stubbing`. `CONTRACT` in this table is the review-lens sense
 > (*proves the documented rule, on the real shipped path, with an independent oracle*), which is the
 > distinction a consumer actually cares about. Verify with
@@ -139,8 +139,8 @@ All commands run from the repository root at `d05d3f2`. `<H>` = a harness path o
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 530 unit and regression tests, all 210 Kani harnesses. Needs ≥24 GB RAM, ~74 min, harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
-| **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Six modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension` — see `gates/tiers.txt`. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 539 unit and regression tests, all 297 Kani harnesses. Needs ≥24 GB RAM, ~74 min at `d05d3f2` (about 40 minutes more with the harnesses added since, estimated from their individual runs), harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Seven modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension`, `rsa_private_key` — see `gates/tiers.txt`. |
 | **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-d05d3f2.log` | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
 | **T** `<filter>` | `cargo test --manifest-path Cargo.toml <filter>` | `test result: ok`. Point evidence only. |
@@ -181,7 +181,7 @@ All commands run from the repository root at `d05d3f2`. `<H>` = a harness path o
 > Control 1 proves the pattern can find something. Control 2 proves the *scope* is what produced the
 > zero. A single control catches only one of the two failures above.
 >
-> **A supporting inspection, not a substitute.** `ProfileError`'s four variants are worth reading
+> **A supporting inspection, not a substitute.** `ProfileError`'s six variants are worth reading
 > alongside these rows — `validate_profile` returns `Result<(), ProfileError>`, and the enum's
 > docstring says every variant names a rule the module enforces:
 >
@@ -194,7 +194,7 @@ All commands run from the repository root at `d05d3f2`. `<H>` = a harness path o
 > converse, so an enumeration of the enum cannot establish that an absent rule is unenforced — a rule
 > could be enforced by returning an existing variant, or by returning `Ok` on a path that silently
 > accepts. **`DER-P-4` is the standing counterexample inside this very crate**: error precedence is
-> an enforced, `contract`-graded rule with no variant of its own. So the four variants do *not* map
+> an enforced, `contract`-graded rule with no variant of its own. So the variants do *not* map
 > one-to-one onto `DER-P-1`…`DER-P-4`, and any recipe built on assuming they did was unsound.
 > Positive enumeration beats absence-grepping only where the set is genuinely **closed in the
 > direction you need**; an error enum is closed for "what can be reported", not for "what is
@@ -204,7 +204,7 @@ All commands run from the repository root at `d05d3f2`. `<H>` = a harness path o
 `kani::cover` is unsatisfiable as `SUCCESSFUL`, with `0 of 1 cover properties satisfied`. `check.sh`
 does **not** fail on that. Exactly 3 harnesses have a cover in that state, and they are disclosed
 in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, read it. The crate has
-193 `kani::cover` statements in total.
+480 `kani::cover` statements in total.
 
 ---
 
@@ -301,6 +301,13 @@ cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`, `x509_va
 | `DER-K-ECDSASIG` | `ECDSA-Sig-Value` (RFC 3279 §2.2.3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K ecdsa_sig_value::proofs::parse_faithful` · `K ecdsa_sig_value::proofs::parse_strict_never_panics` · `D evidence/contract-controls-2026-09-17/ecdsa/` |
 | `DER-X-L4` | An unbounded (Lean) lid over **any** X.509 structural module | **not-covered** | **not-covered** | `D gates/map_declared.txt` row `x509_structural_lid` → `DER-REMAINING-WORK.md` §3. All seven `x509_*` modules are Kani-only. |
 
+**Disclosed exclusions of the exact-result harnesses (`x509_validity`, `rsa_private_key`, `x509_name`).** These are stated
+limits of the evidence, not exhaustive mapping proofs. (1) In `x509_validity`, a `GeneralizedTime` failure is pinned only at
+`BadLength`; other `GeneralizedTime` content errors are covered by the `generalized_time` module's own proofs and are not
+re-pinned through the validity `map_err`. (2) In `x509_validity`, `rsa_private_key` and `x509_name`, the payload of the
+`BadOuterSeq` outer-envelope error (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses.
+No other claim in this document is widened by these statements. See also `PROOF_MANIFEST.md` §6.2.
+
 ### 5.4 RFC 5280 profile rules
 
 The `profile` module is the crate's only *semantic* layer, and — unusually for this crate — its rules
@@ -318,6 +325,7 @@ are proved as **biconditionals**, which is stronger than the structural layer be
 | `DER-P-8` | Validity against a clock (§4.1.2.5) | **not-covered** | **not-covered** | `A '::now('` over `der-verified/src/` → **0** (likewise `SystemTime` and `Instant`, run separately): the crate never acquires a current time, so it cannot compare one. **Positive control:** `grep -c 'Time' der-verified/src/x509_validity.rs` → 115 — the crate has UTCTime/GeneralizedTime *values* in abundance and no *clock*, and that is exactly the distinction this row records. `gates/map_declared.txt` row `validity_against_clock`. |
 | `DER-P-9` | Certificate-path / trust validation; signature and crypto verification | **not-covered** | **out-of-scope** | `D README.md` scope section — *"Out of scope (not implemented, not proven)"*. `gates/map_declared.txt` rows `path_validation`, `crypto_verification`. |
 | `DER-P-10` | String canonicalisation / name-comparison rules; OID semantics | **not-covered** | **out-of-scope** | `D PROOF_MANIFEST.md` §6.2 |
+| `DER-P-11` | A GeneralizedTime in `validity` must not carry fractional seconds (§4.1.2.5.2) — enforced by `validate_profile` since 0.2.0 | done | **CONTRACT** (bounded) — per-field biconditional (reference computed from the fraction window length, not from `require_no_fraction`); the fraction is a symbolic 0..=4-octet window (a 4-octet backing; lengths above 4 are covered by unit tests, not proved) and the rule reads emptiness only. Precedence relative to rules 1–3 is pinned by `DER-P-4` | `K profile::proofs::rule4_fraction_iff_generalized_with_fraction` · `K profile::proofs::validate_profile_is_exactly_the_documented_precedence` |
 
 ### 5.5 Crate-wide safety and hygiene
 
@@ -325,7 +333,7 @@ are proved as **biconditionals**, which is stronger than the structural layer be
 |---|---|---|---|---|
 | `DER-S-1` | No `unsafe` anywhere | done | **mechanical** (compiler-enforced) | `grep -rn '#!\[forbid(unsafe_code)\]' der-verified/src/lib.rs`; the manifest's inventory derives `0` unsafe blocks |
 | `DER-S-2` | **No harness triggers a panic within that harness's own symbolic domain, assumptions, stubs and unwind bound** | done | **CONTRACT** (bounded) — the item here *is* panic-freedom, and the harnesses decide it directly over symbolic input, so the grade is relative to this item rather than to the encoding rules elsewhere in this table. **It is not a conformance claim, and it does not extend past each harness's declared bound** — see `DER-X-BOUND` for what that costs at realistic input sizes | `G`, or `R` per harness |
-| `DER-S-3` | Every public entry point is named by a harness | **partial** | **mechanical** | 84 public entry points; **73 harnessed, 11 not**. The 11 (`PROOF_MANIFEST.md` §4.1): `generalized_time::require_no_fraction`, `utf8_string::decode_utf8_str`, and nine in `restricted_string` — **eight per-type wrappers** over a harnessed generic core (`decode_`/`encode_..._into` for printable/ia5/numeric/visible) **plus `Charset::tag_number`**, which is not a wrapper. Re-derive with `python3 gates/gen_proof_manifest.py --json`. |
+| `DER-S-3` | Every public entry point is named by a harness | **partial** | **mechanical** | 84 public entry points; **83 harnessed, 1 not**: `Charset::tag_number` (symbolically executed inside the four `wrong_tag_is_classified_*` harnesses, not named by one). The ten wrappers/helpers listed here before 2026-10-02 now have exact-delegation / biconditional harnesses (`PROOF_MANIFEST.md` §4.1). Re-derive with `python3 gates/gen_proof_manifest.py --json`. |
 | `DER-S-4` | The documentation's counts match the source | done | **mechanical** | `python3 gates/gen_proof_manifest.py --check` and `python3 gates/gen_verification_map.py --check` — each gate has its own self-test, run first, in `check.sh` |
 | `DER-S-5a` | The Lean lids contain no `sorry` | done | **mechanical** | `N` — `check_lean.sh` fails closed on `sorryAx` or a `declaration uses 'sorry'` warning, and was negative-tested by injecting one |
 | `DER-S-5b` | The lids assume no axiom about this crate's own code (13 declared axioms, all specs for upstream `core` primitives) | done | **inspection-argued** · ⚠ **UNWEIGHTED** | `D evidence/AXIOM-AUDIT-2026-08-18.md`. Nothing *mechanically* keeps a crate-code assumption out of a future lid — this property is reviewed, not gated, so the format declines to vouch for it |

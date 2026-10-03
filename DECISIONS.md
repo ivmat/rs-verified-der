@@ -316,6 +316,11 @@ independent §11.7/§11.8 predicate. **Confidence high.**
 `full_year_rfc5280`, and calendar validity on top of these codecs, and this D10 boundary is where the
 two meet.
 
+**Update 2026-10-03.** The RFC 5280 no-fractional-seconds rule is now applied by
+`profile::validate_profile` (rule 4, via `require_no_fraction`, in 0.2.0; owner decision). The codec
+itself is unchanged and still accepts a canonical fraction; the enforcement lives in the profile layer,
+which is the split this decision draws.
+
 ---
 
 ## D11 — Restricted strings: one shared module closing BOTH the charset and constructed-form differentials  ·  settled (high)

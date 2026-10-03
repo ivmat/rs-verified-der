@@ -28,7 +28,7 @@ cross-field profile rules. That boundary is the whole honesty story (below).
 
 ## Two layers of proof
 
-**L3 — bounded, with Kani (CBMC under the hood).** 210 proof harnesses across 33 modules. Each proves,
+**L3 — bounded, with Kani (CBMC under the hood).** 297 proof harnesses across 33 modules. Each proves,
 for all inputs up to a stated size, the default safety properties (no panic, no overflow, no
 out-of-bounds) *plus* the functional ones: decode/encode round-trips, canonicality/minimality, and
 that malformed or non-canonical encodings are rejected with the right error. Bounded model checking is
@@ -41,13 +41,13 @@ proven in Lean 4 for inputs of *any* length (and, for `sequence`, any number of 
 `sorry`-free. The lid re-extracts from the shipped source and fails on drift, so it provably concerns
 the code you actually ship.
 
-Plus 530 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
+Plus 539 concrete and regression tests (including seeded-bad specimens), `#![forbid(unsafe_code)]`,
 zero dependencies, and allocation-free decode paths.
 
-**A newer, separately-graded layer: typed profile validation.** The `profile` module checks three RFC
-5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
-UTCTime/GeneralizedTime year-2050 encoding choice) that sit *above* the structural `x509_*` parsers.
-As of 2026-07-31 each of those three rules is **Kani-proven as a biconditional** — it fires exactly
+**A newer, separately-graded layer: typed profile validation.** The `profile` module checks four RFC
+5280 cross-field rules (signature-algorithm equality, extensions-require-v3, the
+UTCTime/GeneralizedTime year-2050 encoding choice, and no fractional seconds in a GeneralizedTime) that sit *above* the structural `x509_*` parsers.
+As of 2026-07-31 (the fourth rule: 2026-10-03) each of those rules is **Kani-proven as a biconditional** — it fires exactly
 when the RFC says it should, not merely on the cases a test author thought of — and the precedence
 between them is proven too. What it still lacks, and what keeps its grade below the codecs above, is a
 Lean lid: these are bounded proofs over symbolic *field values*, not ∀-length statements over bytes.
@@ -87,7 +87,7 @@ symbolic input length closed it (and closed the same latent gap in the other mod
 
 ```sh
 git clone https://github.com/ivmat/rs-verified-der && cd rs-verified-der
-cargo test                       # 530 tests + 34 doc-tests
+cargo test                       # 539 tests + 34 doc-tests
 cargo install --locked kani-verifier && cargo kani setup
 cargo kani -Z stubbing           # the 164-harness proof floor
 ./check.sh                       # everything, incl. the Lean lids if the toolchain is present

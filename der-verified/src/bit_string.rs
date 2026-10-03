@@ -87,6 +87,15 @@ pub enum BitStringError {
 /// Accepts only the canonical DER form: unused-bits `0..=7`, all padding bits zero, and the empty
 /// bit string encoded as exactly `[0x00]`.
 ///
+/// **Error precedence.** Content that breaks more than one rule reports the first of these checks
+/// that fails, in this order: [`BitStringError::Empty`] (no content at all), then
+/// [`BitStringError::UnusedBitsTooLarge`] (first octet `> 7`), then, only for a first octet `<= 7`,
+/// either [`BitStringError::NonZeroPadding`] (value octets present and a padding bit of the final
+/// one set) or [`BitStringError::EmptyNonZeroUnused`] (no value octets and a non-zero count). The
+/// last two cannot both apply to the same content (one needs value octets, the other none), so the
+/// only overlap is `UnusedBitsTooLarge`, which precedes both: `[9]` is `UnusedBitsTooLarge`, not
+/// `EmptyNonZeroUnused`, and `[9, x, ..]` is `UnusedBitsTooLarge` whatever the final octet holds.
+///
 /// ⚠️ **Commonly mis-read (see `DECISIONS.md` D1):** DER canonicality here *preserves bit-length*.
 /// Trailing zero **value bits are NOT stripped** — `04 12 00` is the canonical encoding of the
 /// distinct 12-bit value `0001_0010_0000`, and is accepted. Trailing-zero-*bit* removal is the
@@ -137,6 +146,8 @@ pub fn require_octet_aligned<'a>(bs: BitString<'a>) -> Option<&'a [u8]> {
 /// Returns the number of bytes written, or `None` if the arguments are not canonical (`unused > 7`,
 /// a set padding bit, or empty `data` with `unused != 0`) or `out` is too small. The canonicality
 /// guard makes `encode`/`decode` exact inverses on the accepted set.
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_bit_string_into(data: &[u8], unused: u8, out: &mut [u8]) -> Option<usize> {
     if unused > 7 {
         return None;
@@ -182,8 +193,7 @@ mod proofs {
         kani::assume(raw <= 7);
         let unused = if n == 0 { 0 } else { raw };
         if n > 0 {
-            let mask = (1u8 << unused) - 1;
-            data[n - 1] &= !mask; // make the padding bits zero -> canonical
+            data[n - 1] = (data[n - 1] >> unused) << unused; // make the padding bits zero -> canonical
         }
         let mut out = [0u8; 8];
         let w = encode_bit_string_into(&data[..n], unused, &mut out).unwrap();
@@ -226,11 +236,172 @@ mod proofs {
         let n: usize = kani::any();
         kani::assume(n <= 4);
         if let Ok(bs) = decode_bit_string(&buf[..n]) {
+            // the decoded fields are the input octets themselves: unused count = octet 0, value =
+            // the rest (so a decoder that dropped or shifted a field is caught directly)
+            assert!(n >= 1);
+            assert!(bs.unused == buf[0]);
+            assert!(bs.data == &buf[1..n]);
+            // canonical shape, stated without the decoder's mask expression: at most 7 unused bits,
+            // the final value octet has at least `unused` trailing zero bits, and empty means `[0x00]`
+            assert!(bs.unused <= 7);
+            if bs.data.is_empty() {
+                assert!(bs.unused == 0);
+            } else {
+                assert!(bs.data[bs.data.len() - 1].trailing_zeros() >= bs.unused as u32);
+            }
             let mut out = [0u8; 8];
             let w = encode_bit_string_into(bs.data, bs.unused, &mut out).unwrap();
             assert!(w == n);
             assert!(out[..w] == buf[..n]);
         }
+    }
+
+    /// Accept-set biconditional: `decode_bit_string` accepts a content exactly when it is
+    /// non-empty, its first octet (the unused-bits count) is `<= 7`, and the final value octet has
+    /// at least that many trailing zero bits (an empty value requires the count to be `0`). The
+    /// predicate is written with `trailing_zeros`, not the decoder's `(1 << unused) - 1` mask.
+    #[kani::proof]
+    #[kani::unwind(8)]
+    fn accepted_iff_canonical_oracle() {
+        let buf: [u8; 4] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 4);
+        let canonical = n >= 1
+            && buf[0] <= 7
+            && if n == 1 { buf[0] == 0 } else { buf[n - 1].trailing_zeros() >= buf[0] as u32 };
+        kani::cover!(canonical && n >= 2 && buf[0] > 0);
+        kani::cover!(!canonical && n >= 2 && buf[0] <= 7);
+        assert!(decode_bit_string(&buf[..n]).is_ok() == canonical);
+    }
+
+    /// Encoder soundness, including its reject path: for *any* `(data <= 3 octets, unused, out
+    /// capacity 0..=8)` the encoder returns `Some(1 + data.len())` and writes `[unused, data...]`
+    /// exactly when the arguments are canonical (`unused <= 7`, the final value octet has at least
+    /// `unused` trailing zero bits, empty data needs `unused == 0`) and `out` is large enough; in
+    /// every other case it returns `None`. The canonical predicate uses `trailing_zeros`, not the
+    /// encoder's `(1 << unused) - 1` mask. The output buffer starts SYMBOLIC (8 octets), and the
+    /// documented write contract ("on `None` nothing is written to `out`; on `Some(n)` only
+    /// `out[..n]` is written") is asserted for every input: `out` unchanged on `None`, `out[n..]`
+    /// unchanged on `Some(n)` -- so an encoder that writes past the `total` octets it reports fails.
+    #[kani::proof]
+    #[kani::unwind(10)]
+    fn encode_rejects_exactly_the_non_canonical() {
+        let data: [u8; 3] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 3);
+        let unused: u8 = kani::any();
+        let cap: usize = kani::any();
+        kani::assume(cap <= 8);
+        let backing: [u8; 8] = kani::any();
+        let mut out = backing;
+        let canonical = unused <= 7
+            && if n == 0 { unused == 0 } else { data[n - 1].trailing_zeros() >= unused as u32 };
+        kani::cover!(canonical && n >= 1 && unused > 0 && cap >= n + 1);
+        kani::cover!(unused > 7);
+        kani::cover!(unused <= 7 && n >= 1 && !canonical);
+        kani::cover!(unused >= 1 && unused <= 7 && n == 0);
+        kani::cover!(canonical && cap < n + 1);
+        let r = encode_bit_string_into(&data[..n], unused, &mut out[..cap]);
+        // Rustdoc write contract: `None` => nothing written; `Some(n)` => only `out[..n]` written.
+        match r {
+            None => assert!(out == backing),
+            Some(w) => assert!(out[w..] == backing[w..]),
+        }
+        if canonical && cap >= n + 1 {
+            assert!(r == Some(n + 1));
+            assert!(out[0] == unused);
+            assert!(out[1..n + 1] == data[..n]);
+            assert!(out[n + 1..] == backing[n + 1..]);
+        } else {
+            assert!(r == None);
+        }
+    }
+
+    /// TOTAL reference for BIT STRING content: the exact `Result`, every error variant, in the
+    /// precedence the `decode_bit_string` rustdoc states ("Error precedence"): `Empty` (no content
+    /// at all), then `UnusedBitsTooLarge` (first octet `> 7`), then `NonZeroPadding` (a set unused
+    /// bit in the final value octet) or `EmptyNonZeroUnused` (no value octets with a non-zero
+    /// count). The last two exclude each other (one needs value octets, the other none), so the only
+    /// precedence the rustdoc decides is `UnusedBitsTooLarge` before both of them -- the overlap
+    /// cases `[9]` and `[9, x, ..]`. Nothing here is inferred beyond that documented order.
+    ///
+    /// Built unlike the decoder: the padding test walks the unused bit positions one by one (bit
+    /// `k` of the final octet for `k < unused`) instead of forming a mask, and the answer is one
+    /// precedence-ordered `if` chain.
+    fn reference_bit_string(c: &[u8]) -> Result<BitString<'_>, BitStringError> {
+        let nonempty = !c.is_empty();
+        let count = if nonempty { c[0] } else { 0 };
+        let has_value = c.len() >= 2;
+        let mut padding_bit_set = false;
+        if has_value && count <= 7 {
+            let last = c[c.len() - 1];
+            let mut k = 0u8;
+            while k < count {
+                if (last >> k) & 1 == 1 {
+                    padding_bit_set = true;
+                }
+                k += 1;
+            }
+        }
+        if !nonempty {
+            Err(BitStringError::Empty)
+        } else if count > 7 {
+            Err(BitStringError::UnusedBitsTooLarge)
+        } else if padding_bit_set {
+            Err(BitStringError::NonZeroPadding)
+        } else if !has_value && count != 0 {
+            Err(BitStringError::EmptyNonZeroUnused)
+        } else {
+            Ok(BitString { data: &c[1..], unused: count })
+        }
+    }
+
+    /// **Exact-result classification:** over a fully symbolic
+    /// 6-octet buffer and every length `0..=6`, `decode_bit_string(content) ==
+    /// reference_bit_string(content)` -- the exact `Result`, including which error and the
+    /// documented precedence on overlapping invalidity (`UnusedBitsTooLarge` over the other two) and
+    /// the decoded `data` / `unused` on `Ok`. So a decoder that returns a different error only for
+    /// one content length (for instance only for three-octet content) is caught, which the accept
+    /// biconditional and the two-octet-only `nonzero_padding_is_classified` could not see. Covers:
+    /// every error variant and both accepting shapes (empty value, non-empty value with padding)
+    /// reach the assert, plus the two overlap cases.
+    #[kani::proof]
+    #[kani::unwind(8)]
+    fn decode_is_exactly_the_reference() {
+        let buf: [u8; 6] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 6);
+        let c = &buf[..n];
+        let got = decode_bit_string(c);
+        let want = reference_bit_string(c);
+        assert!(got == want);
+        kani::cover(got == Err(BitStringError::Empty), "Empty reaches the exact-result assert");
+        kani::cover(
+            got == Err(BitStringError::UnusedBitsTooLarge),
+            "UnusedBitsTooLarge reaches the exact-result assert",
+        );
+        kani::cover(got == Err(BitStringError::NonZeroPadding), "NonZeroPadding reaches the exact-result assert");
+        kani::cover(
+            got == Err(BitStringError::NonZeroPadding) && n == 3,
+            "NonZeroPadding on three-octet content reaches the exact-result assert",
+        );
+        kani::cover(
+            got == Err(BitStringError::EmptyNonZeroUnused),
+            "EmptyNonZeroUnused reaches the exact-result assert",
+        );
+        kani::cover(matches!(got, Ok(bs) if bs.data.is_empty()), "the empty bit string is accepted");
+        kani::cover(
+            matches!(got, Ok(bs) if !bs.data.is_empty() && bs.unused > 0),
+            "a non-empty value with padding is accepted",
+        );
+        kani::cover(
+            got == Err(BitStringError::UnusedBitsTooLarge) && n == 1,
+            "overlap: a too-large count with no value octets is UnusedBitsTooLarge, not EmptyNonZeroUnused",
+        );
+        kani::cover(
+            got == Err(BitStringError::UnusedBitsTooLarge) && n >= 2 && buf[n - 1] != 0,
+            "overlap: a too-large count with a non-zero final octet is UnusedBitsTooLarge",
+        );
     }
 
     // --- Error-class correctness. ---
@@ -259,8 +430,8 @@ mod proofs {
         let unused: u8 = kani::any();
         kani::assume(unused >= 1 && unused <= 7);
         let last: u8 = kani::any();
-        let mask = (1u8 << unused) - 1;
-        kani::assume(last & mask != 0); // at least one unused bit is set
+        kani::assume(last.trailing_zeros() < unused as u32); // at least one unused bit is set
+        kani::cover!(unused == 7 && last == 0x01);
         assert!(decode_bit_string(&[unused, last]) == Err(BitStringError::NonZeroPadding));
     }
 
@@ -289,6 +460,31 @@ mod proofs {
                 None => assert!(bs.unused != 0),
             }
         }
+    }
+
+    /// `require_octet_aligned` on a **hand-built** `BitString` (its fields are public, so a caller
+    /// can construct values the decoder never yields, including `unused > 7`): over symbolic data
+    /// (`0..=3` octets) and an unrestricted symbolic `u8` `unused`, the result is EXACTLY
+    /// `Some(data)` -- the very same octets -- when `unused == 0`, and `None` for every other count,
+    /// legal (`1..=7`) or not (`8..=255`). The decoded-value harness above cannot reach
+    /// `unused > 7`; this one does. Covers: all three classes of count reach the assert.
+    #[kani::proof]
+    #[kani::unwind(8)]
+    fn require_octet_aligned_exact_on_built_values() {
+        let buf: [u8; 3] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n <= 3);
+        let unused: u8 = kani::any();
+        let built = BitString { data: &buf[..n], unused };
+        let got = require_octet_aligned(built);
+        kani::cover!(unused == 0 && n >= 1, "octet-aligned non-empty value");
+        kani::cover!(unused >= 1 && unused <= 7, "legal non-zero unused count");
+        kani::cover!(unused > 7, "unused count beyond the legal range");
+        let want = match unused {
+            0 => Some(&buf[..n]),
+            _ => None,
+        };
+        assert!(got == want);
     }
 }
 

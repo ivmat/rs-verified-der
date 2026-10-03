@@ -24,7 +24,7 @@ been going for minutes — is that normal?"*
 
 ## Reference shard and full-floor measurements (16-core / 29 GB Linux)
 
-All 210 harnesses verified locally with no failures in the recorded measurement. Harness counts in
+At `d05d3f2`, 210/210 harnesses verified locally with no failures in the recorded measurement; the harnesses added since then have individual runs only until the next recorded full floor. Harness counts in
 this table are re-derived from the current module inventory; solve times are earlier indicative
 measurements and were not refreshed when the `codecs-b` / `private-keys` split changed.
 
@@ -44,7 +44,7 @@ from `codecs-b` to reduce its wall time; the two rebalanced shard times still aw
 
 ## Cost tiers
 
-**The large majority of the 210 harnesses are fast** — sub-second to a few seconds. Typical per-module
+**The large majority of the 297 harnesses are fast** — sub-second to a few seconds. Typical per-module
 worst case: `length` 0.4 s, `integer` 0.5 s, `oid` 0.04 s, `boolean` 0.03 s, `bit_string` 0.4 s,
 `tag` 0.5 s, `utc_time` 1.0 s, `big_integer` 0.7 s. Whole modules like `oid`, `boolean`, `null`,
 `enumerated`, `tag` finish in well under a second total.
@@ -95,6 +95,7 @@ genuinely expensive symbolic computation. If you are iterating on `set_of`, `seq
 | `x509_extension::validate_extensions_never_panics` | did not finish within a 5-minute per-harness budget on the 16 GB Mac; a `SEQUENCE OF` walk around an inlined per-element parser (see `DECISIONS.md`, the buffer-reduced `[u8; 13]` harness). **Re-measured on the 32 GB Linux desktop, 2026-07-21: a genuine RAM wall, not a Mac-budget artifact.** Symex completes (~126 s, 33149→22672 VCCs after `--slice-formula`, already default-on), but the SAT-solving phase itself climbs past 19 GB RSS (cadical, default) and past 16 GB (kissat, `#[kani::solver]`/`--solver` probe — CBMC's own verdict: "CBMC appears to have run out of memory", both solvers OOM at the same post-slicing stage). Both the default solver and the T7 kissat lever were tried and measured; neither converges under ~12 GB. Classified RAM-bound (not TIME-bound — the Mac's "didn't finish in 5 min" undersold it; on Linux it's an outright OOM once given enough RAM to climb). No further local lever attempted (T8 `--slice-formula` is already Kani's default and did not help; a smaller bound would narrow proof scope, which the module's own doc already treats as a deliberate, documented reduction floor — see `src/x509_extension.rs`). Needs either a larger-RAM box or is left as a known, honestly-logged residual. |
 | `x509_name::validate_rdn_never_panics` | peak memory ~17 GB — exceeds 16 GB physical (swaps). This is the heavy SET-OF/RDN lemma; `validate_name` itself is proven cheaply (~0.5 GB) by *stubbing* this lemma's proven postcondition — see the modular-proof note in `src/x509_name.rs` and `DECISIONS.md`. |
 | `x509_tbs_certificate::parse_tbs_certificate_ok_path_witnessed` | ~11.3 GB peak RSS, ~206 s wall (symex ~106 s dominates; SAT solve itself is only ~3.4 s) — see `src/x509_tbs_certificate.rs`'s doc comment for the full investigation. Fits under the ~12 GB local budget, but not by a wide margin: it is the positive-construction companion to `parse_tbs_certificate_never_panics` (closes that harness's cover-vacuity finding — see below), and even fully-concrete-input + 3-way modular stubbing (`validate_name`, `validate_extensions`, `parse_validity`) does not make it cheap; the remaining real composition (`parse_algorithm_identifier` + `parse_subject_public_key_info` + the TBS glue itself) is the residual cost driver. |
+| `rsa_private_key::parse_multi_prime_*` (six harnesses that run the real `otherPrimeInfos` member walk, no stub) | 8.2–9.3 GB peak for the whole Kani service (front end included), about 2–3 minutes each, even with concrete content. This is why `rsa_private_key` is in the HEAVY tier; the other new `rsa_private_key` harnesses peak at 2.9–5.4 GB. |
 
 ## A missing `#[kani::unwind]` looks exactly like an intractable harness
 

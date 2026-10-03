@@ -35,16 +35,18 @@ pub fn decode_null(content: &[u8]) -> Result<(), NullError> {
 mod proofs {
     use super::*;
 
-    /// Empty content is accepted; any non-empty content (length 1..=3 exercised) is rejected.
+    /// Empty content is accepted; any non-empty content (every length 1..=16, symbolic content)
+    /// is rejected.
     #[kani::proof]
     fn only_empty_is_valid() {
         assert!(decode_null(&[]) == Ok(()));
-        let a: u8 = kani::any();
-        let b: u8 = kani::any();
-        let c: u8 = kani::any();
-        assert!(decode_null(&[a]) == Err(NullError::NonEmpty));
-        assert!(decode_null(&[a, b]) == Err(NullError::NonEmpty));
-        assert!(decode_null(&[a, b, c]) == Err(NullError::NonEmpty));
+        let buf: [u8; 16] = kani::any();
+        let n: usize = kani::any();
+        kani::assume(n >= 1 && n <= 16);
+        kani::cover!(n == 1);
+        kani::cover!(n == 4);
+        kani::cover!(n == 16);
+        assert!(decode_null(&buf[..n]) == Err(NullError::NonEmpty));
     }
 }
 

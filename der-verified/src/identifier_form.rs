@@ -331,9 +331,14 @@ mod proofs {
         number <= MAX_ASSIGNED && (CONSTRUCTED_ONLY_MASK >> number) & 1 == 1
     }
 
-    /// The two masks are disjoint, neither claims tag number 0 or 15, and together they cover
-    /// exactly `1..=36` minus 15 — a self-check on the oracle itself, so a typo in a mask constant
-    /// cannot silently weaken every theorem below.
+    /// **Oracle self-consistency check** (not production evidence): the two masks are disjoint,
+    /// neither claims tag number 0 or 15, and together they cover exactly `1..=36` minus 15 — a
+    /// check on the oracle itself, so a typo in a mask constant cannot silently weaken every theorem
+    /// below.
+    ///
+    /// It refers only to proof-local constants, so NO production mutation can make it fail and it
+    /// cannot carry an observed-red production claim. The production-mutation witnesses are
+    /// `required_form_matches_oracle_on_all_u32` and the public-function harnesses below.
     ///
     /// Honest limit: this checks *shape*, not *content*. It cannot catch a primitive/constructed
     /// misclassification, nor a standards mistake shared with `required_form`.
@@ -425,8 +430,9 @@ mod proofs {
     /// precisely what `decode_tlv` returned. So this entry point is `decode_tlv` refined by the
     /// rule — it neither loses nor invents any framing behaviour.
     ///
-    /// **Bounded at `[u8; 6]`**, unlike the four domain-complete theorems above: this one reaches
-    /// the framing decoder's loops, so it is a statement about six-byte inputs, not all inputs.
+    /// **Bounded at six octets**, unlike the four domain-complete theorems above: this one reaches
+    /// the framing decoder's loops, so it is a statement about inputs of every length `0..=6` over a
+    /// six-byte symbolic backing array (symbolic input length), not about all inputs.
     ///
     /// Cover: witnesses that both outcomes are live in the symbolic domain — that the `Ok` tail is
     /// reachable, and that a form rejection is genuinely reachable from raw bytes rather than only
@@ -435,8 +441,11 @@ mod proofs {
     #[kani::unwind(12)]
     fn decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule() {
         let buf: [u8; 6] = kani::any();
-        let base = decode_tlv(&buf);
-        let refined = decode_tlv_form_checked(&buf);
+        let n: usize = kani::any();
+        kani::assume(n <= 6);
+        let input = &buf[..n];
+        let base = decode_tlv(input);
+        let refined = decode_tlv_form_checked(input);
         match base {
             Ok((tlv, used)) => match validate_identifier_form(tlv.tag) {
                 Ok(()) => {
@@ -454,21 +463,29 @@ mod proofs {
 
     /// `decode_tlv_form_checked_strict` accepts iff `decode_tlv_form_checked` accepts *and* the TLV
     /// spans the whole input — the trailing-data rule composed with the identifier-form rules.
-    /// **Bounded at `[u8; 6]`**, for the same reason as the harness above.
+    /// **Bounded at six octets** (symbolic input length `0..=6`), for the same reason as the harness above.
     #[kani::proof]
     #[kani::unwind(12)]
     fn decode_tlv_form_checked_strict_requires_full_consumption() {
         let buf: [u8; 6] = kani::any();
-        let strict = decode_tlv_form_checked_strict(&buf);
-        match decode_tlv_form_checked(&buf) {
+        let n: usize = kani::any();
+        kani::assume(n <= 6);
+        let input = &buf[..n];
+        let strict = decode_tlv_form_checked_strict(input);
+        match decode_tlv_form_checked(input) {
             Ok((tlv, used)) => {
-                if used == buf.len() {
+                if used == input.len() {
                     assert!(strict == Ok(tlv));
+                    kani::cover(true, "strict accepts a legal TLV that spans the whole input");
                 } else {
                     assert!(strict == Err(CheckedTlvError::Tlv(TlvError::TrailingData)));
+                    kani::cover(true, "strict rejects a legal TLV followed by trailing data");
                 }
             }
-            Err(e) => assert!(strict == Err(e)),
+            Err(e) => {
+                assert!(strict == Err(e));
+                kani::cover(true, "an error of the checked decoder is passed through by strict");
+            }
         }
     }
 
@@ -529,6 +546,23 @@ mod proofs {
             decode_tlv_form_checked(&[0x00, 0x00])
                 == Err(CheckedTlvError::Form(FormError::ReservedIdentifier))
         );
+        // ... in BOTH forms: the constructed-bit-set EOC identifier `20 00` is rejected exactly like
+        // the primitive `00 00` (the reservation is on UNIVERSAL 0 regardless of the form bit).
+        assert!(decode_tlv(&[0x20, 0x00]).is_ok());
+        assert!(
+            decode_tlv_form_checked(&[0x20, 0x00])
+                == Err(CheckedTlvError::Form(FormError::ReservedIdentifier))
+        );
+    }
+
+    /// `input` is accepted by `decode_tlv_form_checked` AND the result is exactly what the framing
+    /// decoder `decode_tlv` returns for the same bytes (identical `Tlv` -- tag and value -- and
+    /// identical consumed length). False if either rejects or they differ.
+    fn accepted_exactly_as_framed(input: &[u8]) -> bool {
+        match (decode_tlv(input), decode_tlv_form_checked(input)) {
+            (Ok(framed), Ok(checked)) => framed == checked,
+            _ => false,
+        }
     }
 
     /// **The HIGH-TAG-FORM arm, which the low-tag specimens above cannot reach.** X.680's
@@ -543,11 +577,45 @@ mod proofs {
             decode_tlv_form_checked(&[0x3F, 0x1F, 0x00])
                 == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
         );
-        assert!(decode_tlv_form_checked(&[0x1F, 0x1F, 0x00]).is_ok()); // primitive DATE (31)
-        assert!(decode_tlv_form_checked(&[0x1F, 0x24, 0x00]).is_ok()); // primitive RELATIVE-OID-IRI (36)
+        // Every acceptance below is EXACT: the checked decoder returns precisely the framing
+        // decoder's `(Tlv, consumed)` for the same input -- tag, value window and consumed length --
+        // not merely `is_ok()` (a wrapper that corrupted any of them on a success would pass that).
+        assert!(accepted_exactly_as_framed(&[0x1F, 0x1F, 0x00])); // primitive DATE (31)
+        assert!(accepted_exactly_as_framed(&[0x1F, 0x24, 0x00])); // primitive RELATIVE-OID-IRI (36)
         // 37 is unassigned, so BOTH forms are accepted (the conservative arm).
-        assert!(decode_tlv_form_checked(&[0x1F, 0x25, 0x00]).is_ok());
-        assert!(decode_tlv_form_checked(&[0x3F, 0x25, 0x00]).is_ok());
+        assert!(accepted_exactly_as_framed(&[0x1F, 0x25, 0x00]));
+        assert!(accepted_exactly_as_framed(&[0x3F, 0x25, 0x00]));
+
+        // SYMBOLIC over the whole assigned high-tag range 31..=36 (every number, BOTH forms): the
+        // specimens above pin only constructed-31 and primitive-36, so a table that dropped 36 (or
+        // any interior number) from the primitive arm would slip past them. Here the number is a
+        // symbolic `u32` in 31..=36 encoded in the high-tag form `1F n` (a single base-128 octet,
+        // since n < 128), and each of 31..=36 is independently PRIMITIVE-ONLY: the primitive
+        // encoding is accepted and the constructed encoding is `MustBePrimitive`. Expected values
+        // are literal (not `required_form`, not the mask).
+        let n: u32 = kani::any();
+        kani::assume((31..=36).contains(&n));
+        kani::cover(n == 31, "DATE (31) reached");
+        kani::cover(n == 36, "RELATIVE-OID-IRI (36) reached");
+        let low7 = n as u8;
+        let prim = [0x1F, low7, 0x00];
+        let cons = [0x3F, low7, 0x00];
+        assert!(accepted_exactly_as_framed(&prim));
+        // ... and the framing result itself is the literal one: UNIVERSAL, primitive, number `n`,
+        // empty value, three octets consumed (so the comparison above is not against a corrupted
+        // reference).
+        match decode_tlv_form_checked(&prim) {
+            Ok((t, used)) => {
+                assert!(used == 3);
+                assert!(t.tag == Tag { class: Class::Universal, constructed: false, number: n });
+                assert!(t.value.is_empty());
+            }
+            Err(_) => assert!(false),
+        }
+        assert!(decode_tlv(&cons).is_ok()); // framing accepts it
+        assert!(
+            decode_tlv_form_checked(&cons) == Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        );
     }
 
     /// **Class (c) of `PROOF_MANIFEST.md` §6.3 must keep being accepted.** Those two encodings are
