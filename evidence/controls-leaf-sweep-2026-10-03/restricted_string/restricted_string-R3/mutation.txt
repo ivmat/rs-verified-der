@@ -1,0 +1,19 @@
+file: der-verified/src/restricted_string.rs
+--- old ---
+    if tlv.tag.constructed {
+        return Err(StringError::Constructed);
+--- new ---
+    if tlv.tag.constructed && tlv.value.len() > 1 {
+        return Err(StringError::Constructed);
+--- unified diff ---
+--- a/der-verified/src/restricted_string.rs
++++ b/der-verified/src/restricted_string.rs
+@@ -166,7 +166,7 @@
+     if tlv.tag.class != Class::Universal || tlv.tag.number != charset.tag_number() {
+         return Err(StringError::WrongTag);
+     }
+-    if tlv.tag.constructed {
++    if tlv.tag.constructed && tlv.value.len() > 1 {
+         return Err(StringError::Constructed);
+     }
+     validate_content(tlv.value, charset)?;

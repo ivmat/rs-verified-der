@@ -1,0 +1,27 @@
+[
+  {
+    "id": "bit_string-W1F-1",
+    "module": "bit_string",
+    "claim": "require_octet_aligned yields the value exactly when unused == 0, for EVERY u8 count (hand-built BitString, not only decoder outputs)",
+    "src": "der-verified/src/bit_string.rs",
+    "old": "    if bs.unused == 0 {",
+    "new": "    if bs.unused == 0 || bs.unused > 7 {",
+    "red": [
+      "bit_string::proofs::require_octet_aligned_exact_on_built_values"
+    ],
+    "green": [
+      "bit_string::proofs::octet_aligned_iff_unused_zero"
+    ],
+    "predicted_assert": "require_octet_aligned_exact_on_built_values.assertion",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "w1-verify-fix",
+      "preregistered in the predictions record (P2)"
+    ],
+    "primary_provenance": "w1-verify-fix",
+    "status": "applicable",
+    "anchor": "new text anchor (the helper's own guard line, occurs once)",
+    "notes": "green = the decoded-value harness, which cannot reach unused > 7 and so is the SURVIVOR for this mutant (stays SUCCESSFUL by design)."
+  }
+]

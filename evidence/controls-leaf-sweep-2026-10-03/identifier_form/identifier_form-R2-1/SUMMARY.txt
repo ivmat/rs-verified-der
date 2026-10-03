@@ -1,0 +1,10 @@
+=== identifier_form-R2-1 / identifier_form / der-verified/src/identifier_form.rs (2026-10-03T16:35:38Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    high_tag_universal_types_are_form_checked: accepted_exactly_as_framed
+baseline identifier_form::proofs::high_tag_universal_types_are_form_checked: SUCCESSFUL   [want SUCCESSFUL]
+red      identifier_form::proofs::high_tag_universal_types_are_form_checked: FAILED   [want FAILED]  (6.6s)
+failed_descriptions:
+  - "assertion failed: accepted_exactly_as_framed(&[0x1F, 0x1F, 0x00])"

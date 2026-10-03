@@ -1,0 +1,17 @@
+file: der-verified/src/identifier_form.rs
+--- old ---
+5..=7 => RequiredForm::Primitive,
+--- new ---
+5..=6 => RequiredForm::Primitive,
+--- unified diff ---
+--- a/der-verified/src/identifier_form.rs
++++ b/der-verified/src/identifier_form.rs
+@@ -167,7 +167,7 @@
+         // 3 BIT STRING, 4 OCTET STRING (§8.6, §8.7) — DER §10.2 forbids BER's segmented form.
+         3 | 4 => RequiredForm::Primitive,
+         // 5 NULL, 6 OBJECT IDENTIFIER, 7 ObjectDescriptor (§8.8, §8.19; 7 is a string type).
+-        5..=7 => RequiredForm::Primitive,
++        5..=6 => RequiredForm::Primitive,
+         // 8 EXTERNAL (§8.18) — an associated-type SEQUENCE.
+         8 => RequiredForm::Constructed,
+         // 9 REAL, 10 ENUMERATED (§8.5, §8.4) — simple types.

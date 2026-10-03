@@ -1,0 +1,17 @@
+file: der-verified/src/enumerated.rs
+--- old ---
+crate::integer::decode_integer(content)
+--- new ---
+crate::integer::decode_integer(content).map(|v| v & i64::MAX)
+--- unified diff ---
+--- a/der-verified/src/enumerated.rs
++++ b/der-verified/src/enumerated.rs
+@@ -23,7 +23,7 @@
+ /// Decode ENUMERATED content (delegates entirely to [`crate::integer::decode_integer`] — the
+ /// content rule is byte-for-byte identical, per X.690 §8.4).
+ pub fn decode_enumerated(content: &[u8]) -> Result<i64, crate::integer::IntError> {
+-    crate::integer::decode_integer(content)
++    crate::integer::decode_integer(content).map(|v| v & i64::MAX)
+ }
+ 
+ /// Encode `v` as minimal DER ENUMERATED content (delegates entirely to

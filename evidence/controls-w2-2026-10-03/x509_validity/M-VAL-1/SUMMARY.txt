@@ -1,0 +1,22 @@
+=== M-VAL-1 / x509_validity / der-verified/src/x509_validity.rs (2026-10-03T16:43:53Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    result == Err(TrailingBytes) leg
+baseline x509_validity::proofs::parse_validity_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_uu: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_ug: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_gu: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_gg: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_never_panics: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_ok_path_witnessed: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_validity::proofs::parse_validity_faithful: FAILED   [want FAILED]  (14.0s)
+red      x509_validity::proofs::parse_validity_faithful_uu: FAILED   [want FAILED]  (21.8s)
+red      x509_validity::proofs::parse_validity_faithful_ug: FAILED   [want FAILED]  (35.5s)
+red      x509_validity::proofs::parse_validity_faithful_gu: FAILED   [want FAILED]  (36.0s)
+red      x509_validity::proofs::parse_validity_faithful_gg: FAILED   [want FAILED]  (42.7s)
+green    x509_validity::proofs::parse_never_panics: SUCCESSFUL   [want SUCCESSFUL]  (13.3s)
+green    x509_validity::proofs::parse_validity_ok_path_witnessed: SUCCESSFUL   [want SUCCESSFUL]  (6.9s)
+failed_descriptions:
+  - "assertion failed: result == Err(ValidityError::TrailingBytes)"

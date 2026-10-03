@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+    let t = decode_utc_time(tlv.value).map_err(TimeError::BadUtc)?;
+
+--- new ---
+    let t = decode_utc_time(tlv.value).map_err(|_| TimeError::WrongTag)?;
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -148,7 +148,7 @@
+             if tlv.tag.constructed {
+                 return Err(TimeError::Constructed);
+             }
+-            let t = decode_utc_time(tlv.value).map_err(TimeError::BadUtc)?;
++            let t = decode_utc_time(tlv.value).map_err(|_| TimeError::WrongTag)?;
+             Ok((Time::Utc(t), used))
+         }
+         GENERALIZED_TIME_TAG => {

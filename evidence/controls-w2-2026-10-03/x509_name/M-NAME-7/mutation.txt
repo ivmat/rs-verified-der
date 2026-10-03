@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+        return Err(NameError::AtvOidWrongTag);
+
+--- new ---
+        return Err(NameError::AtvOidConstructed);
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -132,7 +132,7 @@
+ fn decode_atv_oid_tlv(input: &[u8]) -> Result<(&[u8], usize), NameError> {
+     let (tlv, used) = decode_tlv(input).map_err(NameError::BadAtvOidTlv)?;
+     if tlv.tag.class != Class::Universal || tlv.tag.number != OID_TAG {
+-        return Err(NameError::AtvOidWrongTag);
++        return Err(NameError::AtvOidConstructed);
+     }
+     if tlv.tag.constructed {
+         return Err(NameError::AtvOidConstructed);

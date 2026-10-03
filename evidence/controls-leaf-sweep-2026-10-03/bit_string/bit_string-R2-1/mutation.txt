@@ -1,0 +1,17 @@
+file: der-verified/src/bit_string.rs
+--- old ---
+        return Err(BitStringError::NonZeroPadding);
+--- new ---
+        return Err(if content.len() == 3 { BitStringError::UnusedBitsTooLarge } else { BitStringError::NonZeroPadding });
+--- unified diff ---
+--- a/der-verified/src/bit_string.rs
++++ b/der-verified/src/bit_string.rs
+@@ -120,7 +120,7 @@
+     // `unused <= 7` so `1u8 << unused <= 0x80`: the shift and subtraction never overflow.
+     let mask = (1u8 << unused) - 1; // the low `unused` bits of the final octet
+     if data[data.len() - 1] & mask != 0 {
+-        return Err(BitStringError::NonZeroPadding);
++        return Err(if content.len() == 3 { BitStringError::UnusedBitsTooLarge } else { BitStringError::NonZeroPadding });
+     }
+     Ok(BitString { data, unused })
+ }

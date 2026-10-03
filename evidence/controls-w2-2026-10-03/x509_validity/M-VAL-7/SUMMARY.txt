@@ -1,0 +1,22 @@
+=== M-VAL-7 / x509_validity / der-verified/src/x509_validity.rs (2026-10-03T16:52:53Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    result == Ok(..) (swapped fields)
+baseline x509_validity::proofs::parse_validity_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_uu: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_ug: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_gu: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_gg: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_rejects_missing_fields: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_validity::proofs::parse_validity_faithful: FAILED   [want FAILED]  (14.2s)
+red      x509_validity::proofs::parse_validity_faithful_uu: FAILED   [want FAILED]  (17.4s)
+red      x509_validity::proofs::parse_validity_faithful_ug: FAILED   [want FAILED]  (30.1s)
+red      x509_validity::proofs::parse_validity_faithful_gu: FAILED   [want FAILED]  (35.1s)
+red      x509_validity::proofs::parse_validity_faithful_gg: FAILED   [want FAILED]  (36.1s)
+green    x509_validity::proofs::parse_validity_rejects_missing_fields: SUCCESSFUL   [want SUCCESSFUL]  (22.4s)
+failed_descriptions:
+  - "assertion failed: result == Ok(Validity { not_before: Time::Utc(nb), not_after: Time::Utc(na) })"
+  - "assertion failed: result == Ok(Validity { not_before: enb, not_after: ena })"
+  - "assertion failed: core::ptr::eq(g.fraction.as_ptr(), input[field_off + 2 + 15..].as_ptr())"

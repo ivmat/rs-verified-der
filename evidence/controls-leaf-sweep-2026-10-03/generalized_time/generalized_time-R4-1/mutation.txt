@@ -1,0 +1,23 @@
+file: der-verified/src/generalized_time.rs
+--- old ---
+    if out.len() < total {
+        return None;
+    }
+    out[0] = b'0' + (t.year / 1000) as u8;
+--- new ---
+    if out.len() < total {
+        if !out.is_empty() { out[0] = 0xEE; }
+        return None;
+    }
+    out[0] = b'0' + (t.year / 1000) as u8;
+--- unified diff ---
+--- a/der-verified/src/generalized_time.rs
++++ b/der-verified/src/generalized_time.rs
+@@ -268,6 +268,7 @@
+     // slice-size invariant (≤ isize::MAX), so the additions never overflow `usize`.
+     let total = 14 + if has_frac { 1 + t.fraction.len() } else { 0 } + 1;
+     if out.len() < total {
++        if !out.is_empty() { out[0] = 0xEE; }
+         return None;
+     }
+     out[0] = b'0' + (t.year / 1000) as u8;

@@ -1,0 +1,17 @@
+file: der-verified/src/set_of.rs
+--- old ---
+return if is_a_longer { Ordering::Greater } else { Ordering::Less };
+--- new ---
+return if is_a_longer { Ordering::Less } else { Ordering::Greater };
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -123,7 +123,7 @@
+     while j < longer.len() {
+         if longer[j] != 0 {
+             // The longer encoding has a non-zero byte where the shorter is virtually zero-padded.
+-            return if is_a_longer { Ordering::Greater } else { Ordering::Less };
++            return if is_a_longer { Ordering::Less } else { Ordering::Greater };
+         }
+         j += 1;
+     }

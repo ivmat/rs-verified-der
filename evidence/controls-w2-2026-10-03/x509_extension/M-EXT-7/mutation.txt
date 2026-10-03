@@ -1,0 +1,21 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+
+        return Err(ExtensionError::ExtnIdWrongTag);
+
+--- new ---
+
+        return Err(ExtensionError::ExtnIdConstructed);
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -179,7 +179,7 @@
+ fn decode_extn_id_tlv(input: &[u8]) -> Result<(&[u8], usize), ExtensionError> {
+     let (tlv, used) = decode_tlv(input).map_err(ExtensionError::BadExtnIdTlv)?;
+     if tlv.tag.class != Class::Universal || tlv.tag.number != OID_TAG {
+-        return Err(ExtensionError::ExtnIdWrongTag);
++        return Err(ExtensionError::ExtnIdConstructed);
+     }
+     if tlv.tag.constructed {
+         return Err(ExtensionError::ExtnIdConstructed);

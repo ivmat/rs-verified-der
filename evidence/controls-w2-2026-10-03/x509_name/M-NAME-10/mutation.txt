@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+    let (_value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvValueTlv)?;
+
+--- new ---
+    let (_value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvOidTlv)?;
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -165,7 +165,7 @@
+ 
+     // Field 2: `value` (ANY) — one well-framed TLV, left raw/uninterpreted, must exactly fill
+     // what remains of the ATV's content (no third field permitted).
+-    let (_value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvValueTlv)?;
++    let (_value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvOidTlv)?;
+     if value_used != rest.len() {
+         return Err(NameError::AtvTrailingElements);
+     }

@@ -1,0 +1,17 @@
+file: der-verified/src/set_of.rs
+--- old ---
+    decode_set_of(tlv.value)?;
+--- new ---
+    let _ = decode_set_of(tlv.value);
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -190,7 +190,7 @@
+     if !tlv.tag.constructed {
+         return Err(SetOfError::NotConstructed);
+     }
+-    decode_set_of(tlv.value)?;
++    let _ = decode_set_of(tlv.value);
+     Ok((tlv.value, used))
+ }
+ 

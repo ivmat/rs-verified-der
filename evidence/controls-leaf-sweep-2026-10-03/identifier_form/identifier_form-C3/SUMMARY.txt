@@ -1,0 +1,17 @@
+=== identifier_form-C3 / identifier_form / der-verified/src/identifier_form.rs (2026-10-03T16:35:32Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :363
+baseline identifier_form::proofs::required_form_matches_oracle_on_all_u32: SUCCESSFUL   [want SUCCESSFUL]
+baseline identifier_form::proofs::high_tag_universal_types_are_form_checked: SUCCESSFUL   [want SUCCESSFUL]
+baseline identifier_form::proofs::reserved_eoc_rejected_iff_universal_zero: SUCCESSFUL   [want SUCCESSFUL]
+baseline identifier_form::proofs::rejects_every_disclosed_illegal_identifier: SUCCESSFUL   [want SUCCESSFUL]
+red      identifier_form::proofs::required_form_matches_oracle_on_all_u32: FAILED   [want FAILED]  (0.8s)
+red      identifier_form::proofs::high_tag_universal_types_are_form_checked: FAILED   [want FAILED]  (9.7s)
+green    identifier_form::proofs::reserved_eoc_rejected_iff_universal_zero: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+green    identifier_form::proofs::rejects_every_disclosed_illegal_identifier: SUCCESSFUL   [want SUCCESSFUL]  (8.4s)
+failed_descriptions:
+  - "assertion failed: (got == RequiredForm::Primitive) == oracle_is_primitive_only(n)"
+  - "assertion failed: decode_tlv_form_checked(&cons) ==

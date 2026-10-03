@@ -1,0 +1,17 @@
+file: der-verified/src/identifier_form.rs
+--- old ---
+31..=36 => RequiredForm::Primitive,
+--- new ---
+31..=35 => RequiredForm::Primitive,
+--- unified diff ---
+--- a/der-verified/src/identifier_form.rs
++++ b/der-verified/src/identifier_form.rs
+@@ -202,7 +202,7 @@
+         // 35 OID-IRI (§8.21), 36 RELATIVE-OID-IRI (§8.22). All simple types, primitive under DER.
+         // These all require the HIGH-TAG form (`1F`-prefixed), since the low-tag form stops at 30 —
+         // so `3F 1F 00` is a constructed DATE, and is rejected.
+-        31..=36 => RequiredForm::Primitive,
++        31..=35 => RequiredForm::Primitive,
+         // 0, and every number >= 37: no assigned UNIVERSAL type.
+         _ => RequiredForm::Unspecified,
+     }

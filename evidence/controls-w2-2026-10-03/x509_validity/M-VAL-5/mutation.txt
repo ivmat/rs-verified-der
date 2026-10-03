@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+    if tlv.tag.class != Class::Universal {
+
+--- new ---
+    if false {
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -140,7 +140,7 @@
+ /// other primitive is needed to disambiguate the two arms.
+ fn decode_time_tlv(input: &[u8]) -> Result<(Time<'_>, usize), TimeError> {
+     let (tlv, used) = decode_tlv(input).map_err(TimeError::BadTlv)?;
+-    if tlv.tag.class != Class::Universal {
++    if false {
+         return Err(TimeError::WrongTag);
+     }
+     match tlv.tag.number {

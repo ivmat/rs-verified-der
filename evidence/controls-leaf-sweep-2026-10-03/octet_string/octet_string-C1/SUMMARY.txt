@@ -1,0 +1,16 @@
+=== octet_string-C1 / octet_string / der-verified/src/octet_string.rs (2026-10-03T15:17:55Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :185
+baseline octet_string::proofs::accepted_identifier_is_canonical_0x04: SUCCESSFUL   [want SUCCESSFUL]
+baseline octet_string::proofs::accepted_content_is_the_tlv_value: SUCCESSFUL   [want SUCCESSFUL]
+baseline octet_string::proofs::constructed_form_is_rejected: SUCCESSFUL   [want SUCCESSFUL]
+baseline octet_string::proofs::roundtrip_small: SUCCESSFUL   [want SUCCESSFUL]
+red      octet_string::proofs::accepted_identifier_is_canonical_0x04: FAILED   [want FAILED]  (2.3s)
+green    octet_string::proofs::accepted_content_is_the_tlv_value: SUCCESSFUL   [want SUCCESSFUL]  (4.5s)
+green    octet_string::proofs::constructed_form_is_rejected: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+green    octet_string::proofs::roundtrip_small: SUCCESSFUL   [want SUCCESSFUL]  (2.5s)
+failed_descriptions:
+  - "assertion failed: input[0] == 0x04"

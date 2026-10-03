@@ -1,0 +1,17 @@
+=== profile-L4-h / profile / der-verified/src/profile.rs (2026-10-03T16:36:59Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    rule4/precedence: r == expected (UTCTime with second == 0 rejected with a fraction variant)
+baseline profile::proofs::rule4_fraction_iff_generalized_with_fraction: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::validate_profile_is_exactly_the_documented_precedence: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::rule4_fraction_iff_generalized_with_fraction: FAILED   [want FAILED]  (1.5s)
+red      profile::proofs::validate_profile_is_exactly_the_documented_precedence: FAILED   [want FAILED]  (3.1s)
+red      profile::proofs::rule3_generalized_too_early_iff_year_le_2049: FAILED   [want FAILED]  (1.0s)
+green    profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]  (0.9s)
+failed_descriptions:
+  - "assertion failed: r == expected"
+  - "assertion failed: r == Ok(())"

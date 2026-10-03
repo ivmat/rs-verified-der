@@ -1,0 +1,21 @@
+file: der-verified/src/tlv.rs
+--- old ---
+    let total = t + l + value.len();
+    if out.len() < total {
+        return None;
+--- new ---
+    let total = t + l + value.len();
+    if out.len() < total {
+        if !out.is_empty() { out[0] = 0xEE; }
+        return None;
+--- unified diff ---
+--- a/der-verified/src/tlv.rs
++++ b/der-verified/src/tlv.rs
+@@ -114,6 +114,7 @@
+     let (lbuf, l) = encode_length(value.len() as u32);
+     let total = t + l + value.len();
+     if out.len() < total {
++        if !out.is_empty() { out[0] = 0xEE; }
+         return None;
+     }
+     out[..t].copy_from_slice(&tbuf[..t]);

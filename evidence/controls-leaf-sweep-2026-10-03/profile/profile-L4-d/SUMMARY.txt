@@ -1,0 +1,18 @@
+=== profile-L4-d / profile / der-verified/src/profile.rs (2026-10-03T16:36:31Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    precedence/error_precedence: r == expected on a year<=2049 GeneralizedTime that also has a fraction (HasFraction instead of YearTooEarly); rule3 and rule4 harnesses are blind (empty fraction / year>=2050)
+baseline profile::proofs::validate_profile_is_exactly_the_documented_precedence: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::error_precedence_follows_declaration_order: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule4_fraction_iff_generalized_with_fraction: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::validate_profile_is_exactly_the_documented_precedence: FAILED   [want FAILED]  (2.9s)
+red      profile::proofs::error_precedence_follows_declaration_order: FAILED   [want FAILED]  (1.0s)
+green    profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]  (1.0s)
+green    profile::proofs::rule4_fraction_iff_generalized_with_fraction: SUCCESSFUL   [want SUCCESSFUL]  (1.5s)
+green    profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]  (0.9s)
+failed_descriptions:
+  - "assertion failed: r == expected"

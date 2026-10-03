@@ -1,0 +1,12 @@
+=== utf8_string-R4-1 / utf8_string / der-verified/src/utf8_string.rs (2026-10-03T15:50:16Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    ill_formed_reports_position: 3 position asserts
+baseline utf8_string::proofs::ill_formed_reports_position: SUCCESSFUL   [want SUCCESSFUL]
+red      utf8_string::proofs::ill_formed_reports_position: FAILED   [want FAILED]  (89.7s)
+failed_descriptions:
+  - "assertion failed: oracle_wellformed_utf8(&buf[..position])"
+  - "assertion failed: !oracle_wellformed_utf8(&buf[..position + 1])"
+  - "assertion failed: position == core::str::from_utf8(&buf[..n]).unwrap_err().valid_up_to()"

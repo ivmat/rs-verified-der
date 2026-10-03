@@ -1,0 +1,14 @@
+=== M-RSA-5 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T18:06:59Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-RSA-2 r == expected (Field(Prime1, ..) reported as Field(Prime2, ..)); H-RSA-3a r == expected (MissingField(Prime1) at kk == 4)
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s2: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_rejects_missing_fields: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_faithful_two_prime_s2: FAILED   [want FAILED]  (160.2s)
+red      rsa_private_key::proofs::parse_rejects_missing_fields: FAILED   [want FAILED]  (77.6s)
+green    rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]  (178.3s)
+failed_descriptions:
+  - ""parse_rsa_private_key result differs from the total expected result""

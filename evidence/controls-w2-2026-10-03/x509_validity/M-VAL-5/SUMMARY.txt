@@ -1,0 +1,12 @@
+=== M-VAL-5 / x509_validity / der-verified/src/x509_validity.rs (2026-10-03T16:47:38Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    result == expected (t==0x97 etc. accepted)
+baseline x509_validity::proofs::parse_validity_rejects_field_identifier: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_uu: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_validity::proofs::parse_validity_rejects_field_identifier: FAILED   [want FAILED]  (17.7s)
+green    x509_validity::proofs::parse_validity_faithful_uu: SUCCESSFUL   [want SUCCESSFUL]  (19.0s)
+failed_descriptions:
+  - "assertion failed: result == expected"

@@ -1,0 +1,106 @@
+file: der-verified/src/utc_time.rs
+--- old ---
+    let minute = two_digits(content, 8);
+    let second = two_digits(content, 10);
+    if month < 1 || month > 12 {
+        return Err(UtcTimeError::MonthRange);
+    }
+    if day < 1 || day > 31 {
+        return Err(UtcTimeError::DayRange);
+    }
+    if hour > 23 {
+        return Err(UtcTimeError::HourRange);
+    }
+    if minute > 59 {
+        return Err(UtcTimeError::MinuteRange);
+    }
+    if second > 59 {
+        return Err(UtcTimeError::SecondRange);
+    }
+    Ok(UtcTime { year2, month, day, hour, minute, second })
+}
+
+/// Encode a [`UtcTime`] as canonical DER content (`YYMMDDHHMMSSZ`, 13 octets) into `out`.
+///
+/// Returns the number of octets written (always 13), or `None` if any field is out of its canonical
+/// range or `out` is too small. The range guard makes this the exact inverse of [`decode_utc_time`].
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+pub fn encode_utc_time(t: &UtcTime, out: &mut [u8]) -> Option<usize> {
+    if !fields_in_range(t) {
+        return None;
+    }
+    if out.len() < 13 {
+        return None;
+    }
+    write_two(out, 0, t.year2);
+    write_two(out, 2, t.month);
+    write_two(out, 4, t.day);
+    write_two(out, 6, t.hour);
+    write_two(out, 8, t.minute);
+    write_two(out, 10, t.second);
+--- new ---
+    let minute = two_digits(content, 10);
+    let second = two_digits(content, 8);
+    if month < 1 || month > 12 {
+        return Err(UtcTimeError::MonthRange);
+    }
+    if day < 1 || day > 31 {
+        return Err(UtcTimeError::DayRange);
+    }
+    if hour > 23 {
+        return Err(UtcTimeError::HourRange);
+    }
+    if minute > 59 {
+        return Err(UtcTimeError::MinuteRange);
+    }
+    if second > 59 {
+        return Err(UtcTimeError::SecondRange);
+    }
+    Ok(UtcTime { year2, month, day, hour, minute, second })
+}
+
+/// Encode a [`UtcTime`] as canonical DER content (`YYMMDDHHMMSSZ`, 13 octets) into `out`.
+///
+/// Returns the number of octets written (always 13), or `None` if any field is out of its canonical
+/// range or `out` is too small. The range guard makes this the exact inverse of [`decode_utc_time`].
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+pub fn encode_utc_time(t: &UtcTime, out: &mut [u8]) -> Option<usize> {
+    if !fields_in_range(t) {
+        return None;
+    }
+    if out.len() < 13 {
+        return None;
+    }
+    write_two(out, 0, t.year2);
+    write_two(out, 2, t.month);
+    write_two(out, 4, t.day);
+    write_two(out, 6, t.hour);
+    write_two(out, 10, t.minute);
+    write_two(out, 8, t.second);
+--- unified diff ---
+--- a/der-verified/src/utc_time.rs
++++ b/der-verified/src/utc_time.rs
+@@ -157,8 +157,8 @@
+     let month = two_digits(content, 2);
+     let day = two_digits(content, 4);
+     let hour = two_digits(content, 6);
+-    let minute = two_digits(content, 8);
+-    let second = two_digits(content, 10);
++    let minute = two_digits(content, 10);
++    let second = two_digits(content, 8);
+     if month < 1 || month > 12 {
+         return Err(UtcTimeError::MonthRange);
+     }
+@@ -194,8 +194,8 @@
+     write_two(out, 2, t.month);
+     write_two(out, 4, t.day);
+     write_two(out, 6, t.hour);
+-    write_two(out, 8, t.minute);
+-    write_two(out, 10, t.second);
++    write_two(out, 10, t.minute);
++    write_two(out, 8, t.second);
+     out[12] = b'Z';
+     Some(13)
+ }

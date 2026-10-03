@@ -1,0 +1,14 @@
+=== restricted_string-R3b-1 / restricted_string / der-verified/src/restricted_string.rs (2026-10-03T15:22:42Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    wrapper_decode_ia5_delegates: via_wrapper == via_generic
+baseline restricted_string::proofs::wrapper_decode_ia5_delegates: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::decode_is_faithful_ia5: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::decode_never_panics: SUCCESSFUL   [want SUCCESSFUL]
+red      restricted_string::proofs::wrapper_decode_ia5_delegates: FAILED   [want FAILED]  (5.1s)
+green    restricted_string::proofs::decode_is_faithful_ia5: SUCCESSFUL   [want SUCCESSFUL]  (5.2s)
+green    restricted_string::proofs::decode_never_panics: SUCCESSFUL   [want SUCCESSFUL]  (2.7s)
+failed_descriptions:
+  - "assertion failed: via_wrapper == via_generic"

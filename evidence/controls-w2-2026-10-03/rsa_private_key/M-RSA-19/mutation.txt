@@ -1,0 +1,21 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+                if content.is_empty() {
+                    return Err(RsaPrivateKeyError::OtherPrimeInfosEmpty);
+
+--- new ---
+                if false {
+                    return Err(RsaPrivateKeyError::OtherPrimeInfosEmpty);
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -418,7 +418,7 @@
+                 if used != rest.len() {
+                     return Err(RsaPrivateKeyError::TrailingElements);
+                 }
+-                if content.is_empty() {
++                if false {
+                     return Err(RsaPrivateKeyError::OtherPrimeInfosEmpty);
+                 }
+                 // `OtherPrimeInfo` is a fully-closed grammar (unlike pkcs8's ANY-shaped `SET OF

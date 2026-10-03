@@ -1,0 +1,17 @@
+=== M-RSA-3 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T17:53:47Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-RSA-1 r == expected (UnsupportedVersion becomes another outcome); H-RSA-3a; H-RSA-4a (v>1 leg)
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_rejects_missing_fields: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_rejects_two_octet_version: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_faithful_two_prime_s1: FAILED   [want FAILED]  (175.7s)
+red      rsa_private_key::proofs::parse_rejects_missing_fields: FAILED   [want FAILED]  (77.0s)
+red      rsa_private_key::proofs::parse_other_prime_infos_tail_empty: FAILED   [want FAILED]  (53.5s)
+green    rsa_private_key::proofs::parse_rejects_two_octet_version: SUCCESSFUL   [want SUCCESSFUL]  (33.5s)
+failed_descriptions:
+  - ""parse_rsa_private_key result differs from the total expected result""
+  - ""parse_rsa_private_key result differs from the expected tail outcome""

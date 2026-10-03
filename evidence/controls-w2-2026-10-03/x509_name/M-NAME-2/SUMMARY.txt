@@ -1,0 +1,12 @@
+=== M-NAME-2 / x509_name / der-verified/src/x509_name.rs (2026-10-03T18:41:27Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-NAME-3d r == expected (AtvTrailingElements becomes Ok)
+baseline x509_name::proofs::validate_name_atv_trailing_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_name::proofs::validate_name_atv_trailing_exact: FAILED   [want FAILED]  (101.9s)
+green    x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]  (105.8s)
+failed_descriptions:
+  - ""validate_name result differs from the total expected result""

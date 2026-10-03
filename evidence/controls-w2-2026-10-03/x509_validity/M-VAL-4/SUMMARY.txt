@@ -1,0 +1,12 @@
+=== M-VAL-4 / x509_validity / der-verified/src/x509_validity.rs (2026-10-03T16:46:44Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    r1 == Err(MissingNotAfter)
+baseline x509_validity::proofs::parse_validity_rejects_missing_fields: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_validity::proofs::parse_validity_rejects_missing_fields: FAILED   [want FAILED]  (20.6s)
+green    x509_validity::proofs::parse_validity_faithful: SUCCESSFUL   [want SUCCESSFUL]  (17.9s)
+failed_descriptions:
+  - "assertion failed: r1 == Err(ValidityError::MissingNotAfter)"

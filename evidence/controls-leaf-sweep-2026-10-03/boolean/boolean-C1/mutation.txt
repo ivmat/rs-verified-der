@@ -1,0 +1,17 @@
+file: der-verified/src/boolean.rs
+--- old ---
+        _ => Err(BoolError::NonCanonical),
+--- new ---
+        _ => Ok(true),
+--- unified diff ---
+--- a/der-verified/src/boolean.rs
++++ b/der-verified/src/boolean.rs
+@@ -45,7 +45,7 @@
+     match content[0] {
+         0x00 => Ok(false),
+         0xFF => Ok(true),
+-        _ => Err(BoolError::NonCanonical),
++        _ => Ok(true),
+     }
+ }
+ 

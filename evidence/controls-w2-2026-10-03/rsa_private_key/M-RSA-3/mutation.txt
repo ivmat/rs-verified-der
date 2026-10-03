@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    } else if version_content.len() == 1 && version_content[0] == 0x01 {
+
+--- new ---
+    } else if version_content.len() == 1 && version_content[0] >= 0x01 {
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -371,7 +371,7 @@
+         decode_integer_tlv(outer_content).map_err(RsaPrivateKeyError::Version)?;
+     let version_is_multi = if version_content.len() == 1 && version_content[0] == 0x00 {
+         false
+-    } else if version_content.len() == 1 && version_content[0] == 0x01 {
++    } else if version_content.len() == 1 && version_content[0] >= 0x01 {
+         true
+     } else {
+         return Err(RsaPrivateKeyError::UnsupportedVersion);

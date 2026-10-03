@@ -1,0 +1,10 @@
+=== octet_string-R4-2 / octet_string / der-verified/src/tlv.rs (2026-10-03T15:18:40Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    encode_with_symbolic_capacity_is_exact: out[n..] == backing[n..]
+baseline octet_string::proofs::encode_with_symbolic_capacity_is_exact: SUCCESSFUL   [want SUCCESSFUL]
+red      octet_string::proofs::encode_with_symbolic_capacity_is_exact: FAILED   [want FAILED]  (3.3s)
+failed_descriptions:
+  - "assertion failed: out[n..] == backing[n..]"

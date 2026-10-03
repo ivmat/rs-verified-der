@@ -1,0 +1,14 @@
+=== M-EXT-4 / x509_extension / der-verified/src/x509_extension.rs (2026-10-03T17:03:18Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-EXT-2a assert r == Err(EmptyExtensions)
+baseline x509_extension::proofs::validate_extensions_structured_empty: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::parse_extension_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_extension::proofs::validate_extensions_structured_empty: FAILED   [want FAILED]  (19.8s)
+green    x509_extension::proofs::parse_extension_faithful: SUCCESSFUL   [want SUCCESSFUL]  (90.3s)
+green    x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]  (25.4s)
+failed_descriptions:
+  - "assertion failed: r == Err(ExtensionsError::EmptyExtensions)"

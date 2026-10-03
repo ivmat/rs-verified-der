@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    if version_is_multi != other_prime_infos.is_some() {
+
+--- new ---
+    if false {
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -439,7 +439,7 @@
+ 
+     // 5. RFC 8017's cross-field rule, checked only now that both version and (if present)
+     // otherPrimeInfos have each individually validated.
+-    if version_is_multi != other_prime_infos.is_some() {
++    if false {
+         return Err(RsaPrivateKeyError::VersionMismatch);
+     }
+ 

@@ -1,0 +1,12 @@
+=== generalized_time-G2 / generalized_time / der-verified/src/generalized_time.rs (2026-10-03T15:19:36Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    short_length_is_bad_length :453
+baseline generalized_time::proofs::short_length_is_bad_length: SUCCESSFUL   [want SUCCESSFUL]
+baseline generalized_time::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]
+red      generalized_time::proofs::short_length_is_bad_length: FAILED   [want FAILED]  (1.2s)
+green    generalized_time::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]  (3.7s)
+failed_descriptions:
+  - "assertion failed: decode_generalized_time(&buf[..n]) == Err(GeneralizedTimeError::BadLength)"

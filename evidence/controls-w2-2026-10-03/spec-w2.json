@@ -1,0 +1,1322 @@
+[
+ {
+  "id": "M-CTX-1",
+  "module": "context_tag",
+  "src": "der-verified/src/context_tag.rs",
+  "old": "    if tlv.tag.number != expected_number {\n",
+  "new": "    if tlv.tag.number > expected_number {\n",
+  "red": [
+   "context_tag::proofs::decode_explicit_context_faithful",
+   "context_tag::proofs::decode_explicit_context_exact_result"
+  ],
+  "green": [
+   "context_tag::proofs::decode_explicit_context_never_panics"
+  ],
+  "predicted_assert": "faithful: result.is_ok() == expected_ok; exact: r == expected",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-CTX-2",
+  "module": "context_tag",
+  "src": "der-verified/src/context_tag.rs",
+  "old": "    if !tlv.tag.constructed {\n",
+  "new": "    if false {\n",
+  "red": [
+   "context_tag::proofs::decode_explicit_context_faithful",
+   "context_tag::proofs::decode_explicit_context_exact_result"
+  ],
+  "green": [
+   "context_tag::proofs::decode_explicit_context_never_panics"
+  ],
+  "predicted_assert": "faithful: result.is_ok() == expected_ok; exact: r == expected",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-CTX-3",
+  "module": "context_tag",
+  "src": "der-verified/src/context_tag.rs",
+  "old": "        return Err(ContextTagError::WrongClass);\n",
+  "new": "        return Err(ContextTagError::WrongNumber);\n",
+  "red": [
+   "context_tag::proofs::decode_explicit_context_exact_result"
+  ],
+  "green": [
+   "context_tag::proofs::decode_explicit_context_faithful"
+  ],
+  "predicted_assert": "exact: r == expected only",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-CTX-4",
+  "module": "context_tag",
+  "src": "der-verified/src/context_tag.rs",
+  "old": "    let (tlv, used) = decode_tlv(input).map_err(ContextTagError::BadTlv)?;\n",
+  "new": "    let (tlv, used) = decode_tlv(input).map_err(|_| ContextTagError::WrongClass)?;\n",
+  "red": [
+   "context_tag::proofs::decode_explicit_context_exact_result"
+  ],
+  "green": [
+   "context_tag::proofs::decode_explicit_context_faithful"
+  ],
+  "predicted_assert": "exact: r == expected only",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-1",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "    if na_used != rest.len() {\n",
+  "new": "    if na_used > rest.len() {\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_faithful",
+   "x509_validity::proofs::parse_validity_faithful_uu",
+   "x509_validity::proofs::parse_validity_faithful_ug",
+   "x509_validity::proofs::parse_validity_faithful_gu",
+   "x509_validity::proofs::parse_validity_faithful_gg"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_never_panics",
+   "x509_validity::proofs::parse_validity_ok_path_witnessed"
+  ],
+  "predicted_assert": "result == Err(TrailingBytes) leg",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-2",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "        GENERALIZED_TIME_TAG => {\n",
+  "new": "        GENERALIZED_TIME_TAG if false => {\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_faithful_ug",
+   "x509_validity::proofs::parse_validity_faithful_gu",
+   "x509_validity::proofs::parse_validity_faithful_gg"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_faithful",
+   "x509_validity::proofs::parse_validity_faithful_uu"
+  ],
+  "predicted_assert": "result == Ok(..) in 2b/2c/2d; (implementer-added extra RED expected: 3b t==0x18 leg)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-3",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "    if outer_content.is_empty() {\n",
+  "new": "    if false {\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_rejects_missing_fields"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_faithful"
+  ],
+  "predicted_assert": "r0 == Err(MissingNotBefore)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-4",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "        return Err(ValidityError::MissingNotAfter);\n",
+  "new": "        return Err(ValidityError::TrailingBytes);\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_rejects_missing_fields"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_faithful"
+  ],
+  "predicted_assert": "r1 == Err(MissingNotAfter)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-5",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "    if tlv.tag.class != Class::Universal {\n",
+  "new": "    if false {\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_rejects_field_identifier"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_faithful_uu"
+  ],
+  "predicted_assert": "result == expected (t==0x97 etc. accepted)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-6",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "        UTC_TIME_TAG => {\n            if tlv.tag.constructed {\n",
+  "new": "        UTC_TIME_TAG => {\n            if false {\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_rejects_field_identifier"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_faithful_uu",
+   "x509_validity::proofs::parse_validity_faithful_ug",
+   "x509_validity::proofs::parse_validity_faithful_gu",
+   "x509_validity::proofs::parse_validity_faithful_gg"
+  ],
+  "predicted_assert": "result == expected (t==0x37)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-7",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "    Ok(Validity { not_before, not_after })\n",
+  "new": "    Ok(Validity { not_before: not_after, not_after: not_before })\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_faithful",
+   "x509_validity::proofs::parse_validity_faithful_uu",
+   "x509_validity::proofs::parse_validity_faithful_ug",
+   "x509_validity::proofs::parse_validity_faithful_gu",
+   "x509_validity::proofs::parse_validity_faithful_gg"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_rejects_missing_fields"
+  ],
+  "predicted_assert": "result == Ok(..) (swapped fields)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "behaviour named by the red harnesses",
+  "provenance": [
+   "W2-1-2-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-1",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "\n    if ev_used != value_input.len() {\n",
+  "new": "\n    if ev_used > value_input.len() {\n",
+  "red": [
+   "x509_extension::proofs::parse_extension_faithful"
+  ],
+  "green": [
+   "x509_extension::proofs::parse_extension_never_panics"
+  ],
+  "predicted_assert": "H-EXT-1 (i) result == expected (TrailingInExtension leg; Err becomes Ok)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "public parse_extension body",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-2",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "            if !b {\n",
+  "new": "            if false {\n",
+  "red": [
+   "x509_extension::proofs::parse_extension_faithful"
+  ],
+  "green": [
+   "x509_extension::proofs::parse_extension_never_panics",
+   "x509_extension::proofs::validate_extensions_structured_one_member"
+  ],
+  "predicted_assert": "H-EXT-1 (ii) section-11.5 assert (and also (i) result == expected)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "public parse_extension body",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-3",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "            if peek.tag.constructed {\n",
+  "new": "            if false {\n",
+  "red": [
+   "x509_extension::proofs::parse_extension_faithful"
+  ],
+  "green": [
+   "x509_extension::proofs::validate_extensions_structured_one_member"
+  ],
+  "predicted_assert": "H-EXT-1 (i) result == expected (CriticalConstructed leg)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "public parse_extension body",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-4",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "    if count == 0 {\n",
+  "new": "    if false {\n",
+  "red": [
+   "x509_extension::proofs::validate_extensions_structured_empty"
+  ],
+  "green": [
+   "x509_extension::proofs::parse_extension_faithful",
+   "x509_extension::proofs::validate_extensions_structured_one_member"
+  ],
+  "predicted_assert": "H-EXT-2a assert r == Err(EmptyExtensions)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "public validate_extensions body",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-5",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "    validate_oid(tlv.value).map_err(ExtensionError::BadOid)?;\n",
+  "new": "",
+  "red": [
+   "x509_extension::proofs::parse_extension_faithful",
+   "x509_extension::proofs::validate_extensions_structured_one_member",
+   "x509_extension::proofs::validate_extensions_structured_two_members"
+  ],
+  "green": [
+   "x509_extension::proofs::validate_extensions_structured_empty"
+  ],
+  "predicted_assert": "H-EXT-1 (i) result == expected; H-EXT-2b/2c r == expected (BadOid leg). Sibling is H-EXT-2a (no member) because the existing validate_extensions_ok_path_witnessed is >16 GB at unwind 12 (watchdog-killed)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper decode_extn_id_tlv",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-6",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "    Ok(Extension { extn_id, critical, extn_value })\n",
+  "new": "    Ok(Extension { extn_id, critical: true, extn_value })\n",
+  "red": [
+   "x509_extension::proofs::parse_extension_faithful"
+  ],
+  "green": [
+   "x509_extension::proofs::validate_extensions_structured_two_members"
+  ],
+  "predicted_assert": "H-EXT-1 (i) result == expected and (iii) ext.critical == (rest[0] == 0x01)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "public parse_extension body",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-7",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "\n        return Err(ExtensionError::ExtnIdWrongTag);\n",
+  "new": "\n        return Err(ExtensionError::ExtnIdConstructed);\n",
+  "red": [
+   "x509_extension::proofs::parse_extension_faithful"
+  ],
+  "green": [
+   "x509_extension::proofs::parse_extension_never_panics",
+   "x509_extension::proofs::validate_extensions_structured_two_members"
+  ],
+  "predicted_assert": "H-EXT-1 (i) result == expected only (variant swap; the exact-result teeth)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper decode_extn_id_tlv (ADDED by implementer, not in the plan table)",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-EXT-8",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "        off += used;\n",
+  "new": "        off += 2;\n",
+  "red": [
+   "x509_extension::proofs::validate_extensions_structured_one_member",
+   "x509_extension::proofs::validate_extensions_structured_two_members",
+   "x509_extension::proofs::validate_extensions_structured_second_identifier"
+  ],
+  "green": [
+   "x509_extension::proofs::validate_extensions_structured_empty",
+   "x509_extension::proofs::parse_extension_faithful"
+  ],
+  "predicted_assert": "H-EXT-2b/c/d r == expected (walk misparses after the first member: the child at offset 2 is the extnID TLV, a WrongTag SEQUENCE); H-EXT-2a (no member) unaffected",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "public validate_extensions body (ADDED by implementer, not in the plan table)",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-1",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    if !rest.is_empty() {\n        return Err(RsaPrivateKeyError::TrailingElements);\n",
+  "new": "    if false {\n        return Err(RsaPrivateKeyError::TrailingElements);\n",
+  "red": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_set"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s2",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_trailing"
+  ],
+  "predicted_assert": "H-RSA-1 r == expected (tail leg: TrailingElements becomes Ok/VersionMismatch); H-RSA-4e r == expected (tail 31 00). 4d (30 00 yy) is NOT affected: it returns TrailingElements from the in-SEQUENCE used != rest.len() check, so it is a predicted GREEN sibling (plan table lists only RED H-RSA-1/4e)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "private parse_fields (shared by both public entries)",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-2",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    if version_is_multi != other_prime_infos.is_some() {\n",
+  "new": "    if false {\n",
+  "red": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1",
+   "rsa_private_key::proofs::parse_faithful_two_prime_s2",
+   "rsa_private_key::proofs::parse_rejects_missing_fields",
+   "rsa_private_key::proofs::parse_multi_prime_faithful"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_rejects_two_octet_version",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_empty"
+  ],
+  "predicted_assert": "H-RSA-1/2 and H-RSA-3a (kk==9) r == expected (VersionMismatch becomes Ok); H-RSA-5 (v == 0 leg: expected Err(VersionMismatch), observed Ok) fails the Ok-arm assert `multi-prime tail accepted only with version 1`",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "private parse_fields",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-3",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    } else if version_content.len() == 1 && version_content[0] == 0x01 {\n",
+  "new": "    } else if version_content.len() == 1 && version_content[0] >= 0x01 {\n",
+  "red": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1",
+   "rsa_private_key::proofs::parse_rejects_missing_fields",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_empty"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_rejects_two_octet_version"
+  ],
+  "predicted_assert": "H-RSA-1 r == expected (UnsupportedVersion becomes another outcome); H-RSA-3a; H-RSA-4a (v>1 leg)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "private parse_fields",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-4",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    validate_integer_content(tlv.value).map_err(IntegerFieldError::Content)?;\n",
+  "new": "",
+  "red": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s2",
+   "rsa_private_key::proofs::parse_rejects_two_octet_version"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_empty"
+  ],
+  "predicted_assert": "H-RSA-2 r == expected (Field(f, Content(NonMinimal)) becomes Ok); H-RSA-3b r == expected (Version(Content) becomes UnsupportedVersion). H-RSA-1 GREEN: 1-octet contents are always minimal",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper decode_integer_tlv",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-5",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    let (prime1, used) = decode_field(rest, RsaField::Prime1)?;\n",
+  "new": "    let (prime1, used) = decode_field(rest, RsaField::Prime2)?;\n",
+  "red": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s2",
+   "rsa_private_key::proofs::parse_rejects_missing_fields"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1"
+  ],
+  "predicted_assert": "H-RSA-2 r == expected (Field(Prime1, ..) reported as Field(Prime2, ..)); H-RSA-3a r == expected (MissingField(Prime1) at kk == 4)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "private parse_fields",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-6",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "                if used != rest.len() {\n",
+  "new": "                if used > rest.len() {\n",
+  "red": [
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_trailing"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_empty"
+  ],
+  "predicted_assert": "H-RSA-4d r == expected (30 00 yy gives OtherPrimeInfosEmpty instead of TrailingElements)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "private parse_fields",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-7",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    Ok((key, used))\n",
+  "new": "    Ok((key, input.len()))\n",
+  "red": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s2",
+   "rsa_private_key::proofs::parse_multi_prime_faithful"
+  ],
+  "predicted_assert": "H-RSA-1 r == expected (used == outer total, with post_len > 0). S2/H-RSA-5 have no post bytes so input.len() == used there: GREEN",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "PUBLIC parse_rsa_private_key body",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-8",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "                    return Err(RsaPrivateKeyError::OtherPrimeInfosEmpty);\n",
+  "new": "                    return Err(RsaPrivateKeyError::TrailingElements);\n",
+  "red": [
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_empty"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_trailing"
+  ],
+  "predicted_assert": "H-RSA-4a r == expected only (variant swap; the exact-result teeth) (ADDED by implementer, not in the plan table)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "private parse_fields",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-RSA-9",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "                (Some(content), &rest[used..])\n",
+  "new": "                (None, &rest[used..])\n",
+  "red": [
+   "rsa_private_key::proofs::parse_multi_prime_faithful"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_faithful_two_prime_s1",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_empty"
+  ],
+  "predicted_assert": "H-RSA-5: v == 1 now gives Err(VersionMismatch) where the Ok arm was expected (assert `a version-1 multi-prime key must be accepted`), and v == 0 gives Ok with other_prime_infos None (assert `multi-prime tail accepted only with version 1`) (ADDED by implementer)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "private parse_fields",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-NAME-1",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    if rdn_content.is_empty() {\n",
+  "new": "    if false {\n",
+  "red": [
+   "x509_name::proofs::validate_name_empty_rdn"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_single_atv_exact"
+  ],
+  "predicted_assert": "H-NAME-3b assert r == Err(EmptyRdn)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper validate_rdn",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-NAME-2",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    if value_used != rest.len() {\n        return Err(NameError::AtvTrailingElements);\n",
+  "new": "    if value_used > rest.len() {\n        return Err(NameError::AtvTrailingElements);\n",
+  "red": [
+   "x509_name::proofs::validate_name_atv_trailing_exact"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_single_atv_exact"
+  ],
+  "predicted_assert": "H-NAME-3d r == expected (AtvTrailingElements becomes Ok)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper validate_atv",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "re-anchored: old widened to two lines so it occurs once (same mutation `!=` -> `>`)"
+ },
+ {
+  "id": "M-NAME-3",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    validate_oid(tlv.value).map_err(NameError::BadAtvOid)?;\n",
+  "new": "",
+  "red": [
+   "x509_name::proofs::validate_name_single_atv_exact",
+   "x509_name::proofs::validate_name_two_rdns_exact",
+   "x509_name::proofs::validate_name_atv_trailing_exact",
+   "x509_name::proofs::validate_name_atv_missing_value_exact"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_empty_rdn"
+  ],
+  "predicted_assert": "H-NAME-1/3a/3d/3e r == expected (BadAtvOid leg becomes Ok / a later error). Plan table lists H-NAME-1/2/3a; H-NAME-2 is not shipped (wall)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper decode_atv_oid_tlv",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-NAME-4",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    if !tlv.tag.constructed {\n        return Err(NameError::AtvNotConstructed);\n",
+  "new": "    if false {\n        return Err(NameError::AtvNotConstructed);\n",
+  "red": [
+   "x509_name::proofs::validate_name_atv_identifier"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_single_atv_exact",
+   "x509_name::proofs::validate_name_two_rdns_exact"
+  ],
+  "predicted_assert": "H-NAME-1 ATV-identifier harness r == expected (ATV t == 0x10)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper validate_atv",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-NAME-5",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "        off += used;\n",
+  "new": "        off += 2;\n",
+  "red": [
+   "x509_name::proofs::validate_name_two_rdns_exact",
+   "x509_name::proofs::validate_name_single_atv_exact"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_empty_rdn",
+   "x509_name::proofs::validate_name_empty_sequence_accepted",
+   "x509_name::proofs::validate_name_atv_trailing_exact"
+  ],
+  "predicted_assert": "H-NAME-3a r == expected (second RDN misparsed). ALSO H-NAME-1 base (single RDN of 9 octets: off becomes 2 < 9 and the loop re-enters on the ATV, BadRdn(WrongTag) where Ok expected). The plan table lists H-NAME-1 as GREEN sibling: by analysis that is wrong; preregistered here as RED",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "PUBLIC validate_name body",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-NAME-6",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "        return Err(NameError::EmptyRdn);\n",
+  "new": "        return Err(NameError::AtvTrailingElements);\n",
+  "red": [
+   "x509_name::proofs::validate_name_empty_rdn"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_single_atv_exact"
+  ],
+  "predicted_assert": "H-NAME-3b assert r == Err(EmptyRdn) only (variant swap; exact-result teeth) (ADDED by implementer)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper validate_rdn",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-NAME-7",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "        return Err(NameError::AtvOidWrongTag);\n",
+  "new": "        return Err(NameError::AtvOidConstructed);\n",
+  "red": [
+   "x509_name::proofs::validate_name_oid_identifier"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_single_atv_exact",
+   "x509_name::proofs::validate_name_atv_identifier"
+  ],
+  "predicted_assert": "H-NAME-1 OID-identifier harness r == expected only (variant swap) (ADDED by implementer)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "same-module private helper decode_atv_oid_tlv",
+  "provenance": [
+   "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+  ],
+  "primary_provenance": "composed-contract",
+  "status": "re-anchored",
+  "anchor": "old text must occur once in the final tree (check_applicability.py)"
+ },
+ {
+  "id": "M-VAL-8",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "    let t = decode_utc_time(tlv.value).map_err(TimeError::BadUtc)?;\n",
+  "new": "    let t = decode_utc_time(tlv.value).map_err(|_| TimeError::WrongTag)?;\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_rejects_field_content",
+   "x509_validity::proofs::parse_validity_rejects_field_length"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_faithful_uu",
+   "x509_validity::proofs::parse_validity_rejects_field_identifier"
+  ],
+  "predicted_assert": "content: result == expected on a BadUtc leg; length: same on l < 13",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "UTCTime field content errors surface as BadUtc(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-VAL-9",
+  "module": "x509_validity",
+  "src": "der-verified/src/x509_validity.rs",
+  "old": "    let (tlv, used) = decode_tlv(input).map_err(TimeError::BadTlv)?;\n",
+  "new": "    let (tlv, used) = decode_tlv(input).map_err(|_| TimeError::WrongTag)?;\n",
+  "red": [
+   "x509_validity::proofs::parse_validity_rejects_field_length"
+  ],
+  "green": [
+   "x509_validity::proofs::parse_validity_rejects_field_content",
+   "x509_validity::proofs::parse_validity_faithful_uu",
+   "x509_validity::proofs::parse_validity_rejects_field_identifier"
+  ],
+  "predicted_assert": "length: result == expected on a BadTlv leg",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "Time field framing errors surface as BadTlv(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-EXT-9",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "    let outer = decode_sequence_tlv_strict(input).map_err(ExtensionsError::BadOuterSeq)?;\n",
+  "new": "    let outer = decode_sequence_tlv_strict(input).map_err(|_| ExtensionsError::EmptyExtensions)?;\n",
+  "red": [
+   "x509_extension::proofs::validate_extensions_rejects_outer_envelope"
+  ],
+  "green": [
+   "x509_extension::proofs::validate_extensions_rejects_child_framing",
+   "x509_extension::proofs::validate_extensions_structured_one_member"
+  ],
+  "predicted_assert": "outer envelope: outer envelope result differs from the primitive's decision",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "validate_extensions maps outer envelope errors to BadOuterSeq(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-EXT-10",
+  "module": "x509_extension",
+  "src": "der-verified/src/x509_extension.rs",
+  "old": "            ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::Tlv(e)))\n",
+  "new": "            { let _ = e; ExtensionsError::EmptyExtensions }\n",
+  "red": [
+   "x509_extension::proofs::validate_extensions_rejects_child_framing"
+  ],
+  "green": [
+   "x509_extension::proofs::validate_extensions_rejects_outer_envelope",
+   "x509_extension::proofs::validate_extensions_structured_second_identifier",
+   "x509_extension::proofs::validate_extensions_structured_one_member"
+  ],
+  "predicted_assert": "child framing: child framing error differs from the primitive's error",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "validate_extensions maps a child framing error to BadExtension(BadSeq(Tlv(e)))",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-10",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "        decode_sequence_tlv(input).map_err(RsaPrivateKeyError::BadOuterSeq)?;\n",
+  "new": "        decode_sequence_tlv(input).map_err(|_| RsaPrivateKeyError::MissingVersion)?;\n",
+  "red": [
+   "rsa_private_key::proofs::parse_rejects_outer_identifier"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_rejects_field_identifier",
+   "rsa_private_key::proofs::parse_rejects_two_octet_version"
+  ],
+  "predicted_assert": "outer identifier: assert!(r == Err(e)) on a non-0x30 identifier",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "parse_rsa_private_key (composable) maps outer envelope errors to BadOuterSeq(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-11",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "        return Err(IntegerFieldError::WrongTag);\n",
+  "new": "        return Err(IntegerFieldError::Constructed);\n",
+  "red": [
+   "rsa_private_key::proofs::parse_rejects_field_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_identifier"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_rejects_field_length",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape"
+  ],
+  "predicted_assert": "field identifier result differs from expected; member rejection differs from expected",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "an INTEGER with a wrong identifier is WrongTag",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-12",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    if tlv.tag.constructed {\n        return Err(IntegerFieldError::Constructed);\n",
+  "new": "    if false {\n        return Err(IntegerFieldError::Constructed);\n",
+  "red": [
+   "rsa_private_key::proofs::parse_rejects_field_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_identifier"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_rejects_field_length",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape"
+  ],
+  "predicted_assert": "field identifier result differs from expected (0x22 accepted); member rejection differs from expected",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "a constructed INTEGER identifier is Constructed",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-13",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    let (tlv, used) = decode_tlv(input).map_err(IntegerFieldError::Tlv)?;\n",
+  "new": "    let (tlv, used) = decode_tlv(input).map_err(|_| IntegerFieldError::WrongTag)?;\n",
+  "red": [
+   "rsa_private_key::proofs::parse_rejects_field_length",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_length"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_rejects_field_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape"
+  ],
+  "predicted_assert": "field length result differs from expected; member rejection differs from expected",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "INTEGER framing errors surface as Tlv(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-14",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "        validate_other_prime_info(member_content).map_err(RsaPrivateKeyError::OtherPrimeInfoMember)?;\n",
+  "new": "        validate_other_prime_info(member_content).map_err(|_| RsaPrivateKeyError::TrailingElements)?;\n",
+  "red": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_length",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_length"
+  ],
+  "predicted_assert": "member rejection differs from expected",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "a malformed member is reported as OtherPrimeInfoMember(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-15",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "OtherPrimeInfoError::BadSeq(e)",
+  "new": "{ let _ = e; OtherPrimeInfoError::BadSeq(SequenceError::WrongTag) }",
+  "red": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_length"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape"
+  ],
+  "predicted_assert": "member rejection differs from expected (BadSeq payload)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "a malformed member SEQUENCE envelope carries the primitive's SequenceError",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-16",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "            return Err(OtherPrimeInfoError::MissingField(field));\n",
+  "new": "            return Err(OtherPrimeInfoError::TrailingElements);\n",
+  "red": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_identifier"
+  ],
+  "predicted_assert": "member rejection differs from expected (MissingField)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "a member ending before one of its three INTEGERs is MissingField(f)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-17",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "    if !rest.is_empty() {\n        return Err(OtherPrimeInfoError::TrailingElements);\n",
+  "new": "    if false {\n        return Err(OtherPrimeInfoError::TrailingElements);\n",
+  "red": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_length"
+  ],
+  "predicted_assert": "a malformed member was accepted (kk == 4)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "a member with a fourth element is TrailingElements",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-18",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": ".map_err(|e| OtherPrimeInfoError::Field(field, e))?;",
+  "new": ".map_err(|e| OtherPrimeInfoError::Field(OpiField::Prime, e))?;",
+  "red": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_identifier",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_length"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_shape",
+   "rsa_private_key::proofs::parse_multi_prime_rejects_member_identifier"
+  ],
+  "predicted_assert": "member rejection differs from expected (field name)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "a malformed member INTEGER names its field",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-RSA-19",
+  "module": "rsa_private_key",
+  "src": "der-verified/src/rsa_private_key.rs",
+  "old": "                if content.is_empty() {\n                    return Err(RsaPrivateKeyError::OtherPrimeInfosEmpty);\n",
+  "new": "                if false {\n                    return Err(RsaPrivateKeyError::OtherPrimeInfosEmpty);\n",
+  "red": [
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_empty"
+  ],
+  "green": [
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_primitive",
+   "rsa_private_key::proofs::parse_other_prime_infos_tail_trailing"
+  ],
+  "predicted_assert": "otherPrimeInfos member walk reached in a shape that must not reach it (the sentinel, alone)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "the sentinel stub fails the proof when the member walk is reached",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-NAME-8",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    for child in Elements::new(rdn_content) {\n",
+  "new": "    for child in Elements::new(rdn_content).take(1) {\n",
+  "red": [
+   "x509_name::proofs::validate_name_two_atvs_exact"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_single_atv_exact",
+   "x509_name::proofs::validate_name_two_atvs_unsorted",
+   "x509_name::proofs::validate_name_two_rdns_exact"
+  ],
+  "predicted_assert": "validate_name result differs from the total expected result (second ATV's OID fails)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "every ATV of an RDN is validated, not only the first",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-NAME-9",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    let (rdn_content, used) = decode_set_of_tlv(input).map_err(NameError::BadRdn)?;\n",
+  "new": "    let (rdn_content, used) = decode_set_of_tlv(input).map_err(|e| match e {\n        SetOfError::Unsorted { .. } => NameError::EmptyRdn,\n        other => NameError::BadRdn(other),\n    })?;\n",
+  "red": [
+   "x509_name::proofs::validate_name_two_atvs_unsorted"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_rdn_identifier",
+   "x509_name::proofs::validate_name_two_atvs_exact"
+  ],
+  "predicted_assert": "assertion failed: r == Err(NameError::BadRdn(SetOfError::Unsorted { index: 0 }))",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "an unsorted SET OF of ATVs is BadRdn(Unsorted)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-NAME-10",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    let (_value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvValueTlv)?;\n",
+  "new": "    let (_value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvOidTlv)?;\n",
+  "red": [
+   "x509_name::proofs::validate_name_atv_value_length",
+   "x509_name::proofs::validate_name_atv_oid_length"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_single_atv_exact",
+   "x509_name::proofs::validate_name_two_atvs_exact"
+  ],
+  "predicted_assert": "validate_name result differs from the total expected result (BadAtvValueTlv leg)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "ATV value framing errors surface as BadAtvValueTlv(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-NAME-11",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "    let (tlv, used) = decode_tlv(input).map_err(NameError::BadAtvOidTlv)?;\n",
+  "new": "    let (tlv, used) = decode_tlv(input).map_err(NameError::BadAtvValueTlv)?;\n",
+  "red": [
+   "x509_name::proofs::validate_name_atv_oid_length"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_atv_value_length",
+   "x509_name::proofs::validate_name_two_atvs_exact"
+  ],
+  "predicted_assert": "validate_name result differs from the total expected result (BadAtvOidTlv leg)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "ATV type framing errors surface as BadAtvOidTlv(e)",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ },
+ {
+  "id": "M-NAME-12",
+  "module": "x509_name",
+  "src": "der-verified/src/x509_name.rs",
+  "old": "fn validate_atv(tlv: Tlv<'_>) -> Result<(), NameError> {\n",
+  "new": "fn validate_atv(tlv: Tlv<'_>) -> Result<(), NameError> {\n    let _early = decode_atv_oid_tlv(tlv.value)?;\n",
+  "red": [
+   "x509_name::proofs::validate_name_atv_identifier"
+  ],
+  "green": [
+   "x509_name::proofs::validate_name_oid_identifier",
+   "x509_name::proofs::validate_name_single_atv_exact"
+  ],
+  "predicted_assert": "validate_name result differs from the total expected result (identifier outranks OID content)",
+  "stubbing": true,
+  "timeout_s": 3600,
+  "claim": "the ATV identifier is checked before the OID content",
+  "provenance": [
+   "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+  ],
+  "primary_provenance": "pin-completion",
+  "status": "new",
+  "anchor": "old text occurs once in the final tree"
+ }
+]

@@ -1,0 +1,17 @@
+file: der-verified/src/utc_time.rs
+--- old ---
+            return Err(UtcTimeError::NonDigit);
+--- new ---
+            return Err(if content[12] != b'Z' { UtcTimeError::NotZulu } else { UtcTimeError::NonDigit });
+--- unified diff ---
+--- a/der-verified/src/utc_time.rs
++++ b/der-verified/src/utc_time.rs
+@@ -146,7 +146,7 @@
+     let mut i = 0;
+     while i < 12 {
+         if !content[i].is_ascii_digit() {
+-            return Err(UtcTimeError::NonDigit);
++            return Err(if content[12] != b'Z' { UtcTimeError::NotZulu } else { UtcTimeError::NonDigit });
+         }
+         i += 1;
+     }

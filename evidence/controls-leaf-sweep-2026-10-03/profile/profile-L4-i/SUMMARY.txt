@@ -1,0 +1,16 @@
+=== profile-L4-i / profile / der-verified/src/generalized_time.rs (2026-10-03T16:37:05Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    rule4/precedence: r == expected (fractional time accepted); the generalized_time harness require_no_fraction_iff_no_fraction_octets is red for the same mutation per generalized_time-R3a-1
+baseline profile::proofs::rule4_fraction_iff_generalized_with_fraction: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::validate_profile_is_exactly_the_documented_precedence: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::rule4_fraction_iff_generalized_with_fraction: FAILED   [want FAILED]  (1.4s)
+red      profile::proofs::validate_profile_is_exactly_the_documented_precedence: FAILED   [want FAILED]  (2.9s)
+green    profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]  (0.9s)
+green    profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]  (0.9s)
+failed_descriptions:
+  - "assertion failed: r == expected"

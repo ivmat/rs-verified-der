@@ -1,0 +1,19 @@
+file: der-verified/src/tlv.rs
+--- old ---
+    out[t + l..total].copy_from_slice(value);
+    Some(total)
+--- new ---
+    out[t + l..total].copy_from_slice(value);
+    if out.len() > total { out[total] = 0xAA; }
+    Some(total)
+--- unified diff ---
+--- a/der-verified/src/tlv.rs
++++ b/der-verified/src/tlv.rs
+@@ -119,6 +119,7 @@
+     out[..t].copy_from_slice(&tbuf[..t]);
+     out[t..t + l].copy_from_slice(&lbuf[..l]);
+     out[t + l..total].copy_from_slice(value);
++    if out.len() > total { out[total] = 0xAA; }
+     Some(total)
+ }
+ 

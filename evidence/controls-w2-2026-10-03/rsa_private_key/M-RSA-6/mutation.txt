@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+                if used != rest.len() {
+
+--- new ---
+                if used > rest.len() {
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -415,7 +415,7 @@
+                 // primitive-form `NotConstructed`) are genuinely `OtherPrimeInfos(_)` errors.
+                 let (content, used) =
+                     decode_sequence_tlv(rest).map_err(RsaPrivateKeyError::OtherPrimeInfos)?;
+-                if used != rest.len() {
++                if used > rest.len() {
+                     return Err(RsaPrivateKeyError::TrailingElements);
+                 }
+                 if content.is_empty() {

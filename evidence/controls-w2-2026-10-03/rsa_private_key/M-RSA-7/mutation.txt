@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    Ok((key, used))
+
+--- new ---
+    Ok((key, input.len()))
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -481,7 +481,7 @@
+     let (outer_content, used) =
+         decode_sequence_tlv(input).map_err(RsaPrivateKeyError::BadOuterSeq)?;
+     let key = parse_fields(outer_content)?;
+-    Ok((key, used))
++    Ok((key, input.len()))
+ }
+ 
+ /// Parse a complete DER `RSAPrivateKey`, requiring it to consume the *entire* `input` (no trailing

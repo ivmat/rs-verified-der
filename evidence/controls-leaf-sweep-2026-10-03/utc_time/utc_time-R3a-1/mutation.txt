@@ -1,0 +1,21 @@
+file: der-verified/src/utc_time.rs
+--- old ---
+    if out.len() < 13 {
+        return None;
+    }
+--- new ---
+    if out.len() < 13 {
+        return Some(0);
+    }
+--- unified diff ---
+--- a/der-verified/src/utc_time.rs
++++ b/der-verified/src/utc_time.rs
+@@ -188,7 +188,7 @@
+         return None;
+     }
+     if out.len() < 13 {
+-        return None;
++        return Some(0);
+     }
+     write_two(out, 0, t.year2);
+     write_two(out, 2, t.month);

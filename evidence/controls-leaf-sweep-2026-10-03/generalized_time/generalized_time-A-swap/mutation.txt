@@ -1,0 +1,180 @@
+file: der-verified/src/generalized_time.rs
+--- old ---
+    let minute = two_digits(content, 10);
+    let second = two_digits(content, 12);
+    if month < 1 || month > 12 {
+        return Err(GeneralizedTimeError::MonthRange);
+    }
+    if day < 1 || day > 31 {
+        return Err(GeneralizedTimeError::DayRange);
+    }
+    if hour > 23 {
+        return Err(GeneralizedTimeError::HourRange);
+    }
+    if minute > 59 {
+        return Err(GeneralizedTimeError::MinuteRange);
+    }
+    if second > 59 {
+        return Err(GeneralizedTimeError::SecondRange);
+    }
+    // The middle segment `content[14..last]` is either empty (no fraction) or `.` + fraction digits.
+    let fraction: &[u8] = if last == 14 {
+        // len == 15: no fraction; content[14] is the 'Z' terminator.
+        &content[14..14]
+    } else {
+        // A fraction is present: the separator must be the point '.', not a comma or other char.
+        if content[14] != b'.' {
+            return Err(GeneralizedTimeError::BadFractionSeparator);
+        }
+        let frac = &content[15..last];
+        if frac.is_empty() {
+            return Err(GeneralizedTimeError::FractionEmpty);
+        }
+        let mut j = 0;
+        while j < frac.len() {
+            if !frac[j].is_ascii_digit() {
+                return Err(GeneralizedTimeError::NonDigit);
+            }
+            j += 1;
+        }
+        // No trailing zero — this also forbids an all-zero fraction (which must be omitted, §11.7).
+        if frac[frac.len() - 1] == b'0' {
+            return Err(GeneralizedTimeError::FractionTrailingZero);
+        }
+        frac
+    };
+    Ok(GeneralizedTime { year, month, day, hour, minute, second, fraction })
+}
+
+/// Encode a [`GeneralizedTime`] as canonical DER content (`YYYYMMDDHHMMSS[.fff]Z`) into `out`.
+///
+/// Returns the number of octets written, or `None` if any field is out of range, the fraction is not
+/// canonical (non-digit or trailing zero), or `out` is too small. The guards make this the exact
+/// inverse of [`decode_generalized_time`].
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+pub fn encode_generalized_time_into(t: &GeneralizedTime<'_>, out: &mut [u8]) -> Option<usize> {
+    if !fields_in_range(t) {
+        return None;
+    }
+    if !fraction_is_canonical(t.fraction) {
+        return None;
+    }
+    let has_frac = !t.fraction.is_empty();
+    // 14 mandatory digits + optional ('.' + fraction) + 'Z'. `fraction.len()` is bounded by the
+    // slice-size invariant (≤ isize::MAX), so the additions never overflow `usize`.
+    let total = 14 + if has_frac { 1 + t.fraction.len() } else { 0 } + 1;
+    if out.len() < total {
+        return None;
+    }
+    out[0] = b'0' + (t.year / 1000) as u8;
+    out[1] = b'0' + (t.year / 100 % 10) as u8;
+    out[2] = b'0' + (t.year / 10 % 10) as u8;
+    out[3] = b'0' + (t.year % 10) as u8;
+    write_two(out, 4, t.month);
+    write_two(out, 6, t.day);
+    write_two(out, 8, t.hour);
+    write_two(out, 10, t.minute);
+    write_two(out, 12, t.second);
+--- new ---
+    let minute = two_digits(content, 12);
+    let second = two_digits(content, 10);
+    if month < 1 || month > 12 {
+        return Err(GeneralizedTimeError::MonthRange);
+    }
+    if day < 1 || day > 31 {
+        return Err(GeneralizedTimeError::DayRange);
+    }
+    if hour > 23 {
+        return Err(GeneralizedTimeError::HourRange);
+    }
+    if minute > 59 {
+        return Err(GeneralizedTimeError::MinuteRange);
+    }
+    if second > 59 {
+        return Err(GeneralizedTimeError::SecondRange);
+    }
+    // The middle segment `content[14..last]` is either empty (no fraction) or `.` + fraction digits.
+    let fraction: &[u8] = if last == 14 {
+        // len == 15: no fraction; content[14] is the 'Z' terminator.
+        &content[14..14]
+    } else {
+        // A fraction is present: the separator must be the point '.', not a comma or other char.
+        if content[14] != b'.' {
+            return Err(GeneralizedTimeError::BadFractionSeparator);
+        }
+        let frac = &content[15..last];
+        if frac.is_empty() {
+            return Err(GeneralizedTimeError::FractionEmpty);
+        }
+        let mut j = 0;
+        while j < frac.len() {
+            if !frac[j].is_ascii_digit() {
+                return Err(GeneralizedTimeError::NonDigit);
+            }
+            j += 1;
+        }
+        // No trailing zero — this also forbids an all-zero fraction (which must be omitted, §11.7).
+        if frac[frac.len() - 1] == b'0' {
+            return Err(GeneralizedTimeError::FractionTrailingZero);
+        }
+        frac
+    };
+    Ok(GeneralizedTime { year, month, day, hour, minute, second, fraction })
+}
+
+/// Encode a [`GeneralizedTime`] as canonical DER content (`YYYYMMDDHHMMSS[.fff]Z`) into `out`.
+///
+/// Returns the number of octets written, or `None` if any field is out of range, the fraction is not
+/// canonical (non-digit or trailing zero), or `out` is too small. The guards make this the exact
+/// inverse of [`decode_generalized_time`].
+///
+/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+pub fn encode_generalized_time_into(t: &GeneralizedTime<'_>, out: &mut [u8]) -> Option<usize> {
+    if !fields_in_range(t) {
+        return None;
+    }
+    if !fraction_is_canonical(t.fraction) {
+        return None;
+    }
+    let has_frac = !t.fraction.is_empty();
+    // 14 mandatory digits + optional ('.' + fraction) + 'Z'. `fraction.len()` is bounded by the
+    // slice-size invariant (≤ isize::MAX), so the additions never overflow `usize`.
+    let total = 14 + if has_frac { 1 + t.fraction.len() } else { 0 } + 1;
+    if out.len() < total {
+        return None;
+    }
+    out[0] = b'0' + (t.year / 1000) as u8;
+    out[1] = b'0' + (t.year / 100 % 10) as u8;
+    out[2] = b'0' + (t.year / 10 % 10) as u8;
+    out[3] = b'0' + (t.year % 10) as u8;
+    write_two(out, 4, t.month);
+    write_two(out, 6, t.day);
+    write_two(out, 8, t.hour);
+    write_two(out, 12, t.minute);
+    write_two(out, 10, t.second);
+--- unified diff ---
+--- a/der-verified/src/generalized_time.rs
++++ b/der-verified/src/generalized_time.rs
+@@ -203,8 +203,8 @@
+     let month = two_digits(content, 4);
+     let day = two_digits(content, 6);
+     let hour = two_digits(content, 8);
+-    let minute = two_digits(content, 10);
+-    let second = two_digits(content, 12);
++    let minute = two_digits(content, 12);
++    let second = two_digits(content, 10);
+     if month < 1 || month > 12 {
+         return Err(GeneralizedTimeError::MonthRange);
+     }
+@@ -277,8 +277,8 @@
+     write_two(out, 4, t.month);
+     write_two(out, 6, t.day);
+     write_two(out, 8, t.hour);
+-    write_two(out, 10, t.minute);
+-    write_two(out, 12, t.second);
++    write_two(out, 12, t.minute);
++    write_two(out, 10, t.second);
+     let mut pos = 14;
+     if has_frac {
+         out[pos] = b'.';

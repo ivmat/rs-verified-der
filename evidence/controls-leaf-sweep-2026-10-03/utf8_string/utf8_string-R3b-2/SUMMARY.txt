@@ -1,0 +1,12 @@
+=== utf8_string-R3b-2 / utf8_string / der-verified/src/utf8_string.rs (2026-10-03T15:48:46Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    encode_is_exact_over_content_and_capacity: r == None
+baseline utf8_string::proofs::encode_is_exact_over_content_and_capacity: SUCCESSFUL   [want SUCCESSFUL]
+baseline utf8_string::proofs::roundtrip: SUCCESSFUL   [want SUCCESSFUL]
+red      utf8_string::proofs::encode_is_exact_over_content_and_capacity: FAILED   [want FAILED]  (86.7s)
+green    utf8_string::proofs::roundtrip: SUCCESSFUL   [want SUCCESSFUL]  (75.1s)
+failed_descriptions:
+  - "assertion failed: r == None"

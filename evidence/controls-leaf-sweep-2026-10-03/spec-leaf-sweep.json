@@ -1,0 +1,2193 @@
+[
+ {
+  "id": "boolean-C1",
+  "module": "boolean",
+  "claim": "decode_bool accepts only 0x00/0xFF (BER-lax any-non-zero-TRUE must be red)",
+  "src": "der-verified/src/boolean.rs",
+  "old": "        _ => Err(BoolError::NonCanonical),",
+  "new": "        _ => Ok(true),",
+  "red": [
+   "boolean::proofs::one_octet_is_canonical"
+  ],
+  "green": [
+   "boolean::proofs::roundtrip",
+   "boolean::proofs::wrong_length_is_bad_length"
+  ],
+  "predicted_assert": "one_octet_is_canonical (b=0x01 gives Ok(true))",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: preregistered in grading record G1 section 3.1 C1 (NOT in spec-G1.json, so not part of the 30 observed-red runs)"
+  ],
+  "status": "applicable",
+  "anchor": "old text occurs once in 1374f9b",
+  "notes": "G1 predicted RED already at pristine; never run by the 2026-10-02 runner (boolean absent from spec-G1.json). First observed-red run will be at the final sha.",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "boolean-C2",
+  "module": "boolean",
+  "claim": "decode_bool rejects every length other than 1 (accept-trailing-octets must be red)",
+  "src": "der-verified/src/boolean.rs",
+  "old": "    if content.len() != 1 {",
+  "new": "    if content.is_empty() {",
+  "red": [
+   "boolean::proofs::wrong_length_is_bad_length"
+  ],
+  "green": [
+   "boolean::proofs::one_octet_is_canonical",
+   "boolean::proofs::roundtrip"
+  ],
+  "predicted_assert": "wrong_length_is_bad_length",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: preregistered in grading record G1 section 3.1 C2 (NOT in spec-G1.json, so not part of the 30 observed-red runs)",
+   "harness-A-results.md Item 1 \"Extra control (G1 C2)\": wrong_length_is_bad_length FAILED on `decode_bool(&buf[..n]) == Err(BoolError::BadLength)` (round A, observed red)"
+  ],
+  "status": "applicable",
+  "anchor": "old text occurs once in 1374f9b",
+  "dedup_of": [
+   "harness-A extra control G1 C2 (same mutation)"
+  ],
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "boolean-C3",
+  "module": "boolean",
+  "claim": "wrong-length error variant is BadLength (variant swap must be red)",
+  "src": "der-verified/src/boolean.rs",
+  "old": "        return Err(BoolError::BadLength);",
+  "new": "        return Err(BoolError::NonCanonical);",
+  "red": [
+   "boolean::proofs::wrong_length_is_bad_length"
+  ],
+  "green": [
+   "boolean::proofs::one_octet_is_canonical",
+   "boolean::proofs::roundtrip"
+  ],
+  "predicted_assert": "wrong_length_is_bad_length",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: preregistered in grading record G1 section 3.1 C3 (NOT in spec-G1.json, so not part of the 30 observed-red runs)"
+  ],
+  "status": "applicable",
+  "anchor": "old text occurs once in 1374f9b",
+  "notes": "G1 predicted RED already at pristine; never run (boolean absent from spec-G1.json).",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "boolean-C4",
+  "module": "boolean",
+  "claim": "TRUE is 0xFF and FALSE is 0x00 (polarity swap in encode AND decode must be red: decode(encode(v)) round-trip hides it)",
+  "src": "der-verified/src/boolean.rs",
+  "old": "    if v {\n        0xFF\n    } else {\n        0x00\n    }\n}\n\n/// Decode BOOLEAN content octets. Accepts only the canonical `0x00` / `0xFF`.\npub fn decode_bool(content: &[u8]) -> Result<bool, BoolError> {\n    if content.len() != 1 {\n        return Err(BoolError::BadLength);\n    }\n    match content[0] {\n        0x00 => Ok(false),\n        0xFF => Ok(true),",
+  "new": "    if !v {\n        0xFF\n    } else {\n        0x00\n    }\n}\n\n/// Decode BOOLEAN content octets. Accepts only the canonical `0x00` / `0xFF`.\npub fn decode_bool(content: &[u8]) -> Result<bool, BoolError> {\n    if content.len() != 1 {\n        return Err(BoolError::BadLength);\n    }\n    match content[0] {\n        0x00 => Ok(true),\n        0xFF => Ok(false),",
+  "red": [
+   "boolean::proofs::one_octet_is_canonical"
+  ],
+  "green": [
+   "boolean::proofs::roundtrip",
+   "boolean::proofs::wrong_length_is_bad_length"
+  ],
+  "predicted_assert": "one_octet_is_canonical: v == (b == 0xFF)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: preregistered in grading record G1 section 3.1 C4 (polarity; \"today all GREEN, the disqualifier\", predicted RED after the F1 fix) (NOT in spec-G1.json, so not part of the 30 observed-red runs)",
+   "harness-A-results.md Item 1 gap witness (three hunks in boolean.rs): one_octet_is_canonical FAILED on `v == (b == 0xFF)`; roundtrip and wrong_length stayed SUCCESSFUL (round A, observed red)"
+  ],
+  "status": "applicable",
+  "anchor": "re-expressed as ONE contiguous span covering the three hunks (encode_bool `if v {`, decode `0x00 =>`, `0xFF =>`); the runner takes one old/new pair",
+  "notes": "three hunks merged into one contiguous old/new span (lines 33-47 of boolean.rs).",
+  "dedup_of": [
+   "harness-A gap witness boolean polarity (same three hunks)"
+  ],
+  "primary_provenance": "G1",
+  "text_basis": "merged-span"
+ },
+ {
+  "id": "null-C1",
+  "module": "null",
+  "claim": "decode_null accepts exactly the empty content",
+  "src": "der-verified/src/null.rs",
+  "old": "if content.is_empty() {",
+  "new": "if content.len() <= 1 {",
+  "red": [
+   "null::proofs::only_empty_is_valid"
+  ],
+  "green": [],
+  "predicted_assert": "only_empty_is_valid :45",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id null-C1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3",
+   "harness-A-results.md Item 2 gap witness: only_empty_is_valid FAILED at n == 1 on `decode_null(&buf[..n]) == Err(NullError::NonEmpty)` (round A, observed red)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "dedup_of": [
+   "harness-A gap witness null (same mutation)"
+  ],
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "enumerated-C1",
+  "module": "enumerated",
+  "claim": "decode_enumerated delegates to decode_integer without truncation",
+  "src": "der-verified/src/enumerated.rs",
+  "old": "crate::integer::decode_integer(content)",
+  "new": "crate::integer::decode_integer(&content[..content.len().min(8)])",
+  "red": [
+   "enumerated::proofs::decode_delegates_to_integer"
+  ],
+  "green": [
+   "enumerated::proofs::roundtrip",
+   "enumerated::proofs::encode_delegates_to_integer"
+  ],
+  "predicted_assert": ":57",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id enumerated-C1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "enumerated-C2",
+  "module": "enumerated",
+  "claim": "decode_enumerated keeps the sign (no unsigned re-tag)",
+  "src": "der-verified/src/enumerated.rs",
+  "old": "crate::integer::decode_integer(content)",
+  "new": "crate::integer::decode_integer(content).map(|v| v & i64::MAX)",
+  "red": [
+   "enumerated::proofs::decode_delegates_to_integer",
+   "enumerated::proofs::roundtrip"
+  ],
+  "green": [
+   "enumerated::proofs::encode_delegates_to_integer"
+  ],
+  "predicted_assert": ":57 / :123",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id enumerated-C2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "bit_string-C1",
+  "module": "bit_string",
+  "claim": "decoder checks all `unused` padding bits (mask off-by-one must be red)",
+  "src": "der-verified/src/bit_string.rs",
+  "old": "let mask = (1u8 << unused) - 1; // the low",
+  "new": "let mask = (1u8 << unused.saturating_sub(1)) - 1; // the low",
+  "red": [
+   "bit_string::proofs::nonzero_padding_is_classified",
+   "bit_string::proofs::decode_accepts_only_canonical",
+   "bit_string::proofs::accepted_iff_canonical_oracle"
+  ],
+  "green": [
+   "bit_string::proofs::roundtrip_canonical",
+   "bit_string::proofs::unused_too_large_is_classified",
+   "bit_string::proofs::empty_nonzero_unused_is_classified",
+   "bit_string::proofs::encode_rejects_exactly_the_non_canonical"
+  ],
+  "predicted_assert": ":264",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id bit_string-C1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3",
+   "harness-A-results.md Item 4 gap witness C1: FAILED in decode_accepts_only_canonical, accepted_iff_canonical_oracle, nonzero_padding_is_classified; encode_rejects_exactly_the_non_canonical stayed SUCCESSFUL (round A)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "notes": "red set = grader red + the two harnesses round A saw fail; green adds encode_rejects_exactly_the_non_canonical (round A: stays SUCCESSFUL).",
+  "dedup_of": [
+   "harness-A gap witness C1 (same mutation)"
+  ],
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "bit_string-C2",
+  "module": "bit_string",
+  "claim": "too-large unused count is classified UnusedBitsTooLarge",
+  "src": "der-verified/src/bit_string.rs",
+  "old": "return Err(BitStringError::UnusedBitsTooLarge);",
+  "new": "return Err(BitStringError::NonZeroPadding);",
+  "red": [
+   "bit_string::proofs::unused_too_large_is_classified"
+  ],
+  "green": [
+   "bit_string::proofs::decode_accepts_only_canonical",
+   "bit_string::proofs::roundtrip_canonical",
+   "bit_string::proofs::nonzero_padding_is_classified"
+  ],
+  "predicted_assert": ":251",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id bit_string-C2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "bit_string-C3",
+  "module": "bit_string",
+  "claim": "decoded BitString keeps the unused count",
+  "src": "der-verified/src/bit_string.rs",
+  "old": "Ok(BitString { data, unused })",
+  "new": "Ok(BitString { data, unused: 0 })",
+  "red": [
+   "bit_string::proofs::decode_accepts_only_canonical"
+  ],
+  "green": [
+   "bit_string::proofs::octet_aligned_iff_unused_zero",
+   "bit_string::proofs::nonzero_padding_is_classified"
+  ],
+  "predicted_assert": ":232",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id bit_string-C3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "bit_string-A-E2",
+  "module": "bit_string",
+  "claim": "encoder rejects a set padding bit (encoder mask off-by-one must be red)",
+  "src": "der-verified/src/bit_string.rs",
+  "old": "        let mask = (1u8 << unused) - 1;\n        if data[data.len() - 1] & mask != 0 {\n            return None;",
+  "new": "        let mask = (1u8 << unused.saturating_sub(1)) - 1;\n        if data[data.len() - 1] & mask != 0 {\n            return None;",
+  "red": [
+   "bit_string::proofs::encode_rejects_exactly_the_non_canonical"
+  ],
+  "green": [
+   "bit_string::proofs::roundtrip_canonical",
+   "bit_string::proofs::decode_accepts_only_canonical"
+  ],
+  "predicted_assert": "encode_rejects_exactly_the_non_canonical: r == None",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-A-results.md Item 4 gap witness E2 (round A): FAILED on `r == None`; roundtrip_canonical and decode_accepts_only_canonical stayed SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text (encoder block, single occurrence with its trailing `return None;`)",
+  "primary_provenance": "round-A",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "bit_string-A-E3",
+  "module": "bit_string",
+  "claim": "encoder rejects empty data with unused != 0",
+  "src": "der-verified/src/bit_string.rs",
+  "old": "        if unused != 0 {\n            return None;",
+  "new": "        if unused > 1 {\n            return None;",
+  "red": [
+   "bit_string::proofs::encode_rejects_exactly_the_non_canonical"
+  ],
+  "green": [],
+  "predicted_assert": "encode_rejects_exactly_the_non_canonical: r == None",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-A-results.md Item 4 gap witness E3 (round A): FAILED on `r == None`"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text (encoder, `return None;` form; the decoder twin returns Err and does not match)",
+  "primary_provenance": "round-A",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "bit_string-R2-1",
+  "module": "bit_string",
+  "claim": "decode_bit_string reports the exact error variant (exact-result reference)",
+  "src": "der-verified/src/bit_string.rs",
+  "old": "        return Err(BitStringError::NonZeroPadding);",
+  "new": "        return Err(if content.len() == 3 { BitStringError::UnusedBitsTooLarge } else { BitStringError::NonZeroPadding });",
+  "red": [
+   "bit_string::proofs::decode_is_exactly_the_reference"
+  ],
+  "green": [
+   "bit_string::proofs::accepted_iff_canonical_oracle",
+   "bit_string::proofs::nonzero_padding_is_classified"
+  ],
+  "predicted_assert": "decode_is_exactly_the_reference: got == want",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r2-results.md Item 3 (round 2): decode_is_exactly_the_reference FAILED `got == want`; old harnesses accepted_iff_canonical_oracle and nonzero_padding_is_classified SUCCESSFUL on the mutant"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text (the mutation text was given only as prose in the results; this is its exact form)",
+  "primary_provenance": "round-r2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "bit_string-R4-1",
+  "module": "bit_string",
+  "claim": "encoder writes only out[..total] (write contract, bytes past total untouched)",
+  "src": "der-verified/src/bit_string.rs",
+  "old": "    out[1..total].copy_from_slice(data);\n    Some(total)",
+  "new": "    out[1..total].copy_from_slice(data);\n    if out.len() > total { out[total] = 0xAA; }\n    Some(total)",
+  "red": [
+   "bit_string::proofs::encode_rejects_exactly_the_non_canonical"
+  ],
+  "green": [],
+  "predicted_assert": "encode_rejects_exactly_the_non_canonical: out[..] == backing[..]",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 2 (round 4): `if out.len() > total { out[total] = 0xAA }` before `Some(total)` FAILED `out[w..] == backing[w..]`"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r4",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "octet_string-C1",
+  "module": "octet_string",
+  "claim": "decode_octet_string requires UNIVERSAL 4 (class AND number)",
+  "src": "der-verified/src/octet_string.rs",
+  "old": "tlv.tag.class != Class::Universal || tlv.tag.number != TAG",
+  "new": "tlv.tag.class != Class::Universal && tlv.tag.number != TAG",
+  "red": [
+   "octet_string::proofs::accepted_identifier_is_canonical_0x04"
+  ],
+  "green": [
+   "octet_string::proofs::accepted_content_is_the_tlv_value",
+   "octet_string::proofs::constructed_form_is_rejected",
+   "octet_string::proofs::roundtrip_small"
+  ],
+  "predicted_assert": ":185",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id octet_string-C1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "octet_string-C2",
+  "module": "octet_string",
+  "claim": "constructed form is rejected for every body",
+  "src": "der-verified/src/octet_string.rs",
+  "old": "if tlv.tag.constructed {",
+  "new": "if tlv.tag.constructed && tlv.value.is_empty() {",
+  "red": [
+   "octet_string::proofs::constructed_form_is_rejected"
+  ],
+  "green": [
+   "octet_string::proofs::non_octet_string_tag_is_wrong_tag",
+   "octet_string::proofs::roundtrip_small"
+  ],
+  "predicted_assert": ":152",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id octet_string-C2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "octet_string-C3",
+  "module": "octet_string",
+  "claim": "decode_octet_string returns the exact consumed length",
+  "src": "der-verified/src/octet_string.rs",
+  "old": "Ok((tlv.value, used))",
+  "new": "Ok((tlv.value, used - 1))",
+  "red": [
+   "octet_string::proofs::roundtrip_small"
+  ],
+  "green": [
+   "octet_string::proofs::accepted_identifier_is_canonical_0x04",
+   "octet_string::proofs::constructed_form_is_rejected",
+   "octet_string::proofs::non_octet_string_tag_is_wrong_tag"
+  ],
+  "predicted_assert": ":94",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G1: spec-G1.json id octet_string-C3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G1 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G1",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "octet_string-A-1",
+  "module": "octet_string",
+  "claim": "TLV-layer errors are passed through as Tlv(e) (not collapsed into WrongTag)",
+  "src": "der-verified/src/octet_string.rs",
+  "old": "    let (tlv, used) = decode_tlv(input).map_err(OctetStringError::Tlv)?;",
+  "new": "    let (tlv, used) = decode_tlv(input).map_err(|_| OctetStringError::WrongTag)?;",
+  "red": [
+   "octet_string::proofs::classification_is_exact"
+  ],
+  "green": [
+   "octet_string::proofs::accepted_content_is_the_tlv_value"
+  ],
+  "predicted_assert": "classification_is_exact: r == Err(OctetStringError::Tlv(e))",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-A-results.md Item 3 gap witness (round A): classification_is_exact FAILED on `r == Err(OctetStringError::Tlv(e))`; accepted_content_is_the_tlv_value stayed SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-A",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "octet_string-R3a-1",
+  "module": "octet_string",
+  "claim": "encoder accepts every output capacity >= 2 + len (symbolic capacity)",
+  "src": "der-verified/src/octet_string.rs",
+  "old": "    encode_tlv_into(tag, content, out)\n}",
+  "new": "    if out.len() != 16 { return None; }\n    encode_tlv_into(tag, content, out)\n}",
+  "red": [
+   "octet_string::proofs::encode_with_symbolic_capacity_is_exact"
+  ],
+  "green": [
+   "octet_string::proofs::roundtrip_small"
+  ],
+  "predicted_assert": "encode_with_symbolic_capacity_is_exact: r == Some(2 + len)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3a-results.md Item 5 (round 3a): \"reject every output capacity other than 16\" FAILED `r == Some(2 + len)`; roundtrip_small (fixed 16-octet output) SUCCESSFUL on the mutant"
+  ],
+  "status": "applicable",
+  "anchor": "results said \"`if out.len() != 16 { return None; }` as the first line of encode_octet_string_into\"; inserted as the line directly before the delegation (equivalent: the two preceding lines only build `tag`)",
+  "primary_provenance": "round-r3a",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "octet_string-R4-1",
+  "module": "octet_string",
+  "claim": "encoder writes nothing on None (write contract)",
+  "src": "der-verified/src/tlv.rs",
+  "old": "    let total = t + l + value.len();\n    if out.len() < total {\n        return None;",
+  "new": "    let total = t + l + value.len();\n    if out.len() < total {\n        if !out.is_empty() { out[0] = 0xEE; }\n        return None;",
+  "red": [
+   "octet_string::proofs::encode_with_symbolic_capacity_is_exact"
+  ],
+  "green": [],
+  "predicted_assert": "encode_with_symbolic_capacity_is_exact: out == backing",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 2 (round 4): `out[0] = 0xEE` before the capacity `return None` in encode_tlv_into FAILED `out == backing`"
+  ],
+  "status": "applicable",
+  "anchor": "mutation lives in tlv.rs (a LIDDED module; the runner restores the bytes, but never commit a mutated tlv.rs). The results gave the text as `out[0] = 0xEE`; written here as `if !out.is_empty() { out[0] = 0xEE; }` so cap == 0 is not a bounds panic (a panic would also be red, but this keeps the intent: a write on the reject path).",
+  "primary_provenance": "round-r4",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "octet_string-R4-2",
+  "module": "octet_string",
+  "claim": "encoder writes only out[..total] (bytes past total untouched)",
+  "src": "der-verified/src/tlv.rs",
+  "old": "    out[t + l..total].copy_from_slice(value);\n    Some(total)",
+  "new": "    out[t + l..total].copy_from_slice(value);\n    if out.len() > total { out[total] = 0xAA; }\n    Some(total)",
+  "red": [
+   "octet_string::proofs::encode_with_symbolic_capacity_is_exact"
+  ],
+  "green": [],
+  "predicted_assert": "encode_with_symbolic_capacity_is_exact: out[n..] == backing[n..]",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 2 (round 4): `out[total] = 0xAA` when room, in encode_tlv_into, FAILED `out[n..] == backing[n..]`"
+  ],
+  "status": "applicable",
+  "anchor": "mutation lives in tlv.rs (LIDDED module; transient, restored by the runner)",
+  "primary_provenance": "round-r4",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utc_time-U1",
+  "module": "utc_time",
+  "claim": "terminator must be exactly uppercase Z",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "if content[12] != b'Z' {",
+  "new": "if content[12] != b'Z' && content[12] != b'z' {",
+  "red": [
+   "utc_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "green": [
+   "utc_time::proofs::month_range_is_classified"
+  ],
+  "predicted_assert": "accepted_iff_canonical_oracle :310 (lowercase z accepted)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id utc_time-U1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utc_time-U2",
+  "module": "utc_time",
+  "claim": "month field range is 01..=12",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "if month < 1 || month > 12 {",
+  "new": "if month < 1 || month > 13 {",
+  "red": [
+   "utc_time::proofs::month_range_is_classified"
+  ],
+  "green": [
+   "utc_time::proofs::day_range_is_classified"
+  ],
+  "predicted_assert": "month_range_is_classified :362 (mo=13 Ok)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id utc_time-U2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utc_time-U3",
+  "module": "utc_time",
+  "claim": "full_year_rfc5280 pivot is year2 < 50 => 20YY",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "if t.year2 < 50 {",
+  "new": "if t.year2 <= 50 {",
+  "red": [
+   "utc_time::proofs::full_year_pivot_is_correct"
+  ],
+  "green": [
+   "utc_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "predicted_assert": "full_year_pivot_is_correct :454",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id utc_time-U3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utc_time-A-swap",
+  "module": "utc_time",
+  "claim": "minute and second fields are read from / written to their own octet positions (paired decode+encode swap hides from every round-trip harness)",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "    let minute = two_digits(content, 8);\n    let second = two_digits(content, 10);\n    if month < 1 || month > 12 {\n        return Err(UtcTimeError::MonthRange);\n    }\n    if day < 1 || day > 31 {\n        return Err(UtcTimeError::DayRange);\n    }\n    if hour > 23 {\n        return Err(UtcTimeError::HourRange);\n    }\n    if minute > 59 {\n        return Err(UtcTimeError::MinuteRange);\n    }\n    if second > 59 {\n        return Err(UtcTimeError::SecondRange);\n    }\n    Ok(UtcTime { year2, month, day, hour, minute, second })\n}\n\n/// Encode a [`UtcTime`] as canonical DER content (`YYMMDDHHMMSSZ`, 13 octets) into `out`.\n///\n/// Returns the number of octets written (always 13), or `None` if any field is out of its canonical\n/// range or `out` is too small. The range guard makes this the exact inverse of [`decode_utc_time`].\n///\n/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.\npub fn encode_utc_time(t: &UtcTime, out: &mut [u8]) -> Option<usize> {\n    if !fields_in_range(t) {\n        return None;\n    }\n    if out.len() < 13 {\n        return None;\n    }\n    write_two(out, 0, t.year2);\n    write_two(out, 2, t.month);\n    write_two(out, 4, t.day);\n    write_two(out, 6, t.hour);\n    write_two(out, 8, t.minute);\n    write_two(out, 10, t.second);",
+  "new": "    let minute = two_digits(content, 10);\n    let second = two_digits(content, 8);\n    if month < 1 || month > 12 {\n        return Err(UtcTimeError::MonthRange);\n    }\n    if day < 1 || day > 31 {\n        return Err(UtcTimeError::DayRange);\n    }\n    if hour > 23 {\n        return Err(UtcTimeError::HourRange);\n    }\n    if minute > 59 {\n        return Err(UtcTimeError::MinuteRange);\n    }\n    if second > 59 {\n        return Err(UtcTimeError::SecondRange);\n    }\n    Ok(UtcTime { year2, month, day, hour, minute, second })\n}\n\n/// Encode a [`UtcTime`] as canonical DER content (`YYMMDDHHMMSSZ`, 13 octets) into `out`.\n///\n/// Returns the number of octets written (always 13), or `None` if any field is out of its canonical\n/// range or `out` is too small. The range guard makes this the exact inverse of [`decode_utc_time`].\n///\n/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.\npub fn encode_utc_time(t: &UtcTime, out: &mut [u8]) -> Option<usize> {\n    if !fields_in_range(t) {\n        return None;\n    }\n    if out.len() < 13 {\n        return None;\n    }\n    write_two(out, 0, t.year2);\n    write_two(out, 2, t.month);\n    write_two(out, 4, t.day);\n    write_two(out, 6, t.hour);\n    write_two(out, 10, t.minute);\n    write_two(out, 8, t.second);",
+  "red": [
+   "utc_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "green": [
+   "utc_time::proofs::roundtrip_all_fields",
+   "utc_time::proofs::decode_accepts_only_canonical"
+  ],
+  "predicted_assert": "accepted_iff_canonical_oracle: t.minute == digit pair at 8/9",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-A-results.md Item 5 (round A): four edits applied together; accepted_iff_canonical_oracle FAILED on `t.minute == (buf[8] - b'0') * 10 + (buf[9] - b'0')`; roundtrip_all_fields and decode_accepts_only_canonical stayed SUCCESSFUL (G2 R-U1 paired-fault blind spot)"
+  ],
+  "status": "applicable",
+  "anchor": "four hunks (decode minute/second reads, encode minute/second writes) merged into ONE contiguous span from `let minute = two_digits(content, 8);` through `write_two(out, 10, t.second);` (about 33 production lines)",
+  "primary_provenance": "round-A",
+  "text_basis": "merged-span"
+ },
+ {
+  "id": "utc_time-R2-1",
+  "module": "utc_time",
+  "claim": "decode_utc_time returns the exact error variant (NonDigit vs NotZulu on overlap; exact-result reference)",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "            return Err(UtcTimeError::NonDigit);",
+  "new": "            return Err(if content[12] != b'Z' { UtcTimeError::NotZulu } else { UtcTimeError::NonDigit });",
+  "red": [
+   "utc_time::proofs::decode_is_exactly_the_reference"
+  ],
+  "green": [
+   "utc_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "predicted_assert": "decode_is_exactly_the_reference: got == want",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r2-results.md Item 2 (round 2): FAILED `got == want`; old accepted_iff_canonical_oracle SUCCESSFUL on the mutant"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utc_time-R3a-1",
+  "module": "utc_time",
+  "claim": "encode_utc_time returns None when the output is shorter than 13 octets (symbolic capacity)",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "    if out.len() < 13 {\n        return None;\n    }",
+  "new": "    if out.len() < 13 {\n        return Some(0);\n    }",
+  "red": [
+   "utc_time::proofs::encode_is_total_exact_oracle"
+  ],
+  "green": [
+   "utc_time::proofs::roundtrip_all_fields",
+   "utc_time::proofs::decode_accepts_only_canonical"
+  ],
+  "predicted_assert": "encode_is_total_exact_oracle: r.is_none()",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3a-results.md Item 4 (round 3a): `if out.len() < 13 { return None; }` -> `return Some(0);` FAILED `r.is_none()`; old roundtrip_all_fields / decode_accepts_only_canonical SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r3a",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utc_time-R4-1",
+  "module": "utc_time",
+  "claim": "encode_utc_time writes nothing on None (write contract)",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "    if out.len() < 13 {\n        return None;\n    }",
+  "new": "    if out.len() < 13 {\n        if !out.is_empty() { out[0] = 0xEE; }\n        return None;\n    }",
+  "red": [
+   "utc_time::proofs::encode_is_total_exact_oracle"
+  ],
+  "green": [],
+  "predicted_assert": "encode_is_total_exact_oracle: out == backing",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 2 (round 4): `out[0] = 0xEE` before the capacity `return None` FAILED `out == backing`"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; guarded write (see octet_string-R4-1)",
+  "primary_provenance": "round-r4",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "utc_time-R4-2",
+  "module": "utc_time",
+  "claim": "full_year_rfc5280 formula holds for ALL year2 values (above-99 inputs map to 1900 + year2)",
+  "src": "der-verified/src/utc_time.rs",
+  "old": "    if t.year2 < 50 {\n        2000 + t.year2 as u16",
+  "new": "    if t.year2 > 99 { return 0; }\n    if t.year2 < 50 {\n        2000 + t.year2 as u16",
+  "red": [
+   "utc_time::proofs::full_year_pivot_is_correct"
+  ],
+  "green": [],
+  "predicted_assert": "full_year_pivot_is_correct: full == 1900 + y as u16",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 3 (round 4): `if t.year2 > 99 { return 0 }` FAILED `full == 1900 + y as u16`"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r4",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "generalized_time-G1",
+  "module": "generalized_time",
+  "claim": "fraction must not end in 0 (checks the LAST digit)",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "if frac[frac.len() - 1] == b'0' {",
+  "new": "if frac[0] == b'0' {",
+  "red": [
+   "generalized_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "green": [
+   "generalized_time::proofs::bad_fraction_separator_is_classified"
+  ],
+  "predicted_assert": "accepted_iff_canonical_oracle :439-441",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id generalized_time-G1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "generalized_time-G2",
+  "module": "generalized_time",
+  "claim": "minimum length is 15 octets (BadLength below)",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "if content.len() < 15 {",
+  "new": "if content.len() < 14 {",
+  "red": [
+   "generalized_time::proofs::short_length_is_bad_length"
+  ],
+  "green": [
+   "generalized_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "predicted_assert": "short_length_is_bad_length :453",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id generalized_time-G2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "generalized_time-G3",
+  "module": "generalized_time",
+  "claim": "hour field range is 00..=23",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "if hour > 23 {",
+  "new": "if hour > 24 {",
+  "red": [
+   "generalized_time::proofs::hour_range_is_classified"
+  ],
+  "green": [
+   "generalized_time::proofs::minute_range_is_classified"
+  ],
+  "predicted_assert": "hour_range_is_classified :522",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id generalized_time-G3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "generalized_time-A-swap",
+  "module": "generalized_time",
+  "claim": "minute and second fields are read from / written to their own octet positions (paired swap)",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "    let minute = two_digits(content, 10);\n    let second = two_digits(content, 12);\n    if month < 1 || month > 12 {\n        return Err(GeneralizedTimeError::MonthRange);\n    }\n    if day < 1 || day > 31 {\n        return Err(GeneralizedTimeError::DayRange);\n    }\n    if hour > 23 {\n        return Err(GeneralizedTimeError::HourRange);\n    }\n    if minute > 59 {\n        return Err(GeneralizedTimeError::MinuteRange);\n    }\n    if second > 59 {\n        return Err(GeneralizedTimeError::SecondRange);\n    }\n    // The middle segment `content[14..last]` is either empty (no fraction) or `.` + fraction digits.\n    let fraction: &[u8] = if last == 14 {\n        // len == 15: no fraction; content[14] is the 'Z' terminator.\n        &content[14..14]\n    } else {\n        // A fraction is present: the separator must be the point '.', not a comma or other char.\n        if content[14] != b'.' {\n            return Err(GeneralizedTimeError::BadFractionSeparator);\n        }\n        let frac = &content[15..last];\n        if frac.is_empty() {\n            return Err(GeneralizedTimeError::FractionEmpty);\n        }\n        let mut j = 0;\n        while j < frac.len() {\n            if !frac[j].is_ascii_digit() {\n                return Err(GeneralizedTimeError::NonDigit);\n            }\n            j += 1;\n        }\n        // No trailing zero \u2014 this also forbids an all-zero fraction (which must be omitted, \u00a711.7).\n        if frac[frac.len() - 1] == b'0' {\n            return Err(GeneralizedTimeError::FractionTrailingZero);\n        }\n        frac\n    };\n    Ok(GeneralizedTime { year, month, day, hour, minute, second, fraction })\n}\n\n/// Encode a [`GeneralizedTime`] as canonical DER content (`YYYYMMDDHHMMSS[.fff]Z`) into `out`.\n///\n/// Returns the number of octets written, or `None` if any field is out of range, the fraction is not\n/// canonical (non-digit or trailing zero), or `out` is too small. The guards make this the exact\n/// inverse of [`decode_generalized_time`].\n///\n/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.\npub fn encode_generalized_time_into(t: &GeneralizedTime<'_>, out: &mut [u8]) -> Option<usize> {\n    if !fields_in_range(t) {\n        return None;\n    }\n    if !fraction_is_canonical(t.fraction) {\n        return None;\n    }\n    let has_frac = !t.fraction.is_empty();\n    // 14 mandatory digits + optional ('.' + fraction) + 'Z'. `fraction.len()` is bounded by the\n    // slice-size invariant (\u2264 isize::MAX), so the additions never overflow `usize`.\n    let total = 14 + if has_frac { 1 + t.fraction.len() } else { 0 } + 1;\n    if out.len() < total {\n        return None;\n    }\n    out[0] = b'0' + (t.year / 1000) as u8;\n    out[1] = b'0' + (t.year / 100 % 10) as u8;\n    out[2] = b'0' + (t.year / 10 % 10) as u8;\n    out[3] = b'0' + (t.year % 10) as u8;\n    write_two(out, 4, t.month);\n    write_two(out, 6, t.day);\n    write_two(out, 8, t.hour);\n    write_two(out, 10, t.minute);\n    write_two(out, 12, t.second);",
+  "new": "    let minute = two_digits(content, 12);\n    let second = two_digits(content, 10);\n    if month < 1 || month > 12 {\n        return Err(GeneralizedTimeError::MonthRange);\n    }\n    if day < 1 || day > 31 {\n        return Err(GeneralizedTimeError::DayRange);\n    }\n    if hour > 23 {\n        return Err(GeneralizedTimeError::HourRange);\n    }\n    if minute > 59 {\n        return Err(GeneralizedTimeError::MinuteRange);\n    }\n    if second > 59 {\n        return Err(GeneralizedTimeError::SecondRange);\n    }\n    // The middle segment `content[14..last]` is either empty (no fraction) or `.` + fraction digits.\n    let fraction: &[u8] = if last == 14 {\n        // len == 15: no fraction; content[14] is the 'Z' terminator.\n        &content[14..14]\n    } else {\n        // A fraction is present: the separator must be the point '.', not a comma or other char.\n        if content[14] != b'.' {\n            return Err(GeneralizedTimeError::BadFractionSeparator);\n        }\n        let frac = &content[15..last];\n        if frac.is_empty() {\n            return Err(GeneralizedTimeError::FractionEmpty);\n        }\n        let mut j = 0;\n        while j < frac.len() {\n            if !frac[j].is_ascii_digit() {\n                return Err(GeneralizedTimeError::NonDigit);\n            }\n            j += 1;\n        }\n        // No trailing zero \u2014 this also forbids an all-zero fraction (which must be omitted, \u00a711.7).\n        if frac[frac.len() - 1] == b'0' {\n            return Err(GeneralizedTimeError::FractionTrailingZero);\n        }\n        frac\n    };\n    Ok(GeneralizedTime { year, month, day, hour, minute, second, fraction })\n}\n\n/// Encode a [`GeneralizedTime`] as canonical DER content (`YYYYMMDDHHMMSS[.fff]Z`) into `out`.\n///\n/// Returns the number of octets written, or `None` if any field is out of range, the fraction is not\n/// canonical (non-digit or trailing zero), or `out` is too small. The guards make this the exact\n/// inverse of [`decode_generalized_time`].\n///\n/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.\npub fn encode_generalized_time_into(t: &GeneralizedTime<'_>, out: &mut [u8]) -> Option<usize> {\n    if !fields_in_range(t) {\n        return None;\n    }\n    if !fraction_is_canonical(t.fraction) {\n        return None;\n    }\n    let has_frac = !t.fraction.is_empty();\n    // 14 mandatory digits + optional ('.' + fraction) + 'Z'. `fraction.len()` is bounded by the\n    // slice-size invariant (\u2264 isize::MAX), so the additions never overflow `usize`.\n    let total = 14 + if has_frac { 1 + t.fraction.len() } else { 0 } + 1;\n    if out.len() < total {\n        return None;\n    }\n    out[0] = b'0' + (t.year / 1000) as u8;\n    out[1] = b'0' + (t.year / 100 % 10) as u8;\n    out[2] = b'0' + (t.year / 10 % 10) as u8;\n    out[3] = b'0' + (t.year % 10) as u8;\n    write_two(out, 4, t.month);\n    write_two(out, 6, t.day);\n    write_two(out, 8, t.hour);\n    write_two(out, 12, t.minute);\n    write_two(out, 10, t.second);",
+  "red": [
+   "generalized_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "green": [
+   "generalized_time::proofs::roundtrip_all_fields",
+   "generalized_time::proofs::decode_accepts_only_canonical"
+  ],
+  "predicted_assert": "accepted_iff_canonical_oracle: t.minute == digit pair at 10/11",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-A-results.md Item 5 (round A): accepted_iff_canonical_oracle FAILED on `t.minute as u16 == d(10) * 10 + d(11)`; roundtrip_all_fields and decode_accepts_only_canonical stayed SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "four hunks merged into ONE contiguous span (decode reads through encode writes, about 50 production lines)",
+  "primary_provenance": "round-A",
+  "text_basis": "merged-span"
+ },
+ {
+  "id": "generalized_time-R2-1",
+  "module": "generalized_time",
+  "claim": "decode_generalized_time returns the exact error variant (NonDigit vs NotZulu on overlap)",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "        if !content[i].is_ascii_digit() {\n            return Err(GeneralizedTimeError::NonDigit);",
+  "new": "        if !content[i].is_ascii_digit() {\n            return Err(if content[content.len() - 1] != b'Z' { GeneralizedTimeError::NotZulu } else { GeneralizedTimeError::NonDigit });",
+  "red": [
+   "generalized_time::proofs::decode_is_exactly_the_reference"
+  ],
+  "green": [
+   "generalized_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "predicted_assert": "decode_is_exactly_the_reference: got == want",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r2-results.md Item 2 (round 2): FAILED `got == want`; old accepted_iff_canonical_oracle SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "generalized_time-R3a-1",
+  "module": "generalized_time",
+  "claim": "require_no_fraction is exactly \"no fraction octets\"",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {\n    t.fraction.is_empty()",
+  "new": "pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {\n    true",
+  "red": [
+   "generalized_time::proofs::require_no_fraction_iff_no_fraction_octets"
+  ],
+  "green": [
+   "generalized_time::proofs::roundtrip_all_fields",
+   "generalized_time::proofs::accepted_iff_canonical_oracle"
+  ],
+  "predicted_assert": "require_no_fraction_iff_no_fraction_octets",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3a-results.md Item 3a (round 3a): `t.fraction.is_empty()` -> `true` FAILED both asserts; roundtrip_all_fields and accepted_iff_canonical_oracle SUCCESSFUL (blind)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; profile rule 4 (lane A, 538285d) now calls this helper, so it stays live; the profile harnesses rule4_... / PREC go red for the same mutation (control profile-L4-i)",
+  "primary_provenance": "round-r3a",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "generalized_time-R3a-2",
+  "module": "generalized_time",
+  "claim": "encode_generalized_time_into returns None when the output is too short (symbolic capacity)",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "    if out.len() < total {\n        return None;\n    }\n    out[0] = b'0' + (t.year / 1000) as u8;",
+  "new": "    if out.len() < total {\n        return Some(0);\n    }\n    out[0] = b'0' + (t.year / 1000) as u8;",
+  "red": [
+   "generalized_time::proofs::encode_is_total_exact_oracle"
+  ],
+  "green": [
+   "generalized_time::proofs::roundtrip_all_fields",
+   "generalized_time::proofs::decode_accepts_only_canonical"
+  ],
+  "predicted_assert": "encode_is_total_exact_oracle: r.is_none()",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3a-results.md Item 3b (round 3a): `if out.len() < total { return None; }` -> `return Some(0);` FAILED `r.is_none()`; old roundtrip_all_fields / decode_accepts_only_canonical SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text (one line of following context added for uniqueness)",
+  "primary_provenance": "round-r3a",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "generalized_time-R4-1",
+  "module": "generalized_time",
+  "claim": "encode_generalized_time_into writes nothing on None (write contract)",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "    if out.len() < total {\n        return None;\n    }\n    out[0] = b'0' + (t.year / 1000) as u8;",
+  "new": "    if out.len() < total {\n        if !out.is_empty() { out[0] = 0xEE; }\n        return None;\n    }\n    out[0] = b'0' + (t.year / 1000) as u8;",
+  "red": [
+   "generalized_time::proofs::encode_is_total_exact_oracle"
+  ],
+  "green": [],
+  "predicted_assert": "encode_is_total_exact_oracle: out == backing",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 2 (round 4): `out[0] = 0xEE` before the capacity `return None` FAILED `out == backing`"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; guarded write (see octet_string-R4-1)",
+  "primary_provenance": "round-r4",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "profile-P1",
+  "module": "profile",
+  "claim": "rule 3: GeneralizedTime year <= 2049 is rejected (2049/2050 boundary)",
+  "src": "der-verified/src/profile.rs",
+  "old": "if t.year <= 2049 {",
+  "new": "if t.year < 2049 {",
+  "red": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+  ],
+  "green": [
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": ":361",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id profile-P1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b) | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "G2",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+ },
+ {
+  "id": "profile-P2",
+  "module": "profile",
+  "claim": "rule 2: extensions require version v3 (version != 2)",
+  "src": "der-verified/src/profile.rs",
+  "old": "cert.tbs_certificate.version != 2",
+  "new": "cert.tbs_certificate.version < 2",
+  "red": [
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+  ],
+  "predicted_assert": ":325",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id profile-P2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b) | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "G2",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+ },
+ {
+  "id": "profile-P3",
+  "module": "profile",
+  "claim": "rule 3: notAfter violation reports the NotAfter variant",
+  "src": "der-verified/src/profile.rs",
+  "old": "ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;",
+  "new": "ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;",
+  "red": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+  ],
+  "green": [
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": ":363",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G2: spec-G2.json id profile-P3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G2 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b) | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "G2",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+ },
+ {
+  "id": "profile-A-1",
+  "module": "profile",
+  "claim": "rule 1 compares algorithm_oid AND parameters (ignoring parameters must be red)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    if cert.signature_algorithm != cert.tbs_certificate.signature {",
+  "new": "    if cert.signature_algorithm.algorithm_oid != cert.tbs_certificate.signature.algorithm_oid {",
+  "red": [
+   "profile::proofs::rule1_mismatch_iff_algorithms_differ"
+  ],
+  "green": [],
+  "predicted_assert": "rule1_mismatch_iff_algorithms_differ",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-A-results.md Item 6 gap witness 1 (round A): FAILED `(r == Err(ProfileError::SignatureAlgorithmMismatch)) == differ` (cover 4/5 on the mutant)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; lane A edits validate_profile (see profile_flag) | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-A",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+ },
+ {
+  "id": "profile-A-2",
+  "module": "profile",
+  "claim": "rule 1 compares parameter BYTES, not just presence",
+  "src": "der-verified/src/profile.rs",
+  "old": "    if cert.signature_algorithm != cert.tbs_certificate.signature {",
+  "new": "    if cert.signature_algorithm.algorithm_oid != cert.tbs_certificate.signature.algorithm_oid\n        || cert.signature_algorithm.parameters.is_some() != cert.tbs_certificate.signature.parameters.is_some() {",
+  "red": [
+   "profile::proofs::rule1_mismatch_iff_algorithms_differ"
+  ],
+  "green": [],
+  "predicted_assert": "rule1_mismatch_iff_algorithms_differ",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-A-results.md Item 6 gap witness 2 (round A): condition `algorithm_oid != ... || parameters.is_some() != parameters.is_some()` FAILED the same assert"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; expression given in prose in the results, written out here | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-A",
+  "text_basis": "reconstructed-from-prose",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+ },
+ {
+  "id": "profile-R2-1",
+  "module": "profile",
+  "claim": "validate_profile returns the exact result for equal algorithm pairs (a spurious error for equal pairs with parameters must be red)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    // Rule 2 (\u00a74.1.2.1 / \u00a74.1.2.9): extensions present => version must be v3 (2).\n",
+  "new": "    if cert.signature_algorithm.parameters.is_some() && cert.signature_algorithm.algorithm_oid.len() == 3 {\n        return Err(ProfileError::ExtensionsRequireV3);\n    }\n    // Rule 2 (\u00a74.1.2.1 / \u00a74.1.2.9): extensions present => version must be v3 (2).\n",
+  "red": [
+   "profile::proofs::rule1_mismatch_iff_algorithms_differ"
+  ],
+  "green": [],
+  "predicted_assert": "rule1_mismatch_iff_algorithms_differ: exact result",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r2-results.md Item 1 (round 2): inserted before the \"Rule 2\" comment; FAILED `r == if differ { Err(Mismatch) } else { Ok(()) }`"
+  ],
+  "status": "applicable",
+  "anchor": "anchored on the \"// Rule 2\" comment line (production comment text; lane A may move it) | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-r2",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+ },
+ {
+  "id": "profile-R3a-1",
+  "module": "profile",
+  "claim": "validate_profile checks rules in the documented order (extensions rule before rule 1 only when parameters present)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    // Rule 1 (\u00a74.1.1.2): outer signatureAlgorithm == tbsCertificate.signature.",
+  "new": "    if cert.signature_algorithm.parameters.is_some() && cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {\n        return Err(ProfileError::ExtensionsRequireV3);\n    }\n    // Rule 1 (\u00a74.1.1.2): outer signatureAlgorithm == tbsCertificate.signature.",
+  "red": [
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+  ],
+  "green": [
+   "profile::proofs::error_precedence_follows_declaration_order",
+   "profile::proofs::rule1_mismatch_iff_algorithms_differ",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3a-results.md Item 1 (round 3a): inserted before the \"Rule 1\" comment; FAILED `r == expected`; the three old harnesses SUCCESSFUL (blind) on the mutant"
+  ],
+  "status": "applicable",
+  "anchor": "anchored on the \"// Rule 1\" comment line; lane A changes precedence, so the greens (error_precedence_follows_declaration_order in particular) must be re-judged after rule 4 lands | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-r3a",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. Greens re-judged: error_precedence_follows_declaration_order still builds the outer algorithm with parameters = None (symbolic_alg(.., false)), rule1_... holds v3+extensions, rule2_... has no parameters, so the inserted early-return stays blind to all three."
+ },
+ {
+  "id": "profile-R4-1",
+  "module": "profile",
+  "claim": "after rule 4: a fractional GeneralizedTime from 2050 on is reported with rule 4's variant, never rule 3's (mutant lets the fraction trigger the year-rule error)",
+  "src": "der-verified/src/profile.rs",
+  "old": "        if t.year <= 2049 {\n            return Err(on_generalized_too_early);",
+  "new": "        if t.year <= 2049 || !t.fraction.is_empty() {\n            return Err(on_generalized_too_early);",
+  "red": [
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::error_precedence_follows_declaration_order"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+  ],
+  "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 1 mutant 1 (round 4): `t.year <= 2049 || !t.fraction.is_empty()` FAILED `r == expected`"
+  ],
+  "status": "re-anchored",
+  "anchor": "anchored inside check_time_encoding_year; lane A adds a fraction rule NEAR this function, so this mutation (reads the fraction) may become equivalent to a legal behaviour after rule 4 -- re-judge | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-r4",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: KEPT, re-targeted (not retired). Text unchanged (old occurs once). Before rule 4 the mutation meant 'the fraction must not change the verdict'; rule 4 makes the fraction a legal input, so that wording is obsolete. The mutation is still a wrong behaviour: a 2050+ fractional time must yield *HasFraction, the mutant yields *YearTooEarly. Reds now: PREC (r == expected) and rule4_fraction_iff_generalized_with_fraction (new; years >= 2050, so only rule 4 may fire); error_precedence_follows_declaration_order is expected red as well (symbolic fraction + year) -- observed, see laneA-results.md. Green: rule3_... (every fraction there is empty, so the mutant behaves as pristine). Intent: rule 3 and rule 4 are separate rules with separate variants. Observed at 538285d: PREC, R4 and ERRP all FAILED; R3 SUCCESSFUL."
+ },
+ {
+  "id": "profile-R4-2",
+  "module": "profile",
+  "claim": "a hand-built UTCTime with year2 > 99 is accepted (no extra Utc arm)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    if let Time::Generalized(t) = time {\n        if t.year <= 2049 {",
+  "new": "    if let Time::Utc(u) = time {\n        if u.year2 > 99 {\n            return Err(on_generalized_too_early);\n        }\n    }\n    if let Time::Generalized(t) = time {\n        if t.year <= 2049 {",
+  "red": [
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+  ],
+  "green": [],
+  "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 1 mutant 2 (round 4): `Time::Utc(u) if u.year2 > 99 => Err(..)` prepended; FAILED `r == expected`"
+  ],
+  "status": "applicable",
+  "anchor": "results gave a match-arm sketch; written as an equivalent `if let Time::Utc(u)` guard before the Generalized check. Anchored inside check_time_encoding_year (lane A may restructure it) | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-r4",
+  "text_basis": "reconstructed-from-prose",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. No greens (as before)."
+ },
+ {
+  "id": "profile-R4-3",
+  "module": "profile",
+  "claim": "verdict does not read the month of a too-early GeneralizedTime",
+  "src": "der-verified/src/profile.rs",
+  "old": "        if t.year <= 2049 {\n            return Err(on_generalized_too_early);",
+  "new": "        if t.year <= 2049 || t.month == 0 {\n            return Err(on_generalized_too_early);",
+  "red": [
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+  ],
+  "green": [],
+  "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 1 mutant 3 (round 4): `t.year <= 2049 || t.month == 0` FAILED `r == expected`"
+  ],
+  "status": "applicable",
+  "anchor": "anchored inside check_time_encoding_year (lane A may restructure it) | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-r4",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. No greens (as before)."
+ },
+ {
+  "id": "profile-R4-4",
+  "module": "profile",
+  "claim": "rule 2 triggers on extensions presence, not on non-empty extensions content",
+  "src": "der-verified/src/profile.rs",
+  "old": "    if cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {",
+  "new": "    if cert.tbs_certificate.extensions.map_or(false, |e| !e.is_empty()) && cert.tbs_certificate.version != 2 {",
+  "red": [
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+  ],
+  "green": [],
+  "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 1 mutant 4 (round 4): `extensions.map_or(false, |e| !e.is_empty()) && version != 2` FAILED `r == expected`"
+  ],
+  "status": "applicable",
+  "anchor": "anchored on the Rule-2 condition line; the same line P2 mutates (different mutation). Lane A changes precedence and may reorder rules | laneA: re-checked at 538285d",
+  "profile_flag": true,
+  "primary_provenance": "round-r4",
+  "text_basis": "verbatim",
+  "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. No greens (as before)."
+ },
+ {
+  "id": "restricted_string-R1",
+  "module": "restricted_string",
+  "claim": "PrintableString charset is exactly the X.680 set (no `@`)",
+  "src": "der-verified/src/restricted_string.rs",
+  "old": "| b'=' | b'?')",
+  "new": "| b'=' | b'?' | b'@')",
+  "red": [
+   "restricted_string::proofs::charset_exactly_matches_oracle_printable"
+  ],
+  "green": [
+   "restricted_string::proofs::charset_exactly_matches_oracle_ia5"
+  ],
+  "predicted_assert": ":282",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G3: spec-G3.json id restricted_string-R1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "restricted_string-R2",
+  "module": "restricted_string",
+  "claim": "NumericString charset is digits and space only",
+  "src": "der-verified/src/restricted_string.rs",
+  "old": "Charset::Numeric => b.is_ascii_digit() || b == b' ',",
+  "new": "Charset::Numeric => b.is_ascii_digit() || b == b' ' || b == b'-',",
+  "red": [
+   "restricted_string::proofs::charset_exactly_matches_oracle_numeric"
+  ],
+  "green": [
+   "restricted_string::proofs::charset_exactly_matches_oracle_visible"
+  ],
+  "predicted_assert": ":294",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G3: spec-G3.json id restricted_string-R2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "restricted_string-R3",
+  "module": "restricted_string",
+  "claim": "constructed form is rejected for every body",
+  "src": "der-verified/src/restricted_string.rs",
+  "old": "    if tlv.tag.constructed {\n        return Err(StringError::Constructed);",
+  "new": "    if tlv.tag.constructed && tlv.value.len() > 1 {\n        return Err(StringError::Constructed);",
+  "red": [
+   "restricted_string::proofs::constructed_form_is_rejected_printable"
+  ],
+  "green": [
+   "restricted_string::proofs::roundtrip_printable"
+  ],
+  "predicted_assert": ":467",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G3: spec-G3.json id restricted_string-R3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "re-anchored",
+  "anchor": "RE-ANCHORED: the grader old text `if tlv.tag.constructed {` occurs 2 times in 1374f9b (the round-B oracle in mod proofs adds `} else if tlv.tag.constructed {`); extended with the following `return Err(StringError::Constructed);` line, which is unique. Mutation unchanged.",
+  "primary_provenance": "G3",
+  "text_basis": "re-anchored"
+ },
+ {
+  "id": "restricted_string-B-GW-R1",
+  "module": "restricted_string",
+  "claim": "decode_restricted_string validates content against the REQUESTED charset",
+  "src": "der-verified/src/restricted_string.rs",
+  "old": "    validate_content(tlv.value, charset)?;",
+  "new": "    validate_content(tlv.value, Charset::Ia5)?;",
+  "red": [
+   "restricted_string::proofs::decode_is_faithful_printable",
+   "restricted_string::proofs::decode_is_faithful_numeric",
+   "restricted_string::proofs::decode_is_faithful_visible"
+  ],
+  "green": [
+   "restricted_string::proofs::decode_is_faithful_ia5"
+  ],
+  "predicted_assert": "decode_is_faithful_*: r == Err(OutOfCharset ...)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-B-results.md Item 1 GW-R1 (round B): printable, numeric, visible FAILED on `r == Err(StringError::OutOfCharset { position: p, byte: v[p] })`; ia5 SUCCESSFUL (mutant is equivalent for Ia5)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-B",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "restricted_string-R3b-1",
+  "module": "restricted_string",
+  "claim": "decode_ia5_string delegates with Charset::Ia5 (wrapper wiring)",
+  "src": "der-verified/src/restricted_string.rs",
+  "old": "pub fn decode_ia5_string(input: &[u8]) -> Result<(&[u8], usize), StringError> {\n    decode_restricted_string(input, Charset::Ia5)",
+  "new": "pub fn decode_ia5_string(input: &[u8]) -> Result<(&[u8], usize), StringError> {\n    decode_restricted_string(input, Charset::Printable)",
+  "red": [
+   "restricted_string::proofs::wrapper_decode_ia5_delegates"
+  ],
+  "green": [
+   "restricted_string::proofs::decode_is_faithful_ia5",
+   "restricted_string::proofs::decode_never_panics"
+  ],
+  "predicted_assert": "wrapper_decode_ia5_delegates: via_wrapper == via_generic",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3b-results.md Item 5a (round 3b): FAILED `via_wrapper == via_generic`; old decode_is_faithful_ia5 and decode_never_panics SUCCESSFUL on the mutant"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r3b",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "restricted_string-R3b-2",
+  "module": "restricted_string",
+  "claim": "encode_restricted_string_into validates content against the charset (gate deleted must be red in every charset)",
+  "src": "der-verified/src/restricted_string.rs",
+  "old": "    if validate_content(content, charset).is_err() {\n        return None;\n    }\n    let tag = Tag { class: Class::Universal, constructed: false, number: charset.tag_number() };",
+  "new": "    let tag = Tag { class: Class::Universal, constructed: false, number: charset.tag_number() };",
+  "red": [
+   "restricted_string::proofs::encode_is_exact_printable",
+   "restricted_string::proofs::encode_is_exact_ia5",
+   "restricted_string::proofs::encode_is_exact_numeric",
+   "restricted_string::proofs::encode_is_exact_visible"
+  ],
+  "green": [
+   "restricted_string::proofs::roundtrip_printable"
+  ],
+  "predicted_assert": "encode_is_exact_*: r == None",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3b-results.md Item 5b (round 3b): all four encode_is_exact_* FAILED `r == None`; old roundtrip_printable SUCCESSFUL (assumes in-charset content)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text (the gate deletion plus the following `let tag` line for uniqueness)",
+  "primary_provenance": "round-r3b",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "utf8_string-U1",
+  "module": "utf8_string",
+  "claim": "low surrogates U+DC00..DFFF are rejected (full surrogate range)",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "if (0xD800..=0xDFFF).contains(&cp) {",
+  "new": "if (0xD800..=0xDBFF).contains(&cp) {",
+  "red": [
+   "utf8_string::proofs::validate_iff_oracle"
+  ],
+  "green": [
+   "utf8_string::proofs::wrong_tag_is_classified"
+  ],
+  "predicted_assert": ":334",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "grader G3: spec-G3.json id utf8_string-U1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utf8_string-U2",
+  "module": "utf8_string",
+  "claim": "4-byte overlong forms are rejected",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "_ => 0x10000,",
+  "new": "_ => 0x800,",
+  "red": [
+   "utf8_string::proofs::validate_iff_oracle"
+  ],
+  "green": [
+   "utf8_string::proofs::accepted_identifier_is_canonical"
+  ],
+  "predicted_assert": ":334",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "grader G3: spec-G3.json id utf8_string-U2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utf8_string-U3",
+  "module": "utf8_string",
+  "claim": "code points above U+10FFFF are rejected",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "if cp > 0x10FFFF {",
+  "new": "if cp > 0x13FFFF {",
+  "red": [
+   "utf8_string::proofs::validate_iff_oracle"
+  ],
+  "green": [
+   "utf8_string::proofs::wrong_tag_is_classified"
+  ],
+  "predicted_assert": ":334",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "grader G3: spec-G3.json id utf8_string-U3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utf8_string-B-GW-U1",
+  "module": "utf8_string",
+  "claim": "decode_utf8_string rejects ill-formed content (the validate gate is live)",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "    validate_utf8(tlv.value)?;",
+  "new": "    let _ = validate_utf8(tlv.value);",
+  "red": [
+   "utf8_string::proofs::decode_is_faithful"
+  ],
+  "green": [],
+  "predicted_assert": "decode_is_faithful: r == Err(IllFormed { position: valid_up_to })",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "harness-B-results.md Item 2 GW-U1 (round B): decode_is_faithful FAILED `r == Err(Utf8Error::IllFormed { position: e.valid_up_to() })` (wall 165 s)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-B",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utf8_string-B-S2",
+  "module": "utf8_string",
+  "claim": "IllFormed.position is EXACTLY the first ill-formed octet (a locally plausible but wrong position must be red)",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {\n    let mut i = 0;\n    while i < content.len() {\n        let lead = content[i];\n        let len = match sequence_len(lead) {\n            Some(l) => l,\n            None => return Err(Utf8Error::IllFormed { position: i }),\n        };\n        if len == 1 {\n            i += 1;\n            continue;\n        }\n        if i + len > content.len() {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        // Require every continuation byte present and in 0x80..=0xBF, computing the code point by\n        // the standard bit-shifts as we go.\n        let mut cp: u32 = match len {\n            2 => (lead & 0x1F) as u32,\n            3 => (lead & 0x0F) as u32,\n            _ => (lead & 0x07) as u32,\n        };\n        let mut k = 1;\n        while k < len {\n            let cont = content[i + k];\n            if cont & 0xC0 != 0x80 {\n                return Err(Utf8Error::IllFormed { position: i });\n            }\n            // EQUIVALENT-MUTANT: disjoint bitfields, |\u2261^ (cargo-mutants survivor, not a coverage\n            // gap) \u2014 `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.\n            cp = (cp << 6) | (cont & 0x3F) as u32;\n            k += 1;\n        }\n        // Value-space well-formedness: shortest form, not a surrogate, within the Unicode range.\n        let min_cp: u32 = match len {\n            2 => 0x80,\n            3 => 0x800,\n            _ => 0x10000,\n        };\n        if cp < min_cp {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        if (0xD800..=0xDFFF).contains(&cp) {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        if cp > 0x10FFFF {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        i += len;\n    }\n    Ok(())\n}",
+  "new": "pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {\n    let mut i = 0;\n    let mut mb = usize::MAX;\n    while i < content.len() {\n        let lead = content[i];\n        let len = match sequence_len(lead) {\n            Some(l) => l,\n            None => return Err(Utf8Error::IllFormed { position: i }),\n        };\n        if len == 1 {\n            i += 1;\n            continue;\n        }\n        if i + len > content.len() {\n            return Err(Utf8Error::IllFormed { position: if mb == usize::MAX { i } else { mb } });\n        }\n        // Require every continuation byte present and in 0x80..=0xBF, computing the code point by\n        // the standard bit-shifts as we go.\n        let mut cp: u32 = match len {\n            2 => (lead & 0x1F) as u32,\n            3 => (lead & 0x0F) as u32,\n            _ => (lead & 0x07) as u32,\n        };\n        let mut k = 1;\n        while k < len {\n            let cont = content[i + k];\n            if cont & 0xC0 != 0x80 {\n                return Err(Utf8Error::IllFormed { position: i });\n            }\n            // EQUIVALENT-MUTANT: disjoint bitfields, |\u2261^ (cargo-mutants survivor, not a coverage\n            // gap) \u2014 `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.\n            cp = (cp << 6) | (cont & 0x3F) as u32;\n            k += 1;\n        }\n        // Value-space well-formedness: shortest form, not a surrogate, within the Unicode range.\n        let min_cp: u32 = match len {\n            2 => 0x80,\n            3 => 0x800,\n            _ => 0x10000,\n        };\n        if cp < min_cp {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        if (0xD800..=0xDFFF).contains(&cp) {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        if cp > 0x10FFFF {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        mb = i;\n        i += len;\n    }\n    Ok(())\n}",
+  "red": [
+   "utf8_string::proofs::ill_formed_reports_position"
+  ],
+  "green": [],
+  "predicted_assert": "ill_formed_reports_position: position == valid_up_to()",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "harness-B-results.md Item 2 S-2 mutation (round B): three edits (remember last multi-byte start `mb`, report it on truncation); FAILED check assertion.6 `position == core::str::from_utf8(..).unwrap_err().valid_up_to()`"
+  ],
+  "status": "applicable",
+  "anchor": "three edits merged into ONE span covering the whole validate_utf8 function (about 55 lines); the harness was later raised 4 -> 6 octets (round 4), same assert",
+  "primary_provenance": "round-B",
+  "text_basis": "merged-span"
+ },
+ {
+  "id": "utf8_string-R3b-1",
+  "module": "utf8_string",
+  "claim": "decode_utf8_str returns the real content window as &str (not \"\")",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "        Ok(s) => Ok((s, used)),",
+  "new": "        Ok(_) => Ok((\"\", used)),",
+  "red": [
+   "utf8_string::proofs::decode_str_is_exact_delegation"
+  ],
+  "green": [],
+  "predicted_assert": "decode_str_is_exact_delegation",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "harness-r3b-results.md Item 4a (round 3b): FAILED `s.len() == content.len()` and `s.as_bytes().as_ptr() == content.as_ptr()` (Kani 216 s; no other Kani harness references decode_utf8_str)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r3b",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "utf8_string-R3b-2",
+  "module": "utf8_string",
+  "claim": "encode_utf8_string_into rejects ill-formed content (gate deleted must be red)",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "    if validate_utf8(content).is_err() {\n        return None;\n    }\n    let tag = Tag { class: Class::Universal, constructed: false, number: TAG };",
+  "new": "    let tag = Tag { class: Class::Universal, constructed: false, number: TAG };",
+  "red": [
+   "utf8_string::proofs::encode_is_exact_over_content_and_capacity"
+  ],
+  "green": [
+   "utf8_string::proofs::roundtrip"
+  ],
+  "predicted_assert": "encode_is_exact_over_content_and_capacity: r == None",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "harness-r3b-results.md Item 4b (round 3b): FAILED `r == None` (Kani 77 s); old roundtrip SUCCESSFUL (assumes well-formed content)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r3b",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "utf8_string-R4-1",
+  "module": "utf8_string",
+  "claim": "IllFormed.position is exact beyond the 4th octet (position clamped to <= 3 must be red; 6-octet domain)",
+  "src": "der-verified/src/utf8_string.rs",
+  "old": "pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {\n    let mut i = 0;\n    while i < content.len() {\n        let lead = content[i];\n        let len = match sequence_len(lead) {\n            Some(l) => l,\n            None => return Err(Utf8Error::IllFormed { position: i }),\n        };\n        if len == 1 {\n            i += 1;\n            continue;\n        }\n        if i + len > content.len() {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        // Require every continuation byte present and in 0x80..=0xBF, computing the code point by\n        // the standard bit-shifts as we go.\n        let mut cp: u32 = match len {\n            2 => (lead & 0x1F) as u32,\n            3 => (lead & 0x0F) as u32,\n            _ => (lead & 0x07) as u32,\n        };\n        let mut k = 1;\n        while k < len {\n            let cont = content[i + k];\n            if cont & 0xC0 != 0x80 {\n                return Err(Utf8Error::IllFormed { position: i });\n            }\n            // EQUIVALENT-MUTANT: disjoint bitfields, |\u2261^ (cargo-mutants survivor, not a coverage\n            // gap) \u2014 `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.\n            cp = (cp << 6) | (cont & 0x3F) as u32;\n            k += 1;\n        }\n        // Value-space well-formedness: shortest form, not a surrogate, within the Unicode range.\n        let min_cp: u32 = match len {\n            2 => 0x80,\n            3 => 0x800,\n            _ => 0x10000,\n        };\n        if cp < min_cp {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        if (0xD800..=0xDFFF).contains(&cp) {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        if cp > 0x10FFFF {\n            return Err(Utf8Error::IllFormed { position: i });\n        }\n        i += len;\n    }\n    Ok(())\n}",
+  "new": "pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {\n    let mut i = 0;\n    while i < content.len() {\n        let lead = content[i];\n        let len = match sequence_len(lead) {\n            Some(l) => l,\n            None => return Err(Utf8Error::IllFormed { position: i.min(3) }),\n        };\n        if len == 1 {\n            i += 1;\n            continue;\n        }\n        if i + len > content.len() {\n            return Err(Utf8Error::IllFormed { position: i.min(3) });\n        }\n        // Require every continuation byte present and in 0x80..=0xBF, computing the code point by\n        // the standard bit-shifts as we go.\n        let mut cp: u32 = match len {\n            2 => (lead & 0x1F) as u32,\n            3 => (lead & 0x0F) as u32,\n            _ => (lead & 0x07) as u32,\n        };\n        let mut k = 1;\n        while k < len {\n            let cont = content[i + k];\n            if cont & 0xC0 != 0x80 {\n                return Err(Utf8Error::IllFormed { position: i.min(3) });\n            }\n            // EQUIVALENT-MUTANT: disjoint bitfields, |\u2261^ (cargo-mutants survivor, not a coverage\n            // gap) \u2014 `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.\n            cp = (cp << 6) | (cont & 0x3F) as u32;\n            k += 1;\n        }\n        // Value-space well-formedness: shortest form, not a surrogate, within the Unicode range.\n        let min_cp: u32 = match len {\n            2 => 0x80,\n            3 => 0x800,\n            _ => 0x10000,\n        };\n        if cp < min_cp {\n            return Err(Utf8Error::IllFormed { position: i.min(3) });\n        }\n        if (0xD800..=0xDFFF).contains(&cp) {\n            return Err(Utf8Error::IllFormed { position: i.min(3) });\n        }\n        if cp > 0x10FFFF {\n            return Err(Utf8Error::IllFormed { position: i.min(3) });\n        }\n        i += len;\n    }\n    Ok(())\n}",
+  "red": [
+   "utf8_string::proofs::ill_formed_reports_position"
+  ],
+  "green": [],
+  "predicted_assert": "ill_formed_reports_position: 3 position asserts",
+  "stubbing": false,
+  "timeout_s": 3600,
+  "provenance": [
+   "harness-r4-results.md Item 4 (round 4): every `IllFormed { position: i }` in validate_utf8 (6 sites) -> `position: i.min(3)`; FAILED all three position asserts (Kani 88 s)"
+  ],
+  "status": "applicable",
+  "anchor": "six sites merged into ONE span covering the whole validate_utf8 function",
+  "primary_provenance": "round-r4",
+  "text_basis": "merged-span"
+ },
+ {
+  "id": "set_of-S1",
+  "module": "set_of",
+  "claim": "cmp_padded: a non-zero tail on the longer encoding sorts it after (tail-padding sign)",
+  "src": "der-verified/src/set_of.rs",
+  "old": "return if is_a_longer { Ordering::Greater } else { Ordering::Less };",
+  "new": "return if is_a_longer { Ordering::Less } else { Ordering::Greater };",
+  "red": [
+   "set_of::proofs::cmp_padded_matches_oracle"
+  ],
+  "green": [
+   "set_of::proofs::ordering_iff_oracle"
+  ],
+  "predicted_assert": ":431",
+  "stubbing": false,
+  "timeout_s": 5400,
+  "provenance": [
+   "grader G3: spec-G3.json id set_of-S1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "set_of-S2",
+  "module": "set_of",
+  "claim": "cmp_padded: any non-zero tail byte (0x01 included) breaks the padded tie",
+  "src": "der-verified/src/set_of.rs",
+  "old": "if longer[j] != 0 {",
+  "new": "if longer[j] > 1 {",
+  "red": [
+   "set_of::proofs::cmp_padded_matches_oracle"
+  ],
+  "green": [
+   "set_of::proofs::ordering_iff_oracle"
+  ],
+  "predicted_assert": ":431",
+  "stubbing": false,
+  "timeout_s": 5400,
+  "provenance": [
+   "grader G3: spec-G3.json id set_of-S2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "set_of-S3",
+  "module": "set_of",
+  "claim": "decode_set_of rejects descending children and accepts ascending (ordering wiring)",
+  "src": "der-verified/src/set_of.rs",
+  "old": "if cmp_padded(p, this) == Ordering::Greater {",
+  "new": "if cmp_padded(p, this) == Ordering::Less {",
+  "red": [
+   "set_of::proofs::ordering_iff_oracle"
+  ],
+  "green": [
+   "set_of::proofs::cmp_padded_matches_oracle"
+  ],
+  "predicted_assert": ":414",
+  "stubbing": false,
+  "timeout_s": 5400,
+  "provenance": [
+   "grader G3: spec-G3.json id set_of-S3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "set_of-B-GW-S1",
+  "module": "set_of",
+  "claim": "decode_set_of compares WHOLE child encodings (header + value), not just the value",
+  "src": "der-verified/src/set_of.rs",
+  "old": "        let this = &content[off..off + used];",
+  "new": "        let this = _tlv.value;",
+  "red": [
+   "set_of::proofs::ordering_matches_whole_encoding_oracle"
+  ],
+  "green": [
+   "set_of::proofs::ordering_iff_oracle"
+  ],
+  "predicted_assert": "ordering_matches_whole_encoding_oracle: result == oracle_set_of(content)",
+  "stubbing": false,
+  "timeout_s": 5400,
+  "provenance": [
+   "harness-B-results.md Item 4 GW-S1 (round B): ordering_matches_whole_encoding_oracle FAILED `result == oracle_set_of(content)` (wall 171 s); pre-existing ordering_iff_oracle SUCCESSFUL on the mutant"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-B",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "set_of-B-GW-S2",
+  "module": "set_of",
+  "claim": "decode_set_of_tlv enforces the ordering rule (result of decode_set_of is not discarded)",
+  "src": "der-verified/src/set_of.rs",
+  "old": "    decode_set_of(tlv.value)?;",
+  "new": "    let _ = decode_set_of(tlv.value);",
+  "red": [
+   "set_of::proofs::tlv_entry_enforces_ordering_exactly"
+  ],
+  "green": [
+   "set_of::proofs::ordering_matches_whole_encoding_oracle"
+  ],
+  "predicted_assert": "tlv_entry_enforces_ordering_exactly: r == Err(e)",
+  "stubbing": false,
+  "timeout_s": 5400,
+  "provenance": [
+   "harness-B-results.md Item 4 GW-S2 (round B): tlv_entry_enforces_ordering_exactly FAILED `r == Err(e)` (wall 243 s); ordering_matches_whole_encoding_oracle SUCCESSFUL (does not call the TLV entry)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-B",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "set_of-R3b-1",
+  "module": "set_of",
+  "claim": "decode_set_of_tlv_strict returns Ok(content) when the whole input is consumed (strict composition)",
+  "src": "der-verified/src/set_of.rs",
+  "old": "    if used != input.len() {\n        return Err(SetOfError::TrailingData);\n    }\n    Ok(content)",
+  "new": "    let _ = (content, used);\n    Err(SetOfError::TrailingData)",
+  "red": [
+   "set_of::proofs::strict_is_exact_composition"
+  ],
+  "green": [
+   "set_of::proofs::strict_rejects_trailing"
+  ],
+  "predicted_assert": "strict_is_exact_composition: strict == Ok(content)",
+  "stubbing": false,
+  "timeout_s": 5400,
+  "provenance": [
+   "harness-r3b-results.md Item 6a (round 3b): branch + `Ok(content)` replaced by `Err(TrailingData)`; FAILED `strict == Ok(content)` (Kani 514 s; baseline peak 13.7 GB); old strict_rejects_trailing SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; `let _ = (content, used);` added so the mutant compiles without unused-variable warnings (results: \"replaced by Err(TrailingData)\"). HEAVY: ~520 s Kani, ~13.7 GB peak at baseline AND under mutation.",
+  "primary_provenance": "round-r3b",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "set_of-R3b-2",
+  "module": "set_of",
+  "claim": "encode_set_of_into accepts empty content (a Some(2) SET OF)",
+  "src": "der-verified/src/set_of.rs",
+  "old": "    let tag = Tag { class: Class::Universal, constructed: true, number: TAG };\n    encode_tlv_into(tag, children_content, out)",
+  "new": "    if children_content.is_empty() { return None; }\n    let tag = Tag { class: Class::Universal, constructed: true, number: TAG };\n    encode_tlv_into(tag, children_content, out)",
+  "red": [
+   "set_of::proofs::encode_is_exact_over_content_and_capacity"
+  ],
+  "green": [
+   "set_of::proofs::roundtrip_two_sorted_children"
+  ],
+  "predicted_assert": "encode_is_exact_over_content_and_capacity: r == Some(total)",
+  "stubbing": false,
+  "timeout_s": 5400,
+  "provenance": [
+   "harness-r3b-results.md Item 6b (round 3b): prepended `if children_content.is_empty() { return None; }`; FAILED `r == Some(total)`; old roundtrip_two_sorted_children SUCCESSFUL (non-empty content only)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r3b",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "identifier_form-C1",
+  "module": "identifier_form",
+  "claim": "required_form: 5..=7 (NULL, OID, ObjectDescriptor) are primitive",
+  "src": "der-verified/src/identifier_form.rs",
+  "old": "5..=7 => RequiredForm::Primitive,",
+  "new": "5..=6 => RequiredForm::Primitive,",
+  "red": [
+   "identifier_form::proofs::required_form_matches_oracle_on_all_u32"
+  ],
+  "green": [
+   "identifier_form::proofs::reserved_eoc_rejected_iff_universal_zero"
+  ],
+  "predicted_assert": ":363",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G3: spec-G3.json id identifier_form-C1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "identifier_form-C2",
+  "module": "identifier_form",
+  "claim": "UNIVERSAL 0 (EOC) is rejected in the constructed form too",
+  "src": "der-verified/src/identifier_form.rs",
+  "old": "if tag.number == 0 {",
+  "new": "if tag.number == 0 && !tag.constructed {",
+  "red": [
+   "identifier_form::proofs::reserved_eoc_rejected_iff_universal_zero",
+   "identifier_form::proofs::rejects_every_disclosed_illegal_identifier"
+  ],
+  "green": [
+   "identifier_form::proofs::required_form_matches_oracle_on_all_u32"
+  ],
+  "predicted_assert": ":379",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G3: spec-G3.json id identifier_form-C2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3",
+   "harness-B-results.md Item 3 gap witness C2 (round B): rejects_every_disclosed_illegal_identifier FAILED on `decode_tlv_form_checked(&[0x20, 0x00]) == ...` (assertion.16)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "notes": "red set = grader red + the round-B harness that also failed on this mutation (both observed red separately).",
+  "dedup_of": [
+   "harness-B gap witness C2 (same mutation)"
+  ],
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "identifier_form-C3",
+  "module": "identifier_form",
+  "claim": "required_form: 31..=36 are primitive high-tag types",
+  "src": "der-verified/src/identifier_form.rs",
+  "old": "31..=36 => RequiredForm::Primitive,",
+  "new": "31..=35 => RequiredForm::Primitive,",
+  "red": [
+   "identifier_form::proofs::required_form_matches_oracle_on_all_u32",
+   "identifier_form::proofs::high_tag_universal_types_are_form_checked"
+  ],
+  "green": [
+   "identifier_form::proofs::reserved_eoc_rejected_iff_universal_zero",
+   "identifier_form::proofs::rejects_every_disclosed_illegal_identifier"
+  ],
+  "predicted_assert": ":363",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "grader G3: spec-G3.json id identifier_form-C3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+   "preregistered in grading record G3 section 3",
+   "harness-B-results.md Item 3 gap witness C3 (round B): high_tag_universal_types_are_form_checked FAILED on `decode_tlv_form_checked(&cons) == ...` (assertion.9); rejects_every_disclosed_illegal_identifier SUCCESSFUL"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+  "notes": "red set = grader red + the round-B harness that also failed on this mutation; green adds rejects_every_disclosed_illegal_identifier (round B: stays SUCCESSFUL).",
+  "dedup_of": [
+   "harness-B gap witness C3 (same mutation)"
+  ],
+  "primary_provenance": "G3",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "identifier_form-R2-1",
+  "module": "identifier_form",
+  "claim": "decode_tlv_form_checked returns the framing result unchanged on success (consumed length of high-tag success)",
+  "src": "der-verified/src/identifier_form.rs",
+  "old": "        Ok(()) => Ok((tlv, used)),",
+  "new": "        Ok(()) => Ok((tlv, if tlv.tag.number >= 31 { used - 1 } else { used })),",
+  "red": [
+   "identifier_form::proofs::high_tag_universal_types_are_form_checked"
+  ],
+  "green": [],
+  "predicted_assert": "high_tag_universal_types_are_form_checked: accepted_exactly_as_framed",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r2-results.md Item 4 (round 2): FAILED `accepted_exactly_as_framed(&[0x1F, 0x1F, 0x00])` (Kani 5.4 s)"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text",
+  "primary_provenance": "round-r2",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "identifier_form-R3a-1",
+  "module": "identifier_form",
+  "claim": "decode_tlv_form_checked returns the framing result unchanged on success for every input length 0..=6",
+  "src": "der-verified/src/identifier_form.rs",
+  "old": "        Ok(()) => Ok((tlv, used)),",
+  "new": "        Ok(()) => Ok((tlv, if input.len() == 5 { used + 1 } else { used })),",
+  "red": [
+   "identifier_form::proofs::decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule"
+  ],
+  "green": [
+   "identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption"
+  ],
+  "predicted_assert": "..._is_decode_tlv_refined_by_the_rule: refined == Ok((tlv, used))",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r3a-results.md Item 2 (round 3a): refined harness FAILED `refined == Ok((tlv, used))`; the strict harness is SUCCESSFUL on this mutant by construction (it composes on the mutated function), so it is a GREEN sibling here"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text (same line as identifier_form-R2-1, different mutation)",
+  "primary_provenance": "round-r3a",
+  "text_basis": "verbatim"
+ },
+ {
+  "id": "identifier_form-R4-1",
+  "module": "identifier_form",
+  "claim": "decode_tlv_form_checked_strict rejects trailing data (check dropped must be red)",
+  "src": "der-verified/src/identifier_form.rs",
+  "old": "    if used != input.len() {\n        return Err(CheckedTlvError::Tlv(TlvError::TrailingData));\n    }\n    Ok(tlv)",
+  "new": "    let _ = used;\n    Ok(tlv)",
+  "red": [
+   "identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption"
+  ],
+  "green": [],
+  "predicted_assert": "..._strict_requires_full_consumption: strict == Err(TrailingData)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 6 mutant 1 (round 4): strict drops the trailing-data check; FAILED `strict == Err(..TrailingData)`"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; `let _ = used;` added to avoid an unused-variable warning",
+  "primary_provenance": "round-r4",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "identifier_form-R4-2",
+  "module": "identifier_form",
+  "claim": "decode_tlv_form_checked_strict accepts a fully consumed TLV (always-TrailingData must be red)",
+  "src": "der-verified/src/identifier_form.rs",
+  "old": "    if used != input.len() {\n        return Err(CheckedTlvError::Tlv(TlvError::TrailingData));\n    }\n    Ok(tlv)",
+  "new": "    let _ = (used, tlv);\n    Err(CheckedTlvError::Tlv(TlvError::TrailingData))",
+  "red": [
+   "identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption"
+  ],
+  "green": [],
+  "predicted_assert": "..._strict_requires_full_consumption: strict == Ok(tlv)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "harness-r4-results.md Item 6 mutant 2 (round 4): strict always returns Err(TrailingData); FAILED `strict == Ok(tlv)`"
+  ],
+  "status": "applicable",
+  "anchor": "unchanged production text; `let _ = (used, tlv);` added to avoid unused-variable warnings",
+  "primary_provenance": "round-r4",
+  "text_basis": "reconstructed-from-prose"
+ },
+ {
+  "id": "profile-L4-a",
+  "module": "profile",
+  "claim": "rule 4: a fractional notBefore GeneralizedTime is rejected (drop the notBefore fraction check)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n",
+  "new": "    // MUTATED: notBefore fraction check dropped\n",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::error_precedence_follows_declaration_order"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4: r == expected (Ok instead of NotBeforeGeneralizedTimeHasFraction); precedence r == expected; error_precedence r == expected",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+ },
+ {
+  "id": "profile-L4-b",
+  "module": "profile",
+  "claim": "rule 4: a fractional notAfter GeneralizedTime is rejected (drop the notAfter fraction check)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+  "new": "    // MUTATED: notAfter fraction check dropped\n",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::error_precedence_follows_declaration_order"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4: r == expected (Ok instead of NotAfterGeneralizedTimeHasFraction); precedence r == expected; error_precedence r == expected",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+ },
+ {
+  "id": "profile-L4-c",
+  "module": "profile",
+  "claim": "rule 4: each field reports its own variant (swap the two variants)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+  "new": "    check_time_no_fraction(&validity.not_before, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::error_precedence_follows_declaration_order"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4/precedence/error_precedence: r == expected (wrong variant)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+ },
+ {
+  "id": "profile-L4-d",
+  "module": "profile",
+  "claim": "precedence: rule 3 (both fields) is checked before rule 4 (move rule 4 ahead of rule 3)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n\n    // Rule 4 (\u00a74.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.\n    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both\n    // rule-3 fields (declaration order), notBefore first.\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+  "new": "    // Rule 4 (\u00a74.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.\n    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both\n    // rule-3 fields (declaration order), notBefore first.\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n\n    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n",
+  "red": [
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::error_precedence_follows_declaration_order"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "precedence/error_precedence: r == expected on a year<=2049 GeneralizedTime that also has a fraction (HasFraction instead of YearTooEarly); rule3 and rule4 harnesses are blind (empty fraction / year>=2050)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+ },
+ {
+  "id": "profile-L4-e",
+  "module": "profile",
+  "claim": "precedence: rule 3 then rule 4 for BOTH fields, not interleaved per field (rule3 nb, rule4 nb, rule3 na, rule4 na)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n\n    // Rule 4 (\u00a74.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.\n    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both\n    // rule-3 fields (declaration order), notBefore first.\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+  "new": "    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+  "red": [
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::error_precedence_follows_declaration_order"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "precedence/error_precedence: r == expected when notBefore has a fraction and notAfter a year<=2049 (HasFraction instead of notAfter's YearTooEarly)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+ },
+ {
+  "id": "profile-L4-f",
+  "module": "profile",
+  "claim": "rule 4 polarity: a fraction-FREE GeneralizedTime is accepted, a fractional one rejected (negate require_no_fraction)",
+  "src": "der-verified/src/profile.rs",
+  "old": "        if !require_no_fraction(t) {\n            return Err(on_fraction);",
+  "new": "        if require_no_fraction(t) {\n            return Err(on_fraction);",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::error_precedence_follows_declaration_order",
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+  ],
+  "green": [
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4/precedence/error_precedence: r == expected (clean 2050+ GeneralizedTime rejected, fractional accepted)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d. PREREGISTRATION DEVIATION (observed 538285d): rule3_generalized_too_early_iff_year_le_2049 was predicted GREEN but is FAILED, because the mutant also rejects fraction-free / second==0 times that harness expects to be accepted (it is an exact-result harness). The preregistered reds all FAILED as predicted; the green prediction was my error, so the harness moved to red."
+ },
+ {
+  "id": "profile-L4-g",
+  "module": "profile",
+  "claim": "rule 4 emptiness: ANY non-empty fraction is rejected, including a one-octet one (off-by-one on the length test)",
+  "src": "der-verified/src/profile.rs",
+  "old": "        if !require_no_fraction(t) {\n            return Err(on_fraction);",
+  "new": "        if t.fraction.len() > 1 {\n            return Err(on_fraction);",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::error_precedence_follows_declaration_order"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4/precedence: r == expected (1-octet fraction accepted); error_precedence uses a 1-octet fraction too and is expected red, observed but not required",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d. Observed: ERRP also FAILED (predicted 'expected, not required'), so it is listed as red."
+ },
+ {
+  "id": "profile-L4-h",
+  "module": "profile",
+  "claim": "rule 4 applies to the GeneralizedTime arm only and does not reject a UTCTime (check the Utc arm too)",
+  "src": "der-verified/src/profile.rs",
+  "old": "    if let Time::Generalized(t) = time {\n        if !require_no_fraction(t) {",
+  "new": "    if let Time::Utc(u) = time {\n        if u.second == 0 {\n            return Err(on_fraction);\n        }\n    }\n    if let Time::Generalized(t) = time {\n        if !require_no_fraction(t) {",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+  ],
+  "green": [
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4/precedence: r == expected (UTCTime with second == 0 rejected with a fraction variant)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d. PREREGISTRATION DEVIATION (observed 538285d): rule3_generalized_too_early_iff_year_le_2049 was predicted GREEN but is FAILED, because the mutant also rejects fraction-free / second==0 times that harness expects to be accepted (it is an exact-result harness). The preregistered reds all FAILED as predicted; the green prediction was my error, so the harness moved to red."
+ },
+ {
+  "id": "profile-L4-i",
+  "module": "profile",
+  "claim": "rule 4 rests on require_no_fraction: a require_no_fraction that is always true leaves fractional times accepted by validate_profile",
+  "src": "der-verified/src/generalized_time.rs",
+  "old": "pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {\n    t.fraction.is_empty()",
+  "new": "pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {\n    true",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+  ],
+  "green": [
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4/precedence: r == expected (fractional time accepted); the generalized_time harness require_no_fraction_iff_no_fraction_octets is red for the same mutation per generalized_time-R3a-1",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "laneA-rule4"
+  ],
+  "primary_provenance": "laneA-rule4",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+  "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+ },
+ {
+  "id": "profile-L4-len4",
+  "module": "profile",
+  "claim": "rule 4 has no length-dependent hole: a fraction of exactly 4 octets is rejected like every other non-empty fraction (needs the profile harnesses' fraction window to reach length 4)",
+  "src": "der-verified/src/profile.rs",
+  "old": "        if !require_no_fraction(t) {",
+  "new": "        if !require_no_fraction(t) && t.fraction.len() != 4 {",
+  "red": [
+   "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+   "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+  ],
+  "green": [
+   "profile::proofs::error_precedence_follows_declaration_order",
+   "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+   "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+  ],
+  "predicted_assert": "rule4/precedence: r == expected (a 4-octet fraction is accepted by the mutant)",
+  "stubbing": false,
+  "timeout_s": 1800,
+  "provenance": [
+   "profile-verify-fix"
+  ],
+  "primary_provenance": "profile-verify-fix",
+  "status": "applicable",
+  "text_basis": "verbatim",
+  "profile_flag": true,
+  "anchor": "written against profile.rs after the fraction window was raised from 2 to 4 octets (lane F, branch der-coverage-w12)",
+  "notes": "preregistered in laneF-predictions.md BEFORE any run. Observed: with the OLD window (0..=2) R4 and PREC were SUCCESSFUL on this mutant (it survived); with the window 0..=4 R4 and PREC FAILED with `assertion failed: r == expected`, ERRP/R3/R2 SUCCESSFUL. The new unit test rejects_fractions_of_length_three_and_four_on_both_fields also fails on it. Evidence: laneF-evidence/."
+ }
+]

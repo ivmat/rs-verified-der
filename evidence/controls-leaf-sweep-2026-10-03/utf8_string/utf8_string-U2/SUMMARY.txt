@@ -1,0 +1,12 @@
+=== utf8_string-U2 / utf8_string / der-verified/src/utf8_string.rs (2026-10-03T15:24:53Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :334
+baseline utf8_string::proofs::validate_iff_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline utf8_string::proofs::accepted_identifier_is_canonical: SUCCESSFUL   [want SUCCESSFUL]
+red      utf8_string::proofs::validate_iff_oracle: FAILED   [want FAILED]  (8.4s)
+green    utf8_string::proofs::accepted_identifier_is_canonical: SUCCESSFUL   [want SUCCESSFUL]  (26.1s)
+failed_descriptions:
+  - "assertion failed: validate_utf8(&buf[..n]).is_ok() == oracle_wellformed_utf8(&buf[..n])"

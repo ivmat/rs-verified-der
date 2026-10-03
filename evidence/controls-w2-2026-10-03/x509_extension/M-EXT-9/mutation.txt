@@ -1,0 +1,19 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+    let outer = decode_sequence_tlv_strict(input).map_err(ExtensionsError::BadOuterSeq)?;
+
+--- new ---
+    let outer = decode_sequence_tlv_strict(input).map_err(|_| ExtensionsError::EmptyExtensions)?;
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -286,7 +286,7 @@
+ /// — this is a validator, not a materializing parser; see the module docs for why.
+ pub fn validate_extensions(input: &[u8]) -> Result<(), ExtensionsError> {
+     // 1. Outer Extensions SEQUENCE: must consume the whole input (top-level anti-trailing-data).
+-    let outer = decode_sequence_tlv_strict(input).map_err(ExtensionsError::BadOuterSeq)?;
++    let outer = decode_sequence_tlv_strict(input).map_err(|_| ExtensionsError::EmptyExtensions)?;
+ 
+     // 2. Walk each Extension member in order (SEQUENCE OF: no §11.6 ordering requirement here).
+     let mut off = 0usize;

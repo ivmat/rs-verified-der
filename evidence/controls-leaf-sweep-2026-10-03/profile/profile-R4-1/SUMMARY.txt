@@ -1,0 +1,16 @@
+=== profile-R4-1 / profile / der-verified/src/profile.rs (2026-10-03T15:21:09Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    validate_profile_is_exactly_the_documented_precedence: r == expected
+baseline profile::proofs::validate_profile_is_exactly_the_documented_precedence: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule4_fraction_iff_generalized_with_fraction: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::error_precedence_follows_declaration_order: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::validate_profile_is_exactly_the_documented_precedence: FAILED   [want FAILED]  (2.9s)
+red      profile::proofs::rule4_fraction_iff_generalized_with_fraction: FAILED   [want FAILED]  (1.5s)
+red      profile::proofs::error_precedence_follows_declaration_order: FAILED   [want FAILED]  (1.0s)
+green    profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]  (1.0s)
+failed_descriptions:
+  - "assertion failed: r == expected"

@@ -1,0 +1,16 @@
+=== M-EXT-10 / x509_extension / der-verified/src/x509_extension.rs (2026-10-03T19:27:30Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    child framing: child framing error differs from the primitive's error
+baseline x509_extension::proofs::validate_extensions_rejects_child_framing: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_rejects_outer_envelope: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_second_identifier: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_extension::proofs::validate_extensions_rejects_child_framing: FAILED   [want FAILED]  (61.6s)
+green    x509_extension::proofs::validate_extensions_rejects_outer_envelope: SUCCESSFUL   [want SUCCESSFUL]  (76.6s)
+green    x509_extension::proofs::validate_extensions_structured_second_identifier: SUCCESSFUL   [want SUCCESSFUL]  (27.9s)
+green    x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]  (25.8s)
+failed_descriptions:
+  - ""child framing error differs from the primitive's error""

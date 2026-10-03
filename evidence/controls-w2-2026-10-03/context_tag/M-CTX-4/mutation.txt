@@ -1,0 +1,19 @@
+file: der-verified/src/context_tag.rs
+--- old ---
+    let (tlv, used) = decode_tlv(input).map_err(ContextTagError::BadTlv)?;
+
+--- new ---
+    let (tlv, used) = decode_tlv(input).map_err(|_| ContextTagError::WrongClass)?;
+
+--- unified diff ---
+--- a/der-verified/src/context_tag.rs
++++ b/der-verified/src/context_tag.rs
+@@ -73,7 +73,7 @@
+     expected_number: u32,
+     input: &[u8],
+ ) -> Result<(&[u8], usize), ContextTagError> {
+-    let (tlv, used) = decode_tlv(input).map_err(ContextTagError::BadTlv)?;
++    let (tlv, used) = decode_tlv(input).map_err(|_| ContextTagError::WrongClass)?;
+     if tlv.tag.class != Class::ContextSpecific {
+         return Err(ContextTagError::WrongClass);
+     }

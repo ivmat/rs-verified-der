@@ -1,0 +1,16 @@
+=== bit_string-C2 / bit_string / der-verified/src/bit_string.rs (2026-10-03T15:17:13Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :251
+baseline bit_string::proofs::unused_too_large_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::roundtrip_canonical: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::nonzero_padding_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+red      bit_string::proofs::unused_too_large_is_classified: FAILED   [want FAILED]  (0.8s)
+green    bit_string::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+green    bit_string::proofs::roundtrip_canonical: SUCCESSFUL   [want SUCCESSFUL]  (1.5s)
+green    bit_string::proofs::nonzero_padding_is_classified: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+failed_descriptions:
+  - "assertion failed: decode_bit_string(&[u]) == Err(BitStringError::UnusedBitsTooLarge)"

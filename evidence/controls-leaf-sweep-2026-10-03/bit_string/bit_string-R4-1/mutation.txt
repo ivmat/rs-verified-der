@@ -1,0 +1,19 @@
+file: der-verified/src/bit_string.rs
+--- old ---
+    out[1..total].copy_from_slice(data);
+    Some(total)
+--- new ---
+    out[1..total].copy_from_slice(data);
+    if out.len() > total { out[total] = 0xAA; }
+    Some(total)
+--- unified diff ---
+--- a/der-verified/src/bit_string.rs
++++ b/der-verified/src/bit_string.rs
+@@ -170,6 +170,7 @@
+     }
+     out[0] = unused;
+     out[1..total].copy_from_slice(data);
++    if out.len() > total { out[total] = 0xAA; }
+     Some(total)
+ }
+ 

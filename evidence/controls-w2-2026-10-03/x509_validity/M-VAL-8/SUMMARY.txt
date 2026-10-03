@@ -1,0 +1,16 @@
+=== M-VAL-8 / x509_validity / der-verified/src/x509_validity.rs (2026-10-03T19:17:51Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    content: result == expected on a BadUtc leg; length: same on l < 13
+baseline x509_validity::proofs::parse_validity_rejects_field_content: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_rejects_field_length: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_faithful_uu: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_validity::proofs::parse_validity_rejects_field_identifier: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_validity::proofs::parse_validity_rejects_field_content: FAILED   [want FAILED]  (15.3s)
+red      x509_validity::proofs::parse_validity_rejects_field_length: FAILED   [want FAILED]  (18.2s)
+green    x509_validity::proofs::parse_validity_faithful_uu: SUCCESSFUL   [want SUCCESSFUL]  (17.1s)
+green    x509_validity::proofs::parse_validity_rejects_field_identifier: SUCCESSFUL   [want SUCCESSFUL]  (17.8s)
+failed_descriptions:
+  - "assertion failed: result == expected"

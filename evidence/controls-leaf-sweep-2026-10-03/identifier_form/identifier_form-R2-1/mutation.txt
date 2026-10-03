@@ -1,0 +1,17 @@
+file: der-verified/src/identifier_form.rs
+--- old ---
+        Ok(()) => Ok((tlv, used)),
+--- new ---
+        Ok(()) => Ok((tlv, if tlv.tag.number >= 31 { used - 1 } else { used })),
+--- unified diff ---
+--- a/der-verified/src/identifier_form.rs
++++ b/der-verified/src/identifier_form.rs
+@@ -262,7 +262,7 @@
+         Err(e) => return Err(CheckedTlvError::Tlv(e)),
+     };
+     match validate_identifier_form(tlv.tag) {
+-        Ok(()) => Ok((tlv, used)),
++        Ok(()) => Ok((tlv, if tlv.tag.number >= 31 { used - 1 } else { used })),
+         Err(e) => Err(CheckedTlvError::Form(e)),
+     }
+ }

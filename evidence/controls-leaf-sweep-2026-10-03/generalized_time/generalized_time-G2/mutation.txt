@@ -1,0 +1,17 @@
+file: der-verified/src/generalized_time.rs
+--- old ---
+if content.len() < 15 {
+--- new ---
+if content.len() < 14 {
+--- unified diff ---
+--- a/der-verified/src/generalized_time.rs
++++ b/der-verified/src/generalized_time.rs
+@@ -183,7 +183,7 @@
+ /// order against an independent reference.
+ pub fn decode_generalized_time(content: &[u8]) -> Result<GeneralizedTime<'_>, GeneralizedTimeError> {
+     // Minimal canonical form is `YYYYMMDDHHMMSS` + `Z` = 15 octets.
+-    if content.len() < 15 {
++    if content.len() < 14 {
+         return Err(GeneralizedTimeError::BadLength);
+     }
+     // Positions 0..=13 are the mandatory YYYYMMDDHHMMSS digits.

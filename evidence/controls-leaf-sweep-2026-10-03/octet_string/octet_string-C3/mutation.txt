@@ -1,0 +1,17 @@
+file: der-verified/src/octet_string.rs
+--- old ---
+Ok((tlv.value, used))
+--- new ---
+Ok((tlv.value, used - 1))
+--- unified diff ---
+--- a/der-verified/src/octet_string.rs
++++ b/der-verified/src/octet_string.rs
+@@ -61,7 +61,7 @@
+     if tlv.tag.constructed {
+         return Err(OctetStringError::Constructed);
+     }
+-    Ok((tlv.value, used))
++    Ok((tlv.value, used - 1))
+ }
+ 
+ /// Encode `content` as a canonical DER OCTET STRING (UNIVERSAL 4, primitive) into `out`.

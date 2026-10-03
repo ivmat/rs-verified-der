@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+        return Err(IntegerFieldError::WrongTag);
+
+--- new ---
+        return Err(IntegerFieldError::Constructed);
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -295,7 +295,7 @@
+ fn decode_integer_tlv(input: &[u8]) -> Result<(&[u8], usize), IntegerFieldError> {
+     let (tlv, used) = decode_tlv(input).map_err(IntegerFieldError::Tlv)?;
+     if tlv.tag.class != Class::Universal || tlv.tag.number != BIG_INTEGER_TAG {
+-        return Err(IntegerFieldError::WrongTag);
++        return Err(IntegerFieldError::Constructed);
+     }
+     if tlv.tag.constructed {
+         return Err(IntegerFieldError::Constructed);

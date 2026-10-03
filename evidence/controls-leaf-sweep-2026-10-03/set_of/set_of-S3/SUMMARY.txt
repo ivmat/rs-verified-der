@@ -1,0 +1,12 @@
+=== set_of-S3 / set_of / der-verified/src/set_of.rs (2026-10-03T15:53:52Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :414
+baseline set_of::proofs::ordering_iff_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline set_of::proofs::cmp_padded_matches_oracle: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::ordering_iff_oracle: FAILED   [want FAILED]  (43.9s)
+green    set_of::proofs::cmp_padded_matches_oracle: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+failed_descriptions:
+  - "assertion failed: accepted == ordered"

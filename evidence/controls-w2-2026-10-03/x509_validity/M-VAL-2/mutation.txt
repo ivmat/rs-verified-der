@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+        GENERALIZED_TIME_TAG => {
+
+--- new ---
+        GENERALIZED_TIME_TAG if false => {
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -151,7 +151,7 @@
+             let t = decode_utc_time(tlv.value).map_err(TimeError::BadUtc)?;
+             Ok((Time::Utc(t), used))
+         }
+-        GENERALIZED_TIME_TAG => {
++        GENERALIZED_TIME_TAG if false => {
+             if tlv.tag.constructed {
+                 return Err(TimeError::Constructed);
+             }

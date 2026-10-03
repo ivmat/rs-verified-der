@@ -1,0 +1,17 @@
+file: der-verified/src/restricted_string.rs
+--- old ---
+Charset::Numeric => b.is_ascii_digit() || b == b' ',
+--- new ---
+Charset::Numeric => b.is_ascii_digit() || b == b' ' || b == b'-',
+--- unified diff ---
+--- a/der-verified/src/restricted_string.rs
++++ b/der-verified/src/restricted_string.rs
+@@ -104,7 +104,7 @@
+             // numeric-range formulation `b <= 0x7F`).
+             Charset::Ia5 => b & 0x80 == 0,
+             // NumericString: digits + space only (no hyphen, no colon).
+-            Charset::Numeric => b.is_ascii_digit() || b == b' ',
++            Charset::Numeric => b.is_ascii_digit() || b == b' ' || b == b'-',
+             // VisibleString: the graphic subset of ASCII, space through tilde.
+             Charset::Visible => b >= 0x20 && b <= 0x7E,
+         }

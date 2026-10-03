@@ -1,0 +1,21 @@
+=== M-RSA-2 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T17:48:07Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-RSA-1/2 and H-RSA-3a (kk==9) r == expected (VersionMismatch becomes Ok); H-RSA-5 (v == 0 leg: expected Err(VersionMismatch), observed Ok) fails the Ok-arm assert `multi-prime tail accepted only with version 1`
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s2: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_rejects_missing_fields: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_multi_prime_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_rejects_two_octet_version: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_faithful_two_prime_s1: FAILED   [want FAILED]  (188.1s)
+red      rsa_private_key::proofs::parse_faithful_two_prime_s2: FAILED   [want FAILED]  (158.7s)
+red      rsa_private_key::proofs::parse_rejects_missing_fields: FAILED   [want FAILED]  (73.2s)
+red      rsa_private_key::proofs::parse_multi_prime_faithful: FAILED   [want FAILED]  (234.7s)
+green    rsa_private_key::proofs::parse_rejects_two_octet_version: SUCCESSFUL   [want SUCCESSFUL]  (33.4s)
+green    rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]  (53.4s)
+failed_descriptions:
+  - ""parse_rsa_private_key result differs from the total expected result""
+  - ""multi-prime tail accepted only with version 1""

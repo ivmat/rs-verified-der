@@ -1,0 +1,14 @@
+=== generalized_time-A-swap / generalized_time / der-verified/src/generalized_time.rs (2026-10-03T15:19:56Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    accepted_iff_canonical_oracle: t.minute == digit pair at 10/11
+baseline generalized_time::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline generalized_time::proofs::roundtrip_all_fields: SUCCESSFUL   [want SUCCESSFUL]
+baseline generalized_time::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]
+red      generalized_time::proofs::accepted_iff_canonical_oracle: FAILED   [want FAILED]  (3.8s)
+green    generalized_time::proofs::roundtrip_all_fields: SUCCESSFUL   [want SUCCESSFUL]  (2.7s)
+green    generalized_time::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]  (2.9s)
+failed_descriptions:
+  - "assertion failed: t.minute as u16 == d(10) * 10 + d(11)"

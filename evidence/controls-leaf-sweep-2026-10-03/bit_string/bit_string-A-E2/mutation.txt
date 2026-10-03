@@ -1,0 +1,21 @@
+file: der-verified/src/bit_string.rs
+--- old ---
+        let mask = (1u8 << unused) - 1;
+        if data[data.len() - 1] & mask != 0 {
+            return None;
+--- new ---
+        let mask = (1u8 << unused.saturating_sub(1)) - 1;
+        if data[data.len() - 1] & mask != 0 {
+            return None;
+--- unified diff ---
+--- a/der-verified/src/bit_string.rs
++++ b/der-verified/src/bit_string.rs
+@@ -157,7 +157,7 @@
+             return None;
+         }
+     } else {
+-        let mask = (1u8 << unused) - 1;
++        let mask = (1u8 << unused.saturating_sub(1)) - 1;
+         if data[data.len() - 1] & mask != 0 {
+             return None;
+         }

@@ -1,0 +1,15 @@
+=== M-CTX-2 / context_tag / der-verified/src/context_tag.rs (2026-10-03T16:37:57Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    faithful: result.is_ok() == expected_ok; exact: r == expected
+baseline context_tag::proofs::decode_explicit_context_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline context_tag::proofs::decode_explicit_context_exact_result: SUCCESSFUL   [want SUCCESSFUL]
+baseline context_tag::proofs::decode_explicit_context_never_panics: SUCCESSFUL   [want SUCCESSFUL]
+red      context_tag::proofs::decode_explicit_context_faithful: FAILED   [want FAILED]  (4.7s)
+red      context_tag::proofs::decode_explicit_context_exact_result: FAILED   [want FAILED]  (5.8s)
+green    context_tag::proofs::decode_explicit_context_never_panics: SUCCESSFUL   [want SUCCESSFUL]  (2.5s)
+failed_descriptions:
+  - "assertion failed: result.is_ok() == expected_ok"
+  - ""decode_explicit_context result differs from the total expected result""

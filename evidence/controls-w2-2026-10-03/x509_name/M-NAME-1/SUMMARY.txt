@@ -1,0 +1,12 @@
+=== M-NAME-1 / x509_name / der-verified/src/x509_name.rs (2026-10-03T18:36:30Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-NAME-3b assert r == Err(EmptyRdn)
+baseline x509_name::proofs::validate_name_empty_rdn: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_name::proofs::validate_name_empty_rdn: FAILED   [want FAILED]  (70.8s)
+green    x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]  (108.7s)
+failed_descriptions:
+  - "assertion failed: r == Err(NameError::EmptyRdn)"

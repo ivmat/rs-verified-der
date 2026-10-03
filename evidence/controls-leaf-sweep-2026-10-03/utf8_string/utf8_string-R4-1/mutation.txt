@@ -1,0 +1,153 @@
+file: der-verified/src/utf8_string.rs
+--- old ---
+pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
+    let mut i = 0;
+    while i < content.len() {
+        let lead = content[i];
+        let len = match sequence_len(lead) {
+            Some(l) => l,
+            None => return Err(Utf8Error::IllFormed { position: i }),
+        };
+        if len == 1 {
+            i += 1;
+            continue;
+        }
+        if i + len > content.len() {
+            return Err(Utf8Error::IllFormed { position: i });
+        }
+        // Require every continuation byte present and in 0x80..=0xBF, computing the code point by
+        // the standard bit-shifts as we go.
+        let mut cp: u32 = match len {
+            2 => (lead & 0x1F) as u32,
+            3 => (lead & 0x0F) as u32,
+            _ => (lead & 0x07) as u32,
+        };
+        let mut k = 1;
+        while k < len {
+            let cont = content[i + k];
+            if cont & 0xC0 != 0x80 {
+                return Err(Utf8Error::IllFormed { position: i });
+            }
+            // EQUIVALENT-MUTANT: disjoint bitfields, |≡^ (cargo-mutants survivor, not a coverage
+            // gap) — `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.
+            cp = (cp << 6) | (cont & 0x3F) as u32;
+            k += 1;
+        }
+        // Value-space well-formedness: shortest form, not a surrogate, within the Unicode range.
+        let min_cp: u32 = match len {
+            2 => 0x80,
+            3 => 0x800,
+            _ => 0x10000,
+        };
+        if cp < min_cp {
+            return Err(Utf8Error::IllFormed { position: i });
+        }
+        if (0xD800..=0xDFFF).contains(&cp) {
+            return Err(Utf8Error::IllFormed { position: i });
+        }
+        if cp > 0x10FFFF {
+            return Err(Utf8Error::IllFormed { position: i });
+        }
+        i += len;
+    }
+    Ok(())
+}
+--- new ---
+pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
+    let mut i = 0;
+    while i < content.len() {
+        let lead = content[i];
+        let len = match sequence_len(lead) {
+            Some(l) => l,
+            None => return Err(Utf8Error::IllFormed { position: i.min(3) }),
+        };
+        if len == 1 {
+            i += 1;
+            continue;
+        }
+        if i + len > content.len() {
+            return Err(Utf8Error::IllFormed { position: i.min(3) });
+        }
+        // Require every continuation byte present and in 0x80..=0xBF, computing the code point by
+        // the standard bit-shifts as we go.
+        let mut cp: u32 = match len {
+            2 => (lead & 0x1F) as u32,
+            3 => (lead & 0x0F) as u32,
+            _ => (lead & 0x07) as u32,
+        };
+        let mut k = 1;
+        while k < len {
+            let cont = content[i + k];
+            if cont & 0xC0 != 0x80 {
+                return Err(Utf8Error::IllFormed { position: i.min(3) });
+            }
+            // EQUIVALENT-MUTANT: disjoint bitfields, |≡^ (cargo-mutants survivor, not a coverage
+            // gap) — `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.
+            cp = (cp << 6) | (cont & 0x3F) as u32;
+            k += 1;
+        }
+        // Value-space well-formedness: shortest form, not a surrogate, within the Unicode range.
+        let min_cp: u32 = match len {
+            2 => 0x80,
+            3 => 0x800,
+            _ => 0x10000,
+        };
+        if cp < min_cp {
+            return Err(Utf8Error::IllFormed { position: i.min(3) });
+        }
+        if (0xD800..=0xDFFF).contains(&cp) {
+            return Err(Utf8Error::IllFormed { position: i.min(3) });
+        }
+        if cp > 0x10FFFF {
+            return Err(Utf8Error::IllFormed { position: i.min(3) });
+        }
+        i += len;
+    }
+    Ok(())
+}
+--- unified diff ---
+--- a/der-verified/src/utf8_string.rs
++++ b/der-verified/src/utf8_string.rs
+@@ -125,14 +125,14 @@
+         let lead = content[i];
+         let len = match sequence_len(lead) {
+             Some(l) => l,
+-            None => return Err(Utf8Error::IllFormed { position: i }),
++            None => return Err(Utf8Error::IllFormed { position: i.min(3) }),
+         };
+         if len == 1 {
+             i += 1;
+             continue;
+         }
+         if i + len > content.len() {
+-            return Err(Utf8Error::IllFormed { position: i });
++            return Err(Utf8Error::IllFormed { position: i.min(3) });
+         }
+         // Require every continuation byte present and in 0x80..=0xBF, computing the code point by
+         // the standard bit-shifts as we go.
+@@ -145,7 +145,7 @@
+         while k < len {
+             let cont = content[i + k];
+             if cont & 0xC0 != 0x80 {
+-                return Err(Utf8Error::IllFormed { position: i });
++                return Err(Utf8Error::IllFormed { position: i.min(3) });
+             }
+             // EQUIVALENT-MUTANT: disjoint bitfields, |≡^ (cargo-mutants survivor, not a coverage
+             // gap) — `cp << 6` always has its low 6 bits zero, and `cont & 0x3F` fits in 6 bits.
+@@ -159,13 +159,13 @@
+             _ => 0x10000,
+         };
+         if cp < min_cp {
+-            return Err(Utf8Error::IllFormed { position: i });
++            return Err(Utf8Error::IllFormed { position: i.min(3) });
+         }
+         if (0xD800..=0xDFFF).contains(&cp) {
+-            return Err(Utf8Error::IllFormed { position: i });
++            return Err(Utf8Error::IllFormed { position: i.min(3) });
+         }
+         if cp > 0x10FFFF {
+-            return Err(Utf8Error::IllFormed { position: i });
++            return Err(Utf8Error::IllFormed { position: i.min(3) });
+         }
+         i += len;
+     }

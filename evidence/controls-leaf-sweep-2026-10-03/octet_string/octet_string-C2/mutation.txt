@@ -1,0 +1,17 @@
+file: der-verified/src/octet_string.rs
+--- old ---
+if tlv.tag.constructed {
+--- new ---
+if tlv.tag.constructed && tlv.value.is_empty() {
+--- unified diff ---
+--- a/der-verified/src/octet_string.rs
++++ b/der-verified/src/octet_string.rs
+@@ -58,7 +58,7 @@
+     if tlv.tag.class != Class::Universal || tlv.tag.number != TAG {
+         return Err(OctetStringError::WrongTag);
+     }
+-    if tlv.tag.constructed {
++    if tlv.tag.constructed && tlv.value.is_empty() {
+         return Err(OctetStringError::Constructed);
+     }
+     Ok((tlv.value, used))

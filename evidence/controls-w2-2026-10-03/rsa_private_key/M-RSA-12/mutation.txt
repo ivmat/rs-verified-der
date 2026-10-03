@@ -1,0 +1,21 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    if tlv.tag.constructed {
+        return Err(IntegerFieldError::Constructed);
+
+--- new ---
+    if false {
+        return Err(IntegerFieldError::Constructed);
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -297,7 +297,7 @@
+     if tlv.tag.class != Class::Universal || tlv.tag.number != BIG_INTEGER_TAG {
+         return Err(IntegerFieldError::WrongTag);
+     }
+-    if tlv.tag.constructed {
++    if false {
+         return Err(IntegerFieldError::Constructed);
+     }
+     validate_integer_content(tlv.value).map_err(IntegerFieldError::Content)?;

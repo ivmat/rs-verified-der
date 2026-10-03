@@ -1,0 +1,12 @@
+=== generalized_time-G1 / generalized_time / der-verified/src/generalized_time.rs (2026-10-03T15:19:29Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    accepted_iff_canonical_oracle :439-441
+baseline generalized_time::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline generalized_time::proofs::bad_fraction_separator_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+red      generalized_time::proofs::accepted_iff_canonical_oracle: FAILED   [want FAILED]  (3.9s)
+green    generalized_time::proofs::bad_fraction_separator_is_classified: SUCCESSFUL   [want SUCCESSFUL]  (1.4s)
+failed_descriptions:
+  - "assertion failed: result.is_ok() == is_canonical_der_generalizedtime(&buf[..n])"

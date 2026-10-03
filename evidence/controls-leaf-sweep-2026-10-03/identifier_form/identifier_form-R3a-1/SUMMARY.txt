@@ -1,0 +1,12 @@
+=== identifier_form-R3a-1 / identifier_form / der-verified/src/identifier_form.rs (2026-10-03T16:35:55Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    ..._is_decode_tlv_refined_by_the_rule: refined == Ok((tlv, used))
+baseline identifier_form::proofs::decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule: SUCCESSFUL   [want SUCCESSFUL]
+baseline identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption: SUCCESSFUL   [want SUCCESSFUL]
+red      identifier_form::proofs::decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule: FAILED   [want FAILED]  (4.3s)
+green    identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption: SUCCESSFUL   [want SUCCESSFUL]  (4.2s)
+failed_descriptions:
+  - "assertion failed: refined == Ok((tlv, used))"

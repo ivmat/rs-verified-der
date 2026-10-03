@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+        return Err(NameError::EmptyRdn);
+
+--- new ---
+        return Err(NameError::AtvTrailingElements);
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -181,7 +181,7 @@
+ fn validate_rdn(input: &[u8]) -> Result<usize, NameError> {
+     let (rdn_content, used) = decode_set_of_tlv(input).map_err(NameError::BadRdn)?;
+     if rdn_content.is_empty() {
+-        return Err(NameError::EmptyRdn);
++        return Err(NameError::AtvTrailingElements);
+     }
+     for child in Elements::new(rdn_content) {
+         let tlv = child.map_err(NameError::BadAtvTlv)?;

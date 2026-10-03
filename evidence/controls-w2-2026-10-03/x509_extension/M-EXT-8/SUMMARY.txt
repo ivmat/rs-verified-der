@@ -1,0 +1,20 @@
+=== M-EXT-8 / x509_extension / der-verified/src/x509_extension.rs (2026-10-03T17:13:54Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-EXT-2b/c/d r == expected (walk misparses after the first member: the child at offset 2 is the extnID TLV, a WrongTag SEQUENCE); H-EXT-2a (no member) unaffected
+baseline x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_two_members: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_second_identifier: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_empty: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::parse_extension_faithful: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_extension::proofs::validate_extensions_structured_one_member: FAILED   [want FAILED]  (25.0s)
+red      x509_extension::proofs::validate_extensions_structured_two_members: FAILED   [want FAILED]  (25.7s)
+red      x509_extension::proofs::validate_extensions_structured_second_identifier: FAILED   [want FAILED]  (25.9s)
+green    x509_extension::proofs::validate_extensions_structured_empty: SUCCESSFUL   [want SUCCESSFUL]  (21.2s)
+green    x509_extension::proofs::parse_extension_faithful: SUCCESSFUL   [want SUCCESSFUL]  (90.8s)
+failed_descriptions:
+  - ""single-member Extensions result differs from expected""
+  - ""two-member Extensions result differs from expected""
+  - ""second-member identifier result differs from expected""

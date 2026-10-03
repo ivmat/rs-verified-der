@@ -1,0 +1,17 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    validate_integer_content(tlv.value).map_err(IntegerFieldError::Content)?;
+
+--- new ---
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -300,7 +300,6 @@
+     if tlv.tag.constructed {
+         return Err(IntegerFieldError::Constructed);
+     }
+-    validate_integer_content(tlv.value).map_err(IntegerFieldError::Content)?;
+     Ok((tlv.value, used))
+ }
+ 

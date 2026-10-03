@@ -1,0 +1,17 @@
+file: der-verified/src/utf8_string.rs
+--- old ---
+    validate_utf8(tlv.value)?;
+--- new ---
+    let _ = validate_utf8(tlv.value);
+--- unified diff ---
+--- a/der-verified/src/utf8_string.rs
++++ b/der-verified/src/utf8_string.rs
+@@ -192,7 +192,7 @@
+     if tlv.tag.constructed {
+         return Err(Utf8Error::Constructed);
+     }
+-    validate_utf8(tlv.value)?;
++    let _ = validate_utf8(tlv.value);
+     Ok((tlv.value, used))
+ }
+ 

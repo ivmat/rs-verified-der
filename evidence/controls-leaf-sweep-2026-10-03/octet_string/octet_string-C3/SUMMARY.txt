@@ -1,0 +1,16 @@
+=== octet_string-C3 / octet_string / der-verified/src/octet_string.rs (2026-10-03T15:18:09Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :94
+baseline octet_string::proofs::roundtrip_small: SUCCESSFUL   [want SUCCESSFUL]
+baseline octet_string::proofs::accepted_identifier_is_canonical_0x04: SUCCESSFUL   [want SUCCESSFUL]
+baseline octet_string::proofs::constructed_form_is_rejected: SUCCESSFUL   [want SUCCESSFUL]
+baseline octet_string::proofs::non_octet_string_tag_is_wrong_tag: SUCCESSFUL   [want SUCCESSFUL]
+red      octet_string::proofs::roundtrip_small: FAILED   [want FAILED]  (2.1s)
+green    octet_string::proofs::accepted_identifier_is_canonical_0x04: SUCCESSFUL   [want SUCCESSFUL]  (2.3s)
+green    octet_string::proofs::constructed_form_is_rejected: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+green    octet_string::proofs::non_octet_string_tag_is_wrong_tag: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+failed_descriptions:
+  - "assertion failed: used == written"

@@ -1,0 +1,17 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+.map_err(|e| OtherPrimeInfoError::Field(field, e))?;
+--- new ---
+.map_err(|e| OtherPrimeInfoError::Field(OpiField::Prime, e))?;
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -328,7 +328,7 @@
+             return Err(OtherPrimeInfoError::MissingField(field));
+         }
+         let (_content, used) =
+-            decode_integer_tlv(rest).map_err(|e| OtherPrimeInfoError::Field(field, e))?;
++            decode_integer_tlv(rest).map_err(|e| OtherPrimeInfoError::Field(OpiField::Prime, e))?;
+         rest = &rest[used..];
+     }
+     if !rest.is_empty() {

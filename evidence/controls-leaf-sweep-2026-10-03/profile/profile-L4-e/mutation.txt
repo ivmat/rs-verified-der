@@ -1,0 +1,34 @@
+file: der-verified/src/profile.rs
+--- old ---
+    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;
+    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;
+
+    // Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.
+    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both
+    // rule-3 fields (declaration order), notBefore first.
+    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
+    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
+
+--- new ---
+    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;
+    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
+    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;
+    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
+
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -211,12 +211,8 @@
+     // structurally impossible (§4.1.2.5.1's 1950-2049 window), not merely unchecked.
+     let validity = &cert.tbs_certificate.validity;
+     check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;
++    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
+     check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;
+-
+-    // Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.
+-    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both
+-    // rule-3 fields (declaration order), notBefore first.
+-    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
+     check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
+ 
+     Ok(())

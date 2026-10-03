@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+        off += used;
+
+--- new ---
+        off += 2;
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -215,7 +215,7 @@
+     let mut off = 0usize;
+     while off < outer_content.len() {
+         let used = validate_rdn(&outer_content[off..])?;
+-        off += used;
++        off += 2;
+     }
+     Ok(())
+ }

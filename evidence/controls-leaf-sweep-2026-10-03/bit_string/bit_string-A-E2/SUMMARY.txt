@@ -1,0 +1,14 @@
+=== bit_string-A-E2 / bit_string / der-verified/src/bit_string.rs (2026-10-03T15:17:24Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    encode_rejects_exactly_the_non_canonical: r == None
+baseline bit_string::proofs::encode_rejects_exactly_the_non_canonical: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::roundtrip_canonical: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]
+red      bit_string::proofs::encode_rejects_exactly_the_non_canonical: FAILED   [want FAILED]  (2.6s)
+green    bit_string::proofs::roundtrip_canonical: SUCCESSFUL   [want SUCCESSFUL]  (1.5s)
+green    bit_string::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+failed_descriptions:
+  - "assertion failed: r == None"

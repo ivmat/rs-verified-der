@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+    if outer_content.is_empty() {
+
+--- new ---
+    if false {
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -183,7 +183,7 @@
+     let outer_content = decode_sequence_tlv_strict(input).map_err(ValidityError::BadOuterSeq)?;
+ 
+     // 2. First field: notBefore.
+-    if outer_content.is_empty() {
++    if false {
+         return Err(ValidityError::MissingNotBefore);
+     }
+     let (not_before, nb_used) = decode_time_tlv(outer_content).map_err(ValidityError::NotBefore)?;

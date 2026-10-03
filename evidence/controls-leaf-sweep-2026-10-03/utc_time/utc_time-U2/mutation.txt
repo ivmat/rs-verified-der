@@ -1,0 +1,17 @@
+file: der-verified/src/utc_time.rs
+--- old ---
+if month < 1 || month > 12 {
+--- new ---
+if month < 1 || month > 13 {
+--- unified diff ---
+--- a/der-verified/src/utc_time.rs
++++ b/der-verified/src/utc_time.rs
+@@ -159,7 +159,7 @@
+     let hour = two_digits(content, 6);
+     let minute = two_digits(content, 8);
+     let second = two_digits(content, 10);
+-    if month < 1 || month > 12 {
++    if month < 1 || month > 13 {
+         return Err(UtcTimeError::MonthRange);
+     }
+     if day < 1 || day > 31 {

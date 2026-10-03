@@ -1,0 +1,12 @@
+=== set_of-B-GW-S1 / set_of / der-verified/src/set_of.rs (2026-10-03T16:01:00Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    ordering_matches_whole_encoding_oracle: result == oracle_set_of(content)
+baseline set_of::proofs::ordering_matches_whole_encoding_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline set_of::proofs::ordering_iff_oracle: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::ordering_matches_whole_encoding_oracle: FAILED   [want FAILED]  (161.3s)
+green    set_of::proofs::ordering_iff_oracle: SUCCESSFUL   [want SUCCESSFUL]  (57.8s)
+failed_descriptions:
+  - "assertion failed: result == oracle_set_of(content)"

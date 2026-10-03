@@ -1,0 +1,19 @@
+file: der-verified/src/generalized_time.rs
+--- old ---
+pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {
+    t.fraction.is_empty()
+--- new ---
+pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {
+    true
+--- unified diff ---
+--- a/der-verified/src/generalized_time.rs
++++ b/der-verified/src/generalized_time.rs
+@@ -298,7 +298,7 @@
+ /// canonical fraction, but X.509 certificates must not carry one; a caller in that context applies
+ /// this ([`crate::profile::validate_profile`] does so for `validity`). Returns `true` iff `t` has no fraction (mirrors [`crate::bit_string::require_octet_aligned`]).
+ pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {
+-    t.fraction.is_empty()
++    true
+ }
+ 
+ // ---------------------------------------------------------------------------

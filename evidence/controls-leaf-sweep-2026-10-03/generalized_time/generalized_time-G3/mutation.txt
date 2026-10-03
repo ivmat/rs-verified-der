@@ -1,0 +1,17 @@
+file: der-verified/src/generalized_time.rs
+--- old ---
+if hour > 23 {
+--- new ---
+if hour > 24 {
+--- unified diff ---
+--- a/der-verified/src/generalized_time.rs
++++ b/der-verified/src/generalized_time.rs
+@@ -211,7 +211,7 @@
+     if day < 1 || day > 31 {
+         return Err(GeneralizedTimeError::DayRange);
+     }
+-    if hour > 23 {
++    if hour > 24 {
+         return Err(GeneralizedTimeError::HourRange);
+     }
+     if minute > 59 {

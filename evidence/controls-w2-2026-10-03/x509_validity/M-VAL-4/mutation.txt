@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+        return Err(ValidityError::MissingNotAfter);
+
+--- new ---
+        return Err(ValidityError::TrailingBytes);
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -191,7 +191,7 @@
+     // 3. Second (and last) field: notAfter, must exactly fill what remains.
+     let rest = &outer_content[nb_used..];
+     if rest.is_empty() {
+-        return Err(ValidityError::MissingNotAfter);
++        return Err(ValidityError::TrailingBytes);
+     }
+     let (not_after, na_used) = decode_time_tlv(rest).map_err(ValidityError::NotAfter)?;
+     if na_used != rest.len() {

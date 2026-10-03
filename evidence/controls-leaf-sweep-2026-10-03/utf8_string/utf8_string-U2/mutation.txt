@@ -1,0 +1,17 @@
+file: der-verified/src/utf8_string.rs
+--- old ---
+_ => 0x10000,
+--- new ---
+_ => 0x800,
+--- unified diff ---
+--- a/der-verified/src/utf8_string.rs
++++ b/der-verified/src/utf8_string.rs
+@@ -156,7 +156,7 @@
+         let min_cp: u32 = match len {
+             2 => 0x80,
+             3 => 0x800,
+-            _ => 0x10000,
++            _ => 0x800,
+         };
+         if cp < min_cp {
+             return Err(Utf8Error::IllFormed { position: i });

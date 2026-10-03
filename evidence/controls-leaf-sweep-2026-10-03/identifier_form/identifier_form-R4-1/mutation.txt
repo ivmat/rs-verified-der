@@ -1,0 +1,23 @@
+file: der-verified/src/identifier_form.rs
+--- old ---
+    if used != input.len() {
+        return Err(CheckedTlvError::Tlv(TlvError::TrailingData));
+    }
+    Ok(tlv)
+--- new ---
+    let _ = used;
+    Ok(tlv)
+--- unified diff ---
+--- a/der-verified/src/identifier_form.rs
++++ b/der-verified/src/identifier_form.rs
+@@ -274,9 +274,7 @@
+ /// well-formed". Still content-blind, and still does not recurse into a constructed value.
+ pub fn decode_tlv_form_checked_strict(input: &[u8]) -> Result<Tlv<'_>, CheckedTlvError> {
+     let (tlv, used) = decode_tlv_form_checked(input)?;
+-    if used != input.len() {
+-        return Err(CheckedTlvError::Tlv(TlvError::TrailingData));
+-    }
++    let _ = used;
+     Ok(tlv)
+ }
+ 

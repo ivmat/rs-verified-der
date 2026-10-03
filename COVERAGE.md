@@ -11,7 +11,7 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 [`README.md`](README.md)'s verification map are rebuilt from source by
 `gates/gen_proof_manifest.py`, and this file is written by hand.
 
-**Certified at `d05d3f2`.** §7 states exactly what that word covers, as a procedure you can re-run.
+**Certified at `17ee51e`** (the squash head, the published commit. The proof run executed on a pre-squash commit with the short id `42c8165`, which is not part of the published history; its tree is identical to this commit's tree: `git rev-parse 17ee51e^{tree}` prints `1f938d215b692ad117191f1add9418771be82169`, and the evidence file names and headers carry the short id `42c8165`. A docs-and-evidence commit on top of the squash head changes no file under `der-verified/src` or `lean`, and the freshness command in §1 says how to check that). §7 states exactly what that word covers, as a procedure you can re-run.
 
 ---
 
@@ -20,17 +20,17 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 | | |
 |---|---|
 | subject | crate `der-verified` 0.2.0, sources at `der-verified/src/` |
-| commit | `d05d3f2` |
+| commit | `17ee51e` (the squash head; the proof run executed on a pre-squash commit `42c8165` with the identical tree, see the note under the title; the evidence and documents of this directory were added on top of the squash head) |
 | tree state | clean at the certified commit; the run log records `git status --porcelain` sampled clean **at launch** (`dirty-tracked-paths-at-launch: 0`), not assumed. This run samples at launch only — earlier runs also sampled at completion; this one does not, and the header says so rather than implying a completion sample it did not take. |
 | spec axis | **X.690 (2021) DER encoding rules**, per type + framing; **RFC 5280** profile surface. See §3. |
-| gate receipt | `./check.sh` exit 0 at `d05d3f2`, `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, run with `DER_REQUIRE_LEAN=1` |
-| proof floor (L3) | **210/210 SUCCESSFUL, 0 FAILED at `d05d3f2`** — `evidence/check-d05d3f2.log` (contract-campaign + x509 Track B tree; +7 `*_parse_faithful`). The harnesses added since then (leaf-oracle strengthening and the composed-contract harnesses for `context_tag`, `x509_validity`, `x509_extension`, `rsa_private_key` and `x509_name`) have individual runs only until the next full floor |
+| gate receipt | `check.sh(split)` exit 0 at `17ee51e` — the main half ran a temporary split copy of `check.sh` (its Kani line restricted to 294 harnesses; `check.sh` itself unchanged), **not a literal `./check.sh` run**. Its summary line reads `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`, where `L3 kani floor: GREEN` refers to the 294-harness stage only. Run with `DER_REQUIRE_LEAN=1`. The 3 heavy harnesses ran separately; see the proof-floor row |
+| proof floor (L3) | **297/297 SUCCESSFUL, 0 FAILED at `17ee51e` — SPLIT: 294 in one capped (20G) `check.sh` pass incl. the Lean lid + 3 heavy harnesses in separate 24G runs.** Evidence: `evidence/check-42c8165.log` (the 294-harness main half; its own trailer reads `Complete - 294 successfully verified harnesses, 0 failures, 294 total.`) and the three companion logs `evidence/check-42c8165-heavy-x509_extension-validate_extensions_never_panics.log`, `evidence/check-42c8165-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` and `evidence/check-42c8165-heavy-x509_name-validate_rdn_never_panics.log` (each ends `Complete - 1 successfully verified harnesses, 0 failures, 1 total.`). **There is no single-run 297-harness floor at this commit**: the `L3 kani floor: GREEN` in `check.sh`'s summary line refers to the 294-harness restricted stage only. The previous single-run floor was 210/210 at `d05d3f2` (`evidence/check-d05d3f2.log`) |
 | unbounded lids (L4) | 6 lids in Lean, `lean lid: PASS (sorry-free)`, re-extracted from the shipped `.rs`; `lid-source-state.txt unchanged (hashes identical)` |
 | tests | 539 unit and regression tests + 34 doc-tests (no integration-test directory exists) |
 | unsafe | 0 `unsafe` blocks; the crate is `#![forbid(unsafe_code)]` |
 | toolchain | Kani `0.67.0`, CBMC `6.8.0` (kani-bundled, read from the run's own output), CaDiCaL 2.0.0, rustc `1.97.0`, Lean 4 `v4.30.0-rc2` |
-| cost | 1h14m19s wall (04:46:08Z → 06:00:27Z), harnesses run sequentially (no `-j`). **Peak memory was NOT captured for this run** — the systemd `MemoryPeak` for the unit was not retained at read time, and the run header says so; earlier runs recorded ~20.4 GiB, but this run carries no comparable figure and none is invented. The ≥24 GiB RAM floor in the `G` recipe (§4) still bounds it. |
-| freshness | the run at `d05d3f2` speaks for HEAD iff `git diff d05d3f2..HEAD -- der-verified/src lean` is empty. **Run that command; do not trust this sentence.** |
+| cost | Main half (294 harnesses plus the Lean lid): 2h27m12s wall (11:54:46Z → 14:21:58Z), peak 14.6G (systemd service memory peak read from the journal, 20G cap), harnesses run sequentially (no `-j`). Each of the 3 heavy harnesses ran alone under a 24G cap: `validate_extensions_never_panics` 8m17s wall, peak 20G; `validate_extensions_ok_path_witnessed` 3m15s wall, peak 16.7G; `validate_rdn_never_panics` 8m06s wall, peak 16.3G (peaks as systemd service memory peaks read from the journal; the wall times are the journal's unit run times, run back to back in the window 2026-10-03 21:34Z-21:54Z). The ≥24 GiB RAM floor in the `G` recipe (§4) still bounds a full run. |
+| freshness | the run at `17ee51e` speaks for HEAD iff `git diff 17ee51e..HEAD -- der-verified/src lean` is empty. **Run that command; do not trust this sentence.** |
 
 **Two toolchain caveats stated up front,** because they bound everything below:
 
@@ -134,14 +134,14 @@ Item ids are stable and never reused. Rule references are to X.690 (2021) unless
 
 ## 4. Self-verify recipes
 
-All commands run from the repository root at `d05d3f2`. `<H>` = a harness path of the form
+All commands run from the repository root at `17ee51e` (or at any later commit for which the freshness command in §1 is empty). `<H>` = a harness path of the form
 `<module>::proofs::<fn>`.
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 539 unit and regression tests, all 297 Kani harnesses. Needs ≥24 GB RAM, ~74 min at `d05d3f2` (about 40 minutes more with the harnesses added since, estimated from their individual runs), harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 539 unit and regression tests, all 297 Kani harnesses. **This exact command was not run as one pass at `17ee51e`: the floor there is SPLIT** — a 294-harness pass with the Lean lid (~2h27m at the 20G cap) plus 3 heavy harnesses in separate 24G runs, and there is no single-run 297-harness floor. Needs ≥24 GB RAM; harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Seven modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension`, `rsa_private_key` — see `gates/tiers.txt`. |
-| **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-d05d3f2.log` | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
+| **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-42c8165.log` (for the 3 heavy harnesses, use their own `evidence/check-42c8165-heavy-<module>-<name>.log` instead — they are not in the main log) | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
 | **T** `<filter>` | `cargo test --manifest-path Cargo.toml <filter>` | `test result: ok`. Point evidence only. |
 | **A** `<pattern>` | a grep that **must return nothing**, with its positive control | Used only by `not-covered` rows. A grep-zero is a claim about your pattern, so each A-recipe carries the control input that *would* match. See the warning below. |
@@ -255,11 +255,11 @@ in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, re
 | `DER-C-SEQ-1` | A SEQUENCE's children tile its content exactly — the walk consumes precisely the content bytes (§8.9) | done | **CONTRACT+L4** (the only lid unbounded in **child count** as well as byte length) | `K sequence::proofs::ok_implies_exact_tiling` · `N decode_sequence_structure` (`lean/SequenceProofs.lean`) |
 | `DER-C-SEQ-2` | The shipped SEQUENCE walk never over-reads, and each step advances by exactly the child's own encoded length | done | **CONTRACT** (bounded) (real-path, independent oracle — rewritten 2026-08-24, see §6.2) | `K sequence::proofs::no_over_read` · `R sequence::proofs::no_over_read` (check its two cover lines are satisfied) |
 | `DER-C-SEQ-3` | SEQUENCE is constructed and carries identifier `0x30` | done | **CONTRACT** (bounded) | `K sequence::proofs::tag_correctness` · `K sequence::proofs::accepted_identifier_is_canonical_0x30` |
-| `DER-C-SETOF-1` | SET OF members appear in ascending order of their **encodings** (§11.6) | **partial** | **PROBE** — a biconditional, but only over **two fixed-shape 3-octet children** with symbolic content; the comparator lemma is limited to slices of ≤3 bytes. Not established for arbitrary member encodings or counts | `K set_of::proofs::ordering_iff_oracle` · `K set_of::proofs::cmp_padded_matches_oracle` · `K set_of::proofs::unsorted_children_are_rejected` |
-| `DER-C-SETOF-2` | Equal adjacent member encodings are accepted (SET **OF**, not SET) | done | **PROBE** (bounded) — a wholly concrete 6-byte fixture | `K set_of::proofs::duplicate_adjacent_encodings_are_accepted` |
+| `DER-C-SETOF-1` | SET OF members appear in ascending order of their **encodings** (§11.6) | **partial** | **CONTRACT** (bounded-backing, symbolic content `0..=8` octets) — exact `Result` against an independent two-phase whole-encoding oracle (`ordering_matches_whole_encoding_oracle`, and the TLV entry point over a symbolic 9-octet buffer in `tlv_entry_enforces_ordering_exactly`): children may differ in identifier octet, length octets and value, and `Unsorted { index }` names the first descending pair. The fixture-shaped harnesses (`ordering_iff_oracle`, `cmp_padded_matches_oracle`, `unsorted_children_are_rejected`) remain narrower than this label. Not established for content above 8 octets | `K set_of::proofs::ordering_iff_oracle` · `K set_of::proofs::cmp_padded_matches_oracle` · `K set_of::proofs::unsorted_children_are_rejected` · `K set_of::proofs::ordering_matches_whole_encoding_oracle` · `K set_of::proofs::tlv_entry_enforces_ordering_exactly`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** symbolic content of 0..=8 octets (children may differ in identifier octet, length octets and value; the TLV entry point over a symbolic 9-octet buffer), decided exactly against an independent whole-encoding oracle. Still bounded; disclosures: PROOF_MANIFEST.md §6.2 |
+| `DER-C-SETOF-2` | Equal adjacent member encodings are accepted (SET **OF**, not SET) | done | **CONTRACT** (bounded-backing, `0..=8` octets) — equal adjacent encodings are non-descending under the whole-encoding oracle and are accepted (`ordering_matches_whole_encoding_oracle`); the concrete 6-byte fixture `duplicate_adjacent_encodings_are_accepted` is kept as a witness | `K set_of::proofs::duplicate_adjacent_encodings_are_accepted`. At `17ee51e` the symbolic whole-encoding oracle `K set_of::proofs::ordering_matches_whole_encoding_oracle` also decides this over 0..=8 octets (equal adjacent encodings are non-descending, so accepted); the fixture above is no longer the only evidence |
 | `DER-C-SETOF-3` | The shipped SET OF walk never over-reads | **partial** | **PROBE** — bounded no-out-of-bounds-access plus an extensional postcondition; see §6.4 | `K set_of::proofs::no_over_read`. **Does not** show the shipped loop used the same per-child boundaries as the oracle, nor that its cursor never over-advances past the final read |
 | `DER-C-SET` | General `SET` (§10.3) — DER ordering of a heterogeneous SET | **not-covered** | **out-of-scope** | `D DECISIONS.md` D13; README scope section. Not implemented, not claimed. |
-| `DER-C-CTX` | `[n] EXPLICIT` context tagging (§8.14) | done | **PROBE** (bounded) (panic-freedom only) | `K context_tag::proofs::decode_explicit_context_never_panics` |
+| `DER-C-CTX` | `[n] EXPLICIT` context tagging (§8.14) | done | **CONTRACT** (bounded-backing, `≤16` octets, symbolic `len` and full-range tag number, `unwind(20)`, no stubs) — exact total `Result` for the explicit form only (`decode_explicit_context_exact_result`, `decode_explicit_context_faithful`); an `Ok` does not require the value octets to be one complete inner TLV (inner well-formedness and tiling are the caller's) | `K context_tag::proofs::decode_explicit_context_never_panics` · `K context_tag::proofs::decode_explicit_context_faithful` · `K context_tag::proofs::decode_explicit_context_exact_result`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** the exact total `Result` over a fully symbolic buffer of ≤16 bytes and a full-range tag number, `unwind(20)`, no stubs; explicit form only; inner-TLV well-formedness and tiling are the caller's. Disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-C-CTX-IMP` | `[n] IMPLICIT` context tagging | **not-covered** | **out-of-scope** | `D PROOF_MANIFEST.md` §6.2 — *"only the explicit-context form is addressed"*. Consequence: X.509's deprecated `[1]`/`[2]` unique identifiers are **rejected**, not parsed (`DER-X-TBS-2`) |
 
 ### 5.3 X.509 / PKCS structural surface
@@ -276,17 +276,17 @@ sub-slice identity, and exact field tiling — with an observed-red control (see
 their strength to `CONTRACT` (bounded-backing, `0..=16` octets) for structural faithfulness; they stay
 `partial` on the rule axis because full *value* conformance (e.g. that an OID names a known algorithm,
 or a modulus is a valid key) is still not decided. **Two `x509_*` framing sub-modules now also carry a
-`*_parse_faithful` contract** (`DER-X-ALGID`, `DER-X-SPKI` — 2026-09-17 Track B); the deeper
-cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`, `x509_validity`, `x509_name`,
-`x509_extension`) remain panic-freedom probes — see §6.6.
+`*_parse_faithful` contract** (`DER-X-ALGID`, `DER-X-SPKI` — 2026-09-17 Track B), **and three more carry bounded-backing exact-result
+rows** (`DER-X-NAME`, `DER-X-VALID`, `DER-X-EXT-1`, at `17ee51e`; each row states its own bounds and exclusions). Two
+cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`) remain panic-freedom probes — see §6.6.
 
 | id | structure (RFC 5280 unless noted) | status | strength | verify |
 |---|---|---|---|---|
 | `DER-X-ALGID` | `AlgorithmIdentifier` §4.1.1.2 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: OID sub-slice identity + **canonical-OID conformance** (`validate_oid`) + parameters raw-TLV identity/classification + exact tiling; 2 observed-red controls (tiling + canonicality). Rule-axis `partial`, but the canonical-OID value property IS proven | `K x509_algorithm_identifier::proofs::parse_faithful` · `K …::parse_algorithm_identifier_never_panics` · `D evidence/contract-controls-2026-09-17/x509algid/` |
 | `DER-X-SPKI` | `SubjectPublicKeyInfo` §4.1.2.7 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: BIT STRING classification + value identity + exact tiling; 2 observed-red controls (tiling + classification). Delegated `algorithm` field is plumbing-checked here, its correctness riding on `DER-X-ALGID`'s contract | `K x509_spki::proofs::parse_faithful` · `K x509_spki::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/x509spki/` |
-| `DER-X-NAME` | `Name` / `RDNSequence` §4.1.2.4 — framing | partial | **PROBE** (bounded), and see §6.3 | `K x509_name::proofs::validate_never_panics` (stubs `validate_rdn`) · `K x509_name::proofs::validate_rdn_never_panics` (**no cover at all**) |
-| `DER-X-VALID` | `Validity` §4.1.2.5 — framing | partial | **PROBE** (bounded), **cover UNSATISFIED** — see §6.3 | `R x509_validity::proofs::parse_never_panics` (`0 of 1 cover`) · `K x509_validity::proofs::parse_validity_ok_path_witnessed` (companion witness, no stubs) |
-| `DER-X-EXT-1` | `Extension` / `Extensions` §4.1.2.9 — framing | partial | **PROBE** (bounded), **cover UNSATISFIED** — see §6.3 | `R x509_extension::proofs::validate_extensions_never_panics` (`0 of 1 cover`) · `K x509_extension::proofs::validate_extensions_ok_path_witnessed` |
+| `DER-X-NAME` | `Name` / `RDNSequence` §4.1.2.4 — framing | partial | **CONTRACT** (bounded-backing) — exact `Result` and exact error payload for single-ATV RDNs, two single-ATV RDNs and one RDN with two ATVs of different encoded lengths (1-octet OIDs); equal-length ATV pairs (solver tool limit) and RDNs with more than two ATVs are **not covered**; the composition harness is modular (stubs `validate_rdn`) and is discharged by the heavy `validate_rdn_never_panics`, which has no cover of its own. See §6.3 | `K x509_name::proofs::validate_never_panics` (stubs `validate_rdn`) · `K x509_name::proofs::validate_rdn_never_panics` (**no cover at all**) · `K x509_name::proofs::validate_name_single_atv_exact` · `K x509_name::proofs::validate_name_two_rdns_exact` · `K x509_name::proofs::validate_name_two_atvs_exact` · `K x509_name::proofs::validate_name_two_atvs_unsorted`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** exact-result and exact-error harnesses with no stubs, for single-ATV RDNs, two single-ATV RDNs and one RDN with two ATVs of different encoded lengths (14 `validate_name_*` harnesses in all, see PROOF_MANIFEST.md §5). **Not covered:** two ATVs of equal encoded length (solver tool limit) and RDNs with more than two ATVs. `validate_rdn_never_panics` is a heavy harness (peak above 20 GB) with its own companion log in the split floor; disclosures: PROOF_MANIFEST.md §6.2 |
+| `DER-X-VALID` | `Validity` §4.1.2.5 — framing | partial | **CONTRACT** (bounded-backing, skeletons `≤47` octets) — exact `Result` and exact error payload for both field encodings and `GeneralizedTime` fractions of 0 to 3 digits; a `GeneralizedTime` failure is pinned only at `BadLength`, the outer-envelope `BadOuterSeq` payload is not pinned, the year-2050 rule is not enforced; **cover UNSATISFIED** for `parse_never_panics` at `[u8; 16]` (disclosed, witnessed by `parse_validity_ok_path_witnessed`) — see §6.3 | `R x509_validity::proofs::parse_never_panics` (`0 of 1 cover`) · `K x509_validity::proofs::parse_validity_ok_path_witnessed` (companion witness, no stubs) · `K x509_validity::proofs::parse_validity_faithful` (and `_uu`/`_ug`/`_gu`/`_gg`) · `K x509_validity::proofs::parse_validity_rejects_field_content`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** 10 exact-result harnesses (skeletons ≤47 bytes, `GeneralizedTime` fractions 0 to 3 digits). The `parse_never_panics` cover is still `0 of 1` at `17ee51e` (disclosed, witnessed by the companion above); disclosures: PROOF_MANIFEST.md §6.2 |
+| `DER-X-EXT-1` | `Extension` / `Extensions` §4.1.2.9 — framing | partial | **CONTRACT** (bounded-backing) — `parse_extension` exact over `≤16` octets fully symbolic; `validate_extensions` over at most two members with 1-octet OIDs and empty values (`extnValue` uninterpreted); the `Ok` cover of `validate_extensions_never_panics` is **UNSATISFIED** at 13 octets (disclosed, witnessed by `validate_extensions_ok_path_witnessed`); both heavy harnesses ran at 24G in the split floor — see §6.3 | `R x509_extension::proofs::validate_extensions_never_panics` (`0 of 1 cover`) · `K x509_extension::proofs::validate_extensions_ok_path_witnessed` · `K x509_extension::proofs::parse_extension_faithful` · `K x509_extension::proofs::validate_extensions_structured_two_members` · `K x509_extension::proofs::validate_extensions_rejects_outer_envelope`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** `parse_extension` ≤16 bytes fully symbolic; `validate_extensions` at most two members with 1-octet OIDs and empty values; `extnValue` uninterpreted. The two `validate_extensions_*` harnesses cited above as `R`/`K` are heavy (peak above 20 GB) and have companion logs at `17ee51e` (split floor); disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-X-EXT-2` | DER `DEFAULT` omission: a `critical` field encoding `FALSE` must be absent (§11.5) | done | **test-only** — one concrete unit test. `parse_extension_never_panics` calls the parser and covers `Ok`; it never asserts this rule | `T x509_extension::tests::rejects_critical_present_but_false` |
 | `DER-X-EXT-3` | **Extension *contents* (basicConstraints, keyUsage, SAN, …)** | **not-covered** | **not-covered** | `D PROOF_MANIFEST.md` §6.2 — *"extension contents are never interpreted, and `critical` is peeked, not acted on."* `extnValue` is an opaque OCTET STRING. |
 | `DER-X-TBS-1` | `TBSCertificate` §4.1 — the full field skeleton (version, serial, signature, issuer, validity, subject, SPKI, extensions) | partial | **PROBE** (bounded), **cover UNSATISFIED**, **stub-mediated** — see §6.3 | `R x509_tbs_certificate::proofs::parse_tbs_certificate_never_panics` (`0 of 1 cover`, 2 stubs) · `K x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed` (**3 stubs** — glue reachability only) |
@@ -296,7 +296,7 @@ cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`, `x509_va
 | `DER-K-PKCS8` | PKCS#8 `PrivateKeyInfo` (RFC 5208 §5) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: exact consumption + sub-slice identity + exact field tiling; + observed-red control (rule-axis `partial`: structural faithfulness, not full value conformance) | `K pkcs8::proofs::parse_faithful` · `K pkcs8::proofs::parse_never_panics` · `K pkcs8::proofs::parse_ok_path_witnessed` · `D evidence/contract-controls-2026-09-17/pkcs8/` |
 | `DER-K-EPKI` | `EncryptedPrivateKeyInfo` (RFC 5958 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K encrypted_private_key_info::proofs::parse_faithful` · `K encrypted_private_key_info::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/epki/` |
 | `DER-K-RSAPUB` | `RSAPublicKey` (RFC 8017 §A.1.1) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K rsa_public_key::proofs::parse_faithful` · `K rsa_public_key::proofs::parse_strict_never_panics` · `D evidence/contract-controls-2026-09-17/rsa/` |
-| `DER-K-RSAPRIV` | `RSAPrivateKey` (RFC 8017 §A.1.2) | partial | **PROBE** (bounded), and see `DER-X-BOUND` | `K rsa_private_key::proofs::parse_never_panics` (4 stub applications across its harnesses) |
+| `DER-K-RSAPRIV` | `RSAPrivateKey` (RFC 8017 §A.1.2) | partial | **CONTRACT** (bounded-backing, backing `≤44` octets) for the two-prime structure — exact `Result` from the symbolic-content skeletons plus perturbation harnesses; the multi-prime member walk covers one member of three 1-octet INTEGERs with concrete member content only; behaviour at real size (~317 octets) is not machine-checked (compositional argument, see `DER-X-BOUND`); `BadOuterSeq` payload not pinned; no RSA arithmetic | `K rsa_private_key::proofs::parse_never_panics` (4 stub applications across its harnesses) · `K rsa_private_key::proofs::parse_faithful_two_prime_s1` · `K rsa_private_key::proofs::parse_faithful_two_prime_s2` · `K rsa_private_key::proofs::parse_multi_prime_faithful`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** exact `Result` for the two-prime structure (backing ≤44 bytes) and a multi-prime member walk over one member of three 1-octet INTEGERs with concrete member content; not covered: more than one member, multi-octet member INTEGERs, the strict entry point on a multi-prime input. Real-size (~317 bytes) panic-freedom is still the un-machine-checked compositional argument; disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-K-ECPRIV` | `ECPrivateKey` (RFC 5915 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode incl. both `[0]`/`[1]` optionals + observed-red control (rule-axis `partial`) | `K ec_private_key::proofs::parse_faithful` · `K ec_private_key::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/ec/` |
 | `DER-K-ECDSASIG` | `ECDSA-Sig-Value` (RFC 3279 §2.2.3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K ecdsa_sig_value::proofs::parse_faithful` · `K ecdsa_sig_value::proofs::parse_strict_never_panics` · `D evidence/contract-controls-2026-09-17/ecdsa/` |
 | `DER-X-L4` | An unbounded (Lean) lid over **any** X.509 structural module | **not-covered** | **not-covered** | `D gates/map_declared.txt` row `x509_structural_lid` → `DER-REMAINING-WORK.md` §3. All seven `x509_*` modules are Kani-only. |
@@ -492,17 +492,17 @@ solver choice. All of this remains **TBS-stubbed outer framing**; it narrows the
 touch the inner-structure compositional argument. A bounded panic-freedom probe at a larger N is still a
 probe (Law 6), recorded as a measured capability, never banked as a contract row. The N=128/150/170
 climb logs are transient and kept local (available on request), not committed; the committed floor
-artifact is `evidence/check-d05d3f2.log`.
+artifacts are `evidence/check-42c8165.log` and its three heavy companion logs (see §1).
 
 ### 6.6 The strongest and weakest layers are inverted relative to your risk
 
 The framing and codec layers carry the `CONTRACT` and `CONTRACT+L4` rows. The X.509 layer — the part
 you actually feed a hostile certificate to — is far weaker: its two framing sub-modules (`DER-X-ALGID`,
-`DER-X-SPKI`) gained faithful-decode `CONTRACT` rows in 2026-09-17 Track B, but the **cert-composition
-modules you actually parse a certificate through** (`x509_certificate`, `x509_tbs_certificate`,
-`x509_validity`, `x509_name`, `x509_extension`) still have **no conformance `CONTRACT` row**: they are
-panic-freedom probes, two concrete rule tests, an inspection argument for realistic sizes, and
-uncovered semantics, with three unsatisfied covers and the smallest bounds in the crate. (`DER-X-BOUND`,
+`DER-X-SPKI`) gained faithful-decode `CONTRACT` rows in 2026-09-17 Track B, and `x509_validity`, `x509_name` and
+`x509_extension` carry bounded-backing exact-result `CONTRACT` rows at `17ee51e` (small bounds, stated per row). But the **cert-composition
+modules you actually parse a certificate through** (`x509_certificate`, `x509_tbs_certificate`) still have **no conformance `CONTRACT` row**:
+they are panic-freedom probes, two concrete rule tests, an inspection argument for realistic sizes, and
+uncovered semantics, and three covers are still unsatisfied (§6.3), with the smallest bounds in the crate. (`DER-X-BOUND`,
 §6.5: the `x509_certificate` outer-framing harness verifies panic-free at N=128 — reproduced 2026-09-17,
 ~41 min/16.9 GB — but N=170, a real certificate's size, exceeds a 1-hour solver budget; still
 TBS-stubbed, so the inner-structure compositional gap stays open.)
@@ -512,14 +512,14 @@ says so. It is invisible in "210 of 210", and visible in one glance here.
 
 ---
 
-## 7. What "certified at `d05d3f2`" means
+## 7. What "certified at `17ee51e`" means
 
 The word is only worth something if it names a procedure, so here is the one that ran. It is
 deliberately mechanical, because the point is that someone who does not trust the author can re-run
 it.
 
-1. **Freshness.** `git diff d05d3f2..HEAD -- der-verified/src lean` → empty. **That scoped command
-   is the claim** — no proof-bearing source has moved since the receipt, so the `d05d3f2` run still
+1. **Freshness.** `git diff 17ee51e..HEAD -- der-verified/src lean` → empty. **That scoped command
+   is the claim** — no proof-bearing source has moved since the receipt, so the `17ee51e` run still
    speaks for HEAD. The unscoped diff is *not* empty and is not supposed to be: it carries
    [`CHANGELOG.md`](CHANGELOG.md), [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md), the evidence logs, and
    this file and the gate change that introduced it. **A document is part of the tree it describes,
@@ -532,20 +532,26 @@ it.
    HEAD. The receipt-specific figures beside them (tool versions, wall-clock, peak memory) are read
    out of the run log's own header instead, because they are properties of a run and not of the
    source; they are not re-derivable and are not claimed to be.
-3. **Every `K` recipe re-checked, mechanically.** All 91 distinct harness paths named in the `verify`
+3. **Every `K` recipe re-checked, mechanically.** All 109 distinct harness paths named in the `verify`
    column were extracted from this file and checked twice: that the function still exists in the
    module it names at HEAD, and that a `Checking harness <H>...` line for it appears in
-   `evidence/check-d05d3f2.log`. **91 of 91 passed both.** The run those lines belong to closed
-   `Complete - 210 successfully verified harnesses, 0 failures, 210 total`, so no cited harness is
-   stale, renamed, or unrun.
+   `evidence/check-42c8165.log` or in one of the three `evidence/check-42c8165-heavy-*.log` companion
+   logs (the 3 heavy harnesses appear only there). 106 of the 109 have the function and a line in the main log, which
+   closed `Complete - 294 successfully verified harnesses, 0 failures, 294 total`; the remaining 3 are the
+   heavy harnesses, and each of them has the function and its own `Checking harness <H>...` line in its companion log, which closes `Complete - 1 successfully verified harnesses, 0 failures, 1 total`. **109 of 109 passed both.**
 4. **Every `A` recipe actually executed**, with its positive control. This is the step that found the
    broken profile absence-grep described in §4, and the step that re-*reading* rather than
    re-*running* would have skipped for a second time.
 5. **`N`, `T`, `R` recipes spot-checked at HEAD.** The cited Lean theorems were located in the files
    named; the `test-only` rows' tests were located by name; the `R` rows' cover tallies were re-read
-   out of the run log — the three disclosed-unsatisfiable covers are still exactly `x509_validity`,
-   `x509_extension` and `x509_tbs_certificate` and no others, and `sequence::no_over_read` still
+   out of the run logs — the three disclosed-unsatisfiable covers are still exactly `x509_validity`,
+   `x509_extension` and `x509_tbs_certificate` and no others (`x509_validity::parse_never_panics` and
+   `x509_tbs_certificate::parse_tbs_certificate_never_panics` read `0 of 1 cover properties satisfied` in
+   the main log; `x509_extension::validate_extensions_never_panics` reads `0 of 1 cover properties satisfied` in its companion log), and `sequence::no_over_read` still
    reports `2 of 2 cover properties satisfied`.
+6. **Split floor stated, not smoothed over.** The floor at `17ee51e` is 294 harnesses in one capped pass
+   (with the Lean lid) plus 3 heavy harnesses in separate runs, 297 in all. There is no single-run
+   297-harness floor, and nothing in this file claims one.
 
 **What this procedure does NOT establish**, stated because a list of green steps invites the opposite
 reading: nothing above grades any harness's *oracle*. A harness that verifies the wrong property

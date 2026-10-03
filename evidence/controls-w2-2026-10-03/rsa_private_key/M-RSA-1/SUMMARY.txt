@@ -1,0 +1,17 @@
+=== M-RSA-1 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T17:29:00Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-RSA-1 r == expected (tail leg: TrailingElements becomes Ok/VersionMismatch); H-RSA-4e r == expected (tail 31 00). 4d (30 00 yy) is NOT affected: it returns TrailingElements from the in-SEQUENCE used != rest.len() check, so it is a predicted GREEN sibling (plan table lists only RED H-RSA-1/4e)
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_set: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s2: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_trailing: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_faithful_two_prime_s1: FAILED   [want FAILED]  (180.3s)
+red      rsa_private_key::proofs::parse_other_prime_infos_tail_set: FAILED   [want FAILED]  (55.6s)
+green    rsa_private_key::proofs::parse_faithful_two_prime_s2: SUCCESSFUL   [want SUCCESSFUL]  (166.0s)
+green    rsa_private_key::proofs::parse_other_prime_infos_tail_trailing: SUCCESSFUL   [want SUCCESSFUL]  (56.3s)
+failed_descriptions:
+  - ""parse_rsa_private_key result differs from the total expected result""
+  - ""parse_rsa_private_key result differs from the expected tail outcome""

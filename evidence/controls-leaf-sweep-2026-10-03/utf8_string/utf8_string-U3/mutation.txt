@@ -1,0 +1,17 @@
+file: der-verified/src/utf8_string.rs
+--- old ---
+if cp > 0x10FFFF {
+--- new ---
+if cp > 0x13FFFF {
+--- unified diff ---
+--- a/der-verified/src/utf8_string.rs
++++ b/der-verified/src/utf8_string.rs
+@@ -164,7 +164,7 @@
+         if (0xD800..=0xDFFF).contains(&cp) {
+             return Err(Utf8Error::IllFormed { position: i });
+         }
+-        if cp > 0x10FFFF {
++        if cp > 0x13FFFF {
+             return Err(Utf8Error::IllFormed { position: i });
+         }
+         i += len;

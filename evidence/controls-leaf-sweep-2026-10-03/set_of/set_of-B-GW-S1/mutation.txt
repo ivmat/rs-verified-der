@@ -1,0 +1,17 @@
+file: der-verified/src/set_of.rs
+--- old ---
+        let this = &content[off..off + used];
+--- new ---
+        let this = _tlv.value;
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -153,7 +153,7 @@
+     let mut prev: Option<&[u8]> = None;
+     while off < content.len() {
+         let (_tlv, used) = decode_tlv(&content[off..]).map_err(SetOfError::Element)?;
+-        let this = &content[off..off + used];
++        let this = _tlv.value;
+         if let Some(p) = prev {
+             // Invariant: `prev` is `Some` only after the first iteration has run to completion,
+             // at which point `count` has already been incremented to `1` — so `count >= 1` here,

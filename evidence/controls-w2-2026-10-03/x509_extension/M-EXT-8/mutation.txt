@@ -1,0 +1,19 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+        off += used;
+
+--- new ---
+        off += 2;
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -297,7 +297,7 @@
+         })?;
+         let child = &outer[off..off + used];
+         parse_extension(child).map_err(ExtensionsError::BadExtension)?;
+-        off += used;
++        off += 2;
+         count += 1;
+     }
+ 

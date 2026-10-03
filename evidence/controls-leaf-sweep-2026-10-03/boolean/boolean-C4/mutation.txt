@@ -1,0 +1,56 @@
+file: der-verified/src/boolean.rs
+--- old ---
+    if v {
+        0xFF
+    } else {
+        0x00
+    }
+}
+
+/// Decode BOOLEAN content octets. Accepts only the canonical `0x00` / `0xFF`.
+pub fn decode_bool(content: &[u8]) -> Result<bool, BoolError> {
+    if content.len() != 1 {
+        return Err(BoolError::BadLength);
+    }
+    match content[0] {
+        0x00 => Ok(false),
+        0xFF => Ok(true),
+--- new ---
+    if !v {
+        0xFF
+    } else {
+        0x00
+    }
+}
+
+/// Decode BOOLEAN content octets. Accepts only the canonical `0x00` / `0xFF`.
+pub fn decode_bool(content: &[u8]) -> Result<bool, BoolError> {
+    if content.len() != 1 {
+        return Err(BoolError::BadLength);
+    }
+    match content[0] {
+        0x00 => Ok(true),
+        0xFF => Ok(false),
+--- unified diff ---
+--- a/der-verified/src/boolean.rs
++++ b/der-verified/src/boolean.rs
+@@ -30,7 +30,7 @@
+ 
+ /// The single canonical DER content octet for `v`.
+ pub fn encode_bool(v: bool) -> u8 {
+-    if v {
++    if !v {
+         0xFF
+     } else {
+         0x00
+@@ -43,8 +43,8 @@
+         return Err(BoolError::BadLength);
+     }
+     match content[0] {
+-        0x00 => Ok(false),
+-        0xFF => Ok(true),
++        0x00 => Ok(true),
++        0xFF => Ok(false),
+         _ => Err(BoolError::NonCanonical),
+     }
+ }

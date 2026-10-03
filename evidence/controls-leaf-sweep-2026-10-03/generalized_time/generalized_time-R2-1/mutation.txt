@@ -1,0 +1,19 @@
+file: der-verified/src/generalized_time.rs
+--- old ---
+        if !content[i].is_ascii_digit() {
+            return Err(GeneralizedTimeError::NonDigit);
+--- new ---
+        if !content[i].is_ascii_digit() {
+            return Err(if content[content.len() - 1] != b'Z' { GeneralizedTimeError::NotZulu } else { GeneralizedTimeError::NonDigit });
+--- unified diff ---
+--- a/der-verified/src/generalized_time.rs
++++ b/der-verified/src/generalized_time.rs
+@@ -190,7 +190,7 @@
+     let mut i = 0;
+     while i < 14 {
+         if !content[i].is_ascii_digit() {
+-            return Err(GeneralizedTimeError::NonDigit);
++            return Err(if content[content.len() - 1] != b'Z' { GeneralizedTimeError::NotZulu } else { GeneralizedTimeError::NonDigit });
+         }
+         i += 1;
+     }

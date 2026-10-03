@@ -1,0 +1,17 @@
+file: der-verified/src/generalized_time.rs
+--- old ---
+if frac[frac.len() - 1] == b'0' {
+--- new ---
+if frac[0] == b'0' {
+--- unified diff ---
+--- a/der-verified/src/generalized_time.rs
++++ b/der-verified/src/generalized_time.rs
+@@ -241,7 +241,7 @@
+             j += 1;
+         }
+         // No trailing zero — this also forbids an all-zero fraction (which must be omitted, §11.7).
+-        if frac[frac.len() - 1] == b'0' {
++        if frac[0] == b'0' {
+             return Err(GeneralizedTimeError::FractionTrailingZero);
+         }
+         frac

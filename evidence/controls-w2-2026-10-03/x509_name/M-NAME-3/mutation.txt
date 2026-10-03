@@ -1,0 +1,17 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+    validate_oid(tlv.value).map_err(NameError::BadAtvOid)?;
+
+--- new ---
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -137,7 +137,6 @@
+     if tlv.tag.constructed {
+         return Err(NameError::AtvOidConstructed);
+     }
+-    validate_oid(tlv.value).map_err(NameError::BadAtvOid)?;
+     Ok((tlv.value, used))
+ }
+ 

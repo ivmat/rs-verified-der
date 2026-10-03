@@ -1,0 +1,12 @@
+=== set_of-S2 / set_of / der-verified/src/set_of.rs (2026-10-03T15:53:06Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :431
+baseline set_of::proofs::cmp_padded_matches_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline set_of::proofs::ordering_iff_oracle: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::cmp_padded_matches_oracle: FAILED   [want FAILED]  (1.5s)
+green    set_of::proofs::ordering_iff_oracle: SUCCESSFUL   [want SUCCESSFUL]  (55.3s)
+failed_descriptions:
+  - "assertion failed: cmp_padded(a, b) == cmp_padded_oracle(a, b)"

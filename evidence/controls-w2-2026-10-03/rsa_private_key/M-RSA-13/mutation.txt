@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    let (tlv, used) = decode_tlv(input).map_err(IntegerFieldError::Tlv)?;
+
+--- new ---
+    let (tlv, used) = decode_tlv(input).map_err(|_| IntegerFieldError::WrongTag)?;
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -293,7 +293,7 @@
+ /// as [`crate::rsa_public_key`]'s own `decode_integer_tlv`. Shared by `version` and all eight
+ /// key-material fields.
+ fn decode_integer_tlv(input: &[u8]) -> Result<(&[u8], usize), IntegerFieldError> {
+-    let (tlv, used) = decode_tlv(input).map_err(IntegerFieldError::Tlv)?;
++    let (tlv, used) = decode_tlv(input).map_err(|_| IntegerFieldError::WrongTag)?;
+     if tlv.tag.class != Class::Universal || tlv.tag.number != BIG_INTEGER_TAG {
+         return Err(IntegerFieldError::WrongTag);
+     }

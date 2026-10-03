@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+    Ok(Validity { not_before, not_after })
+
+--- new ---
+    Ok(Validity { not_before: not_after, not_after: not_before })
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -198,7 +198,7 @@
+         return Err(ValidityError::TrailingBytes);
+     }
+ 
+-    Ok(Validity { not_before, not_after })
++    Ok(Validity { not_before: not_after, not_after: not_before })
+ }
+ 
+ // ---------------------------------------------------------------------------

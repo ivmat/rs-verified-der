@@ -1,0 +1,17 @@
+file: der-verified/src/bit_string.rs
+--- old ---
+return Err(BitStringError::UnusedBitsTooLarge);
+--- new ---
+return Err(BitStringError::NonZeroPadding);
+--- unified diff ---
+--- a/der-verified/src/bit_string.rs
++++ b/der-verified/src/bit_string.rs
+@@ -108,7 +108,7 @@
+         None => return Err(BitStringError::Empty),
+     };
+     if unused > 7 {
+-        return Err(BitStringError::UnusedBitsTooLarge);
++        return Err(BitStringError::NonZeroPadding);
+     }
+     if data.is_empty() {
+         // No value octets: the only canonical form is [0x00].

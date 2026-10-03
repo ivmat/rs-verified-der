@@ -1,0 +1,14 @@
+=== M-RSA-7 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T18:21:25Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-RSA-1 r == expected (used == outer total, with post_len > 0). S2/H-RSA-5 have no post bytes so input.len() == used there: GREEN
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s2: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_multi_prime_faithful: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_faithful_two_prime_s1: FAILED   [want FAILED]  (178.9s)
+green    rsa_private_key::proofs::parse_faithful_two_prime_s2: SUCCESSFUL   [want SUCCESSFUL]  (158.7s)
+green    rsa_private_key::proofs::parse_multi_prime_faithful: SUCCESSFUL   [want SUCCESSFUL]  (244.2s)
+failed_descriptions:
+  - ""parse_rsa_private_key result differs from the total expected result""

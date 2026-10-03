@@ -1,0 +1,19 @@
+file: der-verified/src/octet_string.rs
+--- old ---
+    encode_tlv_into(tag, content, out)
+}
+--- new ---
+    if out.len() != 16 { return None; }
+    encode_tlv_into(tag, content, out)
+}
+--- unified diff ---
+--- a/der-verified/src/octet_string.rs
++++ b/der-verified/src/octet_string.rs
+@@ -72,6 +72,7 @@
+ /// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+ pub fn encode_octet_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
+     let tag = Tag { class: Class::Universal, constructed: false, number: TAG };
++    if out.len() != 16 { return None; }
+     encode_tlv_into(tag, content, out)
+ }
+ 

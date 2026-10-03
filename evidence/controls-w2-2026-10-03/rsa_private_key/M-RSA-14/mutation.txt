@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+        validate_other_prime_info(member_content).map_err(RsaPrivateKeyError::OtherPrimeInfoMember)?;
+
+--- new ---
+        validate_other_prime_info(member_content).map_err(|_| RsaPrivateKeyError::TrailingElements)?;
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -349,7 +349,7 @@
+     while !rest.is_empty() {
+         let (member_content, used) = decode_sequence_tlv(rest)
+             .map_err(|e| RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::BadSeq(e)))?;
+-        validate_other_prime_info(member_content).map_err(RsaPrivateKeyError::OtherPrimeInfoMember)?;
++        validate_other_prime_info(member_content).map_err(|_| RsaPrivateKeyError::TrailingElements)?;
+         rest = &rest[used..];
+     }
+     Ok(())

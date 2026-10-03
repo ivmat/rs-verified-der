@@ -1,0 +1,18 @@
+=== M-NAME-5 / x509_name / der-verified/src/x509_name.rs (2026-10-03T19:06:36Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-NAME-3a r == expected (second RDN misparsed). ALSO H-NAME-1 base (single RDN of 9 octets: off becomes 2 < 9 and the loop re-enters on the ATV, BadRdn(WrongTag) where Ok expected). The plan table lists H-NAME-1 as GREEN sibling: by analysis that is wrong; preregistered here as RED
+baseline x509_name::proofs::validate_name_two_rdns_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_empty_rdn: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_empty_sequence_accepted: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_atv_trailing_exact: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_name::proofs::validate_name_two_rdns_exact: FAILED   [want FAILED]  (90.1s)
+red      x509_name::proofs::validate_name_single_atv_exact: FAILED   [want FAILED]  (87.9s)
+green    x509_name::proofs::validate_name_empty_rdn: SUCCESSFUL   [want SUCCESSFUL]  (71.9s)
+green    x509_name::proofs::validate_name_empty_sequence_accepted: SUCCESSFUL   [want SUCCESSFUL]  (71.7s)
+green    x509_name::proofs::validate_name_atv_trailing_exact: SUCCESSFUL   [want SUCCESSFUL]  (82.0s)
+failed_descriptions:
+  - ""validate_name result differs from the total expected result""

@@ -1,0 +1,24 @@
+=== bit_string-C1 / bit_string / der-verified/src/bit_string.rs (2026-10-03T15:17:08Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :264
+baseline bit_string::proofs::nonzero_padding_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::roundtrip_canonical: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::unused_too_large_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::empty_nonzero_unused_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+baseline bit_string::proofs::encode_rejects_exactly_the_non_canonical: SUCCESSFUL   [want SUCCESSFUL]
+red      bit_string::proofs::nonzero_padding_is_classified: FAILED   [want FAILED]  (0.8s)
+red      bit_string::proofs::decode_accepts_only_canonical: FAILED   [want FAILED]  (1.6s)
+red      bit_string::proofs::accepted_iff_canonical_oracle: FAILED   [want FAILED]  (1.3s)
+green    bit_string::proofs::roundtrip_canonical: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+green    bit_string::proofs::unused_too_large_is_classified: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+green    bit_string::proofs::empty_nonzero_unused_is_classified: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+green    bit_string::proofs::encode_rejects_exactly_the_non_canonical: SUCCESSFUL   [want SUCCESSFUL]  (2.4s)
+failed_descriptions:
+  - "assertion failed: decode_bit_string(&[unused, last]) == Err(BitStringError::NonZeroPadding)"
+  - "assertion failed: bs.data[bs.data.len() - 1].trailing_zeros() >= bs.unused as u32"
+  - "assertion failed: decode_bit_string(&buf[..n]).is_ok() == canonical"

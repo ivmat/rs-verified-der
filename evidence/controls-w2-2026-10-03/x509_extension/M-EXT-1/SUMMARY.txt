@@ -1,0 +1,12 @@
+=== M-EXT-1 / x509_extension / der-verified/src/x509_extension.rs (2026-10-03T16:56:15Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-EXT-1 (i) result == expected (TrailingInExtension leg; Err becomes Ok)
+baseline x509_extension::proofs::parse_extension_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::parse_extension_never_panics: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_extension::proofs::parse_extension_faithful: FAILED   [want FAILED]  (85.3s)
+green    x509_extension::proofs::parse_extension_never_panics: SUCCESSFUL   [want SUCCESSFUL]  (12.6s)
+failed_descriptions:
+  - ""parse_extension result differs from the total expected result""

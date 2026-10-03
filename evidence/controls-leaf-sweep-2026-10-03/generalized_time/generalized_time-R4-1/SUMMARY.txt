@@ -1,0 +1,10 @@
+=== generalized_time-R4-1 / generalized_time / der-verified/src/generalized_time.rs (2026-10-03T15:20:37Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    encode_is_total_exact_oracle: out == backing
+baseline generalized_time::proofs::encode_is_total_exact_oracle: SUCCESSFUL   [want SUCCESSFUL]
+red      generalized_time::proofs::encode_is_total_exact_oracle: FAILED   [want FAILED]  (4.9s)
+failed_descriptions:
+  - "assertion failed: out == backing"

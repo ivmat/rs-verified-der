@@ -1,0 +1,10 @@
+=== null-C1 / null / der-verified/src/null.rs (2026-10-03T15:16:38Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    only_empty_is_valid :45
+baseline null::proofs::only_empty_is_valid: SUCCESSFUL   [want SUCCESSFUL]
+red      null::proofs::only_empty_is_valid: FAILED   [want FAILED]  (0.9s)
+failed_descriptions:
+  - "assertion failed: decode_null(&buf[..n]) == Err(NullError::NonEmpty)"

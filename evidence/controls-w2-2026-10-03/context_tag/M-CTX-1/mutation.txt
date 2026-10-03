@@ -1,0 +1,19 @@
+file: der-verified/src/context_tag.rs
+--- old ---
+    if tlv.tag.number != expected_number {
+
+--- new ---
+    if tlv.tag.number > expected_number {
+
+--- unified diff ---
+--- a/der-verified/src/context_tag.rs
++++ b/der-verified/src/context_tag.rs
+@@ -77,7 +77,7 @@
+     if tlv.tag.class != Class::ContextSpecific {
+         return Err(ContextTagError::WrongClass);
+     }
+-    if tlv.tag.number != expected_number {
++    if tlv.tag.number > expected_number {
+         return Err(ContextTagError::WrongNumber);
+     }
+     if !tlv.tag.constructed {

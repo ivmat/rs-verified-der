@@ -1,0 +1,21 @@
+file: der-verified/src/restricted_string.rs
+--- old ---
+    if validate_content(content, charset).is_err() {
+        return None;
+    }
+    let tag = Tag { class: Class::Universal, constructed: false, number: charset.tag_number() };
+--- new ---
+    let tag = Tag { class: Class::Universal, constructed: false, number: charset.tag_number() };
+--- unified diff ---
+--- a/der-verified/src/restricted_string.rs
++++ b/der-verified/src/restricted_string.rs
+@@ -181,9 +181,6 @@
+ ///
+ /// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+ pub fn encode_restricted_string_into(content: &[u8], charset: Charset, out: &mut [u8]) -> Option<usize> {
+-    if validate_content(content, charset).is_err() {
+-        return None;
+-    }
+     let tag = Tag { class: Class::Universal, constructed: false, number: charset.tag_number() };
+     encode_tlv_into(tag, content, out)
+ }

@@ -1,0 +1,10 @@
+=== utf8_string-B-GW-U1 / utf8_string / der-verified/src/utf8_string.rs (2026-10-03T15:31:21Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    decode_is_faithful: r == Err(IllFormed { position: valid_up_to })
+baseline utf8_string::proofs::decode_is_faithful: SUCCESSFUL   [want SUCCESSFUL]
+red      utf8_string::proofs::decode_is_faithful: FAILED   [want FAILED]  (195.4s)
+failed_descriptions:
+  - "assertion failed: r == Err(Utf8Error::IllFormed { position: e.valid_up_to() })"

@@ -1,0 +1,14 @@
+=== boolean-C4 / boolean / der-verified/src/boolean.rs (2026-10-03T15:16:35Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    one_octet_is_canonical: v == (b == 0xFF)
+baseline boolean::proofs::one_octet_is_canonical: SUCCESSFUL   [want SUCCESSFUL]
+baseline boolean::proofs::roundtrip: SUCCESSFUL   [want SUCCESSFUL]
+baseline boolean::proofs::wrong_length_is_bad_length: SUCCESSFUL   [want SUCCESSFUL]
+red      boolean::proofs::one_octet_is_canonical: FAILED   [want FAILED]  (0.8s)
+green    boolean::proofs::roundtrip: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+green    boolean::proofs::wrong_length_is_bad_length: SUCCESSFUL   [want SUCCESSFUL]  (1.3s)
+failed_descriptions:
+  - "assertion failed: v == (b == 0xFF)"

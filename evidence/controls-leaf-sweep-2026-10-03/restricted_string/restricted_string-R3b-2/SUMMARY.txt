@@ -1,0 +1,18 @@
+=== restricted_string-R3b-2 / restricted_string / der-verified/src/restricted_string.rs (2026-10-03T15:23:06Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    encode_is_exact_*: r == None
+baseline restricted_string::proofs::encode_is_exact_printable: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::encode_is_exact_ia5: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::encode_is_exact_numeric: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::encode_is_exact_visible: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::roundtrip_printable: SUCCESSFUL   [want SUCCESSFUL]
+red      restricted_string::proofs::encode_is_exact_printable: FAILED   [want FAILED]  (2.6s)
+red      restricted_string::proofs::encode_is_exact_ia5: FAILED   [want FAILED]  (2.4s)
+red      restricted_string::proofs::encode_is_exact_numeric: FAILED   [want FAILED]  (2.5s)
+red      restricted_string::proofs::encode_is_exact_visible: FAILED   [want FAILED]  (2.6s)
+green    restricted_string::proofs::roundtrip_printable: SUCCESSFUL   [want SUCCESSFUL]  (3.3s)
+failed_descriptions:
+  - "assertion failed: r == None"

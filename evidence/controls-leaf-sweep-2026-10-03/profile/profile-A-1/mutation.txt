@@ -1,0 +1,17 @@
+file: der-verified/src/profile.rs
+--- old ---
+    if cert.signature_algorithm != cert.tbs_certificate.signature {
+--- new ---
+    if cert.signature_algorithm.algorithm_oid != cert.tbs_certificate.signature.algorithm_oid {
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -195,7 +195,7 @@
+     // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature. `AlgorithmIdentifier`
+     // derives `PartialEq`/`Eq`, comparing both `algorithm_oid` (byte slice) and `parameters`
+     // (`Option<&[u8]>`) — exactly the "algorithm_oid bytes AND parameters" the rule requires.
+-    if cert.signature_algorithm != cert.tbs_certificate.signature {
++    if cert.signature_algorithm.algorithm_oid != cert.tbs_certificate.signature.algorithm_oid {
+         return Err(ProfileError::SignatureAlgorithmMismatch);
+     }
+ 

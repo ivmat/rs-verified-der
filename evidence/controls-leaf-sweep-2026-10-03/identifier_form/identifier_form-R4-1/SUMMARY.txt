@@ -1,0 +1,10 @@
+=== identifier_form-R4-1 / identifier_form / der-verified/src/identifier_form.rs (2026-10-03T16:35:59Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    ..._strict_requires_full_consumption: strict == Err(TrailingData)
+baseline identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption: SUCCESSFUL   [want SUCCESSFUL]
+red      identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption: FAILED   [want FAILED]  (3.8s)
+failed_descriptions:
+  - "assertion failed: strict == Err(CheckedTlvError::Tlv(TlvError::TrailingData))"

@@ -1,0 +1,17 @@
+file: der-verified/src/octet_string.rs
+--- old ---
+tlv.tag.class != Class::Universal || tlv.tag.number != TAG
+--- new ---
+tlv.tag.class != Class::Universal && tlv.tag.number != TAG
+--- unified diff ---
+--- a/der-verified/src/octet_string.rs
++++ b/der-verified/src/octet_string.rs
+@@ -55,7 +55,7 @@
+ /// that must consume the whole input should check the returned length against `input.len()`.
+ pub fn decode_octet_string(input: &[u8]) -> Result<(&[u8], usize), OctetStringError> {
+     let (tlv, used) = decode_tlv(input).map_err(OctetStringError::Tlv)?;
+-    if tlv.tag.class != Class::Universal || tlv.tag.number != TAG {
++    if tlv.tag.class != Class::Universal && tlv.tag.number != TAG {
+         return Err(OctetStringError::WrongTag);
+     }
+     if tlv.tag.constructed {

@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+            return Err(OtherPrimeInfoError::MissingField(field));
+
+--- new ---
+            return Err(OtherPrimeInfoError::TrailingElements);
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -325,7 +325,7 @@
+     let mut rest = member_content;
+     for field in [OpiField::Prime, OpiField::Exponent, OpiField::Coefficient] {
+         if rest.is_empty() {
+-            return Err(OtherPrimeInfoError::MissingField(field));
++            return Err(OtherPrimeInfoError::TrailingElements);
+         }
+         let (_content, used) =
+             decode_integer_tlv(rest).map_err(|e| OtherPrimeInfoError::Field(field, e))?;

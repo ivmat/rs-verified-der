@@ -1,0 +1,17 @@
+file: der-verified/src/bit_string.rs
+--- old ---
+Ok(BitString { data, unused })
+--- new ---
+Ok(BitString { data, unused: 0 })
+--- unified diff ---
+--- a/der-verified/src/bit_string.rs
++++ b/der-verified/src/bit_string.rs
+@@ -122,7 +122,7 @@
+     if data[data.len() - 1] & mask != 0 {
+         return Err(BitStringError::NonZeroPadding);
+     }
+-    Ok(BitString { data, unused })
++    Ok(BitString { data, unused: 0 })
+ }
+ 
+ /// Require a BIT STRING to be **octet-aligned** (`unused == 0`) and return its byte-aligned value.

@@ -1,0 +1,19 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+            if peek.tag.constructed {
+
+--- new ---
+            if false {
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -230,7 +230,7 @@
+         Ok((peek, peek_used))
+             if peek.tag.class == Class::Universal && peek.tag.number == BOOL_TAG =>
+         {
+-            if peek.tag.constructed {
++            if false {
+                 return Err(ExtensionError::CriticalConstructed);
+             }
+             let b = decode_bool(peek.value).map_err(ExtensionError::BadCritical)?;

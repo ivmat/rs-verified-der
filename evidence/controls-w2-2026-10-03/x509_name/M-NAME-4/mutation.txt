@@ -1,0 +1,21 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+    if !tlv.tag.constructed {
+        return Err(NameError::AtvNotConstructed);
+
+--- new ---
+    if false {
+        return Err(NameError::AtvNotConstructed);
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -151,7 +151,7 @@
+     if tlv.tag.class != Class::Universal || tlv.tag.number != SEQUENCE_TAG {
+         return Err(NameError::AtvWrongTag);
+     }
+-    if !tlv.tag.constructed {
++    if false {
+         return Err(NameError::AtvNotConstructed);
+     }
+     let content = tlv.value;

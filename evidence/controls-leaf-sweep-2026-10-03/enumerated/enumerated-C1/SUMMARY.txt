@@ -1,0 +1,14 @@
+=== enumerated-C1 / enumerated / der-verified/src/enumerated.rs (2026-10-03T15:16:45Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :57
+baseline enumerated::proofs::decode_delegates_to_integer: SUCCESSFUL   [want SUCCESSFUL]
+baseline enumerated::proofs::roundtrip: SUCCESSFUL   [want SUCCESSFUL]
+baseline enumerated::proofs::encode_delegates_to_integer: SUCCESSFUL   [want SUCCESSFUL]
+red      enumerated::proofs::decode_delegates_to_integer: FAILED   [want FAILED]  (1.5s)
+green    enumerated::proofs::roundtrip: SUCCESSFUL   [want SUCCESSFUL]  (1.4s)
+green    enumerated::proofs::encode_delegates_to_integer: SUCCESSFUL   [want SUCCESSFUL]  (1.0s)
+failed_descriptions:
+  - "assertion failed: r == crate::integer::decode_integer(&buf[..n])"

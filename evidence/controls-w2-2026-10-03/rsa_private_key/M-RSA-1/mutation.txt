@@ -1,0 +1,21 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    if !rest.is_empty() {
+        return Err(RsaPrivateKeyError::TrailingElements);
+
+--- new ---
+    if false {
+        return Err(RsaPrivateKeyError::TrailingElements);
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -433,7 +433,7 @@
+ 
+     // 4. exact tiling: nothing beyond version, the eight key-material fields, and the one optional
+     // trailing otherPrimeInfos SEQUENCE is permitted.
+-    if !rest.is_empty() {
++    if false {
+         return Err(RsaPrivateKeyError::TrailingElements);
+     }
+ 

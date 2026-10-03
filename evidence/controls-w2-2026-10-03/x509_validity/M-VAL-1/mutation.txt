@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+    if na_used != rest.len() {
+
+--- new ---
+    if na_used > rest.len() {
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -194,7 +194,7 @@
+         return Err(ValidityError::MissingNotAfter);
+     }
+     let (not_after, na_used) = decode_time_tlv(rest).map_err(ValidityError::NotAfter)?;
+-    if na_used != rest.len() {
++    if na_used > rest.len() {
+         return Err(ValidityError::TrailingBytes);
+     }
+ 

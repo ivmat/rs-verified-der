@@ -1,0 +1,17 @@
+file: der-verified/src/restricted_string.rs
+--- old ---
+    validate_content(tlv.value, charset)?;
+--- new ---
+    validate_content(tlv.value, Charset::Ia5)?;
+--- unified diff ---
+--- a/der-verified/src/restricted_string.rs
++++ b/der-verified/src/restricted_string.rs
+@@ -169,7 +169,7 @@
+     if tlv.tag.constructed {
+         return Err(StringError::Constructed);
+     }
+-    validate_content(tlv.value, charset)?;
++    validate_content(tlv.value, Charset::Ia5)?;
+     Ok((tlv.value, used))
+ }
+ 

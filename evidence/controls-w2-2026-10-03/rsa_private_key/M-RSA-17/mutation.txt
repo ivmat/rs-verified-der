@@ -1,0 +1,21 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    if !rest.is_empty() {
+        return Err(OtherPrimeInfoError::TrailingElements);
+
+--- new ---
+    if false {
+        return Err(OtherPrimeInfoError::TrailingElements);
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -331,7 +331,7 @@
+             decode_integer_tlv(rest).map_err(|e| OtherPrimeInfoError::Field(field, e))?;
+         rest = &rest[used..];
+     }
+-    if !rest.is_empty() {
++    if false {
+         return Err(OtherPrimeInfoError::TrailingElements);
+     }
+     Ok(())

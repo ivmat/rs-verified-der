@@ -1,0 +1,19 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+    let (tlv, used) = decode_tlv(input).map_err(TimeError::BadTlv)?;
+
+--- new ---
+    let (tlv, used) = decode_tlv(input).map_err(|_| TimeError::WrongTag)?;
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -139,7 +139,7 @@
+ /// [`decode_generalized_time`] — the CHOICE selection is entirely in the identifier octet, so no
+ /// other primitive is needed to disambiguate the two arms.
+ fn decode_time_tlv(input: &[u8]) -> Result<(Time<'_>, usize), TimeError> {
+-    let (tlv, used) = decode_tlv(input).map_err(TimeError::BadTlv)?;
++    let (tlv, used) = decode_tlv(input).map_err(|_| TimeError::WrongTag)?;
+     if tlv.tag.class != Class::Universal {
+         return Err(TimeError::WrongTag);
+     }

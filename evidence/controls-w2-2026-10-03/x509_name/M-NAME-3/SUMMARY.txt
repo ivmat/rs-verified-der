@@ -1,0 +1,18 @@
+=== M-NAME-3 / x509_name / der-verified/src/x509_name.rs (2026-10-03T18:51:38Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-NAME-1/3a/3d/3e r == expected (BadAtvOid leg becomes Ok / a later error). Plan table lists H-NAME-1/2/3a; H-NAME-2 is not shipped (wall)
+baseline x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_two_rdns_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_atv_trailing_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_atv_missing_value_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_empty_rdn: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_name::proofs::validate_name_single_atv_exact: FAILED   [want FAILED]  (84.7s)
+red      x509_name::proofs::validate_name_two_rdns_exact: FAILED   [want FAILED]  (83.0s)
+red      x509_name::proofs::validate_name_atv_trailing_exact: FAILED   [want FAILED]  (77.4s)
+red      x509_name::proofs::validate_name_atv_missing_value_exact: FAILED   [want FAILED]  (92.5s)
+green    x509_name::proofs::validate_name_empty_rdn: SUCCESSFUL   [want SUCCESSFUL]  (64.9s)
+failed_descriptions:
+  - ""validate_name result differs from the total expected result""

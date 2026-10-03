@@ -1,0 +1,17 @@
+file: der-verified/src/identifier_form.rs
+--- old ---
+if tag.number == 0 {
+--- new ---
+if tag.number == 0 && !tag.constructed {
+--- unified diff ---
+--- a/der-verified/src/identifier_form.rs
++++ b/der-verified/src/identifier_form.rs
+@@ -224,7 +224,7 @@
+         // recoverable from the identifier octets. Accept rather than guess.
+         return Ok(());
+     }
+-    if tag.number == 0 {
++    if tag.number == 0 && !tag.constructed {
+         // §8.1.5: universal 0 is the end-of-contents marker, which DER can never contain — not a
+         // form error but an identifier that has no legal DER meaning at all.
+         return Err(FormError::ReservedIdentifier);

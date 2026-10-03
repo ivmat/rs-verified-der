@@ -1,0 +1,14 @@
+=== M-RSA-19 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T20:52:16Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    otherPrimeInfos member walk reached in a shape that must not reach it (the sentinel, alone)
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_primitive: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_trailing: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_other_prime_infos_tail_empty: FAILED   [want FAILED]  (52.8s)
+green    rsa_private_key::proofs::parse_other_prime_infos_tail_primitive: SUCCESSFUL   [want SUCCESSFUL]  (54.0s)
+green    rsa_private_key::proofs::parse_other_prime_infos_tail_trailing: SUCCESSFUL   [want SUCCESSFUL]  (53.6s)
+failed_descriptions:
+  - "otherPrimeInfos member walk reached in a shape that must not reach it"

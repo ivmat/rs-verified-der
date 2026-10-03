@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+    if rdn_content.is_empty() {
+
+--- new ---
+    if false {
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -180,7 +180,7 @@
+ /// [`validate_atv`]. Enforces RFC 5280 §4.1.2.4's `SIZE (1..MAX)`: empty content is [`NameError::EmptyRdn`].
+ fn validate_rdn(input: &[u8]) -> Result<usize, NameError> {
+     let (rdn_content, used) = decode_set_of_tlv(input).map_err(NameError::BadRdn)?;
+-    if rdn_content.is_empty() {
++    if false {
+         return Err(NameError::EmptyRdn);
+     }
+     for child in Elements::new(rdn_content) {

@@ -1,0 +1,17 @@
+file: der-verified/src/null.rs
+--- old ---
+if content.is_empty() {
+--- new ---
+if content.len() <= 1 {
+--- unified diff ---
+--- a/der-verified/src/null.rs
++++ b/der-verified/src/null.rs
+@@ -24,7 +24,7 @@
+ 
+ /// Decode NULL content octets — accepts only the empty slice.
+ pub fn decode_null(content: &[u8]) -> Result<(), NullError> {
+-    if content.is_empty() {
++    if content.len() <= 1 {
+         Ok(())
+     } else {
+         Err(NullError::NonEmpty)

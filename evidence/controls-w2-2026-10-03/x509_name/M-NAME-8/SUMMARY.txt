@@ -1,0 +1,16 @@
+=== M-NAME-8 / x509_name / der-verified/src/x509_name.rs (2026-10-03T21:01:53Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    validate_name result differs from the total expected result (second ATV's OID fails)
+baseline x509_name::proofs::validate_name_two_atvs_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_two_atvs_unsorted: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_name::proofs::validate_name_two_rdns_exact: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_name::proofs::validate_name_two_atvs_exact: FAILED   [want FAILED]  (101.4s)
+green    x509_name::proofs::validate_name_single_atv_exact: SUCCESSFUL   [want SUCCESSFUL]  (96.0s)
+green    x509_name::proofs::validate_name_two_atvs_unsorted: SUCCESSFUL   [want SUCCESSFUL]  (76.8s)
+green    x509_name::proofs::validate_name_two_rdns_exact: SUCCESSFUL   [want SUCCESSFUL]  (95.5s)
+failed_descriptions:
+  - ""validate_name result differs from the total expected result""

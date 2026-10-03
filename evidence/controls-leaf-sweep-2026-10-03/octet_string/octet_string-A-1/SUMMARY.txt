@@ -1,0 +1,12 @@
+=== octet_string-A-1 / octet_string / der-verified/src/octet_string.rs (2026-10-03T15:18:24Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    classification_is_exact: r == Err(OctetStringError::Tlv(e))
+baseline octet_string::proofs::classification_is_exact: SUCCESSFUL   [want SUCCESSFUL]
+baseline octet_string::proofs::accepted_content_is_the_tlv_value: SUCCESSFUL   [want SUCCESSFUL]
+red      octet_string::proofs::classification_is_exact: FAILED   [want FAILED]  (5.3s)
+green    octet_string::proofs::accepted_content_is_the_tlv_value: SUCCESSFUL   [want SUCCESSFUL]  (3.5s)
+failed_descriptions:
+  - "assertion failed: r == Err(OctetStringError::Tlv(e))"

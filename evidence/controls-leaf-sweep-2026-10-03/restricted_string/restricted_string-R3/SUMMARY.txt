@@ -1,0 +1,12 @@
+=== restricted_string-R3 / restricted_string / der-verified/src/restricted_string.rs (2026-10-03T15:21:35Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :467
+baseline restricted_string::proofs::constructed_form_is_rejected_printable: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::roundtrip_printable: SUCCESSFUL   [want SUCCESSFUL]
+red      restricted_string::proofs::constructed_form_is_rejected_printable: FAILED   [want FAILED]  (1.8s)
+green    restricted_string::proofs::roundtrip_printable: SUCCESSFUL   [want SUCCESSFUL]  (3.4s)
+failed_descriptions:
+  - "assertion failed: decode_restricted_string(&[0x33, 0x01, a], Charset::Printable) ==

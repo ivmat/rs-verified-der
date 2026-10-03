@@ -1,0 +1,17 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+OtherPrimeInfoError::BadSeq(e)
+--- new ---
+{ let _ = e; OtherPrimeInfoError::BadSeq(SequenceError::WrongTag) }
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -348,7 +348,7 @@
+     let mut rest = content;
+     while !rest.is_empty() {
+         let (member_content, used) = decode_sequence_tlv(rest)
+-            .map_err(|e| RsaPrivateKeyError::OtherPrimeInfoMember(OtherPrimeInfoError::BadSeq(e)))?;
++            .map_err(|e| RsaPrivateKeyError::OtherPrimeInfoMember({ let _ = e; OtherPrimeInfoError::BadSeq(SequenceError::WrongTag) }))?;
+         validate_other_prime_info(member_content).map_err(RsaPrivateKeyError::OtherPrimeInfoMember)?;
+         rest = &rest[used..];
+     }

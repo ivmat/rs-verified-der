@@ -1,0 +1,12 @@
+=== restricted_string-R1 / restricted_string / der-verified/src/restricted_string.rs (2026-10-03T15:21:21Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :282
+baseline restricted_string::proofs::charset_exactly_matches_oracle_printable: SUCCESSFUL   [want SUCCESSFUL]
+baseline restricted_string::proofs::charset_exactly_matches_oracle_ia5: SUCCESSFUL   [want SUCCESSFUL]
+red      restricted_string::proofs::charset_exactly_matches_oracle_printable: FAILED   [want FAILED]  (0.8s)
+green    restricted_string::proofs::charset_exactly_matches_oracle_ia5: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+failed_descriptions:
+  - "assertion failed: Charset::Printable.contains(b) == oracle_printable(b)"

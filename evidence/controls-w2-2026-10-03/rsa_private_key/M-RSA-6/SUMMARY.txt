@@ -1,0 +1,14 @@
+=== M-RSA-6 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T18:11:43Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-RSA-4d r == expected (30 00 yy gives OtherPrimeInfosEmpty instead of TrailingElements)
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_trailing: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_other_prime_infos_tail_trailing: FAILED   [want FAILED]  (52.7s)
+green    rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]  (178.1s)
+green    rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]  (53.5s)
+failed_descriptions:
+  - ""parse_rsa_private_key result differs from the expected tail outcome""

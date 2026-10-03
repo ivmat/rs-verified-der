@@ -1,0 +1,21 @@
+file: der-verified/src/utf8_string.rs
+--- old ---
+    if validate_utf8(content).is_err() {
+        return None;
+    }
+    let tag = Tag { class: Class::Universal, constructed: false, number: TAG };
+--- new ---
+    let tag = Tag { class: Class::Universal, constructed: false, number: TAG };
+--- unified diff ---
+--- a/der-verified/src/utf8_string.rs
++++ b/der-verified/src/utf8_string.rs
+@@ -221,9 +221,6 @@
+ ///
+ /// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+ pub fn encode_utf8_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
+-    if validate_utf8(content).is_err() {
+-        return None;
+-    }
+     let tag = Tag { class: Class::Universal, constructed: false, number: TAG };
+     encode_tlv_into(tag, content, out)
+ }

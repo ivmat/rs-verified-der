@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+    let (prime1, used) = decode_field(rest, RsaField::Prime1)?;
+
+--- new ---
+    let (prime1, used) = decode_field(rest, RsaField::Prime2)?;
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -385,7 +385,7 @@
+     rest = &rest[used..];
+     let (private_exponent, used) = decode_field(rest, RsaField::PrivateExponent)?;
+     rest = &rest[used..];
+-    let (prime1, used) = decode_field(rest, RsaField::Prime1)?;
++    let (prime1, used) = decode_field(rest, RsaField::Prime2)?;
+     rest = &rest[used..];
+     let (prime2, used) = decode_field(rest, RsaField::Prime2)?;
+     rest = &rest[used..];

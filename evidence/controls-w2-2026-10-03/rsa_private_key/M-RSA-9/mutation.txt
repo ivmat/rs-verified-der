@@ -1,0 +1,19 @@
+file: der-verified/src/rsa_private_key.rs
+--- old ---
+                (Some(content), &rest[used..])
+
+--- new ---
+                (None, &rest[used..])
+
+--- unified diff ---
+--- a/der-verified/src/rsa_private_key.rs
++++ b/der-verified/src/rsa_private_key.rs
+@@ -425,7 +425,7 @@
+                 // Attribute`), so its members' framing is validated completely here — only the
+                 // integer VALUES stay opaque. See the module docs.
+                 validate_other_prime_infos(content)?;
+-                (Some(content), &rest[used..])
++                (None, &rest[used..])
+             }
+             _ => (None, rest),
+         }

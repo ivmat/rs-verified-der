@@ -1,0 +1,21 @@
+file: der-verified/src/x509_validity.rs
+--- old ---
+        UTC_TIME_TAG => {
+            if tlv.tag.constructed {
+
+--- new ---
+        UTC_TIME_TAG => {
+            if false {
+
+--- unified diff ---
+--- a/der-verified/src/x509_validity.rs
++++ b/der-verified/src/x509_validity.rs
+@@ -145,7 +145,7 @@
+     }
+     match tlv.tag.number {
+         UTC_TIME_TAG => {
+-            if tlv.tag.constructed {
++            if false {
+                 return Err(TimeError::Constructed);
+             }
+             let t = decode_utc_time(tlv.value).map_err(TimeError::BadUtc)?;

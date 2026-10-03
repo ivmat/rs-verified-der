@@ -1,0 +1,17 @@
+file: der-verified/src/set_of.rs
+--- old ---
+if cmp_padded(p, this) == Ordering::Greater {
+--- new ---
+if cmp_padded(p, this) == Ordering::Less {
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -158,7 +158,7 @@
+             // Invariant: `prev` is `Some` only after the first iteration has run to completion,
+             // at which point `count` has already been incremented to `1` — so `count >= 1` here,
+             // and `count - 1` (the previous child's index) cannot underflow.
+-            if cmp_padded(p, this) == Ordering::Greater {
++            if cmp_padded(p, this) == Ordering::Less {
+                 return Err(SetOfError::Unsorted { index: count - 1 });
+             }
+         }

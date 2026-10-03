@@ -1,0 +1,14 @@
+=== M-EXT-9 / x509_extension / der-verified/src/x509_extension.rs (2026-10-03T19:24:18Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    outer envelope: outer envelope result differs from the primitive's decision
+baseline x509_extension::proofs::validate_extensions_rejects_outer_envelope: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_rejects_child_framing: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_extension::proofs::validate_extensions_rejects_outer_envelope: FAILED   [want FAILED]  (73.2s)
+green    x509_extension::proofs::validate_extensions_rejects_child_framing: SUCCESSFUL   [want SUCCESSFUL]  (64.7s)
+green    x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]  (25.9s)
+failed_descriptions:
+  - ""outer envelope result differs from the primitive's decision""

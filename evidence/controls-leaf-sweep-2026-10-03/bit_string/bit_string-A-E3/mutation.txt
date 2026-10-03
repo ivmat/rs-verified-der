@@ -1,0 +1,19 @@
+file: der-verified/src/bit_string.rs
+--- old ---
+        if unused != 0 {
+            return None;
+--- new ---
+        if unused > 1 {
+            return None;
+--- unified diff ---
+--- a/der-verified/src/bit_string.rs
++++ b/der-verified/src/bit_string.rs
+@@ -153,7 +153,7 @@
+         return None;
+     }
+     if data.is_empty() {
+-        if unused != 0 {
++        if unused > 1 {
+             return None;
+         }
+     } else {

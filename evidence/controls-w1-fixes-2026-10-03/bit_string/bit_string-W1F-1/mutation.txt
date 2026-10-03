@@ -1,0 +1,17 @@
+file: der-verified/src/bit_string.rs
+--- old ---
+    if bs.unused == 0 {
+--- new ---
+    if bs.unused == 0 || bs.unused > 7 {
+--- unified diff ---
+--- a/der-verified/src/bit_string.rs
++++ b/der-verified/src/bit_string.rs
+@@ -133,7 +133,7 @@
+ /// field-specific constraint the generic decoder cannot enforce; callers apply it explicitly.
+ /// Returns `None` if `bs` has unused bits.
+ pub fn require_octet_aligned<'a>(bs: BitString<'a>) -> Option<&'a [u8]> {
+-    if bs.unused == 0 {
++    if bs.unused == 0 || bs.unused > 7 {
+         Some(bs.data)
+     } else {
+         None

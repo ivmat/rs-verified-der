@@ -1,0 +1,17 @@
+file: der-verified/src/restricted_string.rs
+--- old ---
+| b'=' | b'?')
+--- new ---
+| b'=' | b'?' | b'@')
+--- unified diff ---
+--- a/der-verified/src/restricted_string.rs
++++ b/der-verified/src/restricted_string.rs
+@@ -98,7 +98,7 @@
+             Charset::Printable => {
+                 b.is_ascii_alphanumeric()
+                     || b == b' '
+-                    || matches!(b, b'\'' | b'(' | b')' | b'+' | b',' | b'-' | b'.' | b'/' | b':' | b'=' | b'?')
++                    || matches!(b, b'\'' | b'(' | b')' | b'+' | b',' | b'-' | b'.' | b'/' | b':' | b'=' | b'?' | b'@')
+             }
+             // IA5String: the full 7-bit set. Bit-test formulation (distinct from the oracle's
+             // numeric-range formulation `b <= 0x7F`).

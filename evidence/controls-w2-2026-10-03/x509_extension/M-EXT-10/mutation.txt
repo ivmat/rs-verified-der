@@ -1,0 +1,19 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+            ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::Tlv(e)))
+
+--- new ---
+            { let _ = e; ExtensionsError::EmptyExtensions }
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -293,7 +293,7 @@
+     let mut count = 0usize;
+     while off < outer.len() {
+         let (_tlv, used) = decode_tlv(&outer[off..]).map_err(|e| {
+-            ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::Tlv(e)))
++            { let _ = e; ExtensionsError::EmptyExtensions }
+         })?;
+         let child = &outer[off..off + used];
+         parse_extension(child).map_err(ExtensionsError::BadExtension)?;

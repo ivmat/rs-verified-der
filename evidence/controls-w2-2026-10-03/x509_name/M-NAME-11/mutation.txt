@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+    let (tlv, used) = decode_tlv(input).map_err(NameError::BadAtvOidTlv)?;
+
+--- new ---
+    let (tlv, used) = decode_tlv(input).map_err(NameError::BadAtvValueTlv)?;
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -130,7 +130,7 @@
+ /// validated content octets and the bytes consumed. Composes [`decode_tlv`] + [`validate_oid`],
+ /// mirroring [`crate::x509_spki`]'s `decode_oid_tlv` exactly.
+ fn decode_atv_oid_tlv(input: &[u8]) -> Result<(&[u8], usize), NameError> {
+-    let (tlv, used) = decode_tlv(input).map_err(NameError::BadAtvOidTlv)?;
++    let (tlv, used) = decode_tlv(input).map_err(NameError::BadAtvValueTlv)?;
+     if tlv.tag.class != Class::Universal || tlv.tag.number != OID_TAG {
+         return Err(NameError::AtvOidWrongTag);
+     }

@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+    for child in Elements::new(rdn_content) {
+
+--- new ---
+    for child in Elements::new(rdn_content).take(1) {
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -183,7 +183,7 @@
+     if rdn_content.is_empty() {
+         return Err(NameError::EmptyRdn);
+     }
+-    for child in Elements::new(rdn_content) {
++    for child in Elements::new(rdn_content).take(1) {
+         let tlv = child.map_err(NameError::BadAtvTlv)?;
+         validate_atv(tlv)?;
+     }

@@ -1,0 +1,19 @@
+file: der-verified/src/x509_name.rs
+--- old ---
+fn validate_atv(tlv: Tlv<'_>) -> Result<(), NameError> {
+
+--- new ---
+fn validate_atv(tlv: Tlv<'_>) -> Result<(), NameError> {
+    let _early = decode_atv_oid_tlv(tlv.value)?;
+
+--- unified diff ---
+--- a/der-verified/src/x509_name.rs
++++ b/der-verified/src/x509_name.rs
+@@ -148,6 +148,7 @@
+ /// tile into exactly two fields — the `type` OID, then one more well-framed TLV (the `value`,
+ /// left uninterpreted, as ASN.1 `ANY`).
+ fn validate_atv(tlv: Tlv<'_>) -> Result<(), NameError> {
++    let _early = decode_atv_oid_tlv(tlv.value)?;
+     if tlv.tag.class != Class::Universal || tlv.tag.number != SEQUENCE_TAG {
+         return Err(NameError::AtvWrongTag);
+     }

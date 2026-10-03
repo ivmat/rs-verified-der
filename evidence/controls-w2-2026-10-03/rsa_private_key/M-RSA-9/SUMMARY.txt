@@ -1,0 +1,15 @@
+=== M-RSA-9 / rsa_private_key / der-verified/src/rsa_private_key.rs (2026-10-03T18:30:51Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            True
+predicted_assert:    H-RSA-5: v == 1 now gives Err(VersionMismatch) where the Ok arm was expected (assert `a version-1 multi-prime key must be accepted`), and v == 0 gives Ok with other_prime_infos None (assert `multi-prime tail accepted only with version 1`) (ADDED by implementer)
+baseline rsa_private_key::proofs::parse_multi_prime_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]
+baseline rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]
+red      rsa_private_key::proofs::parse_multi_prime_faithful: FAILED   [want FAILED]  (221.8s)
+green    rsa_private_key::proofs::parse_faithful_two_prime_s1: SUCCESSFUL   [want SUCCESSFUL]  (184.0s)
+green    rsa_private_key::proofs::parse_other_prime_infos_tail_empty: SUCCESSFUL   [want SUCCESSFUL]  (54.2s)
+failed_descriptions:
+  - ""a version-1 multi-prime key must be accepted""
+  - ""multi-prime tail accepted only with version 1""

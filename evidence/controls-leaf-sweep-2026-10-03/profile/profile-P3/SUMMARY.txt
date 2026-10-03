@@ -1,0 +1,12 @@
+=== profile-P3 / profile / der-verified/src/profile.rs (2026-10-03T15:20:44Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            42c8165a3993ed8a811f65276bbb2a79291b8bb9
+stubbing:            False
+predicted_assert:    :363
+baseline profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::rule3_generalized_too_early_iff_year_le_2049: FAILED   [want FAILED]  (0.6s)
+green    profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]  (0.9s)
+failed_descriptions:
+  - "assertion failed: r == Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)"
