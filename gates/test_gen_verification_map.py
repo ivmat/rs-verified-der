@@ -255,6 +255,14 @@ class GoalLine(unittest.TestCase):
         self.assertIn('der-verified/acceptance.toml', text)
         self.assertIn(facts['provenance']['commit'], text)
 
+    def test_the_closing_sentence_states_the_control_rule_at_a1_not_a0(self):
+        # A1 needs no control (two real claims sit at A1 with none), so the old wording "a band
+        # above A0 needs a control" contradicted the manifest it was printed under.
+        text = '\n'.join(gen.render_map(gen.compute()))
+        self.assertIn('A band above A1 needs a mutation control naming the claim that was watched '
+                      'to fail; without one a claim stops at A1 (and an ungraded claim at A0).', text)
+        self.assertNotIn('A band above A0', text)
+
     def test_a_dirty_subject_tree_is_said_out_loud(self):
         facts = copy.deepcopy(gen.compute())
         facts['provenance']['dirty'] = True

@@ -18,6 +18,7 @@ import copy
 import importlib.util
 import io
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -1040,8 +1041,53 @@ class HeadCoverageFact(unittest.TestCase):
 
     def test_verified_paths_are_the_proof_bearing_ones(self):
         # If this list ever silently widened to include docs, a docs commit would invalidate a run
-        # log and the manifest would start disclaiming for no reason.
-        self.assertEqual(sorted(gen.VERIFIED_PATHS), ['der-verified/src', 'lean'])
+        # log and the manifest would start disclaiming for no reason. If it NARROWED back to the two
+        # source trees, a change to the Cargo manifests, the lockfile, the toolchain file, `.cargo`,
+        # the build script or `check.sh` could change what a run verified and the freshness sentence
+        # would still say "speaks for HEAD" (the "iff over src/lean" overclaim).
+        self.assertEqual(
+            sorted(gen.L3_BUILD_INPUTS),
+            sorted(['check.sh', 'der-verified/src', 'der-verified/Cargo.toml', 'Cargo.toml',
+                    'Cargo.lock', 'rust-toolchain.toml', '.cargo', 'der-verified/build.rs']))
+        self.assertEqual(sorted(gen.VERIFIED_PATHS), sorted(gen.L3_BUILD_INPUTS + ['lean']))
+        for doc in ('PROOF_MANIFEST.md', 'COVERAGE.md', 'README.md', 'gates', 'evidence'):
+            self.assertNotIn(doc, gen.VERIFIED_PATHS)
+
+    def test_a_capture_commit_outside_the_published_history_is_anchored_at_its_tree_twin(self):
+        # 42c8165 is not part of the published history; 17ee51e has the identical tree.
+        self.assertEqual(gen.anchor_commit('42c8165'), '17ee51e')
+        # Any other commit is its own anchor (no silent remapping).
+        self.assertEqual(gen.anchor_commit('d05d3f2'), 'd05d3f2')
+        self.assertEqual(gen.anchor_commit('unrecorded'), 'unrecorded')
+
+    def test_the_freshness_diff_is_taken_against_the_anchor_not_the_capture_commit(self):
+        # `verified_source_unchanged_since('<capture>')` must diff against PUBLISHED_ANCHOR[capture].
+        # In the fixture the capture id does not resolve at all, so the only way to get True is to
+        # have followed the anchor to a commit that does.
+        with self._throwaway_repo() as (tmp, run):
+            head = run('rev-parse', 'HEAD')
+            original = dict(gen.PUBLISHED_ANCHOR)
+            gen.PUBLISHED_ANCHOR['feedbac'] = head
+            try:
+                self.assertTrue(gen.verified_source_unchanged_since('feedbac'))
+                with open(os.path.join(tmp, gen.VERIFIED_PATHS[-1], 'seed.txt'), 'a',
+                          encoding='utf-8') as fh:
+                    fh.write('an uncommitted edit\n')
+                self.assertFalse(gen.verified_source_unchanged_since('feedbac'))
+            finally:
+                gen.PUBLISHED_ANCHOR.clear()
+                gen.PUBLISHED_ANCHOR.update(original)
+            # No mapping and not resolvable: the answer is "unknown", never a default yes.
+            self.assertIsNone(gen.verified_source_unchanged_since('feedbad'))
+
+    def test_a_change_to_a_build_input_outside_src_and_lean_reads_as_changed(self):
+        # The closure is wider than the two source trees: editing `Cargo.lock` (a path that is
+        # neither `der-verified/src` nor `lean`) must supersede the run.
+        with self._throwaway_repo() as (tmp, run):
+            head = run('rev-parse', 'HEAD')
+            with open(os.path.join(tmp, 'Cargo.lock', 'seed.txt'), 'a', encoding='utf-8') as fh:
+                fh.write('a lockfile edit\n')
+            self.assertFalse(gen.verified_source_unchanged_since(head))
 
     @contextlib.contextmanager
     def _throwaway_repo(self):
@@ -1162,12 +1208,292 @@ class HeadCoverageFact(unittest.TestCase):
         self.assertIn('could not answer', out)
         self.assertNotIn('still speaks for HEAD', out)
 
+    SPLIT = [
+        {'file': 'evidence/check-42c8165.log', 'commit': '42c8165', 'covers_head_source': True,
+         'failed': 0},
+        {'file': 'evidence/check-42c8165-heavy-a-x.log', 'commit': '42c8165',
+         'covers_head_source': True, 'failed': 0},
+        {'file': 'evidence/check-42c8165-heavy-b-y.log', 'commit': '42c8165',
+         'covers_head_source': True, 'failed': 0},
+        {'file': 'evidence/check-42c8165-heavy-c-z.log', 'commit': '42c8165',
+         'covers_head_source': True, 'failed': 0},
+    ]
+
+    def test_a_split_floor_is_named_as_one_set_with_all_four_logs(self):
+        # The old sentence picked ONE companion (the alphabetically first live log) as "the" run that
+        # speaks for HEAD. A split floor is the main half plus every companion, named together.
+        out = '\n'.join(gen.r_evidence_coverage({'evidence': copy.deepcopy(self.SPLIT)}))
+        for e in self.SPLIT:
+            self.assertIn('`%s`' % e['file'], out)
+        self.assertIn('SPLIT floor of 4 logs', out)
+        self.assertIn('the main half', out)
+        self.assertIn('3 heavy-harness companion logs', out)
+        # exactly one "still speaks for HEAD" sentence for the one set, not one per log
+        self.assertEqual(out.count('still speaks for HEAD'), 1)
+
+    def test_the_freshness_command_is_anchored_at_the_published_commit_and_never_the_capture_commit(self):
+        out = '\n'.join(gen.r_evidence_coverage({'evidence': copy.deepcopy(self.SPLIT)}))
+        self.assertIn('git diff 17ee51e -- ', out)
+        self.assertNotIn('git diff 42c8165', out)
+        self.assertNotIn('42c8165..', out)
+
+    def test_the_freshness_command_names_the_whole_build_input_closure_and_lean(self):
+        out = '\n'.join(gen.r_evidence_coverage({'evidence': copy.deepcopy(self.SPLIT)}))
+        cmd = [l for l in out.split('\n') if 'git diff 17ee51e' in l][0]
+        for path in gen.L3_BUILD_INPUTS + ['lean']:
+            self.assertIn(' %s' % path, cmd, '%s missing from the freshness command' % path)
+        # and the L3-only list is stated separately, with `lean/` named as the L4 addition
+        self.assertIn('`lean/` joins that list for the L4 lid', out)
+
+    def test_the_freshness_condition_is_sufficient_not_an_iff(self):
+        out = '\n'.join(gen.r_evidence_coverage({'evidence': copy.deepcopy(self.SPLIT)}))
+        self.assertIn('**sufficient** condition, not an iff', out)
+        self.assertIn('§2 toolchain pins unchanged', out)
+        self.assertIn('means re-run', out)
+        self.assertNotIn('HEAD iff', out)   # the old "speaks for HEAD iff ..." wording
+        self.assertEqual(out.count(' iff'), 1, 'iff appears only in the "not an iff" disclaimer')
+
+    def test_a_single_log_run_with_its_own_commit_as_anchor_gets_no_equivalence_note(self):
+        f = {'evidence': [{'file': 'evidence/check-abc1234.log', 'commit': 'abc1234',
+                           'covers_head_source': True, 'failed': 0}]}
+        out = '\n'.join(gen.r_evidence_coverage(f))
+        self.assertIn('git diff abc1234 -- ', out)
+        self.assertNotIn('identical to the capture commit', out)
+        self.assertNotIn('17ee51e', out)
+
+    def test_two_live_commits_each_get_their_own_set_sentence(self):
+        f = {'evidence': [
+            {'file': 'evidence/check-aaaaaaa.log', 'commit': 'aaaaaaa', 'covers_head_source': True,
+             'failed': 0},
+            {'file': 'evidence/check-bbbbbbb.log', 'commit': 'bbbbbbb', 'covers_head_source': True,
+             'failed': 0}]}
+        out = '\n'.join(gen.r_evidence_coverage(f))
+        self.assertEqual(out.count('still speaks for HEAD'), 2)
+
     def test_no_evidence_says_so(self):
         self.assertIn('No committed run log', '\n'.join(gen.r_evidence_coverage({'evidence': []})))
 
     def test_coverage_region_is_advisory_so_a_git_less_clone_still_passes(self):
         # The regression this whole split exists to prevent.
         self.assertIn('evidence-coverage', gen.ADVISORY)
+
+class NonVacuityProse(unittest.TestCase):
+    """The §8.2 `non-vacuity` region is partly DERIVED (the table, the implicit-only list, the content
+    `assume` lines the audit and the acceptance projection read) and partly prose around them. These
+    tests pin the prose claims that an external review found to be false, and pin that the derived
+    lines did not move when the prose did."""
+
+    def _out(self, f=None):
+        return '\n'.join(gen.r_nonvacuity(f or facts()))
+
+    def test_assume_without_cover_assertions_are_not_called_non_vacuity_witnesses(self):
+        out = self._out()
+        self.assertIn('functional assertions (post-state checks), not non-vacuity witnesses', out)
+        # An assertion cannot witness the satisfiability of its own assumptions: contradictory
+        # assumptions make every assertion pass vacuously. The gap is kept, not argued away.
+        self.assertIn('contradictory', out)
+        self.assertIn('vacuously', out)
+        self.assertIn('not witnessed', out)
+        self.assertNotIn('a *different* kind of witness', out)
+        self.assertNotIn('automatically a better one', out)
+
+    def test_the_implicit_only_exception_is_counted_and_named_not_denied(self):
+        f = facts()
+        out = self._out(f)
+        io = [(m['module'], n) for m in f['modules'] for n in m['implicit_only']]
+        self.assertTrue(io, 'fixture expects the real tree to have its disclosed implicit-only harness')
+        # The old sentence said "no harness is left with nothing but Kani's implicit checks" one
+        # paragraph after a table that counted one such harness.
+        self.assertNotIn('no harness is left with nothing but', out)
+        self.assertIn('Exactly %d harness' % len(io), out)
+        for mod, name in io:
+            self.assertEqual(out.count('`%s::%s`' % (mod, name)), 2, 'listed once, named once more')
+        self.assertIn('rsa_private_key::parse_strict_never_panics', out)
+
+    def test_with_no_implicit_only_harness_the_generator_says_none_rather_than_naming_one(self):
+        f = facts()
+        for m in f['modules']:
+            m['implicit_only'] = []
+        f['totals']['implicit_only'] = 0
+        out = self._out(f)
+        self.assertIn('No harness is left with nothing but Kani', out)
+        self.assertNotIn('Exactly', out)
+
+    def test_two_implicit_only_harnesses_are_both_named_with_a_plural_verb(self):
+        f = facts()
+        f['modules'][0]['implicit_only'] = ['one', 'two']
+        for m in f['modules'][1:]:
+            m['implicit_only'] = []
+        out = self._out(f)
+        self.assertIn('Exactly 2 harnesses are left with nothing but', out)
+        self.assertIn('`%s::one`' % f['modules'][0]['module'], out)
+        self.assertIn('`%s::two`' % f['modules'][0]['module'], out)
+
+    def test_the_derived_content_assume_lines_are_exactly_the_derived_facts(self):
+        # The lines `derive_targets` turns into claim preconditions. The prose fix must not touch
+        # them: they are the module's own `content_assumes`, in module order, byte for byte.
+        f = facts()
+        expected = ['- `%s::%s` — `assume(%s)`' % (m['module'], h, e)
+                    for m in f['modules'] for h, e in m['content_assumes']]
+        self.assertTrue(expected)
+        got = [l for l in self._out(f).split('\n') if l.startswith('- `') and '` — `assume(' in l]
+        self.assertEqual(got, expected)
+
+    def test_the_audit_table_rows_are_unchanged_in_shape(self):
+        out = self._out()
+        self.assertIn('| Non-vacuity audit (derived from source) | Count |', out)
+        self.assertIn('| harnesses narrowed by `assume` with no `cover`', out)
+        self.assertIn('| harnesses whose `cover` is known-UNSATISFIABLE and disclosed |', out)
+
+    def test_the_region_states_that_its_counts_are_lexical(self):
+        out = self._out()
+        self.assertIn('counts in this audit are lexical', out)
+        for shape in ('string literal', 'inline `//` tail', '`/* */` block'):
+            self.assertIn(shape, out)
+        self.assertIn('comment-only lines are excluded', out)
+
+    def test_the_committed_manifest_carries_the_prose(self):
+        text = manifest()
+        self.assertIn('functional assertions (post-state checks), not non-vacuity witnesses', text)
+        self.assertIn('counts in this audit are lexical', text)
+
+
+class BoundsLegend(unittest.TestCase):
+    """§4's `symbolic [u8; N]` column counts fully symbolic arrays only; a harness may use a larger
+    backing buffer. The column is NOT redefined (it would cascade through every module); the legend
+    above the table defines it, and the §6.2 row of a module that uses a wider backing states it."""
+
+    def test_the_legend_sits_above_the_table_and_defines_the_column(self):
+        lines = gen.r_per_module(facts())
+        header = [i for i, l in enumerate(lines) if l.startswith('| Module |')][0]
+        legend = ' '.join(lines[:header])
+        self.assertIn('fully symbolic buffers', legend)
+        # the column also lists CONCRETE witness arrays (e.g. a const specimen), so it must say so:
+        # a legend claiming "fully symbolic arrays only" would be false of what the regex counts
+        self.assertIn('concrete witness arrays', legend)
+        self.assertIn('largest entry is not necessarily a symbolic input domain', legend)
+        self.assertIn('backing', legend)
+        self.assertIn('§6.2', legend)
+
+    def test_the_column_really_counts_concrete_arrays_so_the_legend_must_not_deny_it(self):
+        # Pin the fact the legend discloses: a CONCRETE const array inside a harness body is counted.
+        module = CoverSpellings._module('    #[kani::proof]',
+                                        '    fn h() {',
+                                        '        const SPECIMEN: [u8; 32] = [0; 32];',
+                                        '        let sym: [u8; 5] = kani::any();',
+                                        '        let backing = [0u8; 47];',
+                                        '    }')
+        self.assertEqual(CoverSpellings._facts_of(module)['buffers'], [5, 32])
+
+    def test_the_table_itself_is_unchanged_in_shape(self):
+        f = facts()
+        lines = gen.r_per_module(f)
+        rows = [l for l in lines if l.startswith('| `')]
+        self.assertEqual(len(rows), len(f['modules']))
+        header = [l for l in lines if l.startswith('| Module |')][0]
+        self.assertEqual(header.count('|'), 11)
+
+    def test_the_validity_row_still_reports_the_widest_fully_symbolic_array(self):
+        rows = [l for l in gen.r_per_module(facts()) if l.startswith('| `x509_validity`')]
+        self.assertEqual(len(rows), 1)
+        self.assertIn('3..32', rows[0])
+
+
+def tokens_outside_code(text):
+    """Every `kani::cover` / `kani::assume` token in `text` that sits in a NON-code position the
+    line scan could mis-credit: behind a `//` on its line, after an opening `"` on its line, inside a
+    `/* ... */` span, or inside a string literal that spans lines.
+
+    A deliberately simple scan, NOT a tokenizer: it may OVER-report (a `//` or `"` earlier on the
+    line is enough to flag a token, even when the token is really code) but must never UNDER-report
+    for the three shapes it names. Comment-only lines are skipped, because the generator excludes
+    them too, so they are not a mis-credit risk. Returns (line_number, token, reason) triples."""
+    token = re.compile(r'\bkani::(?:cover|assume)\b')
+    hits = []
+    lines = text.split('\n')
+    # spans of /* ... */ (non-greedy, across lines) and of multi-line "..." strings, as char offsets
+    offsets, pos = [], 0
+    for l in lines:
+        offsets.append(pos)
+        pos += len(l) + 1
+    spans = [(m.start(), m.end(), '/* */ block') for m in re.finditer(r'/\*.*?\*/', text, re.S)]
+    spans += [(m.start(), m.end(), 'multi-line string')
+              for m in re.finditer(r'"(?:[^"\\]|\\.)*"', text, re.S) if '\n' in m.group(0)]
+    for i, line in enumerate(lines):
+        if gen.COMMENT_RE.match(line):
+            continue
+        tail = line.find('//')
+        for m in token.finditer(line):
+            if tail != -1 and m.start() > tail:
+                hits.append((i + 1, m.group(0), 'inline // tail'))
+            elif line.count('"', 0, m.start()) > 0:
+                hits.append((i + 1, m.group(0), 'after a quote on the line (string literal)'))
+            else:
+                at = offsets[i] + m.start()
+                for a, b, why in spans:
+                    if a <= at < b:
+                        hits.append((i + 1, m.group(0), why))
+                        break
+    return hits
+
+
+class LexicalCounting(unittest.TestCase):
+    """The cover / assume / assert counts are a LINE SCAN, not a parse. That is a disclosed limit
+    (§8.2 says so, generated), and these tests pin it from both sides: the limitation exists exactly
+    as disclosed (so the disclosure cannot quietly become false), and today's source has no token the
+    limitation could mis-credit (so the disclosed risk is currently zero)."""
+
+    def test_a_cover_token_inside_a_string_literal_is_counted_as_a_cover(self):
+        self.assertEqual(gen._count_covers(['let s = "kani::cover(x)";']), 1)
+
+    def test_a_cover_token_in_an_inline_tail_comment_is_counted_as_a_cover(self):
+        self.assertEqual(gen._count_covers(['let a = 1; // kani::cover(x)']), 1)
+
+    def test_a_cover_token_in_a_single_line_block_comment_after_code_is_counted(self):
+        self.assertEqual(gen._count_covers(['let a = 1; /* kani::cover!(x) */']), 1)
+
+    def test_a_cover_token_in_a_block_comment_line_that_starts_with_a_star_is_not_counted(self):
+        self.assertEqual(gen._count_covers(['/*', ' * kani::cover(x)', ' */']), 0)
+
+    def test_an_assume_token_in_a_string_or_tail_is_counted_as_an_assume(self):
+        module = CoverSpellings._module('    #[kani::proof]',
+                                        '    fn h() {',
+                                        '        let s = "kani::assume(never)";',
+                                        '        let a = 1; // kani::assume(also_never)',
+                                        '    }')
+        facts_ = CoverSpellings._facts_of(module)
+        self.assertEqual(facts_['harnesses'][0]['assumes'], 2)
+
+    def test_comment_only_lines_are_still_excluded(self):
+        self.assertEqual(gen._count_covers(['// kani::cover(x)', '/// kani::cover(x)',
+                                            '//! kani::cover(x)']), 0)
+
+    def test_the_scanner_finds_each_non_code_shape_it_is_named_for(self):
+        # Without these, "0 hits in the real source" could just mean a scanner that finds nothing.
+        shapes = {
+            'string': 'let s = "kani::cover(x)";',
+            'tail': 'let a = 1; // kani::assume(x)',
+            'block': 'let a = 1; /* kani::cover(x) */',
+            'multi-line block': 'let a = 1; /* start\n kani::assume(x)\n end */',
+            'multi-line string': 'let s = "start\n kani::cover(x)\n end";',
+        }
+        for name, text in shapes.items():
+            self.assertTrue(tokens_outside_code(text), 'scanner missed the %s shape' % name)
+
+    def test_the_scanner_does_not_flag_plain_code(self):
+        self.assertEqual(tokens_outside_code('kani::assume(x > 0);\nkani::cover!(y, "m");'), [])
+
+    def test_today_s_source_has_no_cover_or_assume_token_outside_a_code_position(self):
+        offenders = []
+        src = os.path.join(ROOT, 'der-verified', 'src')
+        for name in sorted(os.listdir(src)):
+            if not name.endswith('.rs'):
+                continue
+            with open(os.path.join(src, name), encoding='utf-8') as fh:
+                for line_no, tok, why in tokens_outside_code(fh.read()):
+                    offenders.append('%s:%d %s (%s)' % (name, line_no, tok, why))
+        self.assertEqual(offenders, [], 'the lexical count would mis-credit these tokens')
+
 
 if __name__ == '__main__':
     # Default warning filters on purpose: nothing is suppressed, so a future DeprecationWarning in

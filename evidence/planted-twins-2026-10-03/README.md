@@ -14,7 +14,7 @@ where the disclosed cover is **not** satisfied (the baseline) and one where the 
 
 The prediction is `PROOF_MANIFEST.md` §8.2, the generated table "Harness whose `cover` is UNSATISFIABLE at its
 bound / Companion witness harness", as committed at the capture commit `42c8165`. That commit was made at
-`2026-10-03T13:52:02+02:00` (11:52:02Z), before every run recorded here (the earliest started at `2026-10-03T21:54:29Z`).
+`2026-10-03T13:52:02+02:00` (11:52:02Z), before every run recorded here: the two reused `x509_extension` observations ran first, in the window `2026-10-03 21:34Z-21:54Z` (§5), and the four fresh twin runs followed, from `2026-10-03T21:54:29Z` to `2026-10-03T21:59:52Z`.
 The capture commit is a pre-squash commit and is not part of the published history. The published squash head
 `17ee51e` has exactly the same tree (`git rev-parse 17ee51e^{tree}` prints `1f938d215b692ad117191f1add9418771be82169`,
 the tree of the capture commit), so §8.2 of `PROOF_MANIFEST.md` at the squash head holds the same table. The squash
@@ -33,7 +33,9 @@ So the prediction for each pair is: baseline `0 of 1 cover properties satisfied`
 
 ## 2. The six runs
 
-All six ran at the capture commit `42c8165`, with Kani `0.67.0`, CBMC `6.8.0`, CaDiCaL `2.0.0`, one harness per run
+Chronology: the two `x509_extension` logs are earlier observations that this directory reuses (they ran in the window
+`2026-10-03 21:34Z-21:54Z`, §5); the four other runs are fresh and ran in order from `2026-10-03T21:54:29Z` to
+`2026-10-03T21:59:52Z`. All six ran at the capture commit `42c8165`, with Kani `0.67.0`, CBMC `6.8.0`, CaDiCaL `2.0.0`, one harness per run
 (`cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <h> --exact`), sequentially, each inside a
 detached, memory-capped `systemd --user` service (`MemorySwapMax=0`). Each log is the complete tool output of one
 run, unedited (it is not a distillation; the two `x509_extension` logs additionally start with a short `#` header,
@@ -116,8 +118,8 @@ sha256 recorded in §2 is also the sha256 of the companion file. The part of the
 raw tool output, whose own sha256 is pinned in the companion's header: `9bda38f05b0f5c2c435c5d93c8ae17840499b8a072f9614f25d92c81ca8f5b57` for the baseline and
 `bf96ce9a9bf43e99896458bca93cfcf20fdfd62504ecc4e998a1608e6c214941` for the twin.
 
-Why these two heavy harnesses ran only once: each peaks above 20 GB, so they cannot run inside the capped main
-floor run (`evidence/check-42c8165.log`, 294 harnesses). They ran separately, one at a time, at `MemoryMax=24G`,
+Why these two heavy harnesses ran only once: earlier measurements approached or exceeded 20 GiB, so they were kept out of the 20 GiB-capped main
+floor run (`evidence/check-42c8165.log`, 294 harnesses). Their measured peaks in the 24G runs were 20G (baseline) and 16.7G (twin). They ran separately, one at a time, at `MemoryMax=24G`,
 in a window reserved for them (`2026-10-03 21:34Z-21:54Z (box otherwise idle, owner-directed)`). The same deterministic observation then plays two roles: it is the
 per-harness verification record of that harness in the split floor, and it is the baseline or twin leg here. A
 second identical run would add cost and no independence. If this double use is ever judged unacceptable, the fix is

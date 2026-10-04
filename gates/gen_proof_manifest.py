@@ -47,9 +47,28 @@ SRC = os.path.join(ROOT, 'der-verified', 'src')
 LEAN = os.path.join(ROOT, 'lean')
 MANIFEST = os.path.join(ROOT, 'PROOF_MANIFEST.md')
 EVIDENCE = os.path.join(ROOT, 'evidence')
-# The paths a committed run's verdicts actually speak for. A change OUTSIDE these (docs, gates, CI)
-# cannot invalidate a proof run; a change INSIDE them can, and does so silently unless derived.
-VERIFIED_PATHS = ['der-verified/src', 'lean']
+# The L3 (Kani) build inputs: everything `./check.sh`'s Kani stage compiles or is configured by. A
+# change OUTSIDE these (docs, gates, CI) cannot invalidate a proof run; a change INSIDE them can, and
+# does so silently unless derived. Source alone is NOT the closure: the Cargo manifests, the lockfile,
+# the toolchain file, `.cargo` configuration, the build script and `check.sh` itself can each change
+# what a run verified without touching `der-verified/src`.
+L3_BUILD_INPUTS = ['check.sh', 'der-verified/src', 'der-verified/Cargo.toml', 'Cargo.toml',
+                   'Cargo.lock', 'rust-toolchain.toml', '.cargo', 'der-verified/build.rs']
+# The L4 (Lean lid) inputs add `lean/` to the L3 list.
+VERIFIED_PATHS = L3_BUILD_INPUTS + ['lean']
+
+# A run captured on a commit that is not part of the PUBLISHED history is anchored, for the freshness
+# diff, at the published commit whose tree is identical to it. The pre-squash capture commit
+# `42c8165` and the squash head `17ee51e` have the same tree (`git rev-parse <c>^{tree}`), so a diff
+# against `17ee51e` answers the question a reader can actually run; `42c8165` is not resolvable in a
+# clone of the published history. Keys are capture commits as they appear in a log's `# commit:`
+# header; an absent key means the capture commit is its own anchor.
+PUBLISHED_ANCHOR = {'42c8165': '17ee51e'}
+
+
+def anchor_commit(commit):
+    """The commit a freshness diff for a run captured at `commit` is taken against."""
+    return PUBLISHED_ANCHOR.get(commit, commit)
 
 BEGIN = '<!-- BEGIN GENERATED:%s (gates/gen_proof_manifest.py) -->'
 END = '<!-- END GENERATED:%s -->'
@@ -773,6 +792,7 @@ def verified_source_unchanged_since(commit):
     """True/False if git can answer whether VERIFIED_PATHS changed since `commit`; else None."""
     if not commit or commit == 'unrecorded':
         return None
+    commit = anchor_commit(commit)
     try:
         # `commit` (no `..HEAD`), so the comparison is against the WORKING TREE, not the last
         # commit. This region is written and `--check`ed by the pre-commit hook, i.e. while the
@@ -970,7 +990,14 @@ def _rng(xs):
 
 
 def r_per_module(f):
-    L = ['| Module | entry points | named by a harness | Kani | symbolic `[u8; N]` | unwind | '
+    L = ['Reading the `symbolic [u8; N]` column: it lists the sizes of the `[u8; N]` array types '
+         'written inside harness bodies. That includes fully symbolic buffers, but also concrete '
+         'witness arrays and small symbolic sub-arrays, so the largest entry is not necessarily a '
+         'symbolic input domain. It does not list a buffer built as `[0u8; N]` or inside a helper '
+         'function, so a larger backing buffer with symbolic fields is invisible to it. The '
+         'per-harness input domains and the backing capacities are stated per module in §6.2.',
+         '',
+         '| Module | entry points | named by a harness | Kani | symbolic `[u8; N]` | unwind | '
          '`assume` | `cover` | stubs | L4 |',
          '|---|---:|---:|---:|---|---|---:|---:|---:|:--:|']
     for m in f['modules']:
@@ -1056,18 +1083,38 @@ def r_nonvacuity(f):
               'asserts a functional outcome with `assert!`; none relies on Kani\'s implicit checks '
               'alone. That much is a static fact this script re-derives on every run, not a claim.'
               % t['implicit_only']]
-    L += ['', 'What the remaining %d `assume`-narrowed-without-a-`cover` harnesses give you is a '
-          '*different* kind of witness, not automatically a better one. The static, derived fact is '
-          'that each of them contains an `assert!`. The judgement — that these particular assertions '
-          'are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose '
-          'passing requires the code to have produced a specific correct result — is per-harness and '
-          'human; this script cannot grade an assertion\'s strength. '
-          'But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be '
+    L += ['', 'What the remaining %d `assume`-narrowed-without-a-`cover` harnesses give you is '
+          '**functional assertions (post-state checks), not non-vacuity witnesses**. The static, '
+          'derived fact is that each of them contains an `assert!`. But an assertion cannot witness '
+          'that its own assumptions are satisfiable: if the assumptions of such a harness were '
+          'contradictory, every assertion in it would pass vacuously. So the satisfiability of '
+          'those assumptions is **not witnessed** by these harnesses, and that gap is kept here, '
+          'not argued away. The judgement — that these particular assertions are functional '
+          'outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires '
+          'the code to have produced a specific correct result — is per-harness and human; this '
+          'script cannot grade an assertion\'s strength. '
+          'Nor is an assertion interchangeable with a cover: `assert!(r.is_err())` can be '
           'satisfied by a shallow rejection path while a deeper one is never reached, whereas a '
           'cover can pin a specific deep effect. Neither subsumes the other, and this manifest does '
-          'not claim the assertions make covers unnecessary — only that no harness is left with '
-          'nothing but Kani\'s implicit checks. The one case where even that is weaker than it '
-          'looks is named in the prose below.' % t['assume_without_cover']]
+          'not claim the assertions make covers unnecessary.' % t['assume_without_cover']]
+    if io:
+        L += ['', 'Exactly %d harness%s left with nothing but Kani\'s implicit checks: %s (also '
+              'listed above). That is a disclosed exception, not a witnessed property. Where a '
+              'harness\'s non-vacuity argument points somewhere other than at itself, the prose '
+              'below names it.'
+              % (len(io), ' is' if len(io) == 1 else 'es are',
+                 ', '.join('`%s::%s`' % r for r in io))]
+    else:
+        L += ['', 'No harness is left with nothing but Kani\'s implicit checks. Where a harness\'s '
+              'non-vacuity argument points somewhere other than at itself, the prose below names '
+              'it.']
+    L += ['', '**The counts in this audit are lexical.** `cover`, `assume` and `assert` counts come '
+          'from a line scan of each module\'s `mod proofs`: comment-only lines are excluded, but '
+          'a `kani::cover` or `kani::assume` token inside a string literal, behind an inline `//` '
+          'tail or inside a `/* */` block can be counted as if it were code. The scan is '
+          'checked by a self-test that finds no such token outside code positions in the current '
+          'source (`gates/test_gen_proof_manifest.py`); that is a statement about today\'s source, '
+          'not a guarantee about future edits, and a tokenizing count is a follow-up.']
     ca = [(m['module'], h, e) for m in f['modules'] for h, e in m['content_assumes']]
     L += ['', '**What the %d harness assumptions actually restrict.** %d of them are size or range '
           'bounds — they relate lengths, indices and integer values with comparisons and `&&`, and '
@@ -1198,6 +1245,32 @@ def r_evidence(f):
     return L
 
 
+def _live_sentence(commit, group):
+    """One sentence naming ALL logs captured at `commit` and the freshness command for them."""
+    files = ['`%s`' % e['file'] for e in group]
+    main = 'evidence/check-%s.log' % commit
+    mains = [e for e in group if e['file'] == main]
+    rest = [e for e in group if e['file'] != main]
+    if mains and rest:
+        kind = ('heavy-harness companion logs'
+                if all('-heavy-' in e['file'] for e in rest) else 'further logs')
+        listing = ('a SPLIT floor of %d logs, read together: the main half `%s` and its %d %s %s'
+                   % (len(group), main, len(rest), kind,
+                      ', '.join('`%s`' % e['file'] for e in rest)))
+    elif len(group) > 1:
+        listing = '%d logs, read together: %s' % (len(group), ', '.join(files))
+    else:
+        listing = 'the log `%s`' % group[0]['file']
+    anchor = anchor_commit(commit)
+    out = ('**The run evidence captured at `%s` still speaks for HEAD** (%s). No build input it '
+           'depends on has changed since the anchor `%s`: `git diff %s -- %s` is empty.'
+           % (commit, listing, anchor, anchor, ' '.join(VERIFIED_PATHS)))
+    if anchor != commit:
+        out += (' (`%s` is the published-history commit whose tree is identical to the capture '
+                'commit `%s`, which is not part of the published history.)' % (anchor, commit))
+    return out
+
+
 def r_evidence_coverage(f):
     """ADVISORY region: does a committed run still speak for HEAD's verified source?
 
@@ -1217,9 +1290,25 @@ def r_evidence_coverage(f):
     unknown = [e for e in ev if e['covers_head_source'] is None]
     L = []
     if live:
-        L.append('**`%s` still speaks for HEAD.** No path it verified has changed since its commit: '
-                 '`git diff %s..HEAD -- %s` is empty. Run that command rather than trusting this '
-                 'sentence.' % (live[0]['file'], live[0]['commit'], ' '.join(VERIFIED_PATHS)))
+        # One floor can be SEVERAL logs (a split floor: a main half plus companion logs). Naming one
+        # of them as "the" run that speaks for HEAD would select a fragment and hide the rest, so the
+        # live logs are grouped by their capture commit and every log of a group is named together.
+        commits = []
+        for e in live:
+            if e['commit'] not in commits:
+                commits.append(e['commit'])
+        for commit in commits:
+            group = [e for e in live if e['commit'] == commit]
+            L.append(_live_sentence(commit, group))
+        L.append('')
+        L.append('This is a **sufficient** condition, not an iff. An empty diff over the L3 build '
+                 'inputs (`%s`) since the anchor, with the §2 toolchain pins unchanged, means the '
+                 'Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty '
+                 'diff, or a moved pin, means re-run: it does not by itself show the evidence is '
+                 'wrong. The generator checks the diff only; whether a §2 pin moved is for the '
+                 'reader. Run the command rather than trusting this sentence.'
+                 % ' '.join(L3_BUILD_INPUTS))
+        L.append('')
     else:
         L.append('**No committed run currently speaks for HEAD\'s verified source.** Re-run '
                  '`./check.sh` and commit the log, or treat every full-suite verdict in this '

@@ -27,8 +27,9 @@ Colour is therefore the **assurance BAND**, read from the acceptance/0 manifest
   * A1 — non-vacuous but not state-exhaustive; no functional control.
   * A0 — ran or asserted; NO control was watched to fail. Harness count is irrelevant here.
 
-A band above A0 requires an observed-red control — a deliberate fault the oracle had to reject — so
-a module with sixteen harnesses and no such control is A0, and is drawn grey. GRADE (contract /
+A band above A1 requires an observed-red control — a deliberate fault the oracle had to reject — so
+a claim with sixteen harnesses and no such control stops at A1 (an ungraded one at A0); the picture
+cannot be raised by adding harnesses alone. GRADE (contract /
 probe / ungraded) is a SEPARATE axis and is printed in each group's own label rather than folded
 into the colour, because a probe-grade claim can be perfectly honest without being a contract.
 
@@ -144,6 +145,15 @@ BAND_MEANING = {
 # The ladder always printed in the legend, present or not: a reader has to be able to see the rung
 # this crate is NOT standing on.
 LEGEND_LADDER = ['A4', 'A3', 'A2', 'A1', 'A0']
+
+# The closing sentence of the rendered map. The rule it states is the band formula: the band is the
+# minimum of the family floor, the control ceiling (A4 with an observed-red mutation control that
+# names the claim, otherwise A1) and the grade ceiling. So A1 needs no control and a band above A1
+# does. Pinned by test_the_closing_sentence_states_the_control_rule_at_a1_not_a0.
+BAND_RULE_SENTENCE = (
+    'A band above A1 needs a mutation control naming the claim that was watched to fail; without '
+    'one a claim stops at A1 (and an ungraded claim at A0).'
+)
 
 UNRATED_STYLE = 'fill:#ffffff,stroke:#4d4d4d,stroke-dasharray: 3 3,color:#111111'
 NOCLAIM_STYLE = 'fill:#ffffff,stroke:#8a8a8a,stroke-dasharray: 5 4,color:#333333'
@@ -513,10 +523,9 @@ def render_map(facts=None):
         '',
         'Bands, grades and claim ids come from '
         '[`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 '
-        'manifest for subject commit `%s`%s, generated `%s`. A band above A0 needs a control that '
-        'was watched to fail, so nothing here can be raised by adding harnesses alone.'
+        'manifest for subject commit `%s`%s, generated `%s`. %s'
         % (prov['commit'], ' (subject tree DIRTY)' if prov['dirty'] else '',
-           prov['generated_at']),
+           prov['generated_at'], BAND_RULE_SENTENCE),
     ]
     return head + lines + tail
 
