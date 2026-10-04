@@ -1297,6 +1297,16 @@ class NonVacuityProse(unittest.TestCase):
         self.assertNotIn('a *different* kind of witness', out)
         self.assertNotIn('automatically a better one', out)
 
+    def test_the_assertion_strength_judgement_does_not_claim_more_than_reachable_executions(self):
+        # The old sentence said such an assertion's "passing requires the code to have produced a
+        # specific correct result". That contradicts the sentence before it: an assertion over
+        # contradictory assumptions passes vacuously, so it constrains the result only on the
+        # executions that are reachable.
+        out = self._out()
+        self.assertIn('which constrain the result on reachable executions', out)
+        self.assertNotIn('whose passing requires', out)
+        self.assertNotIn('to have produced a specific correct result', out)
+
     def test_the_implicit_only_exception_is_counted_and_named_not_denied(self):
         f = facts()
         out = self._out(f)
@@ -1359,7 +1369,8 @@ class NonVacuityProse(unittest.TestCase):
 
 
 class BoundsLegend(unittest.TestCase):
-    """§4's `symbolic [u8; N]` column counts fully symbolic arrays only; a harness may use a larger
+    """§4's `symbolic [u8; N]` column counts every `[u8; N]` written in a harness body, concrete
+    specimens included; a harness may also use a larger
     backing buffer. The column is NOT redefined (it would cascade through every module); the legend
     above the table defines it, and the §6.2 row of a module that uses a wider backing states it."""
 

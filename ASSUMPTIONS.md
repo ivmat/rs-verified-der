@@ -225,15 +225,18 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   **load-bearing-for:** everything in `PROOF_MANIFEST.md`, `README.md` and this file that a gate
   does not re-derive — including this list's own accuracy.
 
-- **A12 · The eleven unharnessed entry points are total by inspection.** Ten delegating wrappers and
-  accessors carry no Kani harness of their own (the eleventh, `Charset::tag_number`, is symbolically
-  executed inside harnesses that do not name it). For the wrappers the argument is a one-line body
-  delegating to a harnessed function — a human argument, recorded as one (`PROOF_MANIFEST.md` §4.1).
-  A transposed constant in a wrapper (`decode_ia5_string` delegating with the wrong `Charset`) would
-  satisfy every proof cited and is covered by `#[test]` cases only.
-  **fails-if:** a defect found in a wrapper by test or by use.
+- **A12 · The one unharnessed entry point is total by inspection.** One entry point is named by no
+  Kani harness: `Charset::tag_number` (`PROOF_MANIFEST.md` §4.1, generated). It is a `pub const fn`
+  that returns the charset's UNIVERSAL tag number by an exhaustive `match`, so its totality is a
+  human argument by inspection, recorded as one. It is also symbolically executed inside the four
+  `wrong_tag_is_classified_*` harnesses, through `Charset::identifier`, but no harness names it. The
+  ten wrappers and accessors that earlier releases listed here are now named by harnesses (an
+  exact-delegation harness each, for the wrappers), so a transposed constant in a wrapper
+  (`decode_ia5_string` delegating with the wrong `Charset`) now fails a proof.
+  **fails-if:** a defect found in `Charset::tag_number` by test or by use, or a new public entry
+  point appears in the generated §4.1 list without a matching entry here.
   **load-bearing-for:** any reading of "this crate's public API is proven panic-free" that includes
-  those eleven names. The manifest declines that reading explicitly.
+  that one name. The manifest declines that reading explicitly.
 
 - **A16 · Consumers read `decode_tlv` acceptance as "well-formed TLV", not as "valid DER".** (Ids
   are assigned on arrival and never reused, so §2's newest entry outranks §3's older ones

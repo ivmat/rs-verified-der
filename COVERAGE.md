@@ -440,7 +440,13 @@ which **every input is rejected early**. They are honest proofs of "no panic on 
 not evidence that the accept path is safe. The companion witnesses supply reachability at concrete
 fixtures — and the `x509_tbs_certificate` one does so with three stubs, so it witnesses the glue, not
 the parser. Separately, `x509_name::validate_rdn_never_panics` has **no cover at all**, and its
-sibling stubs `validate_rdn`, so nothing witnesses the RDN parser's own accept path.
+sibling `validate_never_panics` stubs `validate_rdn`, so neither of those two harnesses witnesses the
+RDN parser's own accept path. Two other harnesses do, and they use no stub:
+`x509_name::validate_name_single_atv_exact` (backing `[u8; 11]`) and
+`x509_name::validate_name_two_atvs_exact` (backing `[u8; 19]`) each carry a satisfied `Ok` cover
+through the real `validate_rdn` (bounded-backing evidence for those two shapes). The limitation that
+remains is for the TBS and certificate compositions, whose witnesses run under stubs and cover the
+glue only; their accept path is evidenced by `#[test]` cases.
 
 [`DER-REMAINING-WORK.md`](DER-REMAINING-WORK.md) R2 records a further open residual: seven structural
 harnesses were widened to symbolic input length in 2026-08-23; only the two rewritten by D33 got
