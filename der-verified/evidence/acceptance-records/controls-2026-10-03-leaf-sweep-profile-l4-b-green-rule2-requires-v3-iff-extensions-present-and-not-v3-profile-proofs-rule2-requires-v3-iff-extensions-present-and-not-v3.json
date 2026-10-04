@@ -9,10 +9,10 @@
     "observed": "green",
     "of_claim": "PM/profile"
   },
-  "produced_at": "2026-10-04T09:35:46.915701+00:00",
+  "produced_at": "2026-10-04T20:26:59.539921+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:90b8d493d13439a2062e369fdc8cc02f70e7b5bbd43620622275b448fbcc8f2112955b92bd1b64714f8707c1e82bc2765b50ab1434a9e73d9bae968a785cea4f",
+  "source_record_hash": "record:sha-512:7752c752aa26d8ac72c66836ca4597970286cdab41331f2dd6a0958a48c645cf216e1960ec77e5793cf44a61dbc5ad562d08e1aec8e5e6509f38c0fb9e71574c",
   "subject": {
     "commit": "42c8165",
     "repo": "rs-verified-der",

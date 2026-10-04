@@ -9,10 +9,10 @@
     "observed": "red",
     "of_claim": "PM/ecdsa_sig_value"
   },
-  "produced_at": "2026-10-04T09:35:44.819989+00:00",
+  "produced_at": "2026-10-04T20:26:57.476852+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "record:sha-512:a26f5569ba814a7f79700703abd9924acf29cb35cc7ae480eb35b5e01e58d9cd1d1c6d5ae88b0a424f5a0a80ac1359e74199d0e6c4544eef05ae63f2853b45a6",
+  "source_record_hash": "record:sha-512:7431a720bf3380e5a565a1381e69d185a4c7b7ab0c5c977aca6802cff559db059c50b50e8ae9300dc941ca0a46184877a8ccc2a64eb63b274238c2c65ff7cb1e",
   "subject": {
     "commit": "d05d3f2",
     "repo": "rs-verified-der",

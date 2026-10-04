@@ -8,10 +8,10 @@
     "observed": "red",
     "of_claim": "PM/lean-sequence"
   },
-  "produced_at": "2026-10-04T09:35:51.449657+00:00",
+  "produced_at": "2026-10-04T20:27:04.004570+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "record:sha-512:7abfc5dc8778a248f071156d241a70ed2a09ac837b58a8fb1170ecd7e0cd5b7b7ff2abb93a93faf7e1187b9726fc894438435ba534127cec8ed9f568adc19124",
+  "source_record_hash": "record:sha-512:f2d501c4c6323f20f94033a79d59fc6d209f51f67e4bb9c8865a4f0977d235a22f8ad6b833839e10f0289bc16d20eee8854c509791c498bbacc703f365f5484c",
   "subject": {
     "commit": "402719a",
     "repo": "rs-verified-der",
