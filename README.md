@@ -7,10 +7,12 @@
 A DER (X.690) encoding/decoding core in Rust **under formal verification**, with re-runnable
 evidence and an explicit claim-by-claim assurance map.
 
-**Status:** pre-1.0 (`0.2.0`). Today **20 of 39** manifest claims reach the target assurance band A3
-or better; **19 do not** (7 are A1 and 12 are A0). The crate is therefore not uniformly formally
-verified and is not done. Proofs are bounded except for the selected Lean properties below; the API
-is unstable, with no production deployment record. Evaluate it as a building block, not a hardened parser.
+**Status:** pre-1.0 (`0.2.0`). Today **37 of 39** manifest claims reach the target assurance band A3
+or better; **2 do not** (both are A1: the full-certificate and TBS-certificate parsers,
+`x509_certificate` and `x509_tbs_certificate`, whose evidence is stub-mediated, bounded
+panic-freedom only; none are A0). The crate is therefore not uniformly formally verified and is not
+done. Proofs are bounded except for the selected Lean properties below; the API is unstable, with no
+production deployment record. Evaluate it as a building block, not a hardened parser.
 
 ## Evidence at a glance
 

@@ -5,11 +5,12 @@ real X.509 parser differentials live. Codec evidence is machine-checkable and re
 clone, but it is **uneven**: read the shipped per-claim assurance manifest (`acceptance.toml`) before
 relying on any of it.
 
-**Status:** pre-1.0 (`0.2.0`). **Most manifest claims are not yet at the target assurance band A3**
-(the shipped `acceptance.toml` gives the exact per-claim split) — the crate is not uniformly formally
-verified and is not done. The proofs and their evidence are real, re-runnable and honestly bounded;
-the API is not yet stable, and the crate carries no production deployment record. Treat it as a
-building block to evaluate, not as a drop-in hardened parser.
+**Status:** pre-1.0 (`0.2.0`). **37 of 39 manifest claims reach the target assurance band A3 or
+better; 2 do not** (both are A1: `x509_certificate` and `x509_tbs_certificate`; the shipped
+`acceptance.toml` gives the exact per-claim split) — the crate is not uniformly formally verified
+and is not done. The proofs and their evidence are real, re-runnable and honestly bounded; the API
+is not yet stable, and the crate carries no production deployment record. Treat it as a building
+block to evaluate, not as a drop-in hardened parser.
 
 Read "primitive" strictly: the `x509_*` layer is **structural framing composing the core codecs**,
 not proven to the same bar (see Scope below). The crate's name should not be read as claiming more
@@ -35,7 +36,7 @@ Some of the evidence travels with the crate and some of it does not, so here is 
 
 **In this package** (what you get from `cargo add der-verified`, no clone and no network):
 
-- **All 34 source files, including every one of the 203 Kani proof harnesses.** They are
+- **All 34 source files, including every one of the 297 Kani proof harnesses.** They are
   `#[cfg(kani)]` modules inside the same sources you compile, so with
   [Kani](https://model-checking.github.io/kani/) installed you can re-run them here:
   ```sh
@@ -43,10 +44,10 @@ Some of the evidence travels with the crate and some of it does not, so here is 
   ```
 - **`acceptance.toml`** — the proof envelope in machine-checkable form: every claim with its grade,
   its evidence, and whether it is *weighted*. It follows acceptance format 0.3.2 with the Rust
-  verification profile. **20 of 39 claims are weighted**, meaning they carry a mutation control
-  that was watched to fail; the other 19 are published as unweighted, each stating
-  why.
-- **All 295 evidence records** in `evidence/acceptance-records/` — including the Lean-lid
+  verification profile. **37 of 39 claims are weighted**, meaning they carry a mutation control
+  that was watched to fail; the other 2 (`x509_certificate`, `x509_tbs_certificate`) are published as
+  unweighted, each stating why.
+- **All 893 evidence records** in `evidence/acceptance-records/` — including the Lean-lid
   records, so the Lean results are *readable and hash-checkable* here even though the proofs
   themselves are not.
 - The manifest's `record` paths are relative to the manifest, so they resolve inside the unpacked
