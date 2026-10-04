@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/boolean.rs",
+  "checked": "boolean::proofs::wrong_length_is_bad_length",
+  "claim": "PM/boolean",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/boolean"
+  },
+  "produced_at": "2026-10-04T09:35:45.125058+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:34e3ed5e81388b1c24e4159a81197684c3511fc95188504ecb98e72a3d7bcbcdf15a682008c0a02dff8f6d4a75f5959aadb9a6b700b456276df2522ec22d0d3c",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "boolean"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness boolean::proofs::wrong_length_is_bad_length"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

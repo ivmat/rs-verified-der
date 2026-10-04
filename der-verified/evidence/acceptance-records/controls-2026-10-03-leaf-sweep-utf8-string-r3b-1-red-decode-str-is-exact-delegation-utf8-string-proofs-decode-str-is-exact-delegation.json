@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/utf8_string.rs",
+  "checked": "utf8_string::proofs::decode_str_is_exact_delegation",
+  "claim": "PM/utf8_string",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/utf8_string"
+  },
+  "produced_at": "2026-10-04T09:35:46.363996+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:9969eb08f774f1de19080bca11794d22bc7230b95a0a3996557779319ae8507b54d881532d55c2b7b7c00491770a3957b85f476726470c6c5d00529c37e3c85f",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "utf8_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness utf8_string::proofs::decode_str_is_exact_delegation"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

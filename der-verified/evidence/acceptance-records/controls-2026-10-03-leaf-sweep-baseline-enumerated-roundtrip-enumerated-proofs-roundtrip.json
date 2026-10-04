@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/enumerated.rs",
+  "checked": "enumerated::proofs::roundtrip",
+  "claim": "PM/enumerated",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/enumerated"
+  },
+  "produced_at": "2026-10-04T09:35:45.169448+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:eb372738c466f3ef7ba4db9fceeba6a7d58bc59f99b6e01e755f9b0ed43afe7707442ccc49fda5cabb5e742d03c40f8d821436803cb385497d68610b8a441059",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "enumerated"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness enumerated::proofs::roundtrip"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

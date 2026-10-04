@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/octet_string.rs",
+  "checked": "octet_string::proofs::accepted_identifier_is_canonical_0x04",
+  "claim": "PM/octet_string",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/octet_string"
+  },
+  "produced_at": "2026-10-04T09:35:45.422245+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:6847da5cdcb24a90fd04e6bd28f8a964e48bdd530256801b00adcf0fea2f0fc7fa1cb8843e9ad06460b5d30923cd27a88ea6144b2529bf143d489897c1801c9b",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "octet_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness octet_string::proofs::accepted_identifier_is_canonical_0x04"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

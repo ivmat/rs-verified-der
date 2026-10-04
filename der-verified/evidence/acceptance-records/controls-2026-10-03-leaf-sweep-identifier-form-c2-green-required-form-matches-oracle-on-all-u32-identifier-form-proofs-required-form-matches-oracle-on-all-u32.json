@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/identifier_form.rs",
+  "checked": "identifier_form::proofs::required_form_matches_oracle_on_all_u32",
+  "claim": "PM/identifier_form",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/identifier_form"
+  },
+  "produced_at": "2026-10-04T09:35:46.745078+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:a03b09152e702f2bd2557c90311b486dc72af2a17355bbad5191859085decd5d232308607b8ff8c7119ef70860e66ba424de29aacdfeea1f072818435e2e7dac",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "identifier_form"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness identifier_form::proofs::required_form_matches_oracle_on_all_u32"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/enumerated.rs",
+  "checked": "enumerated::proofs::decode_delegates_to_integer",
+  "claim": "PM/enumerated",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/enumerated"
+  },
+  "produced_at": "2026-10-04T09:35:45.163627+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:c8b1bef714c41c92f79922e6b8b5664c3d82ab25762e06ebca15ed9e7fe16641e2d7adaf86f6d1b9197fcf171c4b5bed1f5596b7dac623938286e4e6d64d528b",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "enumerated"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness enumerated::proofs::decode_delegates_to_integer"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

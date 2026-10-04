@@ -476,10 +476,13 @@ class GateExitCode(unittest.TestCase):
         self.assertIn('README.md', err)
 
     def test_a_hand_upgraded_band_in_the_committed_region_exits_one(self):
-        # The specific tamper this gate now exists to catch: someone repaints an A0 group as A3 in
-        # the committed README without the manifest ever saying so.
+        # The specific tamper this gate now exists to catch: someone repaints a band group in the
+        # committed README without the manifest ever saying so. The test repaints the lowest band
+        # group present as A4 (the manifest need not contain any A0 group).
         text = real_readme()
-        drifted = text.replace('A0 · grade:', 'A3 · grade:', 1)
+        low = next((b for b in ('A0', 'A1', 'A2', 'A3') if f'{b} · grade:' in text), None)
+        self.assertIsNotNone(low, 'the README map shows no band below A4 to hand-upgrade')
+        drifted = text.replace(f'{low} · grade:', 'A4 · grade:', 1)
         self.assertNotEqual(drifted, text)
         code, err = self._check(drifted)
         self.assertEqual(code, 1)

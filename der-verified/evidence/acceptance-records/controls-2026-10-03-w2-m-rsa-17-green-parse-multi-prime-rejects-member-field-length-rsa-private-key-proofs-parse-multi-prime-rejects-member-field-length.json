@@ -1,0 +1,46 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/rsa_private_key.rs",
+  "checked": "rsa_private_key::proofs::parse_multi_prime_rejects_member_field_length",
+  "claim": "PM/rsa_private_key",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/rsa_private_key"
+  },
+  "produced_at": "2026-10-04T09:35:50.756058+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:9beb48f0fcafae972d159828f470bd013f0bea65adb004fb86c273e53b4a93d096f10cce2f8049f36f3c7a597f2f2fc0c72f7d1f626c4048e27a298a3bbb1eb3",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "rsa_private_key"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness rsa_private_key::proofs::parse_multi_prime_rejects_member_field_length"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

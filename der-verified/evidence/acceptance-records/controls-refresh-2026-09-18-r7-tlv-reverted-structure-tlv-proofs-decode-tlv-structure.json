@@ -1,5 +1,6 @@
 {
   "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/tlv.rs",
   "checked": "tlv::proofs::decode_tlv_structure",
   "claim": "PM/tlv",
   "control": {
@@ -8,10 +9,10 @@
     "observed": "green",
     "of_claim": "PM/tlv"
   },
-  "produced_at": "2026-09-19T07:05:05.239829+00:00",
+  "produced_at": "2026-10-04T09:35:45.056962+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:bfb230da576bc9cd34df48e5f9c42a5d256c4294eee9abf82bb8c24dd030450202265101b6e2f6ce209ea576d22ae9b2bd42ef75b5371dd20f0b9c56e1a11b35",
+  "source_record_hash": "record:sha-512:5519df674ed8a7fc7f8e6fab4246e4431696eac665594046ec6b8c7f18c01abe5f430def60db0e4ef7b1d5dce4c0120f36432ca309868a7b6fe5d6b09bfc3312",
   "subject": {
     "commit": "d05d3f2",
     "repo": "rs-verified-der",

@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/bit_string.rs",
+  "checked": "bit_string::proofs::nonzero_padding_is_classified",
+  "claim": "PM/bit_string",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/bit_string"
+  },
+  "produced_at": "2026-10-04T09:35:45.335171+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:31e9da50965b793ba3b86371434e1055ca1b127c77b2c3fcfdc57d88dbd5bd38021ff84ec071fc2487e372a9c6d75d104dae46a64f4806abb514b1fda296628d",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "bit_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness bit_string::proofs::nonzero_padding_is_classified"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

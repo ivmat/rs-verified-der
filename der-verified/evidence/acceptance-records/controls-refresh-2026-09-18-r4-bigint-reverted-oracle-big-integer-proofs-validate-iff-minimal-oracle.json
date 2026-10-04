@@ -1,5 +1,6 @@
 {
   "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/big_integer.rs",
   "checked": "big_integer::proofs::validate_iff_minimal_oracle",
   "claim": "PM/big_integer",
   "control": {
@@ -8,10 +9,10 @@
     "observed": "green",
     "of_claim": "PM/big_integer"
   },
-  "produced_at": "2026-09-19T07:05:05.201018+00:00",
+  "produced_at": "2026-10-04T09:35:45.017737+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:da2639217c7fed944bf47a5333f6573550f444d13e9219539ca5fee0c62a28b4d26f6797c13f92129ec67906e077745b178243387f6e63286f25766fc0392caf",
+  "source_record_hash": "record:sha-512:7f7591c90faee174dc31fbd4ebc44390fe050e8a8cb906efcce781f85bdb65d920991191b1887688720b7e35fa6b71e42386ef85ecd5f7759c5c293bee8c7d86",
   "subject": {
     "commit": "d05d3f2",
     "repo": "rs-verified-der",

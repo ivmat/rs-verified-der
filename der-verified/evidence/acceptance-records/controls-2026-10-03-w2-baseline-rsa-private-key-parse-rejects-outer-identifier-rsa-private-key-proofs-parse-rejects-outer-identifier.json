@@ -1,0 +1,46 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/rsa_private_key.rs",
+  "checked": "rsa_private_key::proofs::parse_rejects_outer_identifier",
+  "claim": "PM/rsa_private_key",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/rsa_private_key"
+  },
+  "produced_at": "2026-10-04T09:35:50.036762+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:8fe26eb81f13d9d7ef0d3ac9d5031ef668d61e069be08fa9072fc7536405327e57130c6ad2bec95470a6cfe10cd1de6fe35112f9c2a15cbc1e46a4f2be2c6d08",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "rsa_private_key"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness rsa_private_key::proofs::parse_rejects_outer_identifier"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

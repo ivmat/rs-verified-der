@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/bit_string.rs",
+  "checked": "bit_string::proofs::unused_too_large_is_classified",
+  "claim": "PM/bit_string",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/bit_string"
+  },
+  "produced_at": "2026-10-04T09:35:45.248242+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:5a57481f5e631ecb6c5d39abb30775d292b93b17b15e7a71204e5a9c55abd28f33e4fcaeaa6d473d44d06028f6ace6889e1ef79b03a796331cd05a07d90eeed2",
+  "subject": {
+    "commit": "42c8165",
+    "repo": "rs-verified-der",
+    "unit": "bit_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness bit_string::proofs::unused_too_large_is_classified"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

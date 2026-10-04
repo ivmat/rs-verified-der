@@ -1,5 +1,6 @@
 {
   "bound": "per-harness: each *_parse_faithful/parse_never_panics harness uses a 16-octet symbolic backing array with a symbolic length 0..=16 (a harness tractability bound, disclosed in each harness's own doc comments and in this campaign's README under 'Bounds disclosure' -- Law 6 amendment 2026-09-12, CONTRACT SURFACE / bounded-backing). A targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/encrypted_private_key_info.rs",
   "checked": "encrypted_private_key_info::proofs::parse_never_panics",
   "claim": "PM/encrypted_private_key_info",
   "control": {
@@ -8,10 +9,10 @@
     "observed": "green",
     "of_claim": "PM/encrypted_private_key_info"
   },
-  "produced_at": "2026-09-19T07:05:05.071872+00:00",
+  "produced_at": "2026-10-04T09:35:44.888300+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:584b71d0b35596e7c47029a42789a3d131efd7c808accee39c5a01b5e55b6e57743cf000ad727fec4736a09e9666bf9fee1852656e0845abe70130fcbc804c9b",
+  "source_record_hash": "record:sha-512:39cc6978dad4a9e6eaf376f0c3c4321ca2a11a0451a84ad431fea011ecb8dcea347d51d5d6642914818b996460cf6475f53bf37c2d1424a5980005f26318c0c1",
   "subject": {
     "commit": "d05d3f2",
     "repo": "rs-verified-der",
