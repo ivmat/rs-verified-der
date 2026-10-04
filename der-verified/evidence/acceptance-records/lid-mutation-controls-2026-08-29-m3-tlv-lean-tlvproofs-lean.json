@@ -8,10 +8,10 @@
     "observed": "red",
     "of_claim": "PM/lean-tlv"
   },
-  "produced_at": "2026-10-04T20:27:03.999910+00:00",
+  "produced_at": "2026-10-04T21:21:30.412135+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "record:sha-512:0f20989d115426c2442e2f929513d50fb874f22042fc0200cc62acaecd70c0764049ef84fd165b1792dbbf2711095b203d730fe008563b265d17f7aa5699757c",
+  "source_record_hash": "record:sha-512:fb0c395be85ed55f2376c8ca7a4eb4ed8201d17637a1e695a3e7197d72b0c9be78eaacf550bf20f6d268ac3130d9f2c5f1af6fce65525ae41a388b7dbef121da",
   "subject": {
     "commit": "402719a",
     "repo": "rs-verified-der",

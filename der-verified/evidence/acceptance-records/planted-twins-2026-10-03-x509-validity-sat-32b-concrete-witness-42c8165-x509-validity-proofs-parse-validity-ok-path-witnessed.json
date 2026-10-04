@@ -8,12 +8,12 @@
     "observed": "sat",
     "of_claim": "PM/x509_validity"
   },
-  "produced_at": "2026-10-04T20:27:03.929022+00:00",
+  "produced_at": "2026-10-04T21:21:30.339566+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:e1e5702c27410dd2d42a39a7107da0aa12da6bce76302a34a2edb9aa8679741766dbed80e8bdbadccb1c4b2665ba520eb4f919cd1a675fb380ec59f5e536d845",
+  "source_record_hash": "record:sha-512:6044f96cd7ab5408a6b0a31da0408f8cce8a16d3b69783e39cf876b1ee798a776ffdf13e9de036becccb4a86877b67d43278a5ef9d8ba8399d2c8c1c9499a1e4",
   "subject": {
-    "commit": "b5db0b5",
+    "commit": "0f589a6",
     "repo": "rs-verified-der",
     "unit": "x509_validity"
   },

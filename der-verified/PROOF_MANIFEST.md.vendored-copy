@@ -598,7 +598,7 @@ This is the list that decides whether the rest of the document is worth anything
 | `oid` | canonical-form biconditional is ∀-length; **arc values are never materialised** — `validate_oid` validates encoding form and does not decode arcs, so no arithmetic-overflow property about arc values exists to prove |
 | `bit_string` | bounded only; no unbounded lid |
 | `octet_string` | bounded only; the BER constructed/segmented form is rejected by design (§9), so no property about it is claimed |
-| `enumerated` | bounded only; it is a thin re-tag of `integer` and inherits that module's `i64` fence. Its `decode_delegates_to_integer` harness is the crate's one `assume`-narrowed harness whose non-vacuity rests on `integer`'s own proofs rather than on its own witness — see §8.2 |
+| `enumerated` | bounded only; it is a thin re-tag of `integer` and inherits that module's `i64` fence. Its `decode_delegates_to_integer` harness is `assume`-narrowed and carries seven covers, over a 9-octet buffer with a symbolic length `0..=9` — see §8.2 |
 | `restricted_string` | bounded only; `Charset::tag_number` is the one entry point no harness names (§4.1) — it is exercised inside the `wrong_tag_is_classified_*` harnesses through `Charset::identifier` |
 | `utf8_string` | bounded only; equivalence with `core::str::from_utf8` is proven as a *differential oracle* over the bounded domain, not ∀-length |
 | `utc_time` | bounded only. Single-field range validation only — **no calendar validity** (day-of-month against month, leap years); leap-second `SS=60` is rejected by design (§9) |
@@ -607,14 +607,33 @@ This is the list that decides whether the rest of the document is worth anything
 | `set_of` | bounded only. `SET OF` member-ordering (§11.6) is validated; **general `SET` (§10.3) is out of scope** (§9) |
 | `x509_algorithm_identifier` | bounded, structural only: frames the object; interprets no algorithm semantics and no parameters |
 | `ecdsa_sig_value` | bounded, structural only: DER framing and canonicality of `SEQUENCE { r INTEGER, s INTEGER }`. **No curve-order range check** (`1 <= r,s <= n-1` needs a curve identifier this container does not carry), **no low-S policy** (protocol profile, not DER validity), **no cryptographic interpretation** |
-| `rsa_private_key` | bounded-backing evidence for the two-prime structure (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**): the S1/S2 symbolic-content skeletons and the perturbation harnesses decide the exact `Result`, with backing **≤ 44 bytes**. The multi-prime **member walk** is covered for **one member of three 1-octet INTEGERs with concrete member content** (the perturbations are symbolic only in the perturbed octet); like `identifier_form`'s fixture harnesses, these are not part of the contract claim beyond that shape. **Not covered: more than one member, multi-octet member INTEGERs, the strict entry point on a multi-prime input.** The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. Panic-freedom is proven **≤ 20 bytes** (`parse_never_panics`/`parse_strict_never_panics`); a real two-prime `RSAPrivateKey` is **~317 bytes** — panic-freedom beyond 20 bytes is **not machine-checked**: it rests on an un-machine-checked compositional argument (each field decoder proven panic-free on its own) plus a single concrete 317-byte fixture (`parse_ok_2prime_witnessed`) and `#[cfg(test)]` examples, not a symbolic proof over the real-size domain. No RSA arithmetic (`n = p*q`, CRT-parameter consistency, primality) is checked — every key-material INTEGER is opaque, comparison-only content. `rsa_private_key` is in the **HEAVY** tier (`gates/tiers.txt`): its harnesses are not run by the public CI, only by `./check.sh` on a machine with at least 24 GB of RAM |
+| `rsa_private_key` | bounded-backing evidence for the two-prime structure (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**): the S1/S2 symbolic-content skeletons and the perturbation harnesses decide the exact `Result`, with backing **≤ 44 bytes**. The multi-prime **member walk** is covered for **one member of three 1-octet INTEGERs**. `parse_multi_prime_faithful` has symbolic content for all three member INTEGERs; the `parse_multi_prime_rejects_*` harnesses have concrete member content and one symbolic framing octet or selector (the perturbed octet, field or element count); like `identifier_form`'s fixture harnesses, these are not part of the contract claim beyond that shape. **Not covered: more than one member, multi-octet member INTEGERs, the strict entry point on a multi-prime input.** The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. Panic-freedom is proven **≤ 20 bytes** (`parse_never_panics`/`parse_strict_never_panics`); a real two-prime `RSAPrivateKey` is **~317 bytes** — panic-freedom beyond 20 bytes is **not machine-checked**: it rests on an un-machine-checked compositional argument (each field decoder proven panic-free on its own) plus a single concrete 317-byte fixture (`parse_ok_2prime_witnessed`) and `#[cfg(test)]` examples, not a symbolic proof over the real-size domain. No RSA arithmetic (`n = p*q`, CRT-parameter consistency, primality) is checked — every key-material INTEGER is opaque, comparison-only content. `rsa_private_key` is in the **HEAVY** tier (`gates/tiers.txt`): its harnesses are not run by the public CI, only by `./check.sh` on a machine with at least 24 GB of RAM |
 | `x509_spki` | bounded, structural only: no key parsing, no key validity, no algorithm/key agreement check |
 | `x509_name` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**); no name-constraint semantics, no string canonicalisation/comparison rules. Covered: single-ATV RDNs; two single-ATV RDNs; one RDN with two ATVs of **different** encoded lengths (the ordering is then decided at the length octet — the general comparison is `set_of::cmp_padded`'s claim, not this module's); 1-octet OIDs; zero-length values outside the framing harnesses; OID lengths `0x03`/`0x83` are excluded. **Not covered: two ATVs of equal encoded length (a solver tool limit — the fully symbolic harness exceeds the memory budget under one global unwind bound — disclosed in the harness comments) and RDNs with more than two ATVs.** The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. The composition proof `validate_never_panics` is **modular** (`validate_rdn` stubbed — §8.4); the stub is discharged by `validate_rdn_never_panics`, a **heavy** harness (kept out of the 20 GiB-capped main floor because earlier measurements approached or exceeded 20 GiB; run separately in a 24 GiB window, where its measured peak was 16.3G, §3.4) |
-| `x509_validity` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**), no comparison against a clock. Three different sizes appear in the §4 row and they mean different things. The backing buffer of the skeleton harnesses is `[u8; 47]` (**skeletons ≤ 47 bytes**); it is built as `[0u8; 47]` or in a helper, so the §4 column does not list it. The fully symbolic arrays are small: `parse_never_panics` is a fully symbolic `[u8; 16]` with a symbolic length `0..=16`, and `parse_validity_rejects_field_content` has one fully symbolic 13-octet field. The widest `[u8; N]` the §4 row shows (32) is the **concrete** specimen of `parse_validity_ok_path_witnessed`, not a symbolic domain. The per-harness domains of the skeleton harnesses are: concrete TLV framing with symbolic content, identifier or length octets (the `parse_validity_rejects_*` harnesses), each symbolic time field restricted to its literal specification range, and an outer tail of at most 3 octets; inputs are symbolic within that skeleton, not over every 47-byte string. `GeneralizedTime` fractions are covered for 0 to 3 digits with no trailing zero. A `GeneralizedTime` failure inside the validity parse is pinned only at `BadLength`; other `GeneralizedTime` content errors belong to the `generalized_time` module's own proofs and are not re-pinned through the validity mapping (`map_err`). The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. The RFC 5280 year-2050 encoding rule is **not enforced**. The `Ok` cover of `parse_never_panics` is **known-unsatisfiable at `[u8; 16]`** and disclosed (§8.2); its companion `parse_validity_ok_path_witnessed` witnesses the same path |
+| `x509_validity` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**), no comparison against a clock. Three distinct size concepts matter here. The backing buffer of the skeleton harnesses is `[u8; 47]` (**skeletons ≤ 47 bytes**); it is built as `[0u8; 47]` or in a helper, so the §4 column does not list it. The fully symbolic arrays are small: `parse_never_panics` is a fully symbolic `[u8; 16]` with a symbolic length `0..=16`, and `parse_validity_rejects_field_content` has one fully symbolic 13-octet field. The widest `[u8; N]` the §4 row shows (32) is the **concrete** specimen of `parse_validity_ok_path_witnessed`, not a symbolic domain. The per-harness domains of the skeleton harnesses are: concrete TLV framing with symbolic content, identifier or length octets (the `parse_validity_rejects_*` harnesses), each symbolic time field restricted to its literal specification range, and an outer tail of at most 3 octets; inputs are symbolic within that skeleton, not over every 47-byte string. `GeneralizedTime` fractions are covered for 0 to 3 digits with no trailing zero. A `GeneralizedTime` failure inside the validity parse is pinned only at `BadLength`; other `GeneralizedTime` content errors belong to the `generalized_time` module's own proofs and are not re-pinned through the validity mapping (`map_err`). The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. The RFC 5280 year-2050 encoding rule is **not enforced**. The `Ok` cover of `parse_never_panics` is **known-unsatisfiable at `[u8; 16]`** and disclosed (§8.2); its companion `parse_validity_ok_path_witnessed` witnesses the same path |
 | `x509_extension` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**); extension *contents* are never interpreted (`extnValue` is uninterpreted) and `critical` is peeked, not acted on. `parse_extension` is covered **≤ 16 bytes, fully symbolic**. `validate_extensions` is covered for **at most two members, each with a 1-octet OID and an empty value**, and `validate_extensions_never_panics` runs at a reduced `[u8; 13]`; its `Ok` cover is **known-unsatisfiable at 13 bytes** and disclosed (§8.2), and its companion `validate_extensions_ok_path_witnessed` witnesses the same path. The two `validate_extensions_*` harnesses named here are **heavy**: they are kept out of the 20 GiB-capped main floor because earlier measurements approached or exceeded 20 GiB, and run separately in a 24 GiB window, where their measured peaks were 20G (`validate_extensions_never_panics`) and 16.7G (`validate_extensions_ok_path_witnessed`) (§3.4) |
 | `x509_tbs_certificate` | bounded, structural only, and **modular** (two stubs; three in the witness harness — §8.4). Its `never_panics` cover is **known-unsatisfiable at `[u8; 10]`** and disclosed (§8.2). No cross-field RFC 5280 rule is checked here — that is `profile`'s job |
 | `x509_certificate` | panic-freedom is proven **≤ 12 bytes** (`parse_certificate_never_panics`, **modular** — `parse_tbs_certificate` stubbed, §8.4); a real certificate is **~170 bytes** (this module's own test fixture) — panic-freedom beyond 12 bytes is **not machine-checked at this composition**: it rests on an un-machine-checked compositional argument (`decode_tlv`'s proven no-over-read contract plus each delegated sub-parser's own separate panic-freedom proof), not a symbolic proof over the real-size domain. No signature check, no path building |
 | `profile` | bounded, and over symbolic *field values* rather than symbolic DER bytes — it decodes nothing (§7). Each of the four RFC 5280 cross-field rules is proven as a biconditional, plus their precedence and totality. No Lean lid, so no ∀-length statement |
+
+**Proof-harness comments in the source that are wrong in this release**
+
+Three groups of comments in `mod proofs` are wrong. The source is left unchanged in 0.2.0 so that
+the evidence's compile-input closure stays byte-identical; the comments are corrected in the source
+in the next release. Read these three points instead of the comments:
+
+- The `utc_time::proofs::full_year_pivot_is_correct` comment and the
+  `profile::proofs::utc_time_can_never_denote_2050_or_later` comment say that a hand-built `year2`
+  of 100 or more maps above 2049. In fact `year2` in `100..=149` maps to `2000..=2049`, and only
+  `year2` in `150..=255` maps above 2049. The cover text in `full_year_pivot_is_correct` has the same
+  wording. The proved formula is unaffected.
+- In `profile::proofs::validate_profile_is_exactly_the_documented_precedence`, the comment "no
+  per-octet reads of these spans" holds only for the unread spans and for fraction emptiness. The
+  algorithm-identifier bytes are compared octet by octet, so the `0..=4` window bounds the proof for
+  them.
+- In `x509_extension`, the shared comment labels all four structured harnesses CONTRACT SURFACE.
+  `validate_extensions_structured_empty` checks one fixed input (`[0x30, 0x00]`), so it is a PROBE
+  fixed example, not contract evidence. The module grade does not change.
 
 ### 6.3 Named residual — what the TLV framing accepts that a DER *validator* rejects
 
@@ -833,7 +852,7 @@ Harnesses with implicit checks only — each needs a justification, or a cover:
 
 - `rsa_private_key::parse_strict_never_panics`
 
-What the remaining 84 `assume`-narrowed-without-a-`cover` harnesses give you is **functional assertions (post-state checks), not non-vacuity witnesses**. The static, derived fact is that each of them contains an `assert!`. But an assertion cannot witness that its own assumptions are satisfiable: if the assumptions of such a harness were contradictory, every assertion in it would pass vacuously. So the satisfiability of those assumptions is **not witnessed** by these harnesses, and that gap is kept here, not argued away. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. Nor is an assertion interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary.
+What the remaining 84 `assume`-narrowed-without-a-`cover` harnesses give you is **functional assertions (post-state checks), not non-vacuity witnesses**. The static, derived fact is that each of them contains an `assert!`. But an assertion cannot witness that its own assumptions are satisfiable: if the assumptions of such a harness were contradictory, every assertion in it would pass vacuously. So the satisfiability of those assumptions is **not witnessed** by these harnesses, and that gap is kept here, not argued away. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) which constrain the result on reachable executions — is per-harness and human; this script cannot grade an assertion's strength. Nor is an assertion interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary.
 
 Exactly 1 harness is left with nothing but Kani's implicit checks: `rsa_private_key::parse_strict_never_panics` (also listed above). That is a disclosed exception, not a witnessed property. Where a harness's non-vacuity argument points somewhere other than at itself, the prose below names it.
 
@@ -903,15 +922,49 @@ Two things to hold in mind reading it. First, the classifier is deliberately con
 
 The covers are **authored against** a bar: witness a *post-state effect*, never an input predicate.
 `cover(len == N)` or `cover(true)` would be satisfiable even if the function body were replaced by a
-no-op, and are therefore worthless. The bar is "would this still be satisfiable if the body did
-nothing?" — and conformance to it is established by review of 52 hand-written covers, not by any
+no-op. As a witness that the code produced an outcome, such a cover is therefore worthless. The bar is
+"would this still be satisfiable if the body did nothing?" — and conformance to it is established by
+review of the 499 hand-written covers (the generated count above), not by any
 gate; nothing mechanically rejects a weak cover. — for the stub-bearing composition harnesses that means covering that the
 real glue reached its `Ok` tail, and for `x509_extension` that a second walk iteration genuinely
 co-occurs with acceptance.
 
-**Two of the 25 harnessed modules carry no `kani::cover`, and both are deliberate:** `boolean` and
-`null` have no `kani::assume` at all and characterise a 1-octet input space exhaustively via
-`assert!` biconditionals, so a cover would be redundant.
+A `cover(true)` that sits inside a branch is different. The branch condition decides whether it is
+reached, so it can still witness that branch. The source has 24 covers of this kind, in `identifier_form`,
+`octet_string`, `restricted_string`, `set_of` and `utf8_string`. They are not counted in the next paragraph.
+
+**PROBE domain-reachability checks.** The bar is not met by every cover. Reading the harness source
+(`der-verified/src/*.rs`, `mod proofs`) finds **51 of the 499 covers** whose predicate reads only
+symbolic harness inputs, or a value the harness computes from them by arithmetic or by an oracle
+expression. Such a cover never reads a result of the function under proof. It shows that a class of
+inputs is reachable in the harness domain, so the assertion that follows is not vacuous for that
+class. It is **not** an outcome witness and is not evidence that the code produces any result, so
+this document labels these 51 as **PROBE domain-reachability checks**. They are, by harness, with the
+number of covers in brackets:
+
+- `bit_string`: `accepted_iff_canonical_oracle` (2), `encode_rejects_exactly_the_non_canonical` (5),
+  `nonzero_padding_is_classified` (1), `require_octet_aligned_exact_on_built_values` (3, the three
+  classes of unused-bit count);
+- `boolean`: `wrong_length_is_bad_length` (3, the lengths 0, 2 and 16);
+- `null`: `only_empty_is_valid` (3, the lengths 1, 4 and 16);
+- `identifier_form`: `high_tag_universal_types_are_form_checked` (2, the tag numbers 31 and 36);
+- `profile`: `rule3_generalized_too_early_iff_year_le_2049` (1),
+  `rule4_fraction_iff_generalized_with_fraction` (1), `error_precedence_follows_declaration_order` (5);
+- `restricted_string`: `check_encode_exact` (4; one shared body, used by four charsets);
+- `rsa_private_key`: `parse_rejects_field_length` (2), `parse_multi_prime_rejects_member_length` (2),
+  `parse_multi_prime_rejects_member_field_length` (2), `parse_multi_prime_rejects_member_shape` (1);
+- `set_of`: `ordering_matches_whole_encoding_oracle` (1), `tlv_entry_enforces_ordering_exactly` (1),
+  `encode_is_exact_over_content_and_capacity` (4);
+- `utc_time`: `full_year_pivot_is_correct` (2);
+- `utf8_string`: `encode_is_exact_over_content_and_capacity` (4);
+- `x509_extension`: `validate_extensions_rejects_child_framing` (2).
+
+Six more covers are close to this class. Their predicate reads a value that the harness's own
+reference or oracle computes from the input (`decode_tlv`, `oracle_set_of`), and not a result of the
+function under proof: `set_of::tlv_entry_enforces_ordering_exactly` (2),
+`restricted_string::check_decode_faithful` (2) and `utf8_string::decode_is_faithful` (2). Read them
+as domain-reachability checks too. The list was compiled by reading the source. No gate checks it,
+and it can be incomplete.
 
 **The `enumerated` module's covers, and why the harness domain was widened.**
 `decode_delegates_to_integer` proves an *agreement* — that `decode_enumerated` returns literally what
@@ -1009,13 +1062,24 @@ It witnesses the RDN-walk glue, not the RDN parser.
 So, precisely, for `validate_rdn`: **panic-freedom over its 0..=16-octet domain is proved
 unconditionally and is not vacuous** — that is the harness's primary property. Its *postcondition*
 (`2 ≤ used ≤ input.len()` on `Ok`) is asserted inside `if let Ok(used) = …`, so it is discharged
-conditionally, and **no Kani artifact in this crate witnesses that the real `validate_rdn` ever
-returns `Ok`**. That is not unsound — `stub_validate_rdn` returns both `Ok` and `Err`
+conditionally, and **that harness (`validate_rdn_never_panics`) has no cover, and nothing in the
+stub-mediated harnesses witnesses the real `validate_rdn` returning `Ok`**. That is not
+unsound — `stub_validate_rdn` returns both `Ok` and `Err`
 nondeterministically, over-approximating the real function, and exploring more control-flow outcomes
-cannot hide a panic — but it does mean the accept path of the name/TBS/certificate composition is
-evidenced by `#[test]` cases, not by proof. Together with the stub-mediated witness row above, that is
-the one place in this document where "witness" needs reading carefully, and it is why the table names
-which witnesses are stub-mediated.
+cannot hide a panic.
+
+The name parser's accept path is witnessed by other harnesses, which use no stub.
+`x509_name::validate_name_single_atv_exact` (backing `[u8; 11]`) and
+`x509_name::validate_name_two_atvs_exact` (backing `[u8; 19]`) call the real `validate_name`, and
+through it the real `validate_rdn`. Each has a `kani::cover` of the `Ok` result, and both covers are
+satisfied (`3 of 3` cover properties each in `evidence/check-42c8165.log`). This is bounded-backing
+evidence for those two structured shapes, not a proof over every input.
+
+The limitation that remains is for the TBS and certificate compositions. Their witnesses run under
+stubs, so they witness the glue only, and the accept path of those compositions is evidenced by
+`#[test]` cases, not by proof. Together with the stub-mediated witness row above, that is the one
+place in this document where "witness" needs reading carefully, and it is why the table names which
+witnesses are stub-mediated.
 
 ### 8.3 Oracles — where the *specification* comes from, and what it rests on
 

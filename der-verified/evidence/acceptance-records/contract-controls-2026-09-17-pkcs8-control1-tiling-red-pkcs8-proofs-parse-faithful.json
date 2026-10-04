@@ -9,10 +9,10 @@
     "observed": "red",
     "of_claim": "PM/pkcs8"
   },
-  "produced_at": "2026-10-04T20:26:57.412798+00:00",
+  "produced_at": "2026-10-04T21:21:23.698050+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "record:sha-512:c7bb26847bee1796ecc92a82801de7bbd2614dbd8d8ffb3cc5919be31ab0417c67f5f189b54af2aa6831ecea58acce6ae2d8e4ab1c5c59d883bbdddf11fa1021",
+  "source_record_hash": "record:sha-512:e799f15885c0edab9bd3abb2ecd7712865f31e63848cd1a82294cf38503aae1cfe9b20aed30c415f16ecb18304a9a0a3e63f793a8e62ac5cf7b1d975ee9ecd75",
   "subject": {
     "commit": "d05d3f2",
     "repo": "rs-verified-der",

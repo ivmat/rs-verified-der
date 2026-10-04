@@ -9,10 +9,10 @@
     "observed": "green",
     "of_claim": "PM/rsa_private_key"
   },
-  "produced_at": "2026-10-04T20:27:02.892836+00:00",
+  "produced_at": "2026-10-04T21:21:29.288248+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:70bea143369e6523c050d6e256bc7079e5db361e8c719791f22328259d4cdc4b8437ad7c8e3635f4b7ccb6737c5bf248353f7e718c1edf9fc6969947acc11e0b",
+  "source_record_hash": "record:sha-512:5cd64e24a7564723feba22b62e1b0116760a32481c17dd21abb770c2f8b96c9efc350faf0f44e48c6f608e888586310353f6780e8e385cbb1f23ec9740ab4b25",
   "subject": {
     "commit": "42c8165",
     "repo": "rs-verified-der",

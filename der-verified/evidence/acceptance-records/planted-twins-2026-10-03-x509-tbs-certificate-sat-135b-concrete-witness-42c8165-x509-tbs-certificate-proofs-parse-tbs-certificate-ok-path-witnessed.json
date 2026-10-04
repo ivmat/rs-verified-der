@@ -8,12 +8,12 @@
     "observed": "sat",
     "of_claim": "PM/x509_tbs_certificate"
   },
-  "produced_at": "2026-10-04T20:27:03.966857+00:00",
+  "produced_at": "2026-10-04T21:21:30.378792+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:e9b01f1c2a39dff5d9233abf4ca591e377e1deadeb811156185624b387732063b05e30a1bf1057667891735a3e3fa7726c45873c7936cbb30b57e3cc417f60a5",
+  "source_record_hash": "record:sha-512:740c800f4453f6211a8e73258f55dfb159798bb9941c28c387fd1118280d83ffb5c65533846b95e41a0430a6f846e203b8a943fbd99238c2197037a241b1120f",
   "subject": {
-    "commit": "b5db0b5",
+    "commit": "0f589a6",
     "repo": "rs-verified-der",
     "unit": "x509_tbs_certificate"
   },
