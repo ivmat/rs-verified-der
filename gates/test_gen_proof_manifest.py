@@ -762,6 +762,122 @@ class HelperRoleAttribution(unittest.TestCase):
         self.assertEqual(self._facts()['n_covers'], 1)
 
 
+class CoverSpellings(unittest.TestCase):
+    """Kani has two live spellings of a cover: the function `kani::cover(cond, "msg")` and the
+    macro `kani::cover!(cond)`. A counter that knows only the function form silently reports `cover 0`
+    for a module that uses only the macro (published as such for five modules: 19 covers missed, and
+    two modules then looked like `assume`-narrowed harnesses with no non-vacuity witness at all).
+    Every site goes through `_count_covers`; these tests pin that, including the pairing
+    "a commented-out cover is still NOT counted", so the fix cannot be a blanket substring match.
+    """
+
+    @staticmethod
+    def _module(*proofs_lines):
+        return '\n'.join([
+            'pub fn target_fn(x: &[u8]) -> bool { x.is_empty() }',
+            '',
+            '#[cfg(kani)]',
+            'mod proofs {',
+            '    use super::*;',
+            *proofs_lines,
+            '}',
+            '',
+            '#[cfg(test)]',
+            'mod tests {}',
+            '',
+        ])
+
+    @staticmethod
+    def _facts_of(source):
+        with tempfile.NamedTemporaryFile('w', suffix='.rs', delete=False, encoding='utf-8') as fh:
+            fh.write(source)
+            path = fh.name
+        try:
+            return gen.module_facts(path)
+        finally:
+            os.unlink(path)
+
+    def test_macro_only_module_counts_its_covers(self):
+        f = self._facts_of(self._module(
+            '    #[kani::proof]',
+            '    fn macro_only() {',
+            '        let n: usize = kani::any();',
+            '        kani::assume(n <= 16);',
+            '        kani::cover!(n == 0);',
+            '        kani::cover!(n == 16, "upper edge");',
+            '    }',
+        ))
+        self.assertEqual(f['n_covers'], 2)
+        self.assertEqual(f['harnesses'][0]['covers'], 2)
+        # ... and, being witnessed, the harness is NOT in the "narrowed by assume, no cover" tier.
+        self.assertEqual(f['assume_without_cover'], [])
+
+    def test_function_only_module_still_counts(self):
+        f = self._facts_of(self._module(
+            '    #[kani::proof]',
+            '    fn function_only() {',
+            '        kani::cover(kani::any::<bool>(), "any");',
+            '    }',
+        ))
+        self.assertEqual(f['n_covers'], 1)
+
+    def test_mixed_spellings_count_both(self):
+        f = self._facts_of(self._module(
+            '    #[kani::proof]',
+            '    fn mixed() {',
+            '        kani::cover(kani::any::<bool>(), "fn form");',
+            '        kani::cover!(kani::any::<bool>());',
+            '        kani::cover!(kani::any::<bool>(), "macro form with message");',
+            '    }',
+        ))
+        self.assertEqual(f['n_covers'], 3)
+        self.assertEqual(f['harnesses'][0]['covers'], 3)
+
+    def test_commented_out_covers_are_not_counted_in_either_spelling(self):
+        f = self._facts_of(self._module(
+            '    #[kani::proof]',
+            '    fn commented() {',
+            '        // kani::cover!(false);',
+            '        // kani::cover(false, "old");',
+            '        /// kani::cover!(false);',
+            '        kani::cover!(kani::any::<bool>());',
+            '    }',
+        ))
+        self.assertEqual(f['n_covers'], 1)
+
+    def test_helper_macro_cover_counts_once_at_module_level_and_per_caller_as_check(self):
+        f = self._facts_of(self._module(
+            '    fn shared_case(n: usize) {',
+            '        kani::cover!(n == 3);',
+            '    }',
+            '    #[kani::proof]',
+            '    fn caller_a() { shared_case(kani::any()); }',
+            '    #[kani::proof]',
+            '    fn caller_b() { shared_case(kani::any()); }',
+        ))
+        # One statement in the source = one cover at module level, however many harnesses call it.
+        self.assertEqual(f['n_covers'], 1)
+        # ... but it is each caller's own check (neither wrapper is "implicit checks only").
+        self.assertEqual(f['implicit_only'], [])
+        self.assertEqual([h['covers_via_helpers'] for h in f['harnesses']], [1, 1])
+
+    def test_count_covers_helper_directly(self):
+        self.assertEqual(gen._count_covers(['kani::cover!(a); kani::cover(b, "x");']), 2)
+        self.assertEqual(gen._count_covers(['    // kani::cover!(a);', 'kani::cover!(b);']), 1)
+        self.assertEqual(gen._count_covers(['kani::covered(a);', 'kani::cover_all(b);']), 0)
+
+    def test_kani_assert_function_form_is_an_explicit_check(self):
+        # The sibling blind spot: `kani::assert(cond, msg)` is a function-only spelling of an
+        # explicit check; a harness whose only check it is must not be listed as implicit-only.
+        f = self._facts_of(self._module(
+            '    #[kani::proof]',
+            '    fn only_kani_assert() { kani::assert(kani::any::<bool>(), "m"); }',
+            '    #[kani::proof]',
+            '    fn really_implicit() { let _ = target_fn(&[]); }',
+        ))
+        self.assertEqual(f['implicit_only'], ['really_implicit'])
+
+
 class RegionPlumbing(unittest.TestCase):
     def test_advisory_region_is_still_generated_and_still_marker_checked(self):
         # Advisory means "not byte-compared", NOT "not maintained": --write must still write it,

@@ -87,7 +87,7 @@ deviations. Read the two differently.
 | `#[kani::proof]` harnesses | 297 |
 | `kani::assume` harness preconditions, in harness bodies and in the input-generator helpers they call (narrow the proved domain; 29 of the total are in generator helpers) | 292 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 1 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 480 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 499 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 23 / 20 |
 | `#[test]` unit + regression tests | 539 |
@@ -432,18 +432,18 @@ carry that.
 | Module | entry points | named by a harness | Kani | symbolic `[u8; N]` | unwind | `assume` | `cover` | stubs | L4 |
 |---|---:|---:|---:|---|---|---:|---:|---:|:--:|
 | `big_integer` | 3 | 3 | 13 | 20 | 1..22 | 15 | 4 | 0 | ✅ |
-| `bit_string` | 3 | 3 | 12 | 3..8 | 6..10 | 14 | 11 | 0 |  |
-| `boolean` | 2 | 2 | 3 | 16 | — | 1 | 0 | 0 |  |
+| `bit_string` | 3 | 3 | 12 | 3..8 | 6..10 | 14 | 22 | 0 |  |
+| `boolean` | 2 | 2 | 3 | 16 | — | 1 | 3 | 0 |  |
 | `context_tag` | 1 | 1 | 3 | 16 | 20 | 3 | 9 | 0 |  |
 | `ec_private_key` | 2 | 2 | 4 | 10..121 | 20 | 3 | 21 | 0 |  |
 | `ecdsa_sig_value` | 2 | 2 | 4 | 16..71 | 20 | 3 | 19 | 0 |  |
 | `encrypted_private_key_info` | 2 | 2 | 4 | 11..16 | 20 | 3 | 13 | 0 |  |
 | `enumerated` | 2 | 2 | 3 | 9 | 12 | 1 | 10 | 0 |  |
-| `generalized_time` | 3 | 3 | 19 | 3..20 | 16..21 | 25 | 27 | 0 |  |
+| `generalized_time` | 3 | 3 | 19 | 3..20 | 16..21 | 25 | 28 | 0 |  |
 | `identifier_form` | 4 | 4 | 12 | 6 | 12 | 4 | 7 | 0 |  |
 | `integer` | 2 | 2 | 7 | 8..10 | 12 | 4 | 2 | 0 |  |
 | `length` | 2 | 2 | 9 | 8 | 10 | 7 | 1 | 0 | ✅ |
-| `null` | 1 | 1 | 1 | 16 | — | 1 | 0 | 0 |  |
+| `null` | 1 | 1 | 1 | 16 | — | 1 | 3 | 0 |  |
 | `octet_string` | 2 | 2 | 8 | 3..16 | 16..17 | 10 | 11 | 0 |  |
 | `oid` | 1 | 1 | 5 | 4..6 | 8 | 5 | 2 | 0 | ✅ |
 | `pkcs8` | 2 | 2 | 4 | 16..48 | 20 | 3 | 20 | 0 |  |
@@ -455,7 +455,7 @@ carry that.
 | `set_of` | 5 | 5 | 17 | 3..16 | 16 | 10 | 24 | 0 |  |
 | `tag` | 2 | 2 | 7 | 7 | 12 | 6 | 2 | 0 | ✅ |
 | `tlv` | 3 | 3 | 5 | 3..16 | 16 | 3 | 3 | 0 | ✅ |
-| `utc_time` | 3 | 3 | 16 | 14..17 | 14..18 | 16 | 22 | 0 |  |
+| `utc_time` | 3 | 3 | 16 | 14..17 | 14..18 | 16 | 23 | 0 |  |
 | `utf8_string` | 4 | 4 | 12 | 4..16 | 6..16 | 17 | 16 | 0 |  |
 | `x509_algorithm_identifier` | 1 | 1 | 2 | 16 | 20 | 2 | 4 | 0 |  |
 | `x509_certificate` | 1 | 1 | 1 | 12 | 12 | 1 | 1 | 1 |  |
@@ -809,16 +809,16 @@ input space. This crate treats that as the default suspicion, and the check is m
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
 | harnesses | 297 |
-| `kani::cover` witnesses | 480, in 31 of the 33 modules that have harnesses |
+| `kani::cover` witnesses | 499, in 33 of the 33 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **1** |
-| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 92 |
+| harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 84 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
 
 Harnesses with implicit checks only — each needs a justification, or a cover:
 
 - `rsa_private_key::parse_strict_never_panics`
 
-What the remaining 92 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
+What the remaining 84 `assume`-narrowed-without-a-`cover` harnesses give you is a *different* kind of witness, not automatically a better one. The static, derived fact is that each of them contains an `assert!`. The judgement — that these particular assertions are functional outcomes (a biconditional, a round-trip, an exact `Err` variant) whose passing requires the code to have produced a specific correct result — is per-harness and human; this script cannot grade an assertion's strength. But an assertion is not interchangeable with a cover: `assert!(r.is_err())` can be satisfied by a shallow rejection path while a deeper one is never reached, whereas a cover can pin a specific deep effect. Neither subsumes the other, and this manifest does not claim the assertions make covers unnecessary — only that no harness is left with nothing but Kani's implicit checks. The one case where even that is weaker than it looks is named in the prose below.
 
 **What the 292 harness assumptions actually restrict.** 236 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 56 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
@@ -949,6 +949,27 @@ signal **is** read off an artifact rather than only reproduced on demand: all th
 **The third column is the one that changes what a witness means.** A cover satisfied inside a stub-bearing harness shows that the caller's glue is reachable *given a fabricated `Ok` from the stubbed sub-parser*. It is not evidence that the real sub-parser ever returns `Ok`, and therefore not evidence that the real composition accepts anything.
 So for `x509_tbs_certificate::parse_tbs_certificate_ok_path_witnessed` the "gap closed" claim is narrower than for the unstubbed rows: what is witnessed is the glue, under stub semantics.
 <!-- END GENERATED:disclosed-vacuities -->
+
+<!-- BEGIN DISCLOSED:unreachable-checks -->
+These are property checks that Kani reports as UNREACHABLE in a harness whose evidence records per-check status: the three heavy harnesses run alone at 24 GiB (`evidence/check-42c8165-heavy-*.log`). Kani also reports unreachable checks for most other harnesses, as the `(N unreachable)` count on each `** 0 of M failed` line in `evidence/check-42c8165.log`. That log keeps only the summary lines, so those checks are counted there but not named. An unreachable check is not a failure. It means that harness's inputs never reach that code. The code's safety rests on the harnesses named in the last column.
+
+| Harness | Check | Kani status | Location | Why the harness does not reach it | Safety of that code is carried by |
+|---|---|---|---|---|---|
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `boolean::decode_bool.assertion.1` | `UNREACHABLE` | `boolean.rs:45` | The witness has no `critical` BOOLEAN member (each member is an OID then an OCTET STRING), so `parse_extension` never makes the `decode_bool` call at `x509_extension.rs:236` and the "index out of bounds" check on `content[0]` is never reached. | `boolean::proofs::*` |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `tag::decode_tag.assertion.2` | `UNREACHABLE` | `tag.rs:145` | Every identifier octet of the concrete witness (`30`, `06`, `04`) has low five bits other than `1F`, so `decode_tag` returns in its low-tag form at `tag.rs:118` and the "shift right with overflow" check on `u32::MAX >> 7` in the high-tag accumulation loop is never reached. | `tag` (harnesses + lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `tag::decode_tag.assertion.3` | `UNREACHABLE` | `tag.rs:148` | Every identifier octet of the concrete witness (`30`, `06`, `04`) has low five bits other than `1F`, so `decode_tag` returns in its low-tag form at `tag.rs:118` and the "shift left with overflow" check on `number << 7` in the high-tag accumulation loop is never reached. | `tag` (harnesses + lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `tag::decode_tag.assertion.4` | `UNREACHABLE` | `tag.rs:149` | Every identifier octet of the concrete witness (`30`, `06`, `04`) has low five bits other than `1F`, so `decode_tag` returns in its low-tag form at `tag.rs:118` and the "add with overflow" check on `count += 1` in the high-tag accumulation loop is never reached. | `tag` (harnesses + lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `tag::decode_tag.assertion.5` | `UNREACHABLE` | `tag.rs:150` | Every identifier octet of the concrete witness (`30`, `06`, `04`) has low five bits other than `1F`, so `decode_tag` returns in its low-tag form at `tag.rs:118` and the "add with overflow" check on `i += 1` in the high-tag accumulation loop is never reached. | `tag` (harnesses + lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `length::decode_length.assertion.1` | `UNREACHABLE` | `length.rs:89` | Every length octet of the concrete witness (`0e`, `05`, `01`, `00`) is below `80`, so `decode_length` returns in its short form at `length.rs:79` and the "add with overflow" check on `1 + n` in the long-form length-octet count (`input.len() < 1 + n`) is never reached. | `length` (Kani harnesses + ∀-length Lean lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `length::decode_length.assertion.2` | `UNREACHABLE` | `length.rs:92` | Every length octet of the concrete witness (`0e`, `05`, `01`, `00`) is below `80`, so `decode_length` returns in its short form at `length.rs:79` and the "add with overflow" check on the `1 + n` slice bound of `&input[1..1 + n]` is never reached. | `length` (Kani harnesses + ∀-length Lean lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `length::decode_length.assertion.3` | `UNREACHABLE` | `length.rs:93` | Every length octet of the concrete witness (`0e`, `05`, `01`, `00`) is below `80`, so `decode_length` returns in its short form at `length.rs:79` and the "index out of bounds" check on `octets[0]` is never reached. | `length` (Kani harnesses + ∀-length Lean lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `length::decode_length.assertion.4` | `UNREACHABLE` | `length.rs:102` | Every length octet of the concrete witness (`0e`, `05`, `01`, `00`) is below `80`, so `decode_length` returns in its short form at `length.rs:79` and the "shift left with overflow" check on `val << 8` in the long-form accumulation loop is never reached. | `length` (Kani harnesses + ∀-length Lean lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `length::decode_length.assertion.5` | `UNREACHABLE` | `length.rs:102` | Every length octet of the concrete witness (`0e`, `05`, `01`, `00`) is below `80`, so `decode_length` returns in its short form at `length.rs:79` and the "index out of bounds" check on `octets[i]` in the long-form accumulation loop is never reached. | `length` (Kani harnesses + ∀-length Lean lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `length::decode_length.assertion.6` | `UNREACHABLE` | `length.rs:103` | Every length octet of the concrete witness (`0e`, `05`, `01`, `00`) is below `80`, so `decode_length` returns in its short form at `length.rs:79` and the "add with overflow" check on `i += 1` in the long-form accumulation loop is never reached. | `length` (Kani harnesses + ∀-length Lean lid) |
+| `x509_extension::proofs::validate_extensions_ok_path_witnessed` | `length::decode_length.assertion.7` | `UNREACHABLE` | `length.rs:108` | Every length octet of the concrete witness (`0e`, `05`, `01`, `00`) is below `80`, so `decode_length` returns in its short form at `length.rs:79` and the "add with overflow" check on the `1 + n` consumed-byte count of the long-form result is never reached. | `length` (Kani harnesses + ∀-length Lean lid) |
+| `x509_name::proofs::validate_rdn_never_panics` | `set_of::cmp_padded.assertion.6` | `UNREACHABLE` | `set_of.rs:124` | The padded tail loop is entered only when one argument is a strict prefix of the other, but `decode_set_of` passes `cmp_padded` two whole `decode_tlv` spans (`set_of.rs:154` to `161`), and a complete TLV span is never a strict prefix of a different one because its own length field fixes where it ends, so the "index out of bounds" check on `longer[j]` is never reached. | `set_of::proofs::cmp_padded_matches_oracle` |
+| `x509_name::proofs::validate_rdn_never_panics` | `set_of::cmp_padded.assertion.7` | `UNREACHABLE` | `set_of.rs:128` | The padded tail loop is entered only when one argument is a strict prefix of the other, which two whole `decode_tlv` spans of one SET OF (`set_of.rs:154` to `161`) cannot be, so the "add with overflow" check on `j += 1` is never reached. | `set_of::proofs::cmp_padded_matches_oracle` |
+<!-- END DISCLOSED:unreachable-checks -->
 
 In each case the cause is arithmetic, not a cover-authoring error: the reduced buffer is too small
 for a well-formed object to exist inside it. A minimal `Validity` needs about 32 octets — two

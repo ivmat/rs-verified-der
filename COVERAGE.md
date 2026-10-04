@@ -204,7 +204,7 @@ All commands run from the repository root at `17ee51e` (or at any later commit f
 `kani::cover` is unsatisfiable as `SUCCESSFUL`, with `0 of 1 cover properties satisfied`. `check.sh`
 does **not** fail on that. Exactly 3 harnesses have a cover in that state, and they are disclosed
 in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, read it. The crate has
-480 `kani::cover` statements in total.
+499 `kani::cover` statements in total.
 
 ---
 

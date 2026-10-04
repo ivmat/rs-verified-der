@@ -88,6 +88,29 @@ def strip_comments(lines):
     return [l for l in lines if not COMMENT_RE.match(l)]
 
 
+# Kani spells a cover two ways, and both are live in this crate: the function form
+# `kani::cover(cond, "msg")` and the macro form `kani::cover!(cond)` / `kani::cover!(cond, "msg")`.
+# A count that matches only `kani::cover(` is blind to the macro form (it under-counted five
+# modules by 19 covers). EVERY site that counts or detects a cover goes through `_count_covers`,
+# so there is exactly one place that decides what a cover looks like.
+COVER_RE = re.compile(r'\bkani::cover\s*!?\s*\(')
+
+# An explicit check in a harness: the std macros, or Kani's function form `kani::assert(cond, "msg")`.
+# (`kani::assert` is a function only; there is no `kani::assert!`.)
+# No leading `\b` on the macro alternatives: the old substring count also credited `debug_assert!(`.
+ASSERT_RE = re.compile(r'(?:assert|assert_eq|assert_ne)!\s*\(|\bkani::assert\s*\(')
+
+
+def _count_covers(lines):
+    """Number of `kani::cover(` / `kani::cover!(` statements in `lines` (comment lines excluded)."""
+    return sum(len(COVER_RE.findall(l)) for l in strip_comments(lines))
+
+
+def _count_asserts(lines):
+    """Number of explicit checks (`assert!`, `assert_eq!`, `assert_ne!`, `kani::assert(`) in `lines`."""
+    return sum(len(ASSERT_RE.findall(l)) for l in strip_comments(lines))
+
+
 # --------------------------------------------------------------------------------------
 # doctest counting
 # --------------------------------------------------------------------------------------
@@ -512,14 +535,12 @@ def parse_harnesses(proofs, consts):
                        for m in [re.match(r'\s*#\[kani::unwind\((\d+)\)\]', l)] if m],
             'stubs': [m.group(1).strip() for l in attrs
                       for m in [re.match(r'\s*#\[kani::stub\(([^,]+),', l)] if m],
-            'covers': sum(l.count('kani::cover(') for l in code),
-            'covers_via_helpers': sum(l.count('kani::cover(') for n in called for l in helper_code[n]),
-            'asserts_via_helpers': sum(l.count('assert!(') + l.count('assert_eq!(') + l.count('assert_ne!(')
-                                       for n in called for l in helper_code[n]),
+            'covers': _count_covers(code),
+            'covers_via_helpers': sum(_count_covers(helper_code[n]) for n in called),
+            'asserts_via_helpers': sum(_count_asserts(helper_code[n]) for n in called),
             'assumes': sum(l.count('kani::assume(') for l in code),
             'assume_exprs': balanced_args(code, 'kani::assume('),
-            'asserts': sum(l.count('assert!(') + l.count('assert_eq!(') +
-                           l.count('assert_ne!(') for l in code),
+            'asserts': _count_asserts(code),
             # The other half of "harness bounds": how wide the symbolic input buffer is. An
             # unwind depth alone does not tell a reader what input domain was proved over.
             'buffers': sorted({int(m.group(1)) if m.group(1).isdigit() else consts[m.group(1)]
@@ -562,7 +583,7 @@ def module_facts(path):
     n_stub_assumes = sum(len(e) for n, e in helper_assumes if _is_stub(n))
     gen_assume_exprs = [(n, x) for n, exprs in helper_assumes if not _is_stub(n) for x in exprs]
     n_gen_assumes = len(gen_assume_exprs)
-    n_helper_covers = sum(l.count('kani::cover(') for code in helper_code.values() for l in code)
+    n_helper_covers = sum(_count_covers(code) for code in helper_code.values())
     _eff_covers = lambda h: h['covers'] + h['covers_via_helpers']
     _eff_asserts = lambda h: h['asserts'] + h['asserts_via_helpers']
     return {
