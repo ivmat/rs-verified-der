@@ -273,13 +273,14 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**The run evidence captured at `42c8165` still speaks for HEAD** (a SPLIT floor of 4 logs, read together: the main half `evidence/check-42c8165.log` and its 3 heavy-harness companion logs `evidence/check-42c8165-heavy-x509_extension-validate_extensions_never_panics.log`, `evidence/check-42c8165-heavy-x509_extension-validate_extensions_ok_path_witnessed.log`, `evidence/check-42c8165-heavy-x509_name-validate_rdn_never_panics.log`). No build input it depends on has changed since the anchor `17ee51e`: `git diff 17ee51e -- check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs lean` is empty. (`17ee51e` is the published-history commit whose tree is identical to the capture commit `42c8165`, which is not part of the published history.)
-
-This is a **sufficient** condition, not an iff. An empty diff over the L3 build inputs (`check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs`) since the anchor, with the §2 toolchain pins unchanged, means the Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty diff, or a moved pin, means re-run: it does not by itself show the evidence is wrong. The generator checks the diff only; whether a §2 pin moved is for the reader. Run the command rather than trusting this sentence.
-
+**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
 - `evidence/check-0e327b7.log` (at `0e327b7`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-24ddb69.log` (at `24ddb69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-42c8165-heavy-x509_extension-validate_extensions_never_panics.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-42c8165-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-42c8165-heavy-x509_name-validate_rdn_never_panics.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-42c8165.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-69bbc9f.log` (at `69bbc9f`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-953a1a2.log` (at `953a1a2`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -442,7 +443,7 @@ that the function's behaviour is characterised — the per-property statements i
 carry that.
 
 <!-- BEGIN GENERATED:per-module (gates/gen_proof_manifest.py) -->
-Reading the `symbolic [u8; N]` column: it lists the sizes of the `[u8; N]` array types written inside harness bodies. That includes fully symbolic buffers, but also concrete witness arrays and small symbolic sub-arrays, so the largest entry is not necessarily a symbolic input domain. It does not list a buffer built as `[0u8; N]` or inside a helper function, so a larger backing buffer with symbolic fields is invisible to it. The per-harness input domains and the backing capacities are stated per module in §6.2.
+Reading the `symbolic [u8; N]` column: it reports syntactically declared array sizes inside harness bodies, including concrete specimens, fully symbolic buffers and small symbolic sub-arrays. The largest entry is therefore not necessarily a symbolic input domain. It does not list a buffer built as `[0u8; N]` or inside a helper function, so a larger backing buffer with symbolic fields is invisible to it. The per-harness input domains and the backing capacities are stated per module in §6.2.
 
 | Module | entry points | named by a harness | Kani | symbolic `[u8; N]` | unwind | `assume` | `cover` | stubs | L4 |
 |---|---:|---:|---:|---|---|---:|---:|---:|:--:|
@@ -920,14 +921,14 @@ Two things to hold in mind reading it. First, the classifier is deliberately con
 - `x509_validity::any_gen` — `assume(g.k == 0 || g.frac[g.k - 1] != b'0')`
 <!-- END GENERATED:non-vacuity -->
 
-The covers are **authored against** a bar: witness a *post-state effect*, never an input predicate.
-`cover(len == N)` or `cover(true)` would be satisfiable even if the function body were replaced by a
-no-op. As a witness that the code produced an outcome, such a cover is therefore worthless. The bar is
-"would this still be satisfiable if the body did nothing?" — and conformance to it is established by
-review of the 499 hand-written covers (the generated count above), not by any
-gate; nothing mechanically rejects a weak cover. — for the stub-bearing composition harnesses that means covering that the
-real glue reached its `Ok` tail, and for `x509_extension` that a second walk iteration genuinely
-co-occurs with acceptance.
+The covers are **authored against** a bar: an outcome witness should demonstrate a *post-state
+effect*. `cover(len == N)` or a bare `cover(true)` would be satisfiable even if the function body
+were replaced by a no-op, so neither is evidence that the code produced an outcome. The bar is
+"would this still be satisfiable if the body did nothing?" **Outcome witnesses are reviewed against
+this bar; domain-reachability probes are classified separately below.** No gate mechanically
+rejects a weak cover. For the stub-bearing composition harnesses, the bar means covering that the
+real glue reached its `Ok` tail; for `x509_extension`, it means that a second walk iteration
+genuinely co-occurs with acceptance.
 
 A `cover(true)` that sits inside a branch is different. The branch condition decides whether it is
 reached, so it can still witness that branch. The source has 24 covers of this kind, in `identifier_form`,
@@ -937,10 +938,11 @@ reached, so it can still witness that branch. The source has 24 covers of this k
 (`der-verified/src/*.rs`, `mod proofs`) finds **51 of the 499 covers** whose predicate reads only
 symbolic harness inputs, or a value the harness computes from them by arithmetic or by an oracle
 expression. Such a cover never reads a result of the function under proof. It shows that a class of
-inputs is reachable in the harness domain, so the assertion that follows is not vacuous for that
-class. It is **not** an outcome witness and is not evidence that the code produces any result, so
-this document labels these 51 as **PROBE domain-reachability checks**. They are, by harness, with the
-number of covers in brackets:
+inputs is reachable in the harness domain. **A satisfied cover witnesses reachability at its
+location; it supports assertion non-vacuity where that assertion is reached on the same execution.**
+It is **not** an outcome witness and is not evidence that the code produces any result, so this
+document labels these 51 as **PROBE domain-reachability checks**. They are, by harness, with the
+number of source cover sites in brackets:
 
 - `bit_string`: `accepted_iff_canonical_oracle` (2), `encode_rejects_exactly_the_non_canonical` (5),
   `nonzero_padding_is_classified` (1), `require_octet_aligned_exact_on_built_values` (3, the three
@@ -959,12 +961,19 @@ number of covers in brackets:
 - `utf8_string`: `encode_is_exact_over_content_and_capacity` (4);
 - `x509_extension`: `validate_extensions_rejects_child_framing` (2).
 
-Six more covers are close to this class. Their predicate reads a value that the harness's own
-reference or oracle computes from the input (`decode_tlv`, `oracle_set_of`), and not a result of the
-function under proof: `set_of::tlv_entry_enforces_ordering_exactly` (2),
-`restricted_string::check_decode_faithful` (2) and `utf8_string::decode_is_faithful` (2). Read them
-as domain-reachability checks too. The list was compiled by reading the source. No gate checks it,
-and it can be incomplete.
+Six additional reference-derived sites read a value that the harness's own reference computes from the
+input (`decode_tlv`, `oracle_set_of`), and not a result of the function under proof:
+`set_of::tlv_entry_enforces_ordering_exactly` (2), `restricted_string::check_decode_faithful` (2)
+and `utf8_string::decode_is_faithful` (2). Thus the initial inventory was **51 identified sites,
+plus six additional reference-derived sites**. Shared helper sites are counted once where they are
+written, not multiplied by the charset-specific harnesses that call them.
+
+Two further sites in `x509_validity::parse_validity_rejects_field_identifier` are also
+reference-derived probes: `field_err` is a reference result computed only from the symbolic identifier
+and the selected field, and the two covers distinguish the `notBefore` and `notAfter` rejection
+sides without reading `parse_validity`'s result. Including them brings the disclosed inventory to 59
+sites: 51 direct-input sites and eight reference-derived sites. Read all 59 as domain-reachability
+checks. The list was compiled by reading the source. No gate checks it, and it can be incomplete.
 
 **The `enumerated` module's covers, and why the harness domain was widened.**
 `decode_delegates_to_integer` proves an *agreement* — that `decode_enumerated` returns literally what

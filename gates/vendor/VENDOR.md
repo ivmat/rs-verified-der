@@ -9,6 +9,11 @@ directory by hand.
 - Source commit: `455ca4f84ada3fc51eed30942696f34d118e1a59`
 - Closure inventory: `acceptance/CLOSURE.json`
 
+The inventory binds that source commit to SHA-256 digests for all 20 exported files. Verification
+against those digests confirms that every vendored file is byte-for-byte identical to the pinned
+source, including the complete `export_closure.py` and its cold-model-name regular expression; the
+exporter has no local patch.
+
 The closure supplies its own verifier. It checks every listed file hash, the
 source commit, export cleanliness, missing files, unexpected source files, and
 bytecode caches. Run vendored Python with bytecode writing disabled.

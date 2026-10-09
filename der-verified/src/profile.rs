@@ -354,8 +354,8 @@ mod proofs {
     /// The `y <= 99` premise is not an assumption about the world: it is
     /// `utc_time::decode_postcondition_fields_in_range`'s conclusion, proven over symbolic content.
     /// The one case it does NOT cover is a hand-written `UtcTime { year2: 100.. }` struct literal
-    /// (the fields are `pub`), which `full_year_rfc5280` maps above 2049 — see the disclosure in this
-    /// module's docs.
+    /// (the fields are `pub`). `full_year_rfc5280` maps `100..=149` to `2000..=2049` and only
+    /// `150..=255` above 2049; see the disclosure in this module's docs.
     #[kani::proof]
     #[kani::unwind(4)]
     fn utc_time_can_never_denote_2050_or_later() {
@@ -490,8 +490,10 @@ mod proofs {
     /// domain as `rule1_mismatch_iff_algorithms_differ`); 2-octet backings, lengths `0..=2`, for the
     /// irrelevant spans; a 4-octet backing, length `0..=4`, for each Generalized fraction. Slices
     /// longer than that are not enumerated (for the fraction: lengths above 4 are covered by unit tests
-    /// only, and the code reads emptiness, not length); the function performs no per-octet reads of
-    /// these spans, so this is a representative window, not a proof for arbitrary span lengths.
+    /// only, and the code reads emptiness, not length). The profile-irrelevant spans and fractions
+    /// are inspected only for presence or emptiness, so their windows are representative. The two
+    /// algorithm identifiers are compared octet by octet, however, so their `0..=4` windows bound
+    /// the proof rather than establishing the result for arbitrary identifier lengths.
     #[kani::proof]
     #[kani::unwind(6)]
     fn validate_profile_is_exactly_the_documented_precedence() {

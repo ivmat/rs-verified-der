@@ -990,12 +990,12 @@ def _rng(xs):
 
 
 def r_per_module(f):
-    L = ['Reading the `symbolic [u8; N]` column: it lists the sizes of the `[u8; N]` array types '
-         'written inside harness bodies. That includes fully symbolic buffers, but also concrete '
-         'witness arrays and small symbolic sub-arrays, so the largest entry is not necessarily a '
-         'symbolic input domain. It does not list a buffer built as `[0u8; N]` or inside a helper '
-         'function, so a larger backing buffer with symbolic fields is invisible to it. The '
-         'per-harness input domains and the backing capacities are stated per module in §6.2.',
+    L = ['Reading the `symbolic [u8; N]` column: it reports syntactically declared array sizes '
+         'inside harness bodies, including concrete specimens, fully symbolic buffers and small '
+         'symbolic sub-arrays. The largest entry is therefore not necessarily a symbolic input '
+         'domain. It does not list a buffer built as `[0u8; N]` or inside a helper function, so a '
+         'larger backing buffer with symbolic fields is invisible to it. The per-harness input '
+         'domains and the backing capacities are stated per module in §6.2.',
          '',
          '| Module | entry points | named by a harness | Kani | symbolic `[u8; N]` | unwind | '
          '`assume` | `cover` | stubs | L4 |',

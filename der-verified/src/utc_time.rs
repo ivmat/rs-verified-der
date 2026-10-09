@@ -654,9 +654,9 @@ mod proofs {
     /// Disclosure: `UtcTime`'s fields are `pub`, so a hand-built `year2 > 99` is representable. The
     /// field documentation puts such values outside the type's documented range, and the
     /// `full_year_rfc5280` rustdoc states the formula without a domain; this harness therefore pins
-    /// the formula's literal extension there (`1900 + year2`, above 2049), which is the behaviour the
-    /// `profile` module's disclosure ("a hand-written `UtcTime { year2: 100.. }` ... maps above 2049")
-    /// relies on. It is NOT a claim that such values are valid input.
+    /// the formula's literal extension there (`1900 + year2`). Values `100..=149` map to
+    /// `2000..=2049`; only values `150..=255` map above 2049. It is NOT a claim that such values are
+    /// valid input.
     #[kani::proof]
     fn full_year_pivot_is_correct() {
         let y: u8 = kani::any();

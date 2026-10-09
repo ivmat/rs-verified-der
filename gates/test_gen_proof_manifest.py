@@ -1365,24 +1365,37 @@ class NonVacuityProse(unittest.TestCase):
     def test_the_committed_manifest_carries_the_prose(self):
         text = manifest()
         self.assertIn('functional assertions (post-state checks), not non-vacuity witnesses', text)
+        self.assertIn('which constrain the result on reachable executions', text)
         self.assertIn('counts in this audit are lexical', text)
+        self.assertIn('Outcome witnesses are reviewed against\nthis bar; domain-reachability probes',
+                      text)
+        self.assertNotIn('never an input predicate', text)
+        self.assertNotIn('conformance to it is established', text)
+        self.assertIn('51 identified sites,\nplus six additional reference-derived sites', text)
+        self.assertIn('Shared helper sites are counted once', text)
+        self.assertIn('Including them brings the disclosed inventory to 59', text)
+        self.assertIn('A satisfied cover witnesses reachability at its\nlocation; it supports '
+                      'assertion non-vacuity where that assertion is reached on the same execution',
+                      text)
+        self.assertNotIn('so the assertion that follows is not vacuous', text)
+        self.assertIn('Three distinct size concepts matter here.', text)
+        self.assertNotIn('three sizes appear in the §4 row', text)
 
 
 class BoundsLegend(unittest.TestCase):
-    """§4's `symbolic [u8; N]` column counts every `[u8; N]` written in a harness body, concrete
-    specimens included; a harness may also use a larger
-    backing buffer. The column is NOT redefined (it would cascade through every module); the legend
-    above the table defines it, and the §6.2 row of a module that uses a wider backing states it."""
+    """§4's `symbolic [u8; N]` column reports syntactically declared array sizes, including
+    concrete specimens; a harness may also use a larger backing buffer. The column is NOT renamed
+    (that would cascade through every module); the legend above the table defines it, and the §6.2
+    row of a module that uses a wider backing states it."""
 
     def test_the_legend_sits_above_the_table_and_defines_the_column(self):
         lines = gen.r_per_module(facts())
         header = [i for i, l in enumerate(lines) if l.startswith('| Module |')][0]
         legend = ' '.join(lines[:header])
+        self.assertIn('syntactically declared array sizes', legend)
+        self.assertIn('including concrete specimens', legend)
         self.assertIn('fully symbolic buffers', legend)
-        # the column also lists CONCRETE witness arrays (e.g. a const specimen), so it must say so:
-        # a legend claiming "fully symbolic arrays only" would be false of what the regex counts
-        self.assertIn('concrete witness arrays', legend)
-        self.assertIn('largest entry is not necessarily a symbolic input domain', legend)
+        self.assertIn('largest entry is therefore not necessarily a symbolic input domain', legend)
         self.assertIn('backing', legend)
         self.assertIn('§6.2', legend)
 
@@ -1404,9 +1417,11 @@ class BoundsLegend(unittest.TestCase):
         header = [l for l in lines if l.startswith('| Module |')][0]
         self.assertEqual(header.count('|'), 11)
 
-    def test_the_validity_row_still_reports_the_widest_fully_symbolic_array(self):
+    def test_the_validity_row_reports_the_widest_syntactically_declared_array(self):
         rows = [l for l in gen.r_per_module(facts()) if l.startswith('| `x509_validity`')]
         self.assertEqual(len(rows), 1)
+        # 32 is a concrete specimen, while the widest fully symbolic buffer is 16. This assertion
+        # keeps the legend honest about the syntactic scan instead of relabelling 32 as symbolic.
         self.assertIn('3..32', rows[0])
 
 

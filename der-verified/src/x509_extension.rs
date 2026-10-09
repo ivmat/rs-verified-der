@@ -638,9 +638,10 @@ mod proofs {
     /// symbolic content bytes. Member `M(o) = 30 05 06 01 o 04 00` (1-octet OID content `o`,
     /// `critical` absent, empty `extnValue`).
     ///
-    /// CONTRACT SURFACE / bounded-backing evidence for all four: backing `<= 16` octets, concrete
-    /// framing, symbolic `o`/`t` bytes, `#[kani::unwind(3)]`, no assumptions beyond the stated
-    /// low-tag predicate in (d), no stubs. Every assert is the EXACT `Result`.
+    /// Classification: (a) is a PROBE fixed example (`[0x30, 0x00]`); (b)-(d) are CONTRACT SURFACE /
+    /// bounded-backing evidence with backing `<= 16` octets, concrete framing, symbolic `o`/`t`
+    /// bytes, `#[kani::unwind(3)]`, no assumptions beyond the stated low-tag predicate in (d), and
+    /// no stubs. Every assert is the EXACT `Result`.
     /// Unwind note: with concrete framing every loop on the path runs at most twice (two walk
     /// iterations, 1-octet OID content, short-form lengths), so 3 is sufficient and CBMC's
     /// unwinding assertions (enabled, and reported SUCCESS in the log) prove it. A bound of 20
