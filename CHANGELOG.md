@@ -6,6 +6,14 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+### Added
+- **The `tag` Lean lid now pins identifier-octet semantics for inputs of any length.** For every
+  accepted `decode_tag` result, `tag_decode_identifier_fields` proves the class from a direct
+  transcription of X.690 §8.1.2.2's top-two-bit table, the constructed flag from bit `0x20`, and
+  a low-tag-form number from the low five bits. The oracle is independent of `encode_tag`.
+  `COVERAGE.md` promotes `DER-F-1` from PROBE to CONTRACT+L4; three production mutations were
+  confirmed to invalidate the new proof.
+
 ### Changed
 - **`decode_set_of` now walks children through `sequence::Elements`.** It derives each complete
   child encoding from the iterator's before/after cursor delta via the new crate-visible

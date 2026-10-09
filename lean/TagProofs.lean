@@ -48,8 +48,12 @@ only).
 * **`tag_decode_used_bounds`** — whenever `decode_tag input` accepts `Ok (t, used)`, `1 ≤ used ≤
   input.length`: an accepted decode never claims zero bytes, and never consumes more than the
   input holds, for an input of *any* length.
+* **`tag_decode_identifier_fields`** — whenever `decode_tag input` accepts, its class is the direct
+  X.690 four-range interpretation of octet 0's top two bits, its constructed flag is exactly the
+  `0x20` bit, and a low-tag-form number is exactly the low five bits.  The three field facts also
+  have separately named projection theorems so mutation failures localize.
 
-Both are proven by a `loop.spec_decr_nat` measure-induction over `tag.decode_tag_loop`'s
+The first two are proven by a `loop.spec_decr_nat` measure-induction over `tag.decode_tag_loop`'s
 `(i, number, count)` state (measure `input.length - i.val`, strictly decreasing on every `cont`
 step since the loop's only continuation reads and consumes exactly one more octet, advancing
 `i` to `i + 1`), mirroring `LengthProofs.lean`'s `decode_length_loop_spec` / `OidProofs.lean`'s
@@ -64,7 +68,7 @@ The extraction is nearly axiom-free: the *only* opaque primitive this lid's theo
 namespace). `core.slice.Slice.get` (the `input.get(i)` call inside the loop) is a Std-library
 `abbrev` (`ok s[i]?`, `@[simp, step_simps]`) — computable and total, not an axiom; likewise every
 arithmetic step in the loop body is `lift`ed (`Result.ok`, always succeeds) or a checked `Usize`/
-`U32` op the `step` tactic discharges directly. `#print axioms` at the bottom shows both theorems
+`U32` op the `step` tactic discharges directly. `#print axioms` at the bottom shows every headline theorem
 depend on exactly `first_spec` plus the three standard Lean axioms (`propext`, `Classical.choice`,
 `Quot.sound`). No `sorryAx`.
 -/
@@ -370,6 +374,280 @@ theorem tag_decode_used_bounds (input : Slice U8) (t : tag.Tag) (used : Usize) :
   exact hspec t used rfl
 
 #print axioms tag_decode_used_bounds
+
+/-! ## Identifier-octet value semantics (X.690 §8.1.2.2)
+
+    The oracle below is deliberately written from the X.690 identifier-octet table, rather than
+    through `encode_tag` or any helper from `tag.rs`: octet-0 values `0..63`, `64..127`,
+    `128..191`, and `192..255` denote UNIVERSAL, APPLICATION, CONTEXT-SPECIFIC, and PRIVATE,
+    respectively.  The constructed flag is the fixed `0x20` bit.  In low-tag form, the number is
+    the low five bits.  Thus this theorem detects a decoder and encoder that share the same wrong
+    interpretation, which a round trip cannot. -/
+
+/-- The X.690 class table, stated directly as four numeric ranges of identifier octet 0. -/
+def x690Class (b : U8) : tag.Class :=
+  if b.val < 64 then tag.Class.Universal
+  else if b.val < 128 then tag.Class.Application
+  else if b.val < 192 then tag.Class.ContextSpecific
+  else tag.Class.Private
+
+/-- Turning the top-two-bit value `00` into the first row of the X.690 class table.  Arithmetic is
+    discharged before simplifying the constructor-valued `if`, rather than asking `scalar_tac` to
+    prove an equality of `Class` constructors. -/
+theorem x690Class_shift0 (b : U8) (h : b.val >>> 6 = 0) :
+    x690Class b = tag.Class.Universal := by
+  simp only [Nat.shiftRight_eq_div_pow] at h
+  norm_num at h
+  have hb : b.val < 64 := by omega
+  simp [x690Class, hb]
+
+/-- Turning top-two-bit value `01` into APPLICATION. -/
+theorem x690Class_shift1 (b : U8) (h : b.val >>> 6 = 1) :
+    x690Class b = tag.Class.Application := by
+  simp only [Nat.shiftRight_eq_div_pow] at h
+  norm_num at h
+  have hlo : 64 ≤ b.val := by omega
+  have hhi : b.val < 128 := by omega
+  simp [x690Class, not_lt_of_ge hlo, hhi]
+
+/-- Turning top-two-bit value `10` into CONTEXT-SPECIFIC. -/
+theorem x690Class_shift2 (b : U8) (h : b.val >>> 6 = 2) :
+    x690Class b = tag.Class.ContextSpecific := by
+  simp only [Nat.shiftRight_eq_div_pow] at h
+  norm_num at h
+  have hlo : 128 ≤ b.val := by omega
+  have hhi : b.val < 192 := by omega
+  simp [x690Class, not_lt_of_ge (by omega : 64 ≤ b.val), not_lt_of_ge hlo, hhi]
+
+/-- Turning top-two-bit value `11` into PRIVATE. -/
+theorem x690Class_shift3 (b : U8) (h : b.val >>> 6 = 3) :
+    x690Class b = tag.Class.Private := by
+  simp only [Nat.shiftRight_eq_div_pow] at h
+  norm_num at h
+  have hlo : 192 ≤ b.val := by omega
+  simp [x690Class, not_lt_of_ge (by omega : 64 ≤ b.val),
+    not_lt_of_ge (by omega : 128 ≤ b.val), not_lt_of_ge hlo]
+
+/-- After class selection, every accepting branch preserves the selected class and derives the
+    constructed flag from exactly `0x20`.  The final conjunct additionally pins the low-tag-form
+    number to the low five bits; it is vacuous on the high-tag branch. -/
+theorem identifier_fields_tail (input : Slice U8) (b : U8) (class1 : tag.Class)
+    (hb_lt : 1 ≤ input.val.length) :
+    (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if i2 != 31#u8
+      then do
+        let i3 ← lift (b &&& 31#u8)
+        let i4 ← lift (UScalar.cast .U32 i3)
+        ok (core.result.Result.Ok
+          ({ «class» := class1, constructed := (i1 != 0#u8), number := i4 }, 1#usize))
+      else do
+        let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+        let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+        match cf with
+        | core.ops.control_flow.ControlFlow.Continue val =>
+          let (number, i3) := val
+          if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+          else ok (core.result.Result.Ok
+            ({ «class» := class1, constructed := (i1 != 0#u8), number }, i3))
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
+            (tag.Tag × Usize) (core.convert.FromSame tag.TagError) residual
+      : Result (core.result.Result (tag.Tag × Usize) tag.TagError)) ⦃ r =>
+        ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) →
+          t.«class» = class1 ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧
+          ((b &&& 31#u8 != 31#u8) = true → t.number.val = (b &&& 31#u8).val) ⦄ := by
+  step as ⟨i1, hi1⟩
+  step as ⟨i2, hi2⟩
+  by_cases hlow : (i2 != 31#u8) = true
+  · rw [if_pos hlow]
+    step as ⟨i3, hi3⟩
+    step as ⟨i4, hi4⟩
+    intro t used heq
+    injection heq with heq1
+    cases heq1
+    refine ⟨rfl, ?_, ?_⟩
+    · have hi1eq : i1 = b &&& 32#u8 := UScalar.eq_of_val_eq hi1
+      rw [hi1eq]
+    · intro _
+      rw [hi4, U8.cast_U32_val_eq, hi3]
+  · rw [if_neg hlow]
+    have hspec := decode_tag_loop_spec input 1#usize 0#u32 0#usize (by scalar_tac)
+      (by scalar_tac) (by scalar_tac)
+    obtain ⟨y, hy, r', hyr', -⟩ := WP.spec_imp_exists hspec
+    rw [hy, hyr']
+    rcases r' with ⟨number1, i3⟩ | terr
+    · simp only [bind_tc_ok, core.result.Result.Insts.CoreOpsTry.branch]
+      show (if number1 ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+            else ok (core.result.Result.Ok
+              ({ «class» := class1, constructed := i1 != 0#u8, number := number1 }, i3))
+            : Result (core.result.Result (tag.Tag × Usize) tag.TagError)) ⦃ r =>
+        ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) →
+          t.«class» = class1 ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧
+          ((b &&& 31#u8 != 31#u8) = true → t.number.val = (b &&& 31#u8).val) ⦄
+      by_cases hle : number1 ≤ 30#u32
+      · rw [if_pos hle]
+        intro t used heq
+        exact absurd heq (by simp)
+      · rw [if_neg hle]
+        intro t used heq
+        injection heq with heq1
+        cases heq1
+        refine ⟨rfl, ?_, ?_⟩
+        · have hi1eq : i1 = b &&& 32#u8 := UScalar.eq_of_val_eq hi1
+          rw [hi1eq]
+        · intro hb
+          have hi2eq : i2 = b &&& 31#u8 := UScalar.eq_of_val_eq hi2
+          have : (i2 != 31#u8) = true := by rw [hi2eq]; exact hb
+          exact absurd this hlow
+    · simp only [bind_tc_ok, core.result.Result.Insts.CoreOpsTry.branch]
+      intro t used heq
+      exact absurd heq (by simp)
+
+/-- Lift `identifier_fields_tail` from its generic selected class to the independent X.690 class
+    oracle once that selected class has been related to the top-two-bit table. -/
+theorem identifier_fields_tail_x690 (input : Slice U8) (b : U8) (class1 : tag.Class)
+    (hb_lt : 1 ≤ input.val.length) (hclass : class1 = x690Class b) :
+    (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if i2 != 31#u8
+      then do
+        let i3 ← lift (b &&& 31#u8)
+        let i4 ← lift (UScalar.cast .U32 i3)
+        ok (core.result.Result.Ok
+          ({ «class» := class1, constructed := (i1 != 0#u8), number := i4 }, 1#usize))
+      else do
+        let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+        let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+        match cf with
+        | core.ops.control_flow.ControlFlow.Continue val =>
+          let (number, i3) := val
+          if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+          else ok (core.result.Result.Ok
+            ({ «class» := class1, constructed := (i1 != 0#u8), number }, i3))
+        | core.ops.control_flow.ControlFlow.Break residual =>
+          core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual
+            (tag.Tag × Usize) (core.convert.FromSame tag.TagError) residual
+      : Result (core.result.Result (tag.Tag × Usize) tag.TagError)) ⦃ r =>
+        ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) →
+          t.«class» = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧
+          ((b &&& 31#u8 != 31#u8) = true → t.number.val = (b &&& 31#u8).val) ⦄ := by
+  apply WP.spec_mono (identifier_fields_tail input b class1 hb_lt)
+  intro r hr t used heq
+  have hf := hr t used heq
+  exact ⟨hf.1.trans hclass, hf.2⟩
+
+/-- Spec-form accepted identifier semantics.  This follows the same `unfold` / `rw first_spec` /
+    `step` / `split` shape as the existing totality, bounds, leading-zero, high-tag, and overflow
+    proofs above; keeping it in spec form lets the field theorems below be tiny projections. -/
+theorem tag_decode_identifier_fields_spec (input : Slice U8) (b : U8)
+    (h0 : input.val[0]? = some b) :
+    tag.decode_tag input ⦃ r => ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.«class» = x690Class b ∧
+        t.constructed = (b &&& 32#u8 != 0#u8) ∧
+        ((b &&& 31#u8 != 31#u8) = true → t.number.val = (b &&& 31#u8).val) ⦄ := by
+  unfold tag.decode_tag
+  rw [first_spec, h0]
+  have hb_lt : 1 ≤ input.val.length := by
+    obtain ⟨hindex, -⟩ := List.getElem?_eq_some_iff.mp h0
+    omega
+  simp only [bind_tc_ok]
+  step as ⟨i, hi⟩
+  split <;> simp only [bind_tc_ok]
+  · have hsel : b.val >>> 6 = 0 := by
+      norm_num at hi
+      exact hi.symm
+    exact identifier_fields_tail_x690 input b tag.Class.Universal hb_lt
+      (x690Class_shift0 b hsel).symm
+  · have hsel : b.val >>> 6 = 1 := by
+      norm_num at hi
+      exact hi.symm
+    exact identifier_fields_tail_x690 input b tag.Class.Application hb_lt
+      (x690Class_shift1 b hsel).symm
+  · have hsel : b.val >>> 6 = 2 := by
+      norm_num at hi
+      exact hi.symm
+    exact identifier_fields_tail_x690 input b tag.Class.ContextSpecific hb_lt
+      (x690Class_shift2 b hsel).symm
+  · rename_i hibv selector hne0 hne1 hne2
+    have hi0 : i.val ≠ 0 := by
+      intro hval
+      apply hne0
+      apply UScalar.eq_of_val_eq
+      simpa using hval
+    have hi1 : i.val ≠ 1 := by
+      intro hval
+      apply hne1
+      apply UScalar.eq_of_val_eq
+      simpa using hval
+    have hi2 : i.val ≠ 2 := by
+      intro hval
+      apply hne2
+      apply UScalar.eq_of_val_eq
+      simpa using hval
+    have hiv_le : i.val ≤ 3 := by
+      rw [hi, Nat.shiftRight_eq_div_pow]
+      norm_num
+      have hb : b.val < 256 := by scalar_tac
+      omega
+    have hiv : i.val = 3 := by omega
+    have h3 : b.val >>> 6 = 3 := hi.symm.trans hiv
+    exact identifier_fields_tail_x690 input b tag.Class.Private hb_lt
+      (x690Class_shift3 b h3).symm
+
+/-- **Class bits, ∀-length.** On every accepted input, the decoded class is the direct X.690
+    four-range interpretation of the top two bits of identifier octet 0. -/
+theorem tag_decode_class (input : Slice U8) (b : U8) (t : tag.Tag) (used : Usize)
+    (h0 : input.val[0]? = some b)
+    (hdecode : tag.decode_tag input = ok (core.result.Result.Ok (t, used))) :
+    t.«class» = x690Class b := by
+  have hspec := tag_decode_identifier_fields_spec input b h0
+  rw [hdecode, WP.spec_ok] at hspec
+  exact (hspec t used rfl).1
+
+/-- **Constructed bit, ∀-length.** On every accepted input, `constructed` is exactly bit
+    `0x20` of identifier octet 0. -/
+theorem tag_decode_constructed (input : Slice U8) (b : U8) (t : tag.Tag) (used : Usize)
+    (h0 : input.val[0]? = some b)
+    (hdecode : tag.decode_tag input = ok (core.result.Result.Ok (t, used))) :
+    t.constructed = (b &&& 32#u8 != 0#u8) := by
+  have hspec := tag_decode_identifier_fields_spec input b h0
+  rw [hdecode, WP.spec_ok] at hspec
+  exact (hspec t used rfl).2.1
+
+/-- **Low-tag number, ∀-length.** On every accepted low-tag-form input, the decoded number is
+    exactly the low five bits of identifier octet 0. -/
+theorem tag_decode_low_tag_number (input : Slice U8) (b : U8) (t : tag.Tag) (used : Usize)
+    (h0 : input.val[0]? = some b)
+    (hdecode : tag.decode_tag input = ok (core.result.Result.Ok (t, used)))
+    (hlow : (b &&& 31#u8 != 31#u8) = true) :
+    t.number.val = (b &&& 31#u8).val := by
+  have hspec := tag_decode_identifier_fields_spec input b h0
+  rw [hdecode, WP.spec_ok] at hspec
+  exact (hspec t used rfl).2.2 hlow
+
+/-- **Accepted identifier semantics, ∀-length.** Composition of the three independently named
+    field facts above. -/
+theorem tag_decode_identifier_fields (input : Slice U8) (b : U8) (t : tag.Tag) (used : Usize)
+    (h0 : input.val[0]? = some b)
+    (hdecode : tag.decode_tag input = ok (core.result.Result.Ok (t, used))) :
+    t.«class» = x690Class b ∧
+    t.constructed = (b &&& 32#u8 != 0#u8) ∧
+    ((b &&& 31#u8 != 31#u8) = true → t.number.val = (b &&& 31#u8).val) := by
+  exact ⟨tag_decode_class input b t used h0 hdecode,
+    tag_decode_constructed input b t used h0 hdecode,
+    tag_decode_low_tag_number input b t used h0 hdecode⟩
+
+#print axioms tag_decode_class
+#print axioms tag_decode_constructed
+#print axioms tag_decode_low_tag_number
+#print axioms tag_decode_identifier_fields
 
 /-! ## The base-128 value semantics of `decode_tag`'s high-tag loop
 
@@ -765,8 +1043,8 @@ theorem tag_decode_high_tag_accept_spec (input : Slice U8) (b0 : U8) (t : Nat)
     **Disclosure (scope).** This theorem pins the decoded `number` and the consumed `used`, and
     deliberately does NOT constrain the `class`/`constructed` fields: those are the marker octet's
     high bits, unaffected by the three high-tag-loop mutants (`tag.rs:142/145/148/149`) this lid
-    targets, so they are out of scope here. Their correctness is covered by the round-trip / class
-    coverage of the L3 Kani floor, not by this value-semantics lid. -/
+    targets, so they are out of scope for THIS theorem. Their correctness is independently proved
+    for every accepted input by `tag_decode_identifier_fields` above. -/
 theorem tag_decode_high_tag_accept (input : Slice U8) (b0 : U8) (t : Nat)
     (h0 : input.val[0]? = some b0) (hhigh : b0 &&& 31#u8 = 31#u8)
     (ht : 1 ≤ t) (htlen : t + 1 ≤ input.val.length)
