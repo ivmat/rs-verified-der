@@ -28,7 +28,7 @@ cross-field profile rules. That boundary is the whole honesty story (below).
 
 ## Two layers of proof
 
-**L3 — bounded, with Kani (CBMC under the hood).** 297 proof harnesses across 33 modules. Each proves,
+**L3 — bounded, with Kani (CBMC under the hood).** 298 proof harnesses across 33 modules. Each proves,
 for all inputs up to a stated size, the default safety properties (no panic, no overflow, no
 out-of-bounds) *plus* the functional ones: decode/encode round-trips, canonicality/minimality, and
 that malformed or non-canonical encodings are rejected with the right error. Bounded model checking is

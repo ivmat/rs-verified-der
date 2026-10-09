@@ -684,6 +684,12 @@ def sequence.Elements.new
   (content : Slice Std.U8) : Result sequence.Elements := do
   ok { rest := content, done := false }
 
+/-- [der_sequence_extract::sequence::{der_sequence_extract::sequence::Elements<'a>}::remaining]:
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 97:4-99:5 -/
+def sequence.Elements.remaining
+  (self : sequence.Elements) : Result (Slice Std.U8) := do
+  ok self.rest
+
 /-- [der_sequence_extract::tag::Class]
     Source: 'src/../../../der-verified/src/tag.rs', lines 27:0-36:1
     Visibility: public -/
@@ -921,7 +927,7 @@ def tlv.decode_tlv
       (tlv.Tlv × Std.Usize) (core.convert.FromSame tlv.TlvError) residual
 
 /-- [der_sequence_extract::sequence::{impl core::iter::traits::iterator::Iterator<core::result::Result<der_sequence_extract::tlv::Tlv<'a>, der_sequence_extract::tlv::TlvError>> for der_sequence_extract::sequence::Elements<'a>}::next]:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 100:4-116:5
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 105:4-121:5
     Visibility: public -/
 def
   sequence.Elements.Insts.CoreIterTraitsIteratorIteratorResultTlvTlvError.next
@@ -949,7 +955,7 @@ def
         ok (some (core.result.Result.Err e), { self with done := true })
 
 /-- Trait implementation: [der_sequence_extract::sequence::{impl core::iter::traits::iterator::Iterator<core::result::Result<der_sequence_extract::tlv::Tlv<'a>, der_sequence_extract::tlv::TlvError>> for der_sequence_extract::sequence::Elements<'a>}]
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 97:0-117:1 -/
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 102:0-122:1 -/
 @[reducible]
 def sequence.Elements.Insts.CoreIterTraitsIteratorIteratorResultTlvTlvError :
   core.iter.traits.iterator.Iterator sequence.Elements (core.result.Result
@@ -965,7 +971,7 @@ def sequence.Elements.Insts.CoreIterTraitsIteratorIteratorResultTlvTlvError :
 }
 
 /-- [der_sequence_extract::sequence::decode_sequence]: loop body 0:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 131:4-138:1
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 136:4-143:1
     Visibility: public -/
 @[rust_loop_body]
 def sequence.decode_sequence_loop.body
@@ -987,7 +993,7 @@ def sequence.decode_sequence_loop.body
       ok (done (core.result.Result.Err (sequence.SequenceError.Element e)))
 
 /-- [der_sequence_extract::sequence::decode_sequence]: loop 0:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 131:4-138:1
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 136:4-143:1
     Visibility: public -/
 @[rust_loop]
 def sequence.decode_sequence_loop
@@ -999,7 +1005,7 @@ def sequence.decode_sequence_loop
     (count, iter)
 
 /-- [der_sequence_extract::sequence::decode_sequence]:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 129:0-138:1
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 134:0-143:1
     Visibility: public -/
 def sequence.decode_sequence
   (content : Slice Std.U8) :
@@ -1015,12 +1021,12 @@ axiom tag.Class.Insts.CoreCmpPartialEqClass.ne
   : tag.Class → tag.Class → Result Bool
 
 /-- [der_sequence_extract::sequence::decode_sequence_tlv::closure]
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 157:48-157:73 -/
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 162:48-162:73 -/
 @[reducible]
 def sequence.decode_sequence_tlv.closure := Unit
 
 /-- [der_sequence_extract::sequence::decode_sequence_tlv::{impl core::ops::function::FnOnce<(der_sequence_extract::tlv::TlvError,), der_sequence_extract::sequence::SequenceError> for der_sequence_extract::sequence::decode_sequence_tlv::closure}::call_once]:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 157:48-157:73 -/
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 162:48-162:73 -/
 def
   sequence.decode_sequence_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTlvErrorSequenceError.call_once
   (c : sequence.decode_sequence_tlv.closure) (tupled_args : tlv.TlvError) :
@@ -1029,7 +1035,7 @@ def
   ok (sequence.SequenceError.Tlv tupled_args)
 
 /-- Trait implementation: [der_sequence_extract::sequence::decode_sequence_tlv::{impl core::ops::function::FnOnce<(der_sequence_extract::tlv::TlvError,), der_sequence_extract::sequence::SequenceError> for der_sequence_extract::sequence::decode_sequence_tlv::closure}]
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 157:48-157:73 -/
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 162:48-162:73 -/
 @[reducible]
 def
   sequence.decode_sequence_tlv.closure.Insts.CoreOpsFunctionFnOnceTupleTlvErrorSequenceError
@@ -1040,7 +1046,7 @@ def
 }
 
 /-- [der_sequence_extract::sequence::decode_sequence_tlv]:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 153:0-165:1
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 158:0-170:1
     Visibility: public -/
 def sequence.decode_sequence_tlv
   (input : Slice Std.U8) :
@@ -1074,7 +1080,7 @@ def sequence.decode_sequence_tlv
       sequence.SequenceError) residual
 
 /-- [der_sequence_extract::sequence::decode_sequence_tlv_strict]:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 173:0-179:1
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 178:0-184:1
     Visibility: public -/
 def sequence.decode_sequence_tlv_strict
   (input : Slice Std.U8) :
@@ -1102,7 +1108,7 @@ axiom tlv.encode_tlv_into
     (Slice Std.U8))
 
 /-- [der_sequence_extract::sequence::encode_sequence_into]:
-    Source: 'src/../../../der-verified/src/sequence.rs', lines 188:0-191:1
+    Source: 'src/../../../der-verified/src/sequence.rs', lines 193:0-196:1
     Visibility: public -/
 def sequence.encode_sequence_into
   (elements_content : Slice Std.U8) (out : Slice Std.U8) :

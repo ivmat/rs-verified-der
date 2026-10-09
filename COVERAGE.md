@@ -112,7 +112,7 @@ same green check. This table's job is to stop them reading alike.
 | **out-of-scope** | the rule is deliberately outside what this crate sets out to do, and that boundary is declared in the crate's own documents. Not a gap; a fence. |
 
 > **`CONTRACT` here is NOT Kani's `#[kani::requires]`/`#[kani::ensures]` machinery.** This crate uses
-> **zero** function contracts — its 297 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
+> **zero** function contracts — its 298 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
 > built with `#[kani::stub]` + `-Z stubbing`. `CONTRACT` in this table is the review-lens sense
 > (*proves the documented rule, on the real shipped path, with an independent oracle*), which is the
 > distinction a consumer actually cares about. Verify with
@@ -140,7 +140,7 @@ All commands run from the repository root at `17ee51e` (or at any later commit f
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 539 unit and regression tests, all 297 Kani harnesses. **This exact command was not run as one pass at `17ee51e`: the floor there is SPLIT** — a 294-harness pass with the Lean lid (~2h27m at the 20G cap) plus 3 heavy harnesses in separate 24G runs, and there is no single-run 297-harness floor. Needs ≥24 GB RAM; harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 539 unit and regression tests, all 298 Kani harnesses. **This exact command was not run as one pass at `17ee51e`: the floor there is SPLIT** — a 294-harness pass with the Lean lid (~2h27m at the 20G cap) plus 3 heavy harnesses in separate 24G runs, and there is no single-run 297-harness floor. Needs ≥24 GB RAM; harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Seven modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension`, `rsa_private_key` — see `gates/tiers.txt`. |
 | **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-42c8165.log` (for the 3 heavy harnesses, use their own `evidence/check-42c8165-heavy-<module>-<name>.log` instead — they are not in the main log) | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
@@ -205,7 +205,7 @@ All commands run from the repository root at `17ee51e` (or at any later commit f
 `kani::cover` is unsatisfiable as `SUCCESSFUL`, with `0 of 1 cover properties satisfied`. `check.sh`
 does **not** fail on that. Exactly 3 harnesses have a cover in that state, and they are disclosed
 in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, read it. The crate has
-499 `kani::cover` statements in total.
+504 `kani::cover` statements in total.
 
 ---
 
@@ -258,7 +258,7 @@ in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, re
 | `DER-C-SEQ-3` | SEQUENCE is constructed and carries identifier `0x30` | done | **CONTRACT** (bounded) | `K sequence::proofs::tag_correctness` · `K sequence::proofs::accepted_identifier_is_canonical_0x30` |
 | `DER-C-SETOF-1` | SET OF members appear in ascending order of their **encodings** (§11.6) | **partial** | **CONTRACT** (bounded-backing, symbolic content `0..=8` octets) — exact `Result` against an independent two-phase whole-encoding oracle (`ordering_matches_whole_encoding_oracle`, and the TLV entry point over a symbolic 9-octet buffer in `tlv_entry_enforces_ordering_exactly`): children may differ in identifier octet, length octets and value, and `Unsorted { index }` names the first descending pair. The fixture-shaped harnesses (`ordering_iff_oracle`, `cmp_padded_matches_oracle`, `unsorted_children_are_rejected`) remain narrower than this label. Not established for content above 8 octets | `K set_of::proofs::ordering_iff_oracle` · `K set_of::proofs::cmp_padded_matches_oracle` · `K set_of::proofs::unsorted_children_are_rejected` · `K set_of::proofs::ordering_matches_whole_encoding_oracle` · `K set_of::proofs::tlv_entry_enforces_ordering_exactly`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** symbolic content of 0..=8 octets (children may differ in identifier octet, length octets and value; the TLV entry point over a symbolic 9-octet buffer), decided exactly against an independent whole-encoding oracle. Still bounded; disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-C-SETOF-2` | Equal adjacent member encodings are accepted (SET **OF**, not SET) | done | **CONTRACT** (bounded-backing, `0..=8` octets) — equal adjacent encodings are non-descending under the whole-encoding oracle and are accepted (`ordering_matches_whole_encoding_oracle`); the concrete 6-byte fixture `duplicate_adjacent_encodings_are_accepted` is kept as a witness | `K set_of::proofs::duplicate_adjacent_encodings_are_accepted`. At `17ee51e` the symbolic whole-encoding oracle `K set_of::proofs::ordering_matches_whole_encoding_oracle` also decides this over 0..=8 octets (equal adjacent encodings are non-descending, so accepted); the fixture above is no longer the only evidence |
-| `DER-C-SETOF-3` | The shipped SET OF walk never over-reads | **partial** | **PROBE** — bounded no-out-of-bounds-access plus an extensional postcondition; see §6.4 | `K set_of::proofs::no_over_read`. **Does not** show the shipped loop used the same per-child boundaries as the oracle, nor that its cursor never over-advances past the final read |
+| `DER-C-SETOF-3` | The shipped SET OF walk never over-reads, and each step advances by exactly the child's own encoded length | done | **CONTRACT** — **bounded-backing evidence** checks a harness-owned instance of SET OF's shared `Elements` walk per child against an independent oracle over `0..=6` octets; exact-result equivalence over `0..=8` pins production to that call pattern. Lean proves one accepted `Elements` step at any remaining-slice length, not exhaustion of the SET OF loop. This is the disclosed contract surface, not an unrestricted proof of SET OF-specific glue; see §6.4 | `N elements_next_progress` (`lean/SequenceProofs.lean`) · `K set_of::proofs::no_over_read` · `K set_of::proofs::refactored_walk_matches_previous_walk` |
 | `DER-C-SET` | General `SET` (§10.3) — DER ordering of a heterogeneous SET | **not-covered** | **out-of-scope** | `D DECISIONS.md` D13; README scope section. Not implemented, not claimed. |
 | `DER-C-CTX` | `[n] EXPLICIT` context tagging (§8.14) | done | **CONTRACT** (bounded-backing, `≤16` octets, symbolic `len` and full-range tag number, `unwind(20)`, no stubs) — exact total `Result` for the explicit form only (`decode_explicit_context_exact_result`, `decode_explicit_context_faithful`); an `Ok` does not require the value octets to be one complete inner TLV (inner well-formedness and tiling are the caller's) | `K context_tag::proofs::decode_explicit_context_never_panics` · `K context_tag::proofs::decode_explicit_context_faithful` · `K context_tag::proofs::decode_explicit_context_exact_result`. **Added after the `d05d3f2` row text was written (full floor now at `17ee51e`):** the exact total `Result` over a fully symbolic buffer of ≤16 bytes and a full-range tag number, `unwind(20)`, no stubs; explicit form only; inner-TLV well-formedness and tiling are the caller's. Disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-C-CTX-IMP` | `[n] IMPLICIT` context tagging | **not-covered** | **out-of-scope** | `D PROOF_MANIFEST.md` §6.2 — *"only the explicit-context form is addressed"*. Consequence: X.509's deprecated `[1]`/`[2]` unique identifiers are **rejected**, not parsed (`DER-X-TBS-2`) |
@@ -454,21 +454,40 @@ covers. **The other five have none, so nothing witnesses that their widened loop
 review asked for those covers before publish; the maintainer disclosed rather than fixed, and
 recorded it as a judgement call. The covers are owed.
 
-### 6.4 `set_of::no_over_read` is deliberately weaker than its sibling (`DER-C-SETOF-3`)
+### 6.4 `set_of::no_over_read` now observes the shared child-walk cursor (`DER-C-SETOF-3`)
 
-The asymmetry is in the *shipped code*, not in effort spent, and the crate states it in the
-docstring, in [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) §8.3, and in
-[`DER-REMAINING-WORK.md`](DER-REMAINING-WORK.md) R1:
+`decode_set_of` now drives the same `sequence::Elements` walk as SEQUENCE. Its read-only
+`remaining()` view is used both by production, to delimit the whole raw child encoding for §11.6,
+and by the proof, on a harness-owned instance, to observe the cursor before and after each child.
+Production's use of the same call pattern is pinned by the exact-result equivalence harness:
 
 | | drives | gets |
 |---|---|---|
 | `sequence::no_over_read` | `Elements` — the cursor is an observable field | per-child: the shipped advance is pinned to an independent oracle |
-| `set_of::no_over_read` | `decode_set_of` — the cursor is a local, the output is a count | bounded no-out-of-bounds-access **+ an extensional `Ok(k)` tiling postcondition** |
+| `set_of::no_over_read` | a harness-owned `Elements` instance through the same `remaining()` accessor production uses | per-child: the harness-owned advance and raw ordering span are pinned to an independent oracle; production is tied to the pattern by exact equivalence |
 
-`set_of` does **not** show that the shipped loop used the same per-child boundaries as the oracle's
-re-walk, and a terminal over-advance past the final read would neither panic nor change `k`. The fix
-requires refactoring shipped code onto `sequence::Elements` — a behavioural change, deliberately not
-bundled into a proof-integrity fix.
+The oracle carries its own offset and performs a fresh one-step `decode_tlv`; the iterator cursor
+must land on `off + expected_used`. That assertion remains decisive for empty-valued children, where
+comparing yielded value bytes cannot identify a boundary. The cursor harness covers symbolic
+lengths `0..=6`, enough for three minimum-size children and repeated empty-value advances, while
+avoiding the unrelated `cmp_padded` loops. Lean's `elements_next_progress` theorem covers one
+accepted `Elements` step for a remaining slice of any length; it does not establish that the SET OF
+loop exhausts arbitrary-length content. A separate exact-result harness checks SET OF's raw-span,
+ordering, error-mapping, count, variants, and precedence against a proof-local copy of the previous
+shipped walk over `0..=8` octets.
+
+The old `no_over_read` harness also carried two claims that are no longer part of this cursor-only
+harness. Its symbolic-length exact-tiling/count leg is carried by
+`ordering_matches_whole_encoding_oracle` over `0..=8` octets (with the fixed-eight-byte
+`ok_implies_exact_tiling` sibling retained). Its explicit value-at-child-tail byte comparison
+remains in `sequence::no_over_read`; SET OF now checks the yielded `Tlv` against the independent
+one-step decode but does not separately claim an unbounded value-at-tail theorem.
+
+The new glue and cursor claim were each watched fail under a claim-named control: shortening
+production's before/after cursor-delta span by one octet makes
+`unsorted_children_are_rejected` fail, and shortening `Elements::next`'s advance by one octet makes
+`set_of::no_over_read` fail at `new_off == off + expected_used`. Both edits were transient and the
+base bytes were restored before the ordinary test suite.
 
 ### 6.5 Bounds versus reality (`DER-X-BOUND`)
 

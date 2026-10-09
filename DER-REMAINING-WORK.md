@@ -460,18 +460,28 @@ is not the axis its correctness turns on — but it is what keeps `profile` belo
 the `sequence`/`set_of` `no_over_read` correction (`DECISIONS.md` D33) leaves two residuals open, and
 they are recorded here rather than left to be rediscovered.
 
-**R1 — `set_of::no_over_read` cannot observe the shipped walk's cursor (proof-strength residual).**
-`decode_set_of` does not use `sequence::Elements`; it runs its own inline walk whose cursor is a
-local and whose only output is a count. So its harness gets bounded no-out-of-bounds-access plus an
-extensional `Ok(k)` tiling postcondition, but **not** the per-child claim its `sequence` sibling now
-carries: nothing shows the shipped loop used the same per-child boundaries as the oracle's re-walk,
-and a terminal over-advance past the final read would neither panic nor change `k`. Not a defect in
-the harness — a limit imposed by the shipped code's shape.
+**R1 — CLOSED 2026-10-09: `set_of::no_over_read` observes the shared child-walk cursor.**
+`decode_set_of` now uses `sequence::Elements`, retiring its duplicated offset walk. A crate-visible
+read-only view of the iterator's remaining suffix lets production recover each whole child encoding
+for §11.6 comparison. `set_of::no_over_read` drives a harness-owned `Elements` instance through the
+same iterator/accessor call pattern; `refactored_walk_matches_previous_walk` pins the production
+decoder to the previous shipped behavior. Per accepted child, the cursor harness pins its advance
+to an independent one-step `decode_tlv` from its own offset, including the empty-value case that
+value equality alone cannot decide.
 
-*Fix, when taken:* refactor `decode_set_of` onto `sequence::Elements`. That closes R1 **and** retires
-a duplicated walk in shipped code (the same duplication, one layer down, that D33 removed from the
-proofs). It is a behavioural change to a shipped decoder — it must not be bundled into a
-proof-integrity fix, and it needs its own harness pass and its own review.
+Behaviour is held fixed by a proof-local copy of the previous shipped walk and the exact-result
+`refactored_walk_matches_previous_walk` harness over the existing symbolic bound. Lean's
+`elements_next_progress` proves one accepted `Elements` step for a remaining slice of any length;
+it does not prove exhaustion of the SET OF loop. The explicit cursor check covers symbolic lengths
+`0..=6` (up to three minimum-size children), while SET OF loop exhaustion and
+ordering/error/count glue remain bounded at the existing `0..=8` oracle/equivalence domains.
+Evidence placeholder: `evidence/check-<sha>.log`; required harnesses are
+`set_of::proofs::no_over_read`, `set_of::proofs::refactored_walk_matches_previous_walk`, and the
+retained SET OF regression set. Claim-named controls observed red for both new mechanisms: making
+production's cursor-delta span one octet short is rejected by
+`set_of::proofs::unsorted_children_are_rejected`, and making `Elements::next` advance one octet
+short is rejected by `set_of::proofs::no_over_read` at the exact-offset assertion. Their evidence
+records belong beside the green harness record under the same placeholder convention.
 
 **R2 — the widened structural harnesses still carry no covers of their own (anti-vacuity residual).**
 The 2026-08-23 structural-sibling sweep widened seven harnesses to symbolic input length. D33 added

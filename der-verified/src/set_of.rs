@@ -51,6 +51,13 @@
 //! [`crate::tag`]/[`crate::length`]); it does not additionally re-validate each child's own content
 //! canonicality (a canonical BOOLEAN, a minimal INTEGER, …) — same D5 boundary, extended.
 //!
+//! **Shared child walk.** [`decode_set_of`] uses [`crate::sequence::Elements`] for child framing
+//! and cursor advancement. An any-length Lean theorem covers each accepted [`Elements`] step;
+//! this module's bounded proofs cover the complete SET OF loop and glue: exhaustion, raw-span
+//! recovery, §11.6 ordering, element-error mapping, and the reported count. A differential proof
+//! checks that the refactor preserves every result and error precedence of the previous
+//! offset-based implementation.
+//!
 //! # Examples
 //!
 //! ```
@@ -66,6 +73,7 @@
 //! ```
 
 use crate::tag::{Class, Tag};
+use crate::sequence::Elements;
 use crate::tlv::{decode_tlv, encode_tlv_into, TlvError};
 use core::cmp::Ordering;
 
@@ -135,11 +143,12 @@ pub fn cmp_padded(a: &[u8], b: &[u8]) -> Ordering {
 /// — **and** that successive children's raw encodings are in non-descending order under
 /// [`cmp_padded`] (§11.6). Returns the child count.
 ///
-/// Walks children directly with [`decode_tlv`] in a loop tracking a byte offset, rather than
-/// [`crate::sequence::Elements`], because §11.6 compares each child's **whole raw TLV byte span**
-/// (identifier + length + value) — `Elements` only yields the decoded `Tlv { tag, value }`, not
-/// that raw span. On the first adjacent pair that violates the order, returns
-/// [`SetOfError::Unsorted`] naming the earlier element's index; a malformed child is
+/// Walks children through [`Elements`], the same framing walk used by SEQUENCE. The iterator's
+/// remaining-content cursor identifies each child's **whole raw TLV byte span** (identifier +
+/// length + value), which is what §11.6 compares. Each accepted iterator step has an any-length
+/// structural theorem in `lean/SequenceProofs.lean`; this module's bounded proofs cover the full
+/// SET OF loop, ordering, error mapping, and count. On the first adjacent pair that violates the
+/// order, returns [`SetOfError::Unsorted`] naming the earlier element's index; a malformed child is
 /// [`SetOfError::Element`].
 ///
 /// Children are checked strictly in order, and the first failure of that walk is the one reported:
@@ -148,12 +157,19 @@ pub fn cmp_padded(a: &[u8], b: &[u8]) -> Ordering {
 /// of that later malformed child (a malformed child itself is never compared, so it is reported as
 /// `Element`).
 pub fn decode_set_of(content: &[u8]) -> Result<usize, SetOfError> {
-    let mut off = 0usize;
+    let mut elements = Elements::new(content);
     let mut count = 0usize;
     let mut prev: Option<&[u8]> = None;
-    while off < content.len() {
-        let (_tlv, used) = decode_tlv(&content[off..]).map_err(SetOfError::Element)?;
-        let this = &content[off..off + used];
+    loop {
+        let before = elements.remaining();
+        match elements.next() {
+            None => break,
+            Some(Ok(_)) => {}
+            Some(Err(e)) => return Err(SetOfError::Element(e)),
+        }
+        let after = elements.remaining();
+        let used = before.len() - after.len();
+        let this = &before[..used];
         if let Some(p) = prev {
             // Invariant: `prev` is `Some` only after the first iteration has run to completion,
             // at which point `count` has already been incremented to `1` — so `count >= 1` here,
@@ -163,7 +179,6 @@ pub fn decode_set_of(content: &[u8]) -> Result<usize, SetOfError> {
             }
         }
         prev = Some(this);
-        off += used;
         count += 1;
     }
     Ok(count)
@@ -232,11 +247,11 @@ pub fn encode_set_of_into(children_content: &[u8], out: &mut [u8]) -> Option<usi
 // Kani proof harnesses (the L3 proof floor).
 // ---------------------------------------------------------------------------
 //
-// Buffer sizing / unwind: mirrors `sequence.rs` — the content buffer is `[u8; 8]`. Each child TLV
-// consumes `used >= 2`, so there are at most 4 children; `decode_tlv` itself needs up to ~11
-// iterations for a maximal header. `#[kani::unwind(16)]` covers both the outer walk and the inner
-// header decode; if Kani reports an unwinding-assertion failure, raise the bound (never weaken the
-// proof).
+// Buffer sizing / unwind: most harnesses mirror `sequence.rs` with an `[u8; 8]` content buffer and
+// `#[kani::unwind(16)]`. The cursor-only `no_over_read` claim uses `[u8; 6]` and unwind 7: six bytes
+// still admit three minimum-size children, including empty-valued children, while every loop driven
+// by that input can take at most six iterations. Unwinding assertions remain enabled, so this is a
+// checked bound rather than an assumption; a reported unwinding failure requires raising it.
 #[cfg(kani)]
 mod proofs {
     use super::*;
@@ -282,6 +297,58 @@ mod proofs {
         Ordering::Equal
     }
 
+    /// Proof-local reference model: a faithful copy of the `decode_set_of` child walk that shipped
+    /// before it was refactored onto [`Elements`]. Keep this offset-based implementation separate
+    /// from the production iterator walk so the equivalence harness checks exact results, including
+    /// error variants, indices, counts, and their precedence.
+    fn previous_decode_set_of(content: &[u8]) -> Result<usize, SetOfError> {
+        let mut off = 0usize;
+        let mut count = 0usize;
+        let mut prev: Option<&[u8]> = None;
+        while off < content.len() {
+            let (_tlv, used) = decode_tlv(&content[off..]).map_err(SetOfError::Element)?;
+            let this = &content[off..off + used];
+            if let Some(p) = prev {
+                if cmp_padded(p, this) == Ordering::Greater {
+                    return Err(SetOfError::Unsorted { index: count - 1 });
+                }
+            }
+            prev = Some(this);
+            off += used;
+            count += 1;
+        }
+        Ok(count)
+    }
+
+    /// **Behavioural equivalence with the previous shipped walk.** Over every content of symbolic
+    /// length `0..=8`, the `Elements`-based implementation returns exactly the old offset walk's
+    /// result: the same count on success, or the same `Element` error / first `Unsorted` index with
+    /// the same precedence. The reference above is deliberately proof-local and retains the old
+    /// code shape; production contains only the shared `Elements` walk.
+    #[kani::proof]
+    #[kani::unwind(16)]
+    fn refactored_walk_matches_previous_walk() {
+        let buf: [u8; 8] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= buf.len());
+        let content = &buf[..len];
+        let previous = previous_decode_set_of(content);
+        let refactored = decode_set_of(content);
+        assert!(refactored == previous);
+        kani::cover(
+            matches!(refactored, Ok(k) if k >= 2),
+            "a successful multi-child walk is compared",
+        );
+        kani::cover(
+            matches!(refactored, Err(SetOfError::Unsorted { .. })),
+            "an ordering error is compared exactly",
+        );
+        kani::cover(
+            matches!(refactored, Err(SetOfError::Element(_))),
+            "an element framing error is compared exactly",
+        );
+    }
+
     /// Robustness: `decode_set_of` on any content **of any length up to 8 octets** never panics --
     /// the content buffer AND its length are both symbolic, so this is a bounded claim over the
     /// whole `0..=8`-octet domain, not just the single 8-octet length.
@@ -306,86 +373,88 @@ mod proofs {
         let _ = result;
     }
 
-    /// **No over-read of [`decode_set_of`], in the two senses this walk permits.** Bounded
-    /// memory-safety of the shipped walk, plus an extensional postcondition on what it accepts.
+    /// **No over-read, over the shared SET OF child walk.** Every accepted step of a harness-owned
+    /// [`Elements`] instance advances its cursor by exactly the child length computed by an
+    /// independent one-step [`decode_tlv`] from an offset carried by this harness. Production uses
+    /// the same iterator/accessor call pattern, pinned to the previous shipped behavior by
+    /// [`refactored_walk_matches_previous_walk`]. The raw span used by the SET OF ordering glue is
+    /// exactly that oracle-delimited child span.
     ///
-    /// **What drives this proof is load-bearing, and it used to be the wrong thing.** Until
-    /// 2026-08-24 this harness ran its own `decode_tlv` loop from raw offsets — copied from
-    /// `sequence.rs`'s harness, and described as being "exactly like" it. That made it a proof
-    /// about a *copy* of the walk: a regression inside [`decode_set_of`]'s own loop could have
-    /// left it green. It now drives [`decode_set_of`] itself. Two legs carry the claim:
+    /// The cursor assertion is load-bearing. Yielded-value equality alone is insufficient: an
+    /// empty child value can equal an empty slice at multiple offsets. Reading [`Elements::remaining`]
+    /// before and after every step exposes the harness-owned cursor, so even an empty-valued child
+    /// must land at `off + expected_used`. Index arithmetic only is used; no pointer-address
+    /// arithmetic or provenance assumption enters the claim.
     ///
-    /// 1. **No out-of-bounds access, over `0..=8` octets.** [`decode_set_of`] indexes
-    ///    `content[off..]` and `content[off..off + used]` directly and the crate forbids `unsafe`,
-    ///    so an over-read inside it is an out-of-bounds slice — a panic — and Kani checks panics
-    ///    on every path. Reaching the `if let` below at all is that claim.
-    /// 2. **On `Ok(k)`, an independent index oracle pins the tiling — at *symbolic* length.** The
-    ///    sibling `ok_implies_exact_tiling` checks the same shape only at the fixed 8-octet
-    ///    length; this covers the whole domain. Index arithmetic only (no pointer /
-    ///    `usize`-address arithmetic, so it is target-width agnostic and cannot be vacuously true
-    ///    under address wraparound). Each child consumes `used >= 2` (DER's two-octet framing
-    ///    floor) without passing `content.len()`, holds its value at its own tail (a **byte**
-    ///    comparison — it says the value matches the octets at that position, not that it is, in
-    ///    the provenance sense, a pointer into them), the children tile the content exactly, and
-    ///    `seen == k`.
-    ///
-    /// **What this does NOT prove, stated because the sibling in `sequence.rs` DOES prove it.**
-    /// The two are not structurally equivalent, and the difference is in the shipped code, not in
-    /// the effort spent: [`crate::sequence::Elements`] carries its cursor in a field its harness
-    /// can read back after every step, so that harness pins the shipped walk's advance
-    /// *per child* against a separately computed oracle. [`decode_set_of`] keeps `off` in a local
-    /// and returns only a count, so nothing here observes its cursor. Consequently this harness
-    /// does not show that the shipped loop used the *same per-child boundaries* as the oracle's
-    /// re-walk, nor that the local cursor never ends up past `content.len()` after the final
-    /// read — a terminal over-advance that reads nothing more would neither panic nor change `k`.
-    /// Leg 2 is an extensional property of the accepted *input*, not a trace of the walk.
-    /// Closing that gap needs the walk itself refactored onto [`crate::sequence::Elements`]
-    /// (which would also retire a duplicated walk in shipped code); it is logged in
-    /// `DER-REMAINING-WORK.md` rather than claimed here.
-    ///
-    /// Covers (T6 primary rule): the walk genuinely takes a second iteration, and the rejection
-    /// path genuinely fires. What a cover buys is narrower than it looks — `kani::cover`
-    /// satisfaction is observed at a run and is not gate-enforced in this repo
-    /// (`PROOF_MANIFEST.md` §8.2), and an always-`Err` body would satisfy every *conditional*
-    /// assertion above while merely leaving the `Ok` cover unsatisfied. These are evidence that
-    /// the paths were reached at this run, not an enforced anti-vacuity guard.
+    /// This harness is deliberately limited to the shared cursor mechanism; ordering, error
+    /// mapping, count, and their precedence are checked separately by
+    /// [`refactored_walk_matches_previous_walk`]. Keeping those concerns separate avoids pulling
+    /// the data-dependent [`cmp_padded`] loops into the per-step cursor proof. Six symbolic bytes
+    /// still admit three minimum-size children and exercise repeated advances. Covers witness a
+    /// second child, a third child, an empty-valued child, and a malformed-child stop.
     #[kani::proof]
-    #[kani::unwind(16)]
+    #[kani::unwind(7)]
     fn no_over_read() {
-        let buf: [u8; 8] = kani::any();
-        // Symbolic input length (same idiom as iterate_never_panics above): the no-over-read
-        // claim must hold at every length in the domain, not just the full buffer.
+        let buf: [u8; 6] = kani::any();
+        // Symbolic input length keeps the claim over the whole `0..=6`-octet domain.
         let len: usize = kani::any();
         kani::assume(len <= buf.len());
         let content = &buf[..len];
 
-        // Leg 1: the shipped walk. Reaching the next statement at all is the no-OOB-access claim
-        // -- this call, not a re-implementation of it, is what Kani's panic checks range over.
-        let result = decode_set_of(content);
+        let mut elements = Elements::new(content);
+        let mut off = 0usize;
+        let mut children = 0usize;
+        let mut errored = false;
+        loop {
+            let before = elements.remaining();
+            assert!(before.len() == content.len() - off);
+            match elements.next() {
+                None => {
+                    assert!(before.is_empty());
+                    assert!(off == content.len());
+                    break;
+                }
+                Some(Err(e)) => {
+                    assert!(elements.remaining().len() == before.len());
+                    match decode_tlv(&content[off..]) {
+                        Err(expected_error) => assert!(e == expected_error),
+                        Ok(_) => panic!("Elements rejected a child accepted by the oracle"),
+                    }
+                    errored = true;
+                    break;
+                }
+                Some(Ok(tlv)) => {
+                    let (expected_tlv, expected_used) = decode_tlv(&content[off..]).unwrap();
+                    assert!(expected_used >= 2);
+                    assert!(off + expected_used <= content.len());
+                    assert!(tlv == expected_tlv);
 
-        // Leg 2: an EXTENSIONAL postcondition on the accepted input. This re-walk observes the
-        // shipped cursor not at all (it is a local); see the doc comment on what that leaves open.
-        if let Ok(k) = result {
-            let mut off = 0usize;
-            let mut seen = 0usize;
-            while off < content.len() {
-                let (tlv, used) = decode_tlv(&content[off..]).unwrap();
-                assert!(used >= 2); // DER's two-octet framing floor
-                assert!(off + used <= content.len()); // never past the content
-                assert!(tlv.value.len() <= used); // the value lies within this child ...
-                // ... and matches the octets at that child's tail (byte comparison).
-                assert!(tlv.value == &content[off + used - tlv.value.len()..off + used]);
-                off += used;
-                seen += 1;
+                    let after = elements.remaining();
+                    let new_off = content.len() - after.len();
+                    assert!(new_off == off + expected_used);
+                    assert!(new_off > off);
+                    kani::cover(
+                        tlv.value.is_empty(),
+                        "an empty-valued child still has its cursor advance pinned",
+                    );
+
+                    off = new_off;
+                    children += 1;
+                }
             }
-            assert!(off == content.len()); // exact tiling: no leftover, no over-run
-            assert!(seen == k); // and the reported count matches the independent walk
+        }
+        if !errored {
+            assert!(off == content.len());
         }
         kani::cover(
-            matches!(result, Ok(k) if k >= 2),
+            children >= 2,
             "the shipped walk genuinely takes a second iteration",
         );
-        kani::cover(result.is_err(), "the shipped walk's rejection path genuinely fires");
+        kani::cover(
+            children >= 3,
+            "the shipped walk genuinely takes a third iteration",
+        );
+        kani::cover(errored, "the shipped element-error path genuinely fires");
     }
 
     /// **Exact tiling.** `decode_set_of(content) == Ok(k)` implies an independent re-walk of

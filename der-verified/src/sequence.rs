@@ -92,6 +92,11 @@ impl<'a> Elements<'a> {
     pub fn new(content: &'a [u8]) -> Self {
         Elements { rest: content, done: false }
     }
+
+    /// Return the content suffix that has not yet been visited.
+    pub(crate) fn remaining(&self) -> &'a [u8] {
+        self.rest
+    }
 }
 
 impl<'a> Iterator for Elements<'a> {
