@@ -679,7 +679,7 @@ mod proofs {
         }
         kani::cover(y < 50, "the 20YY side of the pivot");
         kani::cover(y >= 50 && y <= 99, "the 19YY side of the pivot, inside 00..=99");
-        kani::cover(y > 99 && full > 2049, "a hand-built year2 above 99 maps above 2049");
+        kani::cover(y > 99 && full > 2049, "a hand-built year2 of 150 or more maps above 2049");
     }
 }
 

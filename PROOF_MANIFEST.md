@@ -617,24 +617,24 @@ This is the list that decides whether the rest of the document is worth anything
 | `x509_certificate` | panic-freedom is proven **≤ 12 bytes** (`parse_certificate_never_panics`, **modular** — `parse_tbs_certificate` stubbed, §8.4); a real certificate is **~170 bytes** (this module's own test fixture) — panic-freedom beyond 12 bytes is **not machine-checked at this composition**: it rests on an un-machine-checked compositional argument (`decode_tlv`'s proven no-over-read contract plus each delegated sub-parser's own separate panic-freedom proof), not a symbolic proof over the real-size domain. No signature check, no path building |
 | `profile` | bounded, and over symbolic *field values* rather than symbolic DER bytes — it decodes nothing (§7). Each of the four RFC 5280 cross-field rules is proven as a biconditional, plus their precedence and totality. No Lean lid, so no ∀-length statement |
 
-**Proof-harness comments in the source that are wrong in this release**
+**Proof-harness comments corrected in this release (wrong in 0.2.0)**
 
-Three groups of comments in `mod proofs` are wrong. The source is left unchanged in 0.2.0 so that
-the evidence's compile-input closure stays byte-identical; the comments are corrected in the source
-in the next release. Read these three points instead of the comments:
+Three groups of comments in `mod proofs` were wrong in 0.2.0 and are corrected in this release. The
+bullets below retain the correction record and its effect on the claims:
 
 - The `utc_time::proofs::full_year_pivot_is_correct` comment and the
-  `profile::proofs::utc_time_can_never_denote_2050_or_later` comment say that a hand-built `year2`
-  of 100 or more maps above 2049. In fact `year2` in `100..=149` maps to `2000..=2049`, and only
-  `year2` in `150..=255` maps above 2049. The cover text in `full_year_pivot_is_correct` has the same
-  wording. The proved formula is unaffected.
-- In `profile::proofs::validate_profile_is_exactly_the_documented_precedence`, the comment "no
-  per-octet reads of these spans" holds only for the unread spans and for fraction emptiness. The
-  algorithm-identifier bytes are compared octet by octet, so the `0..=4` window bounds the proof for
-  them.
-- In `x509_extension`, the shared comment labels all four structured harnesses CONTRACT SURFACE.
+  `profile::proofs::utc_time_can_never_denote_2050_or_later` comment, and the cover text in
+  `full_year_pivot_is_correct` said that a hand-built `year2` of 100 or more maps above 2049. They
+  now state that `year2` in `100..=149` maps to `2000..=2049`, and only `year2` in `150..=255` maps
+  above 2049. The proved formula is unaffected.
+- In `profile::proofs::validate_profile_is_exactly_the_documented_precedence`, the comment used to
+  say there were "no per-octet reads of these spans". That holds only for the unread spans and for
+  fraction emptiness: the algorithm-identifier bytes are compared octet by octet, so the `0..=4`
+  window bounds the proof for them. The comment now says so.
+- In `x509_extension`, the shared comment used to label all four structured harnesses CONTRACT SURFACE.
   `validate_extensions_structured_empty` checks one fixed input (`[0x30, 0x00]`), so it is a PROBE
-  fixed example, not contract evidence. The module grade does not change.
+  fixed example, not contract evidence; the corrected comment distinguishes it from the other three.
+  The module grade does not change.
 
 ### 6.3 Named residual — what the TLV framing accepts that a DER *validator* rejects
 

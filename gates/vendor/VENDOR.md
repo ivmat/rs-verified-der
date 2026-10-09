@@ -9,10 +9,11 @@ directory by hand.
 - Source commit: `455ca4f84ada3fc51eed30942696f34d118e1a59`
 - Closure inventory: `acceptance/CLOSURE.json`
 
-The inventory binds that source commit to SHA-256 digests for all 20 exported files. Verification
-against those digests confirms that every vendored file is byte-for-byte identical to the pinned
-source, including the complete `export_closure.py` and its cold-model-name regular expression; the
-exporter has no local patch.
+The inventory records the SHA-256 the exporter computed from the source checkout at `455ca4f`
+(`source_dirty=false`). The closure verifier confirms the vendored tree still matches that
+inventory; it does not by itself prove identity to the upstream commit. Identity to upstream is
+established by comparing all 20 listed files against a fresh checkout of `455ca4f` at vendoring
+time; repeat that comparison on every re-vendor.
 
 The closure supplies its own verifier. It checks every listed file hash, the
 source commit, export cleanliness, missing files, unexpected source files, and

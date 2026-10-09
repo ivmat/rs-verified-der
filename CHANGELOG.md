@@ -6,6 +6,12 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+### Fixed
+- Corrected proof-harness comments and cover text for the out-of-range UTCTime year threshold,
+  bounded algorithm-identifier comparisons, and the fixed empty-Extensions probe; the proof
+  manifest now records these as corrections to 0.2.0 rather than as current errata. No proof
+  predicate or runtime behaviour changed.
+
 ## [0.2.0] — 2026-10-03
 
 ### Breaking
