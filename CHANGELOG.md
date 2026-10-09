@@ -6,6 +6,15 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+### Changed
+- **`decode_set_of` now walks children through `sequence::Elements`.** It derives each complete
+  child encoding from the iterator's before/after cursor delta via the new crate-visible
+  `Elements::remaining` accessor, then applies the existing DER SET OF ordering and counting logic.
+  Exact-result equivalence with the previous walk is proved over fully symbolic content lengths
+  `0..=8`. `DER-C-SETOF-3` is classified **CONTRACT** with explicitly bounded-backing evidence, and
+  five production mutants covering count, ordering, error mapping, span derivation, and cursor
+  advancement were observed red.
+
 ### Fixed
 - Corrected proof-harness comments and cover text for the out-of-range UTCTime year threshold,
   bounded algorithm-identifier comparisons, and the fixed empty-Extensions probe; the proof
