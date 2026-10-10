@@ -9,10 +9,10 @@
     "observed": "green",
     "of_claim": "PM/ecdsa_sig_value"
   },
-  "produced_at": "2026-10-10T17:00:04.736228+00:00",
+  "produced_at": "2026-10-10T17:34:57.128892+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "pass",
-  "source_record_hash": "record:sha-512:5104ac43ef366126b43aadf26f359e858b46ed7e9b5454af970b9265d55a1ccc1f9989f15de7b368195f27d6feafd0cc183603d79138b5b8d9850ef40d7af28e",
+  "source_record_hash": "record:sha-512:4793a06cac7661c04b9d6632f57f5aa57b2c83ed55067d2fd5fe98ea214fb9b474deb8422a6f5faa7f169cdb75e6b440b2cba9effb85f357f847acf822b25ebe",
   "subject": {
     "commit": "d05d3f2",
     "repo": "rs-verified-der",

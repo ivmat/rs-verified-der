@@ -115,7 +115,7 @@ flowchart TB
     end
 ```
 
-Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `0087bf5`, generated `2026-10-10T17:01:54Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
+Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `3ce8a55`, generated `2026-10-10T17:35:43Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
 <!-- END GENERATED:map -->
 
 ## Strict decoding
