@@ -1,0 +1,45 @@
+{
+  "bound": "the harness's own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 / 8.1): x509_validity parse_never_panics [u8; 16] symbolic with symbolic len <= 16, unwind 20; x509_extension validate_extensions_never_panics [u8; 13] symbolic with symbolic len <= 13, unwind 12; each sat-twin runs the same real, unstubbed parser on one fixed concrete specimen (32-octet UTC/UTC Validity, unwind 20; 16-octet two-Extension Extensions, unwind 12). x509_tbs_certificate parse_tbs_certificate_never_panics [u8; 10] symbolic under 2 stubs (validate_name, validate_extensions), unwind as declared; its sat-twin runs a fixed 135-octet concrete v1 TBSCertificate specimen under 3 stubs (the third, parse_validity, is what makes the Ok tail reachable).",
+  "checked": "x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed",
+  "claim": "PM/x509_tbs_certificate",
+  "control": {
+    "expectation": "sat",
+    "kind": "planted-twin",
+    "observed": "sat",
+    "of_claim": "PM/x509_tbs_certificate"
+  },
+  "produced_at": "2026-10-10T17:00:11.746136+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:4f880c52fdd61926fec157241832ebb681b96edc43cb87a54b4ab674160a810d523a65de25f6faf8afb4140bdd62a33d58a11264c4282ceea0a01a6c78e1b4ae",
+  "subject": {
+    "commit": "0087bf5",
+    "repo": "rs-verified-der",
+    "unit": "x509_tbs_certificate"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      },
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--exact",
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--harness x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

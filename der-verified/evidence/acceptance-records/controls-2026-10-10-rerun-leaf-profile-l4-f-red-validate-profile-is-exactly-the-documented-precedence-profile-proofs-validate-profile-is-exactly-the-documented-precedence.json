@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/profile.rs",
+  "checked": "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+  "claim": "PM/profile",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/profile"
+  },
+  "produced_at": "2026-10-10T17:00:10.678348+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:4cedf1c258c971cce91e9cd32aaada42bffdc90b4e9350c6f6538c7880c2684ce08b7cc3c93abf4a9dfde0bb9fae9e91dadc611dd1fae4253b3334a87555ffad",
+  "subject": {
+    "commit": "d68eeca",
+    "repo": "rs-verified-der",
+    "unit": "profile"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

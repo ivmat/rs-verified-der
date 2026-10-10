@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/profile.rs",
+  "checked": "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+  "claim": "PM/profile",
+  "control": {
+    "expectation": "green",
+    "kind": "mutation",
+    "observed": "green",
+    "of_claim": "PM/profile"
+  },
+  "produced_at": "2026-10-10T17:00:10.557357+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:d1ffc3664c8c2943db1959690ec7d4ced8e7c4252d5dd9f18802d08aa350ef17d9b39380c26c9d9cca3c632b8d6f872726af669b805839a71ab393cbef0a0b21",
+  "subject": {
+    "commit": "d68eeca",
+    "repo": "rs-verified-der",
+    "unit": "profile"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

@@ -8,10 +8,10 @@
     "observed": "red",
     "of_claim": "PM/lean-oid"
   },
-  "produced_at": "2026-10-04T21:21:30.421571+00:00",
+  "produced_at": "2026-10-10T17:00:11.792052+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "record:sha-512:83c9895a94024744a3f8ead56cac73e8f4e9a2bb34aeb4ff386ba95af8927de57cbc02fcbebfd0052090f573cf919f77cd07a1e5a8bf09b4c59fb99881ab48f5",
+  "source_record_hash": "record:sha-512:9c052d9cc937fe3f9d80a5b92fed9cda538936078b45235486998d6b2a39a22256cd5b1034d6cce8e57541edbe58bd191e7b4d1a8dd1e59a9e9c44e186843ed4",
   "subject": {
     "commit": "402719a",
     "repo": "rs-verified-der",
