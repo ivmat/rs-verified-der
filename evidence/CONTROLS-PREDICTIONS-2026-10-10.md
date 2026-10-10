@@ -1,7 +1,8 @@
 # Predictions for the 2026-10-10 control runs, written before any of them ran
 
-Subject: commit `d68eeca`, tree clean when each run starts (the runner refuses a dirty mutated source). Written 2026-10-10T10:11Z, while the split
-floor was still running and before any control ran. Every Kani control is predicted `OBSERVED-RED`: every named baseline `SUCCESSFUL`, every red harness `FAILED`,
+Subject: commit `d68eeca`, tree clean when each run starts (the runner refuses a dirty mutated source). Written 2026-10-10T10:11:04Z (the original, unedited file has sha256
+`7ea6ec8d715b60bc265e8b1fb33ca93322652a47197c3ed2e604356eef5e7b9c`), at a time when the split-floor service had been started (10:02:29Z) but was still
+queued for the verification slot: the floor itself ran from 10:49:16Z to 13:21:11Z, so these predictions precede the floor result and every control (the first control ran at 14:41:30Z). Every Kani control is predicted `OBSERVED-RED`: every named baseline `SUCCESSFUL`, every red harness `FAILED`,
 every green harness `SUCCESSFUL`.
 
 ## Set-of and sequence mutants (`controls-set-of-sequence-2026-10-10`)

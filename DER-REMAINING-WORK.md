@@ -463,9 +463,9 @@ they are recorded here rather than left to be rediscovered.
 **R1 — CLOSED 2026-10-09: `set_of::no_over_read` observes the shared child-walk cursor.**
 `decode_set_of` now uses `sequence::Elements`, retiring its duplicated offset walk. A crate-visible
 read-only view of the iterator's remaining suffix lets production recover each whole child encoding
-for §11.6 comparison. `set_of::no_over_read` drives a harness-owned `Elements` instance through the
-same iterator/accessor call pattern; `refactored_walk_matches_previous_walk` pins the production
-decoder to the previous shipped behavior. Per accepted child, the cursor harness pins its advance
+for §11.6 comparison. `set_of::no_over_read` drives a harness-owned `Elements` instance through
+the iterator and accessor that production uses (that production makes the same calls is a source-inspection statement); `refactored_walk_matches_previous_walk` checks that the production
+decoder returns exactly the previous shipped walk's results over fully symbolic content of `0..=8` octets. Per accepted child, the cursor harness pins its advance
 to an independent one-step `decode_tlv` from its own offset, including the empty-value case that
 value equality alone cannot decide.
 
