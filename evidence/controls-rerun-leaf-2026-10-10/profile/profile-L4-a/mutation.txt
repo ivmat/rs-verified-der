@@ -1,0 +1,19 @@
+file: der-verified/src/profile.rs
+--- old ---
+    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
+
+--- new ---
+    // MUTATED: notBefore fraction check dropped
+
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -216,7 +216,7 @@
+     // Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.
+     // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both
+     // rule-3 fields (declaration order), notBefore first.
+-    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
++    // MUTATED: notBefore fraction check dropped
+     check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
+ 
+     Ok(())

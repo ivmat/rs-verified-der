@@ -1,0 +1,12 @@
+=== set_of-H1-M1 / set_of / der-verified/src/set_of.rs (2026-10-10T14:42:42Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T14:41:30Z
+slot_released_utc:   2026-10-10T14:42:42Z
+stubbing:            False
+predicted_assert:    duplicate_adjacent_encodings_are_accepted: decode_set_of == Ok(2) (mutant returns Ok(4))
+baseline set_of::proofs::duplicate_adjacent_encodings_are_accepted: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::duplicate_adjacent_encodings_are_accepted: FAILED   [want FAILED]  (36.0s)
+failed_descriptions:
+  - "assertion failed: decode_set_of(&content) == Ok(2)"

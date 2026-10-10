@@ -1,0 +1,19 @@
+file: der-verified/src/profile.rs
+--- old ---
+    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
+
+--- new ---
+    // MUTATED: notAfter fraction check dropped
+
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -217,7 +217,7 @@
+     // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both
+     // rule-3 fields (declaration order), notBefore first.
+     check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
+-    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
++    // MUTATED: notAfter fraction check dropped
+ 
+     Ok(())
+ }

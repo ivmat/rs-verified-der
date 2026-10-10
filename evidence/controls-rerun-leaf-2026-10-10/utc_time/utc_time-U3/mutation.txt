@@ -1,0 +1,17 @@
+file: der-verified/src/utc_time.rs
+--- old ---
+if t.year2 < 50 {
+--- new ---
+if t.year2 <= 50 {
+--- unified diff ---
+--- a/der-verified/src/utc_time.rs
++++ b/der-verified/src/utc_time.rs
+@@ -204,7 +204,7 @@
+ /// `YY ≥ 50 ⇒ 19YY`. This is a *profile* interpretation, not part of the DER encoding — an X.509
+ /// caller applies it; the generic codec does not (see the module docs).
+ pub fn full_year_rfc5280(t: &UtcTime) -> u16 {
+-    if t.year2 < 50 {
++    if t.year2 <= 50 {
+         2000 + t.year2 as u16
+     } else {
+         1900 + t.year2 as u16

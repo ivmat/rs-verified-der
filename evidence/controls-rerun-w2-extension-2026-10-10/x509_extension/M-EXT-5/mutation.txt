@@ -1,0 +1,17 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+    validate_oid(tlv.value).map_err(ExtensionError::BadOid)?;
+
+--- new ---
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -184,7 +184,6 @@
+     if tlv.tag.constructed {
+         return Err(ExtensionError::ExtnIdConstructed);
+     }
+-    validate_oid(tlv.value).map_err(ExtensionError::BadOid)?;
+     Ok((tlv.value, used))
+ }
+ 

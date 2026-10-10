@@ -1,0 +1,14 @@
+=== utc_time-U2 / utc_time / der-verified/src/utc_time.rs (2026-10-10T15:07:45Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:07:43Z
+slot_released_utc:   2026-10-10T15:07:45Z
+stubbing:            False
+predicted_assert:    month_range_is_classified :362 (mo=13 Ok)
+baseline utc_time::proofs::month_range_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+baseline utc_time::proofs::day_range_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+red      utc_time::proofs::month_range_is_classified: FAILED   [want FAILED]  (0.9s)
+green    utc_time::proofs::day_range_is_classified: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+failed_descriptions:
+  - "assertion failed: decode_utc_time(&c) == Err(UtcTimeError::MonthRange)"

@@ -1,0 +1,21 @@
+file: der-verified/src/profile.rs
+--- old ---
+    // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature.
+--- new ---
+    if cert.signature_algorithm.parameters.is_some() && cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {
+        return Err(ProfileError::ExtensionsRequireV3);
+    }
+    // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature.
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -192,6 +192,9 @@
+ /// `notAfter`'s). Rule 4 is checked after both rule 3 fields so that the errors reported for
+ /// certificates that were already rejected before rule 4 existed are unchanged.
+ pub fn validate_profile(cert: &Certificate<'_>) -> Result<(), ProfileError> {
++    if cert.signature_algorithm.parameters.is_some() && cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {
++        return Err(ProfileError::ExtensionsRequireV3);
++    }
+     // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature. `AlgorithmIdentifier`
+     // derives `PartialEq`/`Eq`, comparing both `algorithm_oid` (byte slice) and `parameters`
+     // (`Option<&[u8]>`) — exactly the "algorithm_oid bytes AND parameters" the rule requires.

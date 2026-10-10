@@ -1,0 +1,17 @@
+file: der-verified/src/sequence.rs
+--- old ---
+                self.rest = &self.rest[used..];
+--- new ---
+                self.rest = &self.rest[used - 1..];
+--- unified diff ---
+--- a/der-verified/src/sequence.rs
++++ b/der-verified/src/sequence.rs
+@@ -110,7 +110,7 @@
+             Ok((tlv, used)) => {
+                 // `used` is always in `1..=self.rest.len()` for an accepted TLV (proven in `tlv`),
+                 // so this slice is in bounds and strictly shrinks `rest` (each header is >= 2).
+-                self.rest = &self.rest[used..];
++                self.rest = &self.rest[used - 1..];
+                 Some(Ok(tlv))
+             }
+             Err(e) => {

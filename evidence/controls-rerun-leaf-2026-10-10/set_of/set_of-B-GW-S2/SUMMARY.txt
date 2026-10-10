@@ -1,0 +1,14 @@
+=== set_of-B-GW-S2 / set_of / der-verified/src/set_of.rs (2026-10-10T15:25:08Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:11:11Z
+slot_released_utc:   2026-10-10T15:25:08Z
+stubbing:            False
+predicted_assert:    tlv_entry_enforces_ordering_exactly: r == Err(e)
+baseline set_of::proofs::tlv_entry_enforces_ordering_exactly: SUCCESSFUL   [want SUCCESSFUL]
+baseline set_of::proofs::ordering_matches_whole_encoding_oracle: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::tlv_entry_enforces_ordering_exactly: FAILED   [want FAILED]  (221.3s)
+green    set_of::proofs::ordering_matches_whole_encoding_oracle: SUCCESSFUL   [want SUCCESSFUL]  (193.5s)
+failed_descriptions:
+  - "assertion failed: r == Err(e)"

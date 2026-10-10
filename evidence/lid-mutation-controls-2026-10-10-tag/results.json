@@ -1,0 +1,44 @@
+[
+ {
+  "id": "M1-tag-class-wrong-shift",
+  "file": "der-verified/src/tag.rs",
+  "kind": "production-source",
+  "desc": "class selector first >> 6 -> first >> 5 (class bits read from the wrong shift)",
+  "baseline_sha256": "3951b29aee75f3dd9ede31df6910e44b885d8a35ff9bee8a5eb145643d7c3ebe",
+  "restored_sha256": "3951b29aee75f3dd9ede31df6910e44b885d8a35ff9bee8a5eb145643d7c3ebe",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 16,
+  "reverted_rc": 0,
+  "reverted_wall": 14,
+  "observed": "RED"
+ },
+ {
+  "id": "M2-tag-constructed-wrong-mask",
+  "file": "der-verified/src/tag.rs",
+  "kind": "production-source",
+  "desc": "constructed mask 0x20 -> 0x40",
+  "baseline_sha256": "3951b29aee75f3dd9ede31df6910e44b885d8a35ff9bee8a5eb145643d7c3ebe",
+  "restored_sha256": "3951b29aee75f3dd9ede31df6910e44b885d8a35ff9bee8a5eb145643d7c3ebe",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 18,
+  "reverted_rc": 0,
+  "reverted_wall": 14,
+  "observed": "RED"
+ },
+ {
+  "id": "M3-tag-class-map-swap",
+  "file": "der-verified/src/tag.rs",
+  "kind": "production-source",
+  "desc": "Application and ContextSpecific match arms swapped",
+  "baseline_sha256": "3951b29aee75f3dd9ede31df6910e44b885d8a35ff9bee8a5eb145643d7c3ebe",
+  "restored_sha256": "3951b29aee75f3dd9ede31df6910e44b885d8a35ff9bee8a5eb145643d7c3ebe",
+  "byte_identical": true,
+  "mutated_rc": 1,
+  "mutated_wall": 15,
+  "reverted_rc": 0,
+  "reverted_wall": 14,
+  "observed": "RED"
+ }
+]

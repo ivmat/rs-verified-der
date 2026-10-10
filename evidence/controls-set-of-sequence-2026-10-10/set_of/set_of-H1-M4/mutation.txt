@@ -1,0 +1,17 @@
+file: der-verified/src/set_of.rs
+--- old ---
+        let used = before.len() - after.len();
+--- new ---
+        let used = before.len() - after.len() - 1;
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -168,7 +168,7 @@
+             Some(Err(e)) => return Err(SetOfError::Element(e)),
+         }
+         let after = elements.remaining();
+-        let used = before.len() - after.len();
++        let used = before.len() - after.len() - 1;
+         let this = &before[..used];
+         if let Some(p) = prev {
+             // Invariant: `prev` is `Some` only after the first iteration has run to completion,

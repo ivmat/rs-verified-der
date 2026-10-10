@@ -1,0 +1,1251 @@
+== lean lid: re-extract (charon -> aeneas) + drift check ==
+== lean lid: REFRESHED DerTagExtract.lean (authorized) ==
+== lean lid: REFRESHED DerTlvExtract.lean (authorized) ==
+== lean lid: REFRESHED DerSequenceExtract.lean (authorized) ==
+== lean lid: lake build (checking unbounded any-length proofs) ==
+⚠ [1512/1704] Replayed Aeneas.Std.Slice
+warning: Aeneas/Std/Slice.lean:363:4: declaration uses `sorry`
+warning: Aeneas/Std/Slice.lean:586:8: declaration uses `sorry`
+⚠ [1591/1704] Replayed Aeneas.Std.StringIter
+warning: Aeneas/Std/StringIter.lean:13:4: declaration uses `sorry`
+⚠ [1693/1704] Replayed LengthProofs
+warning: LengthProofs.lean:221:8: `List.take_succ` has been deprecated: Use `List.take_add_one` instead
+warning: LengthProofs.lean:967:31: 'simp' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: LengthProofs.lean:967:31: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: LengthProofs.lean:1021:39: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+info: LengthProofs.lean:1023:0: 'DerVerified.Length.decode_indefinite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1024:0: 'DerVerified.Length.decode_short_form' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1025:0: 'DerVerified.Length.decode_truncated_long' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1026:0: 'DerVerified.Length.decode_nonminimal_leading_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1027:0: 'DerVerified.Length.decode_toolarge' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1028:0: 'DerVerified.Length.decode_length_loop_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ shl8_or_bv._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1029:0: 'DerVerified.Length.decode_long_form_accept' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ shl8_or_bv._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1030:0: 'DerVerified.Length.decode_long_form_nonminimal_value' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ shl8_or_bv._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1031:0: 'DerVerified.Length.decode_length_loop_total' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1032:0: 'DerVerified.Length.decode_length_used_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: LengthProofs.lean:1033:0: 'DerVerified.Length.encode_length_loop0_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1034:0: 'DerVerified.Length.encode_length_loop1_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1035:0: 'DerVerified.Length.to_be_bytes_significant' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1036:0: 'DerVerified.Length.encode_length_long_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv_or_0x80._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1037:0: 'DerVerified.Length.encode_length_short_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1038:0: 'DerVerified.Length.roundtrip_long' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv_or_0x80._native.bv_decide.ax_1_5,
+ u8_high_bit_decomp._native.bv_decide.ax_1_5]
+info: LengthProofs.lean:1039:0: 'DerVerified.Length.roundtrip_short' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: LengthProofs.lean:1040:0: 'DerVerified.Length.decode_accepts_only_canonical' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ bv_or_0x80._native.bv_decide.ax_1_5,
+ shl8_or_bv._native.bv_decide.ax_1_5,
+ u8_high_bit_decomp._native.bv_decide.ax_1_5]
+⚠ [1695/1704] Replayed BigIntProofs
+warning: BigIntProofs.lean:139:23: This simp argument is unused:
+  ↓reduceIte
+
+Hint: Omit it from the simp argument list.
+  simp only [hempty,̵ ̵↓̵r̵e̵d̵u̵c̵e̵I̵t̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: BigIntProofs.lean:186:0: 'DerVerified.BigInteger.is_negative_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bitand_spec,
+ first_spec,
+ is_some_and_spec,
+ Shared0U8.Insts.CoreOpsBitBitAndU8U8.bitand,
+ core.option.Option.is_some_and,
+ core.slice.Slice.first,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:187:0: 'DerVerified.BigInteger.validate_iff_minimal' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:342:0: 'DerVerified.BigInteger.encode_minimal_integer_into_loop_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:391:0: 'DerVerified.BigInteger.encode_minimal_integer_into_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:413:0: 'DerVerified.BigInteger.encode_minimal_integer_into_roundtrip' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:518:0: 'DerVerified.BigInteger.encode_minimal_integer_into_loop_fixed_point' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:572:0: 'DerVerified.BigInteger.encode_minimal_integer_into_exact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:603:0: 'DerVerified.BigInteger.encode_minimal_integer_into_succeeds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: BigIntProofs.lean:640:0: 'DerVerified.BigInteger.IsMinimalDer_two_case' depends on axioms: [propext, Classical.choice, Quot.sound]
+ℹ [1697/1704] Replayed OidProofs
+info: OidProofs.lean:258:0: 'DerVerified.Oid.validate_oid_loop_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+info: OidProofs.lean:300:0: 'DerVerified.Oid.validate_iff_canonical' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ bv8_and_0x80_eq_zero_iff._native.bv_decide.ax_1_5]
+✔ [1698/1704] Built DerTagExtract (933ms)
+✔ [1699/1704] Built DerTlvExtract (1.2s)
+✔ [1700/1704] Built DerSequenceExtract (1.3s)
+✖ [1701/1704] Building TlvProofs (5.5s)
+trace: .> LEAN_PATH=/home/ivo/repo_tmp/der-integration/lean/.lake/packages/Cli/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/batteries/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/Qq/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/aesop/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/importGraph/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/plausible/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/mathlib/.lake/build/lib/lean:/home/ivo/Downloads/verified_rs_tools/aeneas/backends/lean/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean /home/ivo/.elan/toolchains/leanprover--lean4---v4.30.0-rc2/bin/lean /home/ivo/repo_tmp/der-integration/lean/TlvProofs.lean -o /home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean/TlvProofs.olean -i /home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean/TlvProofs.ilean -c /home/ivo/repo_tmp/der-integration/lean/.lake/build/ir/TlvProofs.c --setup /home/ivo/repo_tmp/der-integration/lean/.lake/build/ir/TlvProofs.setup.json --json
+warning: TlvProofs.lean:130:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: TlvProofs.lean:110:5: unused variable `hi1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: TlvProofs.lean:125:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵e̵q̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: TlvProofs.lean:136:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵e̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: TlvProofs.lean:217:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: TlvProofs.lean:336:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: TlvProofs.lean:336:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: TlvProofs.lean:336:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: TlvProofs.lean:336:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+warning: TlvProofs.lean:329:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TlvProofs.lean:671:0: 'DerVerified.Tlv.length_decode_used_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TlvProofs.lean:672:0: 'DerVerified.Tlv.length_decode_total' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TlvProofs.lean:673:0: 'DerVerified.Tlv.decode_tlv_structure' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+error: Lean exited with code 1
+✖ [1702/1704] Building SequenceProofs (5.5s)
+trace: .> LEAN_PATH=/home/ivo/repo_tmp/der-integration/lean/.lake/packages/Cli/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/batteries/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/Qq/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/aesop/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/importGraph/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/plausible/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/mathlib/.lake/build/lib/lean:/home/ivo/Downloads/verified_rs_tools/aeneas/backends/lean/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean /home/ivo/.elan/toolchains/leanprover--lean4---v4.30.0-rc2/bin/lean /home/ivo/repo_tmp/der-integration/lean/SequenceProofs.lean -o /home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean/SequenceProofs.olean -i /home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean/SequenceProofs.ilean -c /home/ivo/repo_tmp/der-integration/lean/.lake/build/ir/SequenceProofs.c --setup /home/ivo/repo_tmp/der-integration/lean/.lake/build/ir/SequenceProofs.setup.json --json
+warning: SequenceProofs.lean:137:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: SequenceProofs.lean:117:5: unused variable `hi1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: SequenceProofs.lean:132:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵e̵q̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:143:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵e̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:223:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: SequenceProofs.lean:341:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: SequenceProofs.lean:341:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: SequenceProofs.lean:341:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: SequenceProofs.lean:341:41: Type mismatch
+  tag_used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+warning: SequenceProofs.lean:334:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:835:17: This simp argument is unused:
+  ho
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:844:17: This simp argument is unused:
+  ho
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: SequenceProofs.lean:865:17: This simp argument is unused:
+  ho
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: SequenceProofs.lean:898:0: 'DerVerified.Sequence.length_decode_used_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:899:0: 'DerVerified.Sequence.length_decode_total' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:900:0: 'DerVerified.Sequence.decode_tlv_progress' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:901:0: 'DerVerified.Sequence.elements_next_progress' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:902:0: 'DerVerified.Sequence.decode_sequence_loop_spec' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+info: SequenceProofs.lean:903:0: 'DerVerified.Sequence.decode_sequence_structure' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ result_map_err_err_spec,
+ result_map_err_ok_spec,
+ try_from_u32_usize_spec,
+ Usize.Insts.CoreConvertTryFromU32TryFromIntError.try_from,
+ core.result.Result.map_err,
+ core.slice.Slice.first]
+error: Lean exited with code 1
+✖ [1703/1704] Building TagProofs (12s)
+trace: .> LEAN_PATH=/home/ivo/repo_tmp/der-integration/lean/.lake/packages/Cli/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/batteries/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/Qq/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/aesop/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/importGraph/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/plausible/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/packages/mathlib/.lake/build/lib/lean:/home/ivo/Downloads/verified_rs_tools/aeneas/backends/lean/.lake/build/lib/lean:/home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean /home/ivo/.elan/toolchains/leanprover--lean4---v4.30.0-rc2/bin/lean /home/ivo/repo_tmp/der-integration/lean/TagProofs.lean -o /home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean/TagProofs.olean -i /home/ivo/repo_tmp/der-integration/lean/.lake/build/lib/lean/TagProofs.ilean -c /home/ivo/repo_tmp/der-integration/lean/.lake/build/ir/TagProofs.c --setup /home/ivo/repo_tmp/der-integration/lean/.lake/build/ir/TagProofs.setup.json --json
+warning: TagProofs.lean:124:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: TagProofs.lean:102:5: unused variable `hi1`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: TagProofs.lean:118:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only [h̵o̵e̵q̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: TagProofs.lean:130:17: This simp argument is unused:
+  hoeq
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵o̵e̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:191:0: 'DerVerified.Tag.decode_tag_loop_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+warning: TagProofs.lean:223:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:263:0: 'DerVerified.Tag.tag_decode_total' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+error: TagProofs.lean:360:41: Type mismatch
+  used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: TagProofs.lean:360:41: Type mismatch
+  used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: TagProofs.lean:360:41: Type mismatch
+  used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+error: TagProofs.lean:360:41: Type mismatch
+  used_bounds_tail input b ?m.186 hb_lt
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else ok (core.result.Result.Ok ({ «class» := ?m.186, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r => ∀ (t : tag.Tag) (used : Usize), r = core.result.Result.Ok (t, used) → 1 ≤ ↑used ∧ ↑used ≤ (↑input).length ⦄
+warning: TagProofs.lean:349:18: This simp argument is unused:
+  hfirst
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵f̵i̵r̵s̵t̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:376:0: 'DerVerified.Tag.tag_decode_used_bounds' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+error: TagProofs.lean:566:4: Type mismatch
+  identifier_fields_tail_x690 input b tag.Class.Universal hb_lt (Eq.symm (x690Class_shift0 b hsel))
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Universal, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+error: TagProofs.lean:571:4: Type mismatch
+  identifier_fields_tail_x690 input b tag.Class.Application hb_lt (Eq.symm (x690Class_shift1 b hsel))
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Application, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+error: TagProofs.lean:576:4: Type mismatch
+  identifier_fields_tail_x690 input b tag.Class.ContextSpecific hb_lt (Eq.symm (x690Class_shift2 b hsel))
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.ContextSpecific, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+error: TagProofs.lean:601:4: Type mismatch
+  identifier_fields_tail_x690 input b tag.Class.Private hb_lt (Eq.symm (x690Class_shift3 b h3))
+has type
+  (do
+      let i1 ← lift (b &&& 32#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+but is expected to have type
+  (do
+      let i1 ← lift (b &&& 64#u8)
+      let i2 ← lift (b &&& 31#u8)
+      if (i2 != 31#u8) = true then do
+          let i3 ← lift (b &&& 31#u8)
+          let i4 ← lift (UScalar.cast UScalarTy.U32 i3)
+          ok
+              (core.result.Result.Ok
+                ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := i4 }, 1#usize))
+        else do
+          let state ← tag.decode_tag_loop 1#usize input 0#u32 0#usize
+          let cf ← core.result.Result.Insts.CoreOpsTry.branch state
+          match cf with
+            | core.ops.control_flow.ControlFlow.Continue val =>
+              let (number, i3) := val
+              if number ≤ 30#u32 then ok (core.result.Result.Err tag.TagError.NonMinimal)
+              else
+                ok
+                  (core.result.Result.Ok
+                    ({ «class» := tag.Class.Private, constructed := i1 != 0#u8, number := number }, i3))
+            | core.ops.control_flow.ControlFlow.Break residual =>
+              core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual (tag.Tag × Usize)
+                (core.convert.FromSame tag.TagError) residual) ⦃
+    r =>
+    ∀ (t : tag.Tag) (used : Usize),
+      r = core.result.Result.Ok (t, used) →
+        t.class = x690Class b ∧
+          t.constructed = (b &&& 32#u8 != 0#u8) ∧ ((b &&& 31#u8 != 31#u8) = true → ↑t.number = ↑(b &&& 31#u8)) ⦄
+info: TagProofs.lean:647:0: 'DerVerified.Tag.tag_decode_class' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TagProofs.lean:648:0: 'DerVerified.Tag.tag_decode_constructed' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TagProofs.lean:649:0: 'DerVerified.Tag.tag_decode_low_tag_number' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TagProofs.lean:650:0: 'DerVerified.Tag.tag_decode_identifier_fields' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+warning: TagProofs.lean:681:8: `List.take_succ` has been deprecated: Use `List.take_add_one` instead
+warning: TagProofs.lean:805:6: This simp argument is unused:
+  core.convert.FromSame
+
+Hint: Omit it from the simp argument list.
+  simp [core.result.Result.Insts.CoreOpsTry.branch,
+        core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+        c̵o̵r̵e̵.̵c̵o̵n̵v̵e̵r̵t̵.̵F̵r̵o̵m̵S̵a̵m̵e̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:818:0: 'DerVerified.Tag.tag_decode_leading_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first]
+info: TagProofs.lean:1064:0: 'DerVerified.Tag.tag_decode_high_tag_accept' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ shl7_or_bv._native.bv_decide.ax_1_5]
+warning: TagProofs.lean:1236:6: This simp argument is unused:
+  core.convert.FromSame
+
+Hint: Omit it from the simp argument list.
+  simp [core.result.Result.Insts.CoreOpsTry.branch,
+        core.result.Result.Insts.CoreOpsTryTraitFromResidualResultInfallible.from_residual,
+        c̵o̵r̵e̵.̵c̵o̵n̵v̵e̵r̵t̵.̵F̵r̵o̵m̵S̵a̵m̵e̵,̵ ̵WP.spec_ok]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: TagProofs.lean:1262:0: 'DerVerified.Tag.tag_decode_too_large' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound,
+ first_spec,
+ core.slice.Slice.first,
+ shl7_or_bv._native.bv_decide.ax_1_5]
+error: Lean exited with code 1
+Some required targets logged failures:
+- TlvProofs
+- SequenceProofs
+- TagProofs
+error: build failed
+!! lean lid: FAIL - lake build did not succeed (see output above).
+# lean lid status: FAIL; exit 1

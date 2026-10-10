@@ -1,0 +1,17 @@
+file: der-verified/src/set_of.rs
+--- old ---
+            Some(Err(e)) => return Err(SetOfError::Element(e)),
+--- new ---
+            Some(Err(e)) => return Err(SetOfError::Tlv(e)),
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -165,7 +165,7 @@
+         match elements.next() {
+             None => break,
+             Some(Ok(_)) => {}
+-            Some(Err(e)) => return Err(SetOfError::Element(e)),
++            Some(Err(e)) => return Err(SetOfError::Tlv(e)),
+         }
+         let after = elements.remaining();
+         let used = before.len() - after.len();

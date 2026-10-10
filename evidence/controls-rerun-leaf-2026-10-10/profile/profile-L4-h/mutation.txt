@@ -1,0 +1,27 @@
+file: der-verified/src/profile.rs
+--- old ---
+    if let Time::Generalized(t) = time {
+        if !require_no_fraction(t) {
+--- new ---
+    if let Time::Utc(u) = time {
+        if u.second == 0 {
+            return Err(on_fraction);
+        }
+    }
+    if let Time::Generalized(t) = time {
+        if !require_no_fraction(t) {
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -171,6 +171,11 @@
+ /// with "the input carried no fraction octets" is proved in `crate::generalized_time`.
+ /// `on_fraction` lets the caller report which of `notBefore` / `notAfter` was the offending field.
+ fn check_time_no_fraction(time: &Time<'_>, on_fraction: ProfileError) -> Result<(), ProfileError> {
++    if let Time::Utc(u) = time {
++        if u.second == 0 {
++            return Err(on_fraction);
++        }
++    }
+     if let Time::Generalized(t) = time {
+         if !require_no_fraction(t) {
+             return Err(on_fraction);

@@ -1,0 +1,1431 @@
+# der-verified full-gate run (./check.sh) — SPLIT FLOOR, MAIN HALF
+# commit: d68eeca
+# dirty-tracked-paths-at-launch: 0  (working tree checked out clean at d68eeca before the run; the raw log's own
+#   first lines record `git rev-parse HEAD` = d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11 and the dirty-tracked-path count 0)
+# WHERE THIS RAN: the maintainer's own box, NOT a clean-room VM. Same weaker provenance claim as
+#   check-bffab69.log and check-d05d3f2.log and for the same reason — this box owns the Aeneas/Charon/Lean
+#   stack, so it is the only place a single run can cover BOTH the L3 Kani stage and the L4 Lean lid. The run
+#   ran inside a detached, MEMORY-CAPPED systemd --user service (AGENTS Law 1: no cloud, box allowed,
+#   resource-limited, sequential).
+# host: Linux 7.0.0-38-generic x86_64, 16 cores, 29 GB RAM
+# memory cap: MemoryMax=20G MemorySwapMax=0 (systemd-run --user --unit=der-checksh-split-d68eeca, transient SERVICE;
+#   launched via kani-dev/der-checksh-split.sh's documented command line)
+# cbmc    : 6.8.0 (cbmc-6.8.0) [kani-0.67.0 BUNDLED; read from this run's own output]
+# kani    : cargo-kani 0.67.0
+# cargo   : 1.97.0 (c980f4866 2026-06-30) [read from the box with ~/.cargo/bin first on PATH]
+# rustc   : 1.97.0 (2d8144b78 2026-07-07) — the crate pins the stable CHANNEL, not a version
+# solver  : CaDiCaL 2.0.0 (1606 occurrences in the raw log, never another value)
+# NOTE: kani harnesses run SEQUENTIALLY (no -j).
+#
+# SPLIT FLOOR (owner decision 2026-10-03): the cargo kani stage ran 295 of the 298 harnesses PROOF_MANIFEST.md
+#   lists (kani-dev/der-checksh-split.sh: a temporary copy of check.sh with the kani line restricted by --exact
+#   --harness; check.sh itself unchanged). The other 3 (HEAVY_EXCLUDE, >20 GB peak each) ran separately, one at a
+#   time, at MemoryMax=24G:
+#     x509_extension::proofs::validate_extensions_never_panics
+#       companion file: check-d68eeca-heavy-x509_extension-validate_extensions_never_panics.log
+#       raw sha256 of that companion's raw log: e36ad659748892344352aaaa79f41be06f7023bc426e29938266eca71191c248
+#     x509_extension::proofs::validate_extensions_ok_path_witnessed
+#       companion file: check-d68eeca-heavy-x509_extension-validate_extensions_ok_path_witnessed.log
+#       raw sha256 of that companion's raw log: b268d1367461d724c8346ad86927f04eb21de053cf8e21c1027d841a3f791f4d
+#     x509_name::proofs::validate_rdn_never_panics
+#       companion file: check-d68eeca-heavy-x509_name-validate_rdn_never_panics.log
+#       raw sha256 of that companion's raw log: 5edc8f9fbe087baa04ddcb6e393407826b1cce6db4c60897be07a9abb2ec955c
+# THERE IS NO SINGLE-RUN 298-HARNESS FLOOR AT THIS COMMIT. The floor is 295 (this run) + 3 (separate runs, same
+#   commit, same toolchain) = 298, all SUCCESSFUL.
+# check.sh's own summary line "L3 kani floor: GREEN" refers to the 295-harness restricted stage only.
+#
+# check.sh exit: 0
+# (exit of the split copy of check.sh; see SPLIT FLOOR above)
+# wall-clock: ~9115s (2h31m55s; 10:49:16Z start, 13:21:11Z end — from the raw log's own
+#   '# start: 2026-10-10T10:49:16Z' / '# end: 2026-10-10T13:21:11Z' lines; start is after the FV-slot wait and the harness listing)
+# peak memory: 17G (systemd service memory peak, read from the journal after the unit ended; the unit ran
+#   without --collect so MemoryPeak was no longer a live property)
+#   The run stayed within the 20G cap (no OOM; all 295 harnesses converged).
+#
+# L4 IS WITNESSED BY THIS RUN: DER_REQUIRE_LEAN=1 was exported by the split script, so an absent
+#   Aeneas/Lean toolchain would have FAILED the lean stage rather than skipping. The lean stage printed
+#   `lean-lid-status: PASS` (raw log line 768926); the lid-staleness gate printed
+#   `PASS check_lid_staleness: 6 lid-covered source(s) match the recorded state` (kept below); and
+#   check.sh's summary (raw log line 768938) reads `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`.
+#
+# WHAT THIS RUN DOES NOT ESTABLISH: nothing here grades any harness's oracle (same disclaimer as
+#   check-bffab69.log and check-d05d3f2.log). Oracle grade is the review-lens / acceptance-manifest concern.
+#
+# ---- THIS FILE IS A DISTILLATION, NOT THE RAW LOG ----
+# The complete raw log is kept LOCAL, not committed (owner 2026-09-18: raw gate logs stay out of the
+# repo; available on request), gzipped at evidence/raw/check-d68eeca-split.raw.log.gz — which is gitignored.
+# Filter: lines of the raw log are kept iff they match
+#   ^(== |Checking harness |SUMMARY:$| \*\* [0-9]+ of [0-9]+ |VERIFICATION:- |Complete - |PASS check_lid_staleness:),
+#   in raw order, unedited;
+#   every other raw line is dropped (cargo-test and gate chatter, CBMC/solver output, per-check listings, the
+#   'Solving with ...' and 'Kani Rust Verifier' banner lines, the 'lean-lid-status: PASS' echo, and the raw
+#   log's own '#' bookkeeping lines). The trailer line below is a raw line, copied verbatim, never edited.
+# (raw: 83692132 bytes, 768940 lines, sha256 a8535baf607e8ca2ea58c1253128c2eec9dea7fb4165d2db22ce58bc8ebf00b0.)
+#   (bytes, lines and sha256 are of the DECOMPRESSED raw log bytes.)
+
+== hygiene gate (doc links; pure stdlib) ==
+== proof-manifest gate: self-test (the gate's own gate; pure stdlib) ==
+== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) ==
+== proof-manifest gate: PASS (generated regions + 9 guarded count-claims current) ==
+== verification-map gate: self-test (the gate's own gate; pure stdlib) ==
+== verification-map gate (README.md's mermaid map vs source; pure stdlib) ==
+== verification-map gate: PASS (README.md verification map current) ==
+== acceptance-manifest gate (acceptance.toml vs the verified vendored closure; strict) ==
+== cargo test (workspace) ==
+== doctest-count gate: self-test (the gate's own gate; pure stdlib except its own two real-cargo tests) ==
+== doctest-count gate (gen_proof_manifest.py's static scan vs cargo's own count — structural backstop against any doc-attribute shape the static regexes don't recognise) ==
+== tier-parity gate (+ its self-test): the LIGHT/HEAVY split is data, so gate it ==
+== cargo kani :: der-verified (L3 proof floor) ==
+Checking harness big_integer::proofs::strips_redundant_padding...
+SUMMARY:
+ ** 0 of 214 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::is_negative_matches_sign_bit...
+SUMMARY:
+ ** 0 of 27 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::redundant_negative_padding_is_non_minimal_at_length...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::redundant_positive_padding_is_non_minimal_at_length...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::redundant_negative_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 83 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::redundant_positive_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 83 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::empty_is_empty...
+SUMMARY:
+ ** 0 of 184 failed (15 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::encode_never_panics...
+SUMMARY:
+ ** 0 of 80 failed (4 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::validate_never_panics...
+SUMMARY:
+ ** 0 of 35 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::minimality_is_local...
+SUMMARY:
+ ** 0 of 105 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::minimizer_output_is_always_minimal...
+SUMMARY:
+ ** 0 of 96 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::accepted_is_fixed_point_of_minimizer...
+SUMMARY:
+ ** 0 of 145 failed (6 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness big_integer::proofs::validate_iff_minimal_oracle...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::require_octet_aligned_exact_on_built_values...
+SUMMARY:
+ ** 0 of 66 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::octet_aligned_iff_unused_zero...
+SUMMARY:
+ ** 0 of 74 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::empty_nonzero_unused_is_classified...
+SUMMARY:
+ ** 0 of 132 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::nonzero_padding_is_classified...
+SUMMARY:
+ ** 0 of 132 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::unused_too_large_is_classified...
+SUMMARY:
+ ** 0 of 133 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::empty_is_classified...
+SUMMARY:
+ ** 0 of 132 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::decode_is_exactly_the_reference...
+SUMMARY:
+ ** 0 of 196 failed
+ ** 9 of 9 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::encode_rejects_exactly_the_non_canonical...
+SUMMARY:
+ ** 0 of 126 failed (4 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::accepted_iff_canonical_oracle...
+SUMMARY:
+ ** 0 of 57 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 129 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 45 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness bit_string::proofs::roundtrip_canonical...
+SUMMARY:
+ ** 0 of 122 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness boolean::proofs::wrong_length_is_bad_length...
+SUMMARY:
+ ** 0 of 101 failed (1 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness boolean::proofs::roundtrip...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness boolean::proofs::one_octet_is_canonical...
+SUMMARY:
+ ** 0 of 25 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness context_tag::proofs::decode_explicit_context_exact_result...
+SUMMARY:
+ ** 0 of 407 failed
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness context_tag::proofs::decode_explicit_context_faithful...
+SUMMARY:
+ ** 0 of 161 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness context_tag::proofs::decode_explicit_context_never_panics...
+SUMMARY:
+ ** 0 of 123 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ec_private_key::proofs::parse_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 374 failed (13 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ec_private_key::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 307 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ec_private_key::proofs::parse_faithful...
+SUMMARY:
+ ** 0 of 386 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ec_private_key::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 989 failed
+ ** 17 of 17 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ecdsa_sig_value::proofs::parse_strict_ok_path_witnessed_high_bit_r...
+SUMMARY:
+ ** 0 of 193 failed (11 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ecdsa_sig_value::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 195 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ecdsa_sig_value::proofs::parse_faithful...
+SUMMARY:
+ ** 0 of 213 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness ecdsa_sig_value::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 668 failed
+ ** 15 of 15 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness encrypted_private_key_info::proofs::parse_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 250 failed (11 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness encrypted_private_key_info::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 227 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness encrypted_private_key_info::proofs::parse_faithful...
+SUMMARY:
+ ** 0 of 273 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness encrypted_private_key_info::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 678 failed
+ ** 9 of 9 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness enumerated::proofs::roundtrip...
+SUMMARY:
+ ** 0 of 144 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness enumerated::proofs::encode_delegates_to_integer...
+SUMMARY:
+ ** 0 of 48 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness enumerated::proofs::decode_delegates_to_integer...
+SUMMARY:
+ ** 0 of 138 failed
+ ** 7 of 7 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::fraction_non_digit_is_classified...
+SUMMARY:
+ ** 0 of 257 failed (3 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::fraction_trailing_zero_is_classified...
+SUMMARY:
+ ** 0 of 257 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::fraction_empty_is_classified...
+SUMMARY:
+ ** 0 of 255 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::bad_fraction_separator_is_classified...
+SUMMARY:
+ ** 0 of 257 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::second_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::minute_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::hour_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::day_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::month_range_is_classified...
+SUMMARY:
+ ** 0 of 276 failed (5 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::not_zulu_is_classified...
+SUMMARY:
+ ** 0 of 257 failed (14 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::non_digit_is_classified...
+SUMMARY:
+ ** 0 of 263 failed (16 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::short_length_is_bad_length...
+SUMMARY:
+ ** 0 of 256 failed (18 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::encode_is_total_exact_oracle...
+SUMMARY:
+ ** 0 of 406 failed
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::require_no_fraction_iff_no_fraction_octets...
+SUMMARY:
+ ** 0 of 97 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::decode_is_exactly_the_reference...
+SUMMARY:
+ ** 0 of 401 failed
+ ** 16 of 16 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::accepted_iff_canonical_oracle...
+SUMMARY:
+ ** 0 of 310 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 367 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 95 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness generalized_time::proofs::roundtrip_all_fields...
+SUMMARY:
+ ** 0 of 456 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::content_errors_are_deliberately_not_caught...
+SUMMARY:
+ ** 0 of 119 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::real_x509_identifiers_are_still_accepted...
+SUMMARY:
+ ** 0 of 123 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::legal_der_the_comparison_library_rejected_is_still_accepted...
+SUMMARY:
+ ** 0 of 118 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::high_tag_universal_types_are_form_checked...
+SUMMARY:
+ ** 0 of 457 failed (8 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::rejects_every_disclosed_illegal_identifier...
+SUMMARY:
+ ** 0 of 397 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::decode_tlv_form_checked_strict_requires_full_consumption...
+SUMMARY:
+ ** 0 of 378 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule...
+SUMMARY:
+ ** 0 of 386 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::accepts_iff_no_encoded_rule_violated_and_never_rejects_non_universal...
+SUMMARY:
+ ** 0 of 94 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::constructed_form_rule_matches_oracle_on_all_tags...
+SUMMARY:
+ ** 0 of 88 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::reserved_eoc_rejected_iff_universal_zero...
+SUMMARY:
+ ** 0 of 85 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::required_form_matches_oracle_on_all_u32...
+SUMMARY:
+ ** 0 of 17 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness identifier_form::proofs::oracle_is_well_formed...
+SUMMARY:
+ ** 0 of 15 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness integer::proofs::nine_octets_is_too_large...
+SUMMARY:
+ ** 0 of 126 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness integer::proofs::redundant_negative_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 110 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness integer::proofs::redundant_positive_padding_is_non_minimal...
+SUMMARY:
+ ** 0 of 110 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness integer::proofs::empty_is_classified...
+SUMMARY:
+ ** 0 of 110 failed (6 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness integer::proofs::decode_accepts_only_minimal...
+SUMMARY:
+ ** 0 of 85 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness integer::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 51 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness integer::proofs::roundtrip_all_i64...
+SUMMARY:
+ ** 0 of 144 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::too_large_is_classified...
+SUMMARY:
+ ** 0 of 134 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::truncated_long_form_is_classified...
+SUMMARY:
+ ** 0 of 135 failed (6 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::long_form_of_short_value_is_non_minimal...
+SUMMARY:
+ ** 0 of 134 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::leading_zero_is_non_minimal...
+SUMMARY:
+ ** 0 of 141 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::reserved_is_classified...
+SUMMARY:
+ ** 0 of 137 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::indefinite_is_classified...
+SUMMARY:
+ ** 0 of 137 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 80 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 49 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness length::proofs::roundtrip_all_u32...
+SUMMARY:
+ ** 0 of 151 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness null::proofs::only_empty_is_valid...
+SUMMARY:
+ ** 0 of 71 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::accepted_identifier_is_canonical_0x04...
+SUMMARY:
+ ** 0 of 127 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::non_octet_string_tag_is_wrong_tag...
+SUMMARY:
+ ** 0 of 347 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::constructed_form_is_rejected...
+SUMMARY:
+ ** 0 of 347 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::classification_is_exact...
+SUMMARY:
+ ** 0 of 385 failed
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::accepted_content_is_the_tlv_value...
+SUMMARY:
+ ** 0 of 153 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 121 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::encode_with_symbolic_capacity_is_exact...
+SUMMARY:
+ ** 0 of 159 failed (27 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness octet_string::proofs::roundtrip_small...
+SUMMARY:
+ ** 0 of 210 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness oid::proofs::unterminated_is_truncated...
+SUMMARY:
+ ** 0 of 87 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness oid::proofs::later_0x80_is_non_minimal...
+SUMMARY:
+ ** 0 of 81 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness oid::proofs::leading_0x80_is_non_minimal...
+SUMMARY:
+ ** 0 of 79 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness oid::proofs::empty_is_classified...
+SUMMARY:
+ ** 0 of 77 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness oid::proofs::validate_never_panics...
+SUMMARY:
+ ** 0 of 89 failed (1 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness pkcs8::proofs::parse_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 318 failed (13 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness pkcs8::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 294 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness pkcs8::proofs::parse_faithful...
+SUMMARY:
+ ** 0 of 361 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness pkcs8::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 911 failed
+ ** 16 of 16 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::validate_profile_never_panics...
+SUMMARY:
+ ** 0 of 108 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::error_precedence_follows_declaration_order...
+SUMMARY:
+ ** 0 of 176 failed
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::rule4_fraction_iff_generalized_with_fraction...
+SUMMARY:
+ ** 0 of 189 failed
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::rule3_generalized_too_early_iff_year_le_2049...
+SUMMARY:
+ ** 0 of 177 failed
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3...
+SUMMARY:
+ ** 0 of 175 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::validate_profile_is_exactly_the_documented_precedence...
+SUMMARY:
+ ** 0 of 238 failed
+ ** 15 of 15 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::rule1_mismatch_iff_algorithms_differ...
+SUMMARY:
+ ** 0 of 219 failed
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness profile::proofs::utc_time_can_never_denote_2050_or_later...
+SUMMARY:
+ ** 0 of 22 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::encode_is_exact_visible...
+SUMMARY:
+ ** 0 of 375 failed (27 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::encode_is_exact_numeric...
+SUMMARY:
+ ** 0 of 375 failed (27 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::encode_is_exact_ia5...
+SUMMARY:
+ ** 0 of 375 failed (27 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::encode_is_exact_printable...
+SUMMARY:
+ ** 0 of 375 failed (27 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_encode_visible_delegates...
+SUMMARY:
+ ** 0 of 200 failed (27 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_encode_numeric_delegates...
+SUMMARY:
+ ** 0 of 200 failed (27 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_encode_ia5_delegates...
+SUMMARY:
+ ** 0 of 200 failed (27 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_encode_printable_delegates...
+SUMMARY:
+ ** 0 of 200 failed (27 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_decode_visible_delegates...
+SUMMARY:
+ ** 0 of 442 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_decode_numeric_delegates...
+SUMMARY:
+ ** 0 of 442 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_decode_ia5_delegates...
+SUMMARY:
+ ** 0 of 442 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrapper_decode_printable_delegates...
+SUMMARY:
+ ** 0 of 442 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::decode_is_faithful_visible...
+SUMMARY:
+ ** 0 of 514 failed
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::decode_is_faithful_numeric...
+SUMMARY:
+ ** 0 of 514 failed
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::decode_is_faithful_ia5...
+SUMMARY:
+ ** 0 of 514 failed
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::decode_is_faithful_printable...
+SUMMARY:
+ ** 0 of 514 failed
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrong_tag_is_classified_visible...
+SUMMARY:
+ ** 0 of 483 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrong_tag_is_classified_numeric...
+SUMMARY:
+ ** 0 of 428 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrong_tag_is_classified_ia5...
+SUMMARY:
+ ** 0 of 428 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::wrong_tag_is_classified_printable...
+SUMMARY:
+ ** 0 of 428 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::out_of_charset_reports_position...
+SUMMARY:
+ ** 0 of 186 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_visible...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_numeric...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_ia5...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::accepted_identifier_is_canonical_printable...
+SUMMARY:
+ ** 0 of 184 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::constructed_form_is_rejected_visible...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::constructed_form_is_rejected_numeric...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::constructed_form_is_rejected_ia5...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::constructed_form_is_rejected_printable...
+SUMMARY:
+ ** 0 of 427 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 195 failed
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::roundtrip_visible...
+SUMMARY:
+ ** 0 of 418 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::roundtrip_numeric...
+SUMMARY:
+ ** 0 of 363 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::roundtrip_ia5...
+SUMMARY:
+ ** 0 of 363 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::roundtrip_printable...
+SUMMARY:
+ ** 0 of 363 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_visible...
+SUMMARY:
+ ** 0 of 223 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_numeric...
+SUMMARY:
+ ** 0 of 168 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_ia5...
+SUMMARY:
+ ** 0 of 168 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::validate_iff_all_in_charset_printable...
+SUMMARY:
+ ** 0 of 168 failed (1 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_visible...
+SUMMARY:
+ ** 0 of 105 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_numeric...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_ia5...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness restricted_string::proofs::charset_exactly_matches_oracle_printable...
+SUMMARY:
+ ** 0 of 50 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_multi_prime_rejects_member_shape...
+SUMMARY:
+ ** 0 of 1004 failed (17 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_multi_prime_rejects_member_field_length...
+SUMMARY:
+ ** 0 of 859 failed (17 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_multi_prime_rejects_member_field_identifier...
+SUMMARY:
+ ** 0 of 879 failed (17 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_multi_prime_rejects_member_length...
+SUMMARY:
+ ** 0 of 850 failed (17 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_multi_prime_rejects_member_identifier...
+SUMMARY:
+ ** 0 of 865 failed (17 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_rejects_field_length...
+SUMMARY:
+ ** 0 of 807 failed (8 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_rejects_field_identifier...
+SUMMARY:
+ ** 0 of 863 failed (15 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_rejects_outer_identifier...
+SUMMARY:
+ ** 0 of 916 failed (15 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_multi_prime_faithful...
+SUMMARY:
+ ** 0 of 1071 failed (15 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_other_prime_infos_tail_set...
+SUMMARY:
+ ** 0 of 893 failed (14 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_other_prime_infos_tail_trailing...
+SUMMARY:
+ ** 0 of 893 failed (14 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_other_prime_infos_tail_truncated...
+SUMMARY:
+ ** 0 of 894 failed (14 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_other_prime_infos_tail_primitive...
+SUMMARY:
+ ** 0 of 894 failed (14 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_other_prime_infos_tail_empty...
+SUMMARY:
+ ** 0 of 893 failed (14 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_rejects_two_octet_version...
+SUMMARY:
+ ** 0 of 840 failed (14 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_rejects_missing_fields...
+SUMMARY:
+ ** 0 of 955 failed (14 unreachable)
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_faithful_two_prime_s2...
+SUMMARY:
+ ** 0 of 1046 failed (12 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_faithful_two_prime_s1...
+SUMMARY:
+ ** 0 of 1058 failed (10 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::validate_other_prime_info_never_panics...
+SUMMARY:
+ ** 0 of 583 failed (1 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::validate_other_prime_infos_never_panics...
+SUMMARY:
+ ** 0 of 141 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_ok_2prime_witnessed...
+SUMMARY:
+ ** 0 of 305 failed (5 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 245 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_private_key::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 850 failed
+ ** 11 of 11 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_public_key::proofs::parse_strict_ok_path_witnessed_rsa_2048_shaped...
+SUMMARY:
+ ** 0 of 218 failed (4 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_public_key::proofs::parse_strict_never_panics...
+SUMMARY:
+ ** 0 of 195 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_public_key::proofs::parse_faithful...
+SUMMARY:
+ ** 0 of 213 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness rsa_public_key::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 668 failed
+ ** 15 of 15 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness sequence::proofs::strict_rejects_trailing...
+SUMMARY:
+ ** 0 of 322 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness sequence::proofs::accepted_identifier_is_canonical_0x30...
+SUMMARY:
+ ** 0 of 125 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness sequence::proofs::tag_correctness...
+SUMMARY:
+ ** 0 of 330 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness sequence::proofs::roundtrip_two_children...
+SUMMARY:
+ ** 0 of 476 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness sequence::proofs::ok_implies_exact_tiling...
+SUMMARY:
+ ** 0 of 144 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness sequence::proofs::no_over_read...
+SUMMARY:
+ ** 0 of 215 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness sequence::proofs::iterate_never_panics...
+SUMMARY:
+ ** 0 of 321 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::encode_is_exact_over_content_and_capacity...
+SUMMARY:
+ ** 0 of 149 failed (27 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::strict_is_exact_composition...
+SUMMARY:
+ ** 0 of 513 failed (2 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::tlv_entry_enforces_ordering_exactly...
+SUMMARY:
+ ** 0 of 524 failed (2 unreachable)
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::ordering_matches_whole_encoding_oracle...
+SUMMARY:
+ ** 0 of 484 failed (2 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::roundtrip_two_sorted_children...
+SUMMARY:
+ ** 0 of 526 failed (41 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::strict_rejects_trailing...
+SUMMARY:
+ ** 0 of 475 failed (21 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::accepted_identifier_is_canonical_0x31...
+SUMMARY:
+ ** 0 of 249 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::tag_correctness...
+SUMMARY:
+ ** 0 of 473 failed (19 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::duplicate_adjacent_encodings_are_accepted...
+SUMMARY:
+ ** 0 of 402 failed (16 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::unsorted_reports_first_violation_index_depth_four...
+SUMMARY:
+ ** 0 of 402 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::unsorted_reports_first_violation_index...
+SUMMARY:
+ ** 0 of 402 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::unsorted_children_are_rejected...
+SUMMARY:
+ ** 0 of 402 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::cmp_padded_matches_oracle...
+SUMMARY:
+ ** 0 of 106 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::ordering_iff_oracle...
+SUMMARY:
+ ** 0 of 243 failed (13 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::ok_implies_exact_tiling...
+SUMMARY:
+ ** 0 of 220 failed (2 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::no_over_read...
+SUMMARY:
+ ** 0 of 304 failed
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::iterate_never_panics...
+SUMMARY:
+ ** 0 of 403 failed (2 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness set_of::proofs::refactored_walk_matches_previous_walk...
+SUMMARY:
+ ** 0 of 428 failed (2 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness tag::proofs::too_large_tag_is_classified...
+SUMMARY:
+ ** 0 of 142 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness tag::proofs::truncated_high_tag_is_classified...
+SUMMARY:
+ ** 0 of 142 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness tag::proofs::leading_zero_high_tag_is_non_minimal...
+SUMMARY:
+ ** 0 of 142 failed (4 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness tag::proofs::high_tag_of_small_number_is_non_minimal...
+SUMMARY:
+ ** 0 of 142 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness tag::proofs::decode_tag_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 81 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness tag::proofs::decode_tag_never_panics...
+SUMMARY:
+ ** 0 of 34 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness tag::proofs::roundtrip_all_tags...
+SUMMARY:
+ ** 0 of 176 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness tlv::proofs::strict_rejects_trailing...
+SUMMARY:
+ ** 0 of 293 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness tlv::proofs::tlv_truncated_value_is_classified...
+SUMMARY:
+ ** 0 of 298 failed (11 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness tlv::proofs::tlv_roundtrip_small...
+SUMMARY:
+ ** 0 of 223 failed (21 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness tlv::proofs::decode_tlv_structure...
+SUMMARY:
+ ** 0 of 130 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness tlv::proofs::decode_tlv_never_panics...
+SUMMARY:
+ ** 0 of 96 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::full_year_pivot_is_correct...
+SUMMARY:
+ ** 0 of 25 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::decode_postcondition_fields_in_range...
+SUMMARY:
+ ** 0 of 104 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::second_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::minute_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::hour_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::day_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::month_range_is_classified...
+SUMMARY:
+ ** 0 of 201 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::not_zulu_is_classified...
+SUMMARY:
+ ** 0 of 182 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::non_digit_is_classified...
+SUMMARY:
+ ** 0 of 188 failed (8 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::wrong_length_is_bad_length...
+SUMMARY:
+ ** 0 of 194 failed (10 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::encode_is_total_exact_oracle...
+SUMMARY:
+ ** 0 of 216 failed
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::decode_is_exactly_the_reference...
+SUMMARY:
+ ** 0 of 279 failed
+ ** 12 of 12 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::accepted_iff_canonical_oracle...
+SUMMARY:
+ ** 0 of 228 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::decode_accepts_only_canonical...
+SUMMARY:
+ ** 0 of 189 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 60 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utc_time::proofs::roundtrip_all_fields...
+SUMMARY:
+ ** 0 of 309 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::encode_is_exact_over_content_and_capacity...
+SUMMARY:
+ ** 0 of 367 failed (33 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::decode_str_is_exact_delegation...
+SUMMARY:
+ ** 0 of 585 failed (9 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::decode_is_faithful...
+SUMMARY:
+ ** 0 of 569 failed (9 unreachable)
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::ill_formed_reports_position...
+SUMMARY:
+ ** 0 of 352 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::wrong_tag_is_classified...
+SUMMARY:
+ ** 0 of 422 failed (19 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::accepted_identifier_is_canonical...
+SUMMARY:
+ ** 0 of 202 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::constructed_form_is_rejected...
+SUMMARY:
+ ** 0 of 422 failed (19 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::decode_never_panics...
+SUMMARY:
+ ** 0 of 202 failed
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::roundtrip...
+SUMMARY:
+ ** 0 of 413 failed (38 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::validate_iff_std...
+SUMMARY:
+ ** 0 of 233 failed (7 unreachable)
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::validate_iff_oracle_multi...
+SUMMARY:
+ ** 0 of 216 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness utf8_string::proofs::validate_iff_oracle...
+SUMMARY:
+ ** 0 of 216 failed
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_algorithm_identifier::proofs::parse_faithful...
+SUMMARY:
+ ** 0 of 194 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_algorithm_identifier::proofs::parse_algorithm_identifier_never_panics...
+SUMMARY:
+ ** 0 of 175 failed
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_certificate::proofs::parse_certificate_never_panics...
+SUMMARY:
+ ** 0 of 253 failed (4 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::validate_extensions_rejects_outer_envelope...
+SUMMARY:
+ ** 0 of 681 failed (5 unreachable)
+ ** 5 of 5 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::validate_extensions_rejects_child_framing...
+SUMMARY:
+ ** 0 of 677 failed (5 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::validate_extensions_structured_second_identifier...
+SUMMARY:
+ ** 0 of 678 failed (12 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::validate_extensions_structured_two_members...
+SUMMARY:
+ ** 0 of 696 failed (12 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::validate_extensions_structured_one_member...
+SUMMARY:
+ ** 0 of 684 failed (12 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::validate_extensions_structured_empty...
+SUMMARY:
+ ** 0 of 674 failed (17 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::parse_extension_faithful...
+SUMMARY:
+ ** 0 of 852 failed
+ ** 13 of 13 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::parse_extension_never_panics...
+SUMMARY:
+ ** 0 of 218 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_atv_oid_length...
+SUMMARY:
+ ** 0 of 747 failed (8 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_atv_value_length...
+SUMMARY:
+ ** 0 of 740 failed (18 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_two_atvs_unsorted...
+SUMMARY:
+ ** 0 of 722 failed (16 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_two_atvs_exact...
+SUMMARY:
+ ** 0 of 744 failed (14 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_atv_missing_value_exact...
+SUMMARY:
+ ** 0 of 731 failed (20 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_atv_trailing_exact...
+SUMMARY:
+ ** 0 of 731 failed (20 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_empty_sequence_accepted...
+SUMMARY:
+ ** 0 of 722 failed (24 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_empty_rdn...
+SUMMARY:
+ ** 0 of 722 failed (24 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_two_rdns_exact...
+SUMMARY:
+ ** 0 of 733 failed (19 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_oid_identifier...
+SUMMARY:
+ ** 0 of 731 failed (19 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_atv_identifier...
+SUMMARY:
+ ** 0 of 731 failed (19 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_rdn_identifier...
+SUMMARY:
+ ** 0 of 731 failed (19 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_outer_identifier...
+SUMMARY:
+ ** 0 of 731 failed (19 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_name_single_atv_exact...
+SUMMARY:
+ ** 0 of 731 failed (19 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_name::proofs::validate_never_panics...
+SUMMARY:
+ ** 0 of 138 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_spki::proofs::parse_faithful...
+SUMMARY:
+ ** 0 of 319 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_spki::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 240 failed
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_tbs_certificate::proofs::parse_tbs_certificate_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 411 failed (14 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_tbs_certificate::proofs::parse_tbs_certificate_never_panics...
+SUMMARY:
+ ** 0 of 550 failed (41 unreachable)
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_rejects_field_length...
+SUMMARY:
+ ** 0 of 1107 failed (22 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_rejects_field_content...
+SUMMARY:
+ ** 0 of 1108 failed (29 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_rejects_missing_fields...
+SUMMARY:
+ ** 0 of 1065 failed (29 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_rejects_field_identifier...
+SUMMARY:
+ ** 0 of 1105 failed (29 unreachable)
+ ** 6 of 6 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_rejects_outer_identifier...
+SUMMARY:
+ ** 0 of 1076 failed (29 unreachable)
+ ** 3 of 3 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_faithful_gg...
+SUMMARY:
+ ** 0 of 1442 failed (30 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_faithful_gu...
+SUMMARY:
+ ** 0 of 1442 failed (11 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_faithful_ug...
+SUMMARY:
+ ** 0 of 1442 failed (11 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_faithful_uu...
+SUMMARY:
+ ** 0 of 1440 failed (73 unreachable)
+ ** 4 of 4 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_faithful...
+SUMMARY:
+ ** 0 of 1070 failed (33 unreachable)
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_validity_ok_path_witnessed...
+SUMMARY:
+ ** 0 of 265 failed (29 unreachable)
+ ** 1 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_validity::proofs::parse_never_panics...
+SUMMARY:
+ ** 0 of 265 failed (28 unreachable)
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Complete - 295 successfully verified harnesses, 0 failures, 295 total.
+== lean-lid skip-guard gate: self-test (the gate's own gate; pure stdlib) ==
+== test_check_lean_skip.py: lean-lid guard self-test (4 states) ==
+== test_check_lean_skip.py: PASS (SKIP / fail-closed / guard-discriminates) ==
+== lean lid :: all six DER codecs (L4/L5, unbounded; guarded) ==
+== lean lid: re-extract (charon -> aeneas) + drift check ==
+== lean lid: lake build (checking unbounded any-length proofs) ==
+== lean lid: PASS (sorry-free) ==
+== lean lid: checking lean/lid-source-state.txt (fast-gate tripwire) for changes ==
+== lean lid: lid-source-state.txt unchanged (hashes identical) ==
+== lid-staleness gate: self-test (the gate's own gate; pure stdlib) ==
+== lid-staleness gate --strict (after the Lean gate, which just refreshed the state on green) ==
+PASS check_lid_staleness: 6 lid-covered source(s) match the recorded state
+== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==

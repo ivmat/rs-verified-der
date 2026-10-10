@@ -1,0 +1,12 @@
+=== profile-R4-4 / profile / der-verified/src/profile.rs (2026-10-10T15:08:56Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:08:53Z
+slot_released_utc:   2026-10-10T15:08:56Z
+stubbing:            False
+predicted_assert:    validate_profile_is_exactly_the_documented_precedence: r == expected
+baseline profile::proofs::validate_profile_is_exactly_the_documented_precedence: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::validate_profile_is_exactly_the_documented_precedence: FAILED   [want FAILED]  (2.8s)
+failed_descriptions:
+  - "assertion failed: r == expected"

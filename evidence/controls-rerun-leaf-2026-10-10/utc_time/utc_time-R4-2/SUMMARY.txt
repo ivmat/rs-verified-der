@@ -1,0 +1,12 @@
+=== utc_time-R4-2 / utc_time / der-verified/src/utc_time.rs (2026-10-10T15:08:14Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:08:14Z
+slot_released_utc:   2026-10-10T15:08:14Z
+stubbing:            False
+predicted_assert:    full_year_pivot_is_correct: full == 1900 + y as u16
+baseline utc_time::proofs::full_year_pivot_is_correct: SUCCESSFUL   [want SUCCESSFUL]
+red      utc_time::proofs::full_year_pivot_is_correct: FAILED   [want FAILED]  (0.8s)
+failed_descriptions:
+  - "assertion failed: full == 1900 + y as u16"

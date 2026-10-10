@@ -1,0 +1,19 @@
+file: der-verified/src/set_of.rs
+--- old ---
+    let tag = Tag { class: Class::Universal, constructed: true, number: TAG };
+    encode_tlv_into(tag, children_content, out)
+--- new ---
+    if children_content.is_empty() { return None; }
+    let tag = Tag { class: Class::Universal, constructed: true, number: TAG };
+    encode_tlv_into(tag, children_content, out)
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -239,6 +239,7 @@
+ ///
+ /// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
+ pub fn encode_set_of_into(children_content: &[u8], out: &mut [u8]) -> Option<usize> {
++    if children_content.is_empty() { return None; }
+     let tag = Tag { class: Class::Universal, constructed: true, number: TAG };
+     encode_tlv_into(tag, children_content, out)
+ }

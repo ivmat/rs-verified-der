@@ -1,0 +1,17 @@
+file: der-verified/src/utc_time.rs
+--- old ---
+if content[12] != b'Z' {
+--- new ---
+if content[12] != b'Z' && content[12] != b'z' {
+--- unified diff ---
+--- a/der-verified/src/utc_time.rs
++++ b/der-verified/src/utc_time.rs
+@@ -150,7 +150,7 @@
+         }
+         i += 1;
+     }
+-    if content[12] != b'Z' {
++    if content[12] != b'Z' && content[12] != b'z' {
+         return Err(UtcTimeError::NotZulu);
+     }
+     let year2 = two_digits(content, 0);

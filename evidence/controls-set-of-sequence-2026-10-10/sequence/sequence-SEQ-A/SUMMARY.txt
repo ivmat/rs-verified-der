@@ -1,0 +1,15 @@
+=== sequence-SEQ-A / sequence / der-verified/src/sequence.rs (2026-10-10T15:05:39Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:01:36Z
+slot_released_utc:   2026-10-10T15:05:39Z
+stubbing:            False
+predicted_assert:    ok_implies_exact_tiling: assertion failed: seen == k ; roundtrip_two_children: decode_sequence(content) == Ok(2)
+baseline sequence::proofs::ok_implies_exact_tiling: SUCCESSFUL   [want SUCCESSFUL]
+baseline sequence::proofs::roundtrip_two_children: SUCCESSFUL   [want SUCCESSFUL]
+red      sequence::proofs::ok_implies_exact_tiling: FAILED   [want FAILED]  (90.3s)
+red      sequence::proofs::roundtrip_two_children: FAILED   [want FAILED]  (33.1s)
+failed_descriptions:
+  - "assertion failed: seen == k"
+  - "assertion failed: decode_sequence(content) == Ok(2)"

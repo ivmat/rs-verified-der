@@ -1,0 +1,18 @@
+=== M-EXT-10 / x509_extension / der-verified/src/x509_extension.rs (2026-10-10T16:20:59Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T16:17:46Z
+slot_released_utc:   2026-10-10T16:20:59Z
+stubbing:            True
+predicted_assert:    child framing: child framing error differs from the primitive's error
+baseline x509_extension::proofs::validate_extensions_rejects_child_framing: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_rejects_outer_envelope: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_second_identifier: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_extension::proofs::validate_extensions_rejects_child_framing: FAILED   [want FAILED]  (62.5s)
+green    x509_extension::proofs::validate_extensions_rejects_outer_envelope: SUCCESSFUL   [want SUCCESSFUL]  (75.7s)
+green    x509_extension::proofs::validate_extensions_structured_second_identifier: SUCCESSFUL   [want SUCCESSFUL]  (28.1s)
+green    x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]  (26.0s)
+failed_descriptions:
+  - ""child framing error differs from the primitive's error""

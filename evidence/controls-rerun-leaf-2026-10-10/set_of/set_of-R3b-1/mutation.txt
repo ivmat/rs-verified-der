@@ -1,0 +1,25 @@
+file: der-verified/src/set_of.rs
+--- old ---
+    if used != input.len() {
+        return Err(SetOfError::TrailingData);
+    }
+    Ok(content)
+--- new ---
+    let _ = (content, used);
+    Err(SetOfError::TrailingData)
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -223,10 +223,8 @@
+ /// reports its own error, not `TrailingData`.
+ pub fn decode_set_of_tlv_strict(input: &[u8]) -> Result<&[u8], SetOfError> {
+     let (content, used) = decode_set_of_tlv(input)?;
+-    if used != input.len() {
+-        return Err(SetOfError::TrailingData);
+-    }
+-    Ok(content)
++    let _ = (content, used);
++    Err(SetOfError::TrailingData)
+ }
+ 
+ /// Wrap already-encoded, **already-sorted** child bytes as a DER SET OF TLV (constructed

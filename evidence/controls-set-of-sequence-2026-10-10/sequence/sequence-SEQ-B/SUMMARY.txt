@@ -1,0 +1,14 @@
+=== sequence-SEQ-B / sequence / der-verified/src/sequence.rs (2026-10-10T15:07:36Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:05:39Z
+slot_released_utc:   2026-10-10T15:07:36Z
+stubbing:            False
+predicted_assert:    ok_implies_exact_tiling: unwrap_failed in the independent re-walk (sequence.rs unwrap on a swallowed malformed child); roundtrip_two_children stays SUCCESSFUL (survivor by design)
+baseline sequence::proofs::ok_implies_exact_tiling: SUCCESSFUL   [want SUCCESSFUL]
+baseline sequence::proofs::roundtrip_two_children: SUCCESSFUL   [want SUCCESSFUL]
+red      sequence::proofs::ok_implies_exact_tiling: FAILED   [want FAILED]  (83.8s)
+green    sequence::proofs::roundtrip_two_children: SUCCESSFUL   [want SUCCESSFUL]  (32.6s)
+failed_descriptions:
+  - "This is a placeholder message; Kani doesn't support message formatted at runtime"

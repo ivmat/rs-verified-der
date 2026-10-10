@@ -1,0 +1,25 @@
+file: der-verified/src/set_of.rs
+--- old ---
+        prev = Some(this);
+        count += 1;
+    }
+    Ok(count)
+}
+--- new ---
+        prev = Some(this);
+        count += 2;
+    }
+    Ok(count)
+}
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -179,7 +179,7 @@
+             }
+         }
+         prev = Some(this);
+-        count += 1;
++        count += 2;
+     }
+     Ok(count)
+ }

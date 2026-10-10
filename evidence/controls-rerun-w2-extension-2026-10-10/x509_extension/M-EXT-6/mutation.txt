@@ -1,0 +1,19 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+    Ok(Extension { extn_id, critical, extn_value })
+
+--- new ---
+    Ok(Extension { extn_id, critical: true, extn_value })
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -253,7 +253,7 @@
+         return Err(ExtensionError::TrailingInExtension);
+     }
+ 
+-    Ok(Extension { extn_id, critical, extn_value })
++    Ok(Extension { extn_id, critical: true, extn_value })
+ }
+ 
+ /// Validate a complete DER `Extensions` (`SEQUENCE SIZE (1..MAX) OF Extension`) from `input`.

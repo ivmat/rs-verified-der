@@ -1,0 +1,19 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+            if !b {
+
+--- new ---
+            if false {
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -234,7 +234,7 @@
+                 return Err(ExtensionError::CriticalConstructed);
+             }
+             let b = decode_bool(peek.value).map_err(ExtensionError::BadCritical)?;
+-            if !b {
++            if false {
+                 // §11.5: a component equal to its DEFAULT must be absent, not present-and-FALSE.
+                 return Err(ExtensionError::CriticalMustBeTrue);
+             }

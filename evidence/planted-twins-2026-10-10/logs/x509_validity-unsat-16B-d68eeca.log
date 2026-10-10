@@ -1,0 +1,1890 @@
+Kani Rust Verifier 0.67.0 (cargo plugin)
+   Compiling der-verified v0.2.0 (/home/ivo/repo_tmp/der-integration/der-verified)
+warning: Found the following unsupported constructs:
+             - caller_location (1)
+             - foreign function (1)
+         
+         Verification will fail if one or more of these constructs is reachable.
+         See https://model-checking.github.io/kani/rust-feature-support.html for more details.
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.84s
+Checking harness x509_validity::proofs::parse_never_panics...
+CBMC 6.8.0 (cbmc-6.8.0)
+CBMC version 6.8.0 (cbmc-6.8.0) 64-bit x86_64 linux
+Reading GOTO program from file /home/ivo/repo_tmp/der-integration/target/kani/x86_64-unknown-linux-gnu/debug/deps/der_verified-a8cbd19ace58af19__RNvNtNtCsjJ4BRyaQv62_12der_verified13x509_validity6proofs18parse_never_panics.out
+Generating GOTO Program
+Adding CPROVER library (x86_64)
+Removal of function pointers and virtual functions
+Generic Property Instrumentation
+Running with 16 object bits, 48 offset bits (user-specified)
+Starting Bounded Model Checking
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 1 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 2 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 3 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 4 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 5 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 6 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 7 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 8 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 9 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 10 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 11 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 12 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 13 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 14 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 15 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 16 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 17 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 18 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 19 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 20 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 569 column 13 function <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 176 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file der-verified/src/length.rs line 75 column 23 function length::decode_length thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 1 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 2 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 3 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 4 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 5 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 6 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 7 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 8 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 9 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 10 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 11 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 12 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 13 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 14 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 15 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 16 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 17 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 18 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 19 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 20 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(u32, usize), length::LengthError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:73:69: 73:72}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tlv::TlvError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tlv::decode_tlv thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 176 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<sequence::SequenceError, {closure@der-verified/src/sequence.rs:162:49: 162:52}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(tlv::Tlv<'_>, usize), sequence::SequenceError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/sequence.rs line 162 column 23 function sequence::decode_sequence_tlv thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/sequence.rs line 179 column 27 function sequence::decode_sequence_tlv_strict thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<&[u8], sequence::SequenceError>::map_err::<x509_validity::ValidityError, fn(sequence::SequenceError) -> x509_validity::ValidityError {x509_validity::ValidityError::BadOuterSeq}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<&[u8], x509_validity::ValidityError> as std::ops::Try>::branch thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 1 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 2 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 3 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 4 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 5 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 6 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 7 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 8 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 9 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 10 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 11 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 12 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 13 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 14 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 15 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 16 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 17 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 18 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 19 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 20 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 569 column 13 function <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 176 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file der-verified/src/length.rs line 75 column 23 function length::decode_length thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 1 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 2 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 3 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 4 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 5 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 6 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 7 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 8 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 9 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 10 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 11 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 12 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 13 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 14 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 15 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 16 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 17 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 18 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 19 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 20 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(u32, usize), length::LengthError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:73:69: 73:72}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tlv::TlvError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tlv::decode_tlv thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 176 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 1 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 2 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 3 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 4 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 5 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 6 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 7 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 8 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 9 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 10 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 11 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 12 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 13 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 14 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 1 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 2 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 3 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 4 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 5 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 6 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 7 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 8 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 9 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 10 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 11 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 12 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 13 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 14 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 15 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 16 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 17 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 18 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 19 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 20 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 1 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 2 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 3 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 4 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 5 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 6 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 7 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 8 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 9 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 10 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 11 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 12 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<utc_time::UtcTime, utc_time::UtcTimeError>::map_err::<x509_validity::TimeError, fn(utc_time::UtcTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadUtc}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<utc_time::UtcTime, x509_validity::TimeError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function x509_validity::decode_time_tlv thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(x509_validity::Time<'_>, usize), x509_validity::TimeError>::map_err::<x509_validity::ValidityError, fn(x509_validity::TimeError) -> x509_validity::ValidityError {x509_validity::ValidityError::NotBefore}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(x509_validity::Time<'_>, usize), x509_validity::ValidityError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 569 column 13 function <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 176 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 1 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 2 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 3 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 4 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 5 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 6 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 7 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 8 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 9 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 10 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 11 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 12 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 13 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 14 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 15 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 16 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 17 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 18 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 19 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified3tag10decode_tag.0 iteration 20 file der-verified/src/tag.rs line 137 column 49 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tag::decode_tag thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 569 column 13 function <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 176 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file der-verified/src/length.rs line 75 column 23 function length::decode_length thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 1 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 2 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 3 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 4 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 5 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 6 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 7 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 8 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 9 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 10 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 11 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 12 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 13 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 14 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 15 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 16 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 17 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 18 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 19 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified6length13decode_length.0 iteration 20 file der-verified/src/length.rs line 101 column 5 function length::decode_length thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(u32, usize), length::LengthError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:73:69: 73:72}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(u32, usize), tlv::TlvError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function tlv::decode_tlv thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani_core/src/models.rs line 176 column 17 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function <usize as kani::rustc_intrinsics::ToISize>::to_isize thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 1 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 2 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 3 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 4 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 5 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 6 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 7 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 8 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 9 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 10 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 11 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 12 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 13 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.0 iteration 14 file der-verified/src/generalized_time.rs line 191 column 5 function generalized_time::decode_generalized_time thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 435 column 5 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 58 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 1 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 2 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 3 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 4 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 5 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 6 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 7 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 8 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 9 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 10 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 11 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 12 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 13 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 14 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 15 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 16 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 17 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 18 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 19 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+Not unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified16generalized_time23decode_generalized_time.1 iteration 20 file der-verified/src/generalized_time.rs line 237 column 9 function generalized_time::decode_generalized_time thread 0
+aborting path on assume(false) at file /home/runner/work/kani/kani/library/kani/src/lib.rs line 57 column 1 function kani::mem::cbmc::same_allocation thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 40 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 49 column 9 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 68 column 5 function core::slice::index::slice_index_fail::do_panic::runtime thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs line 2449 column 9 function core::slice::index::slice_index_fail::do_panic thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/panic.rs line 178 column 9 function core::slice::index::slice_index_fail thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs line 443 column 13 function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 1 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 2 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 3 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 4 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 5 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 6 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 7 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 8 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 9 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 10 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 11 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+Unwinding loop _RNvNtCsjJ4BRyaQv62_12der_verified8utc_time15decode_utc_time.0 iteration 12 file der-verified/src/utc_time.rs line 147 column 5 function utc_time::decode_utc_time thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<utc_time::UtcTime, utc_time::UtcTimeError>::map_err::<x509_validity::TimeError, fn(utc_time::UtcTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadUtc}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<utc_time::UtcTime, x509_validity::TimeError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function x509_validity::decode_time_tlv thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 966 column 15 function std::result::Result::<(x509_validity::Time<'_>, usize), x509_validity::TimeError>::map_err::<x509_validity::ValidityError, fn(x509_validity::TimeError) -> x509_validity::ValidityError {x509_validity::ValidityError::NotAfter}> thread 0
+aborting path on assume(false) at file /home/runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs line 2173 column 15 function <std::result::Result<(x509_validity::Time<'_>, usize), x509_validity::ValidityError> as std::ops::Try>::branch thread 0
+aborting path on assume(false) at file der-verified/src/lib.rs line 0 column 0 function x509_validity::parse_validity thread 0
+Runtime Symex: 3.97827s
+size of program expression: 221298 steps
+slicing removed 191606 assignments
+Generated 4398 VCC(s), 3524 remaining after simplification
+Runtime Postprocess Equation: 0.0850143s
+Passing problem to propositional reduction
+converting SSA
+Runtime Convert SSA: 0.364836s
+Running propositional reduction
+Post-processing
+Runtime Post-process: 0.117345s
+Solving with CaDiCaL 2.0.0
+426304 variables, 1666055 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.726397s
+Runtime decision procedure: 1.09858s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+426305 variables, 1666056 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.104113s
+Runtime decision procedure: 0.106334s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+426306 variables, 1666057 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.0355441s
+Runtime decision procedure: 0.0378559s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+426307 variables, 1666058 clauses
+SAT checker: instance is SATISFIABLE
+Runtime Solver: 0.409863s
+Runtime decision procedure: 0.412579s
+Running propositional reduction
+Solving with CaDiCaL 2.0.0
+426308 variables, 1666059 clauses
+SAT checker: instance is UNSATISFIABLE
+Runtime Solver: 1.37415s
+Runtime decision procedure: 1.37562s
+
+RESULTS:
+Check 1: <usize as kani::rustc_intrinsics::ToISize>::to_isize.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani_core/src/models.rs:176:17 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 2: <usize as kani::rustc_intrinsics::ToISize>::to_isize.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset value overflows isize"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 3: <usize as kani::rustc_intrinsics::ToISize>::to_isize.assertion.1
+	 - Status: SUCCESS
+	 - Description: "internal error: entered unreachable code"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function <usize as kani::rustc_intrinsics::ToISize>::to_isize
+
+Check 4: generalized_time::two_digits.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/generalized_time.rs:117:6 in function generalized_time::two_digits
+
+Check 5: generalized_time::two_digits.assertion.2
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/generalized_time.rs:117:5 in function generalized_time::two_digits
+
+Check 6: generalized_time::two_digits.assertion.3
+	 - Status: UNREACHABLE
+	 - Description: "attempt to multiply with overflow"
+	 - Location: der-verified/src/generalized_time.rs:117:5 in function generalized_time::two_digits
+
+Check 7: generalized_time::two_digits.assertion.4
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/generalized_time.rs:117:29 in function generalized_time::two_digits
+
+Check 8: generalized_time::two_digits.assertion.5
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/generalized_time.rs:117:27 in function generalized_time::two_digits
+
+Check 9: generalized_time::two_digits.assertion.6
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/generalized_time.rs:117:26 in function generalized_time::two_digits
+
+Check 10: generalized_time::two_digits.assertion.7
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/generalized_time.rs:117:5 in function generalized_time::two_digits
+
+Check 11: kani::mem::cbmc::same_allocation.unsupported_construct.1
+	 - Status: SUCCESS
+	 - Description: "Kani does not support reasoning about pointer to unallocated memory"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::mem::cbmc::same_allocation
+
+Check 12: std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}>
+
+Check 13: <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:573:27 in function <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 14: <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:574:13 in function <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 15: <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:574:13 in function <std::ops::RangeFrom<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 16: std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}>
+
+Check 17: <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::Try>::branch
+
+Check 18: core::slice::index::slice_index_fail::do_panic::runtime.assertion.1
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:40:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 19: <std::result::Result<(x509_validity::Time<'_>, usize), x509_validity::ValidityError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(x509_validity::Time<'_>, usize), x509_validity::ValidityError> as std::ops::Try>::branch
+
+Check 20: std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}>
+
+Check 21: std::result::Result::<utc_time::UtcTime, utc_time::UtcTimeError>::map_err::<x509_validity::TimeError, fn(utc_time::UtcTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadUtc}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<utc_time::UtcTime, utc_time::UtcTimeError>::map_err::<x509_validity::TimeError, fn(utc_time::UtcTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadUtc}>
+
+Check 22: x509_validity::decode_time_tlv.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function x509_validity::decode_time_tlv
+
+Check 23: core::num::<impl usize>::checked_sub.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_sub` which would overflow"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:812:31 in function core::num::<impl usize>::checked_sub
+
+Check 24: <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch
+
+Check 25: std::result::Result::<&[u8], sequence::SequenceError>::map_err::<x509_validity::ValidityError, fn(sequence::SequenceError) -> x509_validity::ValidityError {x509_validity::ValidityError::BadOuterSeq}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<&[u8], sequence::SequenceError>::map_err::<x509_validity::ValidityError, fn(sequence::SequenceError) -> x509_validity::ValidityError {x509_validity::ValidityError::BadOuterSeq}>
+
+Check 26: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:435:5 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 27: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "misaligned pointer to reference cast: address must be a multiple of its type's alignment"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:441:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 28: <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:441:22 in function <std::ops::Range<usize> as std::slice::SliceIndex<[u8]>>::index
+
+Check 29: tag::decode_tag.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:111:23 in function tag::decode_tag
+
+Check 30: tag::decode_tag.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to shift right with overflow"
+	 - Location: der-verified/src/tag.rs:145:21 in function tag::decode_tag
+
+Check 31: tag::decode_tag.assertion.3
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: der-verified/src/tag.rs:148:18 in function tag::decode_tag
+
+Check 32: tag::decode_tag.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:149:9 in function tag::decode_tag
+
+Check 33: tag::decode_tag.assertion.5
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tag.rs:150:9 in function tag::decode_tag
+
+Check 34: tag::decode_tag.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function tag::decode_tag
+
+Check 35: <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(u32, usize), tag::TagError> as std::ops::Try>::branch
+
+Check 36: <std::result::Result<(tlv::Tlv<'_>, usize), sequence::SequenceError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(tlv::Tlv<'_>, usize), sequence::SequenceError> as std::ops::Try>::branch
+
+Check 37: std::result::Result::<(x509_validity::Time<'_>, usize), x509_validity::TimeError>::map_err::<x509_validity::ValidityError, fn(x509_validity::TimeError) -> x509_validity::ValidityError {x509_validity::ValidityError::NotBefore}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(x509_validity::Time<'_>, usize), x509_validity::TimeError>::map_err::<x509_validity::ValidityError, fn(x509_validity::TimeError) -> x509_validity::ValidityError {x509_validity::ValidityError::NotBefore}>
+
+Check 38: tlv::decode_tlv.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/tlv.rs:74:18 in function tlv::decode_tlv
+
+Check 39: tlv::decode_tlv.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function tlv::decode_tlv
+
+Check 40: utc_time::decode_utc_time.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/utc_time.rs:148:13 in function utc_time::decode_utc_time
+
+Check 41: utc_time::decode_utc_time.assertion.2
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/utc_time.rs:151:9 in function utc_time::decode_utc_time
+
+Check 42: utc_time::decode_utc_time.assertion.3
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/utc_time.rs:153:8 in function utc_time::decode_utc_time
+
+Check 43: x509_validity::proofs::parse_never_panics.cover.1
+	 - Status: UNSATISFIABLE
+	 - Description: "a well-formed Validity reaches the Ok tail"
+	 - Location: der-verified/src/x509_validity.rs:264:9 in function x509_validity::proofs::parse_never_panics
+
+Check 44: sequence::decode_sequence_tlv_strict.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/sequence.rs:179:27 in function sequence::decode_sequence_tlv_strict
+
+Check 45: <std::result::Result<&[u8], x509_validity::ValidityError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<&[u8], x509_validity::ValidityError> as std::ops::Try>::branch
+
+Check 46: std::result::Result::<(u32, usize), length::LengthError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:73:69: 73:72}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(u32, usize), length::LengthError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:73:69: 73:72}>
+
+Check 47: <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch
+
+Check 48: <std::result::Result<(u32, usize), tlv::TlvError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(u32, usize), tlv::TlvError> as std::ops::Try>::branch
+
+Check 49: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.1
+	 - Status: SUCCESS
+	 - Description: "Offset in bytes overflows isize"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 50: kani::rustc_intrinsics::offset::<u8, *const u8, usize>.safety_check.2
+	 - Status: SUCCESS
+	 - Description: "Offset result and original pointer must point to the same allocation"
+	 - Location: ../../../runner/work/kani/kani/library/kani/src/lib.rs:57:1 in function kani::rustc_intrinsics::offset::<u8, *const u8, usize>
+
+Check 51: x509_validity::parse_validity.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/lib.rs:0:0 in function x509_validity::parse_validity
+
+Check 52: core::slice::index::slice_index_fail::do_panic::runtime.assertion.2
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:68:5 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 53: core::slice::index::slice_index_fail::do_panic::runtime.assertion.3
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:58:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 54: std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<sequence::SequenceError, {closure@der-verified/src/sequence.rs:162:49: 162:52}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<sequence::SequenceError, {closure@der-verified/src/sequence.rs:162:49: 162:52}>
+
+Check 55: generalized_time::decode_generalized_time.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/generalized_time.rs:192:13 in function generalized_time::decode_generalized_time
+
+Check 56: generalized_time::decode_generalized_time.assertion.2
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/generalized_time.rs:195:9 in function generalized_time::decode_generalized_time
+
+Check 57: generalized_time::decode_generalized_time.assertion.3
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/generalized_time.rs:198:16 in function generalized_time::decode_generalized_time
+
+Check 58: generalized_time::decode_generalized_time.assertion.4
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/generalized_time.rs:199:8 in function generalized_time::decode_generalized_time
+
+Check 59: generalized_time::decode_generalized_time.assertion.5
+	 - Status: UNREACHABLE
+	 - Description: "attempt to multiply with overflow"
+	 - Location: der-verified/src/generalized_time.rs:202:16 in function generalized_time::decode_generalized_time
+
+Check 60: generalized_time::decode_generalized_time.assertion.6
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/generalized_time.rs:202:16 in function generalized_time::decode_generalized_time
+
+Check 61: generalized_time::decode_generalized_time.assertion.7
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/generalized_time.rs:229:12 in function generalized_time::decode_generalized_time
+
+Check 62: generalized_time::decode_generalized_time.assertion.8
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/generalized_time.rs:238:17 in function generalized_time::decode_generalized_time
+
+Check 63: generalized_time::decode_generalized_time.assertion.9
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/generalized_time.rs:241:13 in function generalized_time::decode_generalized_time
+
+Check 64: generalized_time::decode_generalized_time.assertion.10
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/generalized_time.rs:244:17 in function generalized_time::decode_generalized_time
+
+Check 65: generalized_time::decode_generalized_time.assertion.11
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/generalized_time.rs:244:12 in function generalized_time::decode_generalized_time
+
+Check 66: <std::result::Result<utc_time::UtcTime, x509_validity::TimeError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<utc_time::UtcTime, x509_validity::TimeError> as std::ops::Try>::branch
+
+Check 67: core::num::<impl usize>::checked_add.arithmetic_overflow.1
+	 - Status: SUCCESS
+	 - Description: "attempt to compute `unchecked_add` which would overflow"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:658:31 in function core::num::<impl usize>::checked_add
+
+Check 68: std::result::Result::<(x509_validity::Time<'_>, usize), x509_validity::TimeError>::map_err::<x509_validity::ValidityError, fn(x509_validity::TimeError) -> x509_validity::ValidityError {x509_validity::ValidityError::NotAfter}>.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(x509_validity::Time<'_>, usize), x509_validity::TimeError>::map_err::<x509_validity::ValidityError, fn(x509_validity::TimeError) -> x509_validity::ValidityError {x509_validity::ValidityError::NotAfter}>
+
+Check 69: core::slice::index::slice_index_fail::do_panic::runtime.assertion.4
+	 - Status: SUCCESS
+	 - Description: "This is a placeholder message; Kani doesn't support message formatted at runtime"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:49:9 in function core::slice::index::slice_index_fail::do_panic::runtime
+
+Check 70: length::decode_length.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/length.rs:75:23 in function length::decode_length
+
+Check 71: length::decode_length.assertion.1
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/length.rs:89:22 in function length::decode_length
+
+Check 72: length::decode_length.assertion.2
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/length.rs:92:28 in function length::decode_length
+
+Check 73: length::decode_length.assertion.3
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/length.rs:93:8 in function length::decode_length
+
+Check 74: length::decode_length.assertion.4
+	 - Status: SUCCESS
+	 - Description: "attempt to shift left with overflow"
+	 - Location: der-verified/src/length.rs:102:15 in function length::decode_length
+
+Check 75: length::decode_length.assertion.5
+	 - Status: SUCCESS
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/length.rs:102:28 in function length::decode_length
+
+Check 76: length::decode_length.assertion.6
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/length.rs:103:9 in function length::decode_length
+
+Check 77: length::decode_length.assertion.7
+	 - Status: SUCCESS
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/length.rs:108:14 in function length::decode_length
+
+Check 78: sequence::decode_sequence_tlv.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: der-verified/src/sequence.rs:162:23 in function sequence::decode_sequence_tlv
+
+Check 79: <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch.unreachable.1
+	 - Status: SUCCESS
+	 - Description: "unreachable code"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch
+
+Check 80: utc_time::two_digits.assertion.1
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/utc_time.rs:102:6 in function utc_time::two_digits
+
+Check 81: utc_time::two_digits.assertion.2
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/utc_time.rs:102:5 in function utc_time::two_digits
+
+Check 82: utc_time::two_digits.assertion.3
+	 - Status: UNREACHABLE
+	 - Description: "attempt to multiply with overflow"
+	 - Location: der-verified/src/utc_time.rs:102:5 in function utc_time::two_digits
+
+Check 83: utc_time::two_digits.assertion.4
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/utc_time.rs:102:29 in function utc_time::two_digits
+
+Check 84: utc_time::two_digits.assertion.5
+	 - Status: UNREACHABLE
+	 - Description: "index out of bounds: the length is less than or equal to the given index"
+	 - Location: der-verified/src/utc_time.rs:102:27 in function utc_time::two_digits
+
+Check 85: utc_time::two_digits.assertion.6
+	 - Status: UNREACHABLE
+	 - Description: "attempt to subtract with overflow"
+	 - Location: der-verified/src/utc_time.rs:102:26 in function utc_time::two_digits
+
+Check 86: utc_time::two_digits.assertion.7
+	 - Status: UNREACHABLE
+	 - Description: "attempt to add with overflow"
+	 - Location: der-verified/src/utc_time.rs:102:5 in function utc_time::two_digits
+
+Check 87: utc_time::two_digits.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/utc_time.rs:102:6 in function utc_time::two_digits
+
+Check 88: utc_time::two_digits.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/utc_time.rs:102:6 in function utc_time::two_digits
+
+Check 89: utc_time::two_digits.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/utc_time.rs:102:6 in function utc_time::two_digits
+
+Check 90: utc_time::two_digits.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/utc_time.rs:102:6 in function utc_time::two_digits
+
+Check 91: utc_time::two_digits.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/utc_time.rs:102:6 in function utc_time::two_digits
+
+Check 92: utc_time::two_digits.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/utc_time.rs:102:6 in function utc_time::two_digits
+
+Check 93: utc_time::two_digits.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/utc_time.rs:102:27 in function utc_time::two_digits
+
+Check 94: utc_time::two_digits.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/utc_time.rs:102:27 in function utc_time::two_digits
+
+Check 95: utc_time::two_digits.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/utc_time.rs:102:27 in function utc_time::two_digits
+
+Check 96: utc_time::two_digits.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/utc_time.rs:102:27 in function utc_time::two_digits
+
+Check 97: utc_time::two_digits.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/utc_time.rs:102:27 in function utc_time::two_digits
+
+Check 98: utc_time::two_digits.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/utc_time.rs:102:27 in function utc_time::two_digits
+
+Check 99: x509_validity::ValidityError::NotBefore.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:127:5 in function x509_validity::ValidityError::NotBefore
+
+Check 100: <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch
+
+Check 101: <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2175:23 in function <std::result::Result<(tlv::Tlv<'_>, usize), x509_validity::TimeError> as std::ops::Try>::branch
+
+Check 102: sequence::decode_sequence_tlv.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/sequence.rs:162:23 in function sequence::decode_sequence_tlv
+
+Check 103: sequence::decode_sequence_tlv.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/sequence.rs:164:16 in function sequence::decode_sequence_tlv
+
+Check 104: sequence::decode_sequence_tlv.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/sequence.rs:167:16 in function sequence::decode_sequence_tlv
+
+Check 105: length::decode_length.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/length.rs:75:23 in function length::decode_length
+
+Check 106: length::decode_length.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/length.rs:76:15 in function length::decode_length
+
+Check 107: length::decode_length.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/length.rs:76:15 in function length::decode_length
+
+Check 108: length::decode_length.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/length.rs:76:15 in function length::decode_length
+
+Check 109: length::decode_length.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/length.rs:76:15 in function length::decode_length
+
+Check 110: length::decode_length.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/length.rs:76:15 in function length::decode_length
+
+Check 111: length::decode_length.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/length.rs:76:15 in function length::decode_length
+
+Check 112: length::decode_length.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/length.rs:93:8 in function length::decode_length
+
+Check 113: length::decode_length.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/length.rs:93:8 in function length::decode_length
+
+Check 114: length::decode_length.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/length.rs:93:8 in function length::decode_length
+
+Check 115: length::decode_length.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/length.rs:93:8 in function length::decode_length
+
+Check 116: length::decode_length.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/length.rs:93:8 in function length::decode_length
+
+Check 117: length::decode_length.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/length.rs:93:8 in function length::decode_length
+
+Check 118: length::decode_length.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/length.rs:102:28 in function length::decode_length
+
+Check 119: length::decode_length.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/length.rs:102:28 in function length::decode_length
+
+Check 120: length::decode_length.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/length.rs:102:28 in function length::decode_length
+
+Check 121: length::decode_length.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/length.rs:102:28 in function length::decode_length
+
+Check 122: length::decode_length.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/length.rs:102:28 in function length::decode_length
+
+Check 123: length::decode_length.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/length.rs:102:28 in function length::decode_length
+
+Check 124: generalized_time::decode_generalized_time.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:187:16 in function generalized_time::decode_generalized_time
+
+Check 125: generalized_time::decode_generalized_time.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:193:20 in function generalized_time::decode_generalized_time
+
+Check 126: generalized_time::decode_generalized_time.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/generalized_time.rs:199:8 in function generalized_time::decode_generalized_time
+
+Check 127: generalized_time::decode_generalized_time.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/generalized_time.rs:199:8 in function generalized_time::decode_generalized_time
+
+Check 128: generalized_time::decode_generalized_time.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/generalized_time.rs:199:8 in function generalized_time::decode_generalized_time
+
+Check 129: generalized_time::decode_generalized_time.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:199:8 in function generalized_time::decode_generalized_time
+
+Check 130: generalized_time::decode_generalized_time.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/generalized_time.rs:199:8 in function generalized_time::decode_generalized_time
+
+Check 131: generalized_time::decode_generalized_time.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/generalized_time.rs:199:8 in function generalized_time::decode_generalized_time
+
+Check 132: generalized_time::decode_generalized_time.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:200:16 in function generalized_time::decode_generalized_time
+
+Check 133: generalized_time::decode_generalized_time.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:209:16 in function generalized_time::decode_generalized_time
+
+Check 134: generalized_time::decode_generalized_time.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:212:16 in function generalized_time::decode_generalized_time
+
+Check 135: generalized_time::decode_generalized_time.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:215:16 in function generalized_time::decode_generalized_time
+
+Check 136: generalized_time::decode_generalized_time.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:218:16 in function generalized_time::decode_generalized_time
+
+Check 137: generalized_time::decode_generalized_time.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:221:16 in function generalized_time::decode_generalized_time
+
+Check 138: generalized_time::decode_generalized_time.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/generalized_time.rs:229:12 in function generalized_time::decode_generalized_time
+
+Check 139: generalized_time::decode_generalized_time.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/generalized_time.rs:229:12 in function generalized_time::decode_generalized_time
+
+Check 140: generalized_time::decode_generalized_time.pointer_dereference.17
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/generalized_time.rs:229:12 in function generalized_time::decode_generalized_time
+
+Check 141: generalized_time::decode_generalized_time.pointer_dereference.18
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:229:12 in function generalized_time::decode_generalized_time
+
+Check 142: generalized_time::decode_generalized_time.pointer_dereference.19
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/generalized_time.rs:229:12 in function generalized_time::decode_generalized_time
+
+Check 143: generalized_time::decode_generalized_time.pointer_dereference.20
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/generalized_time.rs:229:12 in function generalized_time::decode_generalized_time
+
+Check 144: generalized_time::decode_generalized_time.pointer_dereference.21
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:230:20 in function generalized_time::decode_generalized_time
+
+Check 145: generalized_time::decode_generalized_time.pointer_dereference.22
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:234:20 in function generalized_time::decode_generalized_time
+
+Check 146: generalized_time::decode_generalized_time.pointer_dereference.23
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:239:24 in function generalized_time::decode_generalized_time
+
+Check 147: generalized_time::decode_generalized_time.pointer_dereference.24
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/generalized_time.rs:244:12 in function generalized_time::decode_generalized_time
+
+Check 148: generalized_time::decode_generalized_time.pointer_dereference.25
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/generalized_time.rs:244:12 in function generalized_time::decode_generalized_time
+
+Check 149: generalized_time::decode_generalized_time.pointer_dereference.26
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/generalized_time.rs:244:12 in function generalized_time::decode_generalized_time
+
+Check 150: generalized_time::decode_generalized_time.pointer_dereference.27
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:244:12 in function generalized_time::decode_generalized_time
+
+Check 151: generalized_time::decode_generalized_time.pointer_dereference.28
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/generalized_time.rs:244:12 in function generalized_time::decode_generalized_time
+
+Check 152: generalized_time::decode_generalized_time.pointer_dereference.29
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/generalized_time.rs:244:12 in function generalized_time::decode_generalized_time
+
+Check 153: generalized_time::decode_generalized_time.pointer_dereference.30
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:245:20 in function generalized_time::decode_generalized_time
+
+Check 154: std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<sequence::SequenceError, {closure@der-verified/src/sequence.rs:162:49: 162:52}>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<sequence::SequenceError, {closure@der-verified/src/sequence.rs:162:49: 162:52}>
+
+Check 155: std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<sequence::SequenceError, {closure@der-verified/src/sequence.rs:162:49: 162:52}>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:968:23 in function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<sequence::SequenceError, {closure@der-verified/src/sequence.rs:162:49: 162:52}>
+
+Check 156: std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:594:18 in function std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok
+
+Check 157: std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:594:18 in function std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok
+
+Check 158: std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:594:18 in function std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok
+
+Check 159: std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:594:18 in function std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok
+
+Check 160: std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:594:18 in function std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok
+
+Check 161: std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:594:18 in function std::result::Result::<x509_validity::Validity<'_>, x509_validity::ValidityError>::is_ok
+
+Check 162: x509_validity::TimeError::BadUtc.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:111:5 in function x509_validity::TimeError::BadUtc
+
+Check 163: std::result::Result::<&[u8], sequence::SequenceError>::map_err::<x509_validity::ValidityError, fn(sequence::SequenceError) -> x509_validity::ValidityError {x509_validity::ValidityError::BadOuterSeq}>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<&[u8], sequence::SequenceError>::map_err::<x509_validity::ValidityError, fn(sequence::SequenceError) -> x509_validity::ValidityError {x509_validity::ValidityError::BadOuterSeq}>
+
+Check 164: std::result::Result::<&[u8], sequence::SequenceError>::map_err::<x509_validity::ValidityError, fn(sequence::SequenceError) -> x509_validity::ValidityError {x509_validity::ValidityError::BadOuterSeq}>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:968:23 in function std::result::Result::<&[u8], sequence::SequenceError>::map_err::<x509_validity::ValidityError, fn(sequence::SequenceError) -> x509_validity::ValidityError {x509_validity::ValidityError::BadOuterSeq}>
+
+Check 165: std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}>
+
+Check 166: std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:968:23 in function std::result::Result::<(tlv::Tlv<'_>, usize), tlv::TlvError>::map_err::<x509_validity::TimeError, fn(tlv::TlvError) -> x509_validity::TimeError {x509_validity::TimeError::BadTlv}>
+
+Check 167: <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::Try>::branch.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::Try>::branch
+
+Check 168: <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::Try>::branch.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2175:23 in function <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::Try>::branch
+
+Check 169: <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, sequence::SequenceError>>>::from_residual.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2189:23 in function <std::result::Result<(&[u8], usize), sequence::SequenceError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, sequence::SequenceError>>>::from_residual
+
+Check 170: std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}>
+
+Check 171: std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:968:23 in function std::result::Result::<generalized_time::GeneralizedTime<'_>, generalized_time::GeneralizedTimeError>::map_err::<x509_validity::TimeError, fn(generalized_time::GeneralizedTimeError) -> x509_validity::TimeError {x509_validity::TimeError::BadGeneralized}>
+
+Check 172: utc_time::decode_utc_time.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/utc_time.rs:153:8 in function utc_time::decode_utc_time
+
+Check 173: utc_time::decode_utc_time.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/utc_time.rs:153:8 in function utc_time::decode_utc_time
+
+Check 174: utc_time::decode_utc_time.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/utc_time.rs:153:8 in function utc_time::decode_utc_time
+
+Check 175: utc_time::decode_utc_time.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/utc_time.rs:153:8 in function utc_time::decode_utc_time
+
+Check 176: utc_time::decode_utc_time.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/utc_time.rs:153:8 in function utc_time::decode_utc_time
+
+Check 177: utc_time::decode_utc_time.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/utc_time.rs:153:8 in function utc_time::decode_utc_time
+
+Check 178: generalized_time::two_digits.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/generalized_time.rs:117:6 in function generalized_time::two_digits
+
+Check 179: generalized_time::two_digits.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/generalized_time.rs:117:6 in function generalized_time::two_digits
+
+Check 180: generalized_time::two_digits.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/generalized_time.rs:117:6 in function generalized_time::two_digits
+
+Check 181: generalized_time::two_digits.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:117:6 in function generalized_time::two_digits
+
+Check 182: generalized_time::two_digits.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/generalized_time.rs:117:6 in function generalized_time::two_digits
+
+Check 183: generalized_time::two_digits.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/generalized_time.rs:117:6 in function generalized_time::two_digits
+
+Check 184: generalized_time::two_digits.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/generalized_time.rs:117:27 in function generalized_time::two_digits
+
+Check 185: generalized_time::two_digits.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/generalized_time.rs:117:27 in function generalized_time::two_digits
+
+Check 186: generalized_time::two_digits.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/generalized_time.rs:117:27 in function generalized_time::two_digits
+
+Check 187: generalized_time::two_digits.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/generalized_time.rs:117:27 in function generalized_time::two_digits
+
+Check 188: generalized_time::two_digits.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/generalized_time.rs:117:27 in function generalized_time::two_digits
+
+Check 189: generalized_time::two_digits.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/generalized_time.rs:117:27 in function generalized_time::two_digits
+
+Check 190: std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}>.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:966:15 in function std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}>
+
+Check 191: std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}>.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:968:23 in function std::result::Result::<(tag::Tag, usize), tag::TagError>::map_err::<tlv::TlvError, {closure@der-verified/src/tlv.rs:71:51: 71:54}>
+
+Check 192: <std::result::Result<&[u8], sequence::SequenceError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, sequence::SequenceError>>>::from_residual.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2189:23 in function <std::result::Result<&[u8], sequence::SequenceError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, sequence::SequenceError>>>::from_residual
+
+Check 193: x509_validity::ValidityError::NotAfter.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:131:5 in function x509_validity::ValidityError::NotAfter
+
+Check 194: x509_validity::TimeError::BadGeneralized.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:113:5 in function x509_validity::TimeError::BadGeneralized
+
+Check 195: x509_validity::decode_time_tlv.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:142:23 in function x509_validity::decode_time_tlv
+
+Check 196: x509_validity::decode_time_tlv.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:144:20 in function x509_validity::decode_time_tlv
+
+Check 197: x509_validity::decode_time_tlv.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:161:18 in function x509_validity::decode_time_tlv
+
+Check 198: x509_validity::decode_time_tlv.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:156:28 in function x509_validity::decode_time_tlv
+
+Check 199: x509_validity::decode_time_tlv.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:158:21 in function x509_validity::decode_time_tlv
+
+Check 200: x509_validity::decode_time_tlv.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:149:28 in function x509_validity::decode_time_tlv
+
+Check 201: x509_validity::decode_time_tlv.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:152:17 in function x509_validity::decode_time_tlv
+
+Check 202: <std::result::Result<&[u8], x509_validity::ValidityError> as std::ops::Try>::branch.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<&[u8], x509_validity::ValidityError> as std::ops::Try>::branch
+
+Check 203: <std::result::Result<&[u8], x509_validity::ValidityError> as std::ops::Try>::branch.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2175:23 in function <std::result::Result<&[u8], x509_validity::ValidityError> as std::ops::Try>::branch
+
+Check 204: <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch
+
+Check 205: <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2175:23 in function <std::result::Result<generalized_time::GeneralizedTime<'_>, x509_validity::TimeError> as std::ops::Try>::branch
+
+Check 206: core::slice::<impl [u8]>::first.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/mod.rs:155:58 in function core::slice::<impl [u8]>::first
+
+Check 207: tag::decode_tag.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:107:23 in function tag::decode_tag
+
+Check 208: tag::decode_tag.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 209: tag::decode_tag.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 210: tag::decode_tag.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 211: tag::decode_tag.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 212: tag::decode_tag.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 213: tag::decode_tag.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:108:15 in function tag::decode_tag
+
+Check 214: tag::decode_tag.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:138:26 in function tag::decode_tag
+
+Check 215: tag::decode_tag.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 216: tag::decode_tag.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 217: tag::decode_tag.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 218: tag::decode_tag.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 219: tag::decode_tag.pointer_dereference.13
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 220: tag::decode_tag.pointer_dereference.14
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:139:19 in function tag::decode_tag
+
+Check 221: tag::decode_tag.pointer_dereference.15
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:157:16 in function tag::decode_tag
+
+Check 222: tag::decode_tag.pointer_dereference.16
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:109:24 in function tag::decode_tag
+
+Check 223: <std::result::Result<(tlv::Tlv<'_>, usize), sequence::SequenceError> as std::ops::Try>::branch.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(tlv::Tlv<'_>, usize), sequence::SequenceError> as std::ops::Try>::branch
+
+Check 224: <std::result::Result<(tlv::Tlv<'_>, usize), sequence::SequenceError> as std::ops::Try>::branch.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2175:23 in function <std::result::Result<(tlv::Tlv<'_>, usize), sequence::SequenceError> as std::ops::Try>::branch
+
+Check 225: <std::result::Result<(tag::Tag, usize), tag::TagError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tag::TagError>>>::from_residual.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2189:23 in function <std::result::Result<(tag::Tag, usize), tag::TagError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tag::TagError>>>::from_residual
+
+Check 226: tlv::decode_tlv.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tlv.rs:71:25 in function tlv::decode_tlv
+
+Check 227: tlv::decode_tlv.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tlv.rs:79:26 in function tlv::decode_tlv
+
+Check 228: tlv::decode_tlv.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tlv.rs:87:16 in function tlv::decode_tlv
+
+Check 229: tlv::decode_tlv.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tlv.rs:84:24 in function tlv::decode_tlv
+
+Check 230: core::num::<impl u8>::is_ascii_digit.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 231: core::num::<impl u8>::is_ascii_digit.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 232: core::num::<impl u8>::is_ascii_digit.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 233: core::num::<impl u8>::is_ascii_digit.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 234: core::num::<impl u8>::is_ascii_digit.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 235: core::num::<impl u8>::is_ascii_digit.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 236: core::num::<impl u8>::is_ascii_digit.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 237: core::num::<impl u8>::is_ascii_digit.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 238: core::num::<impl u8>::is_ascii_digit.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 239: core::num::<impl u8>::is_ascii_digit.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 240: core::num::<impl u8>::is_ascii_digit.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 241: core::num::<impl u8>::is_ascii_digit.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/mod.rs:818:25 in function core::num::<impl u8>::is_ascii_digit
+
+Check 242: <usize as std::slice::SliceIndex<[u8]>>::get.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/index.rs:223:13 in function <usize as std::slice::SliceIndex<[u8]>>::get
+
+Check 243: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 244: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 245: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 246: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 247: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.5
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 248: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.6
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 249: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.7
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer NULL"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 250: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.8
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer invalid"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 251: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.9
+	 - Status: SUCCESS
+	 - Description: "dereference failure: deallocated dynamic object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 252: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.10
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 253: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.11
+	 - Status: SUCCESS
+	 - Description: "dereference failure: pointer outside object bounds"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 254: <tag::Class as std::cmp::PartialEq>::eq.pointer_dereference.12
+	 - Status: SUCCESS
+	 - Description: "dereference failure: invalid integer address"
+	 - Location: der-verified/src/tag.rs:26:17 in function <tag::Class as std::cmp::PartialEq>::eq
+
+Check 255: sequence::decode_sequence_tlv_strict.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/sequence.rs:179:27 in function sequence::decode_sequence_tlv_strict
+
+Check 256: sequence::decode_sequence_tlv_strict.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/sequence.rs:181:16 in function sequence::decode_sequence_tlv_strict
+
+Check 257: <std::result::Result<(tlv::Tlv<'_>, usize), tlv::TlvError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tlv::TlvError>>>::from_residual.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2189:23 in function <std::result::Result<(tlv::Tlv<'_>, usize), tlv::TlvError> as std::ops::FromResidual<std::result::Result<std::convert::Infallible, tlv::TlvError>>>::from_residual
+
+Check 258: <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2173:15 in function <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch
+
+Check 259: <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: ../../../runner/.rustup/toolchains/nightly-2025-11-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/result.rs:2175:23 in function <std::result::Result<(tag::Tag, usize), tlv::TlvError> as std::ops::Try>::branch
+
+Check 260: x509_validity::parse_validity.pointer_dereference.1
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:183:25 in function x509_validity::parse_validity
+
+Check 261: x509_validity::parse_validity.pointer_dereference.2
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:187:20 in function x509_validity::parse_validity
+
+Check 262: x509_validity::parse_validity.pointer_dereference.3
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:194:20 in function x509_validity::parse_validity
+
+Check 263: x509_validity::parse_validity.pointer_dereference.4
+	 - Status: SUCCESS
+	 - Description: "dereference failure: dead object"
+	 - Location: der-verified/src/x509_validity.rs:198:20 in function x509_validity::parse_validity
+
+Check 264: tag::decode_tag.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: der-verified/src/tag.rs:137:49 in function tag::decode_tag
+
+Check 265: length::decode_length.unwind.0
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 0"
+	 - Location: der-verified/src/length.rs:101:5 in function length::decode_length
+
+Check 266: generalized_time::decode_generalized_time.unwind.1
+	 - Status: SUCCESS
+	 - Description: "unwinding assertion loop 1"
+	 - Location: der-verified/src/generalized_time.rs:237:9 in function generalized_time::decode_generalized_time
+
+
+SUMMARY:
+ ** 0 of 265 failed (28 unreachable)
+
+ ** 0 of 1 cover properties satisfied
+
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 9.114571s
+
+Manual Harness Summary:
+Complete - 1 successfully verified harnesses, 0 failures, 1 total.

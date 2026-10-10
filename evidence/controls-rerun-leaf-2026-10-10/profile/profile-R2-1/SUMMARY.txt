@@ -1,0 +1,12 @@
+=== profile-R2-1 / profile / der-verified/src/profile.rs (2026-10-10T15:08:28Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:08:26Z
+slot_released_utc:   2026-10-10T15:08:28Z
+stubbing:            False
+predicted_assert:    rule1_mismatch_iff_algorithms_differ: exact result
+baseline profile::proofs::rule1_mismatch_iff_algorithms_differ: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::rule1_mismatch_iff_algorithms_differ: FAILED   [want FAILED]  (1.7s)
+failed_descriptions:
+  - "assertion failed: r == if differ { Err(ProfileError::SignatureAlgorithmMismatch) } else

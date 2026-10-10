@@ -1,0 +1,14 @@
+=== set_of-R3b-2 / set_of / der-verified/src/set_of.rs (2026-10-10T15:50:43Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:47:17Z
+slot_released_utc:   2026-10-10T15:50:43Z
+stubbing:            False
+predicted_assert:    encode_is_exact_over_content_and_capacity: r == Some(total)
+baseline set_of::proofs::encode_is_exact_over_content_and_capacity: SUCCESSFUL   [want SUCCESSFUL]
+baseline set_of::proofs::roundtrip_two_sorted_children: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::encode_is_exact_over_content_and_capacity: FAILED   [want FAILED]  (2.3s)
+green    set_of::proofs::roundtrip_two_sorted_children: SUCCESSFUL   [want SUCCESSFUL]  (100.3s)
+failed_descriptions:
+  - "assertion failed: r == Some(total)"

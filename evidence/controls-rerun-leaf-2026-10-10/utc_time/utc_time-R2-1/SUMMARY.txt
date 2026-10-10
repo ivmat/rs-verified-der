@@ -1,0 +1,14 @@
+=== utc_time-R2-1 / utc_time / der-verified/src/utc_time.rs (2026-10-10T15:08:05Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:07:58Z
+slot_released_utc:   2026-10-10T15:08:05Z
+stubbing:            False
+predicted_assert:    decode_is_exactly_the_reference: got == want
+baseline utc_time::proofs::decode_is_exactly_the_reference: SUCCESSFUL   [want SUCCESSFUL]
+baseline utc_time::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]
+red      utc_time::proofs::decode_is_exactly_the_reference: FAILED   [want FAILED]  (2.0s)
+green    utc_time::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]  (2.6s)
+failed_descriptions:
+  - "assertion failed: got == want"

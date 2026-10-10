@@ -1,0 +1,27 @@
+file: der-verified/src/profile.rs
+--- old ---
+    if let Time::Generalized(t) = time {
+        if t.year <= 2049 {
+--- new ---
+    if let Time::Utc(u) = time {
+        if u.year2 > 99 {
+            return Err(on_generalized_too_early);
+        }
+    }
+    if let Time::Generalized(t) = time {
+        if t.year <= 2049 {
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -157,6 +157,11 @@
+     time: &Time<'_>,
+     on_generalized_too_early: ProfileError,
+ ) -> Result<(), ProfileError> {
++    if let Time::Utc(u) = time {
++        if u.year2 > 99 {
++            return Err(on_generalized_too_early);
++        }
++    }
+     if let Time::Generalized(t) = time {
+         if t.year <= 2049 {
+             return Err(on_generalized_too_early);

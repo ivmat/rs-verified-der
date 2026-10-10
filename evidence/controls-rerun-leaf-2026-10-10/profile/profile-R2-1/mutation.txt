@@ -1,0 +1,23 @@
+file: der-verified/src/profile.rs
+--- old ---
+    // Rule 2 (§4.1.2.1 / §4.1.2.9): extensions present => version must be v3 (2).
+
+--- new ---
+    if cert.signature_algorithm.parameters.is_some() && cert.signature_algorithm.algorithm_oid.len() == 3 {
+        return Err(ProfileError::ExtensionsRequireV3);
+    }
+    // Rule 2 (§4.1.2.1 / §4.1.2.9): extensions present => version must be v3 (2).
+
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -199,6 +199,9 @@
+         return Err(ProfileError::SignatureAlgorithmMismatch);
+     }
+ 
++    if cert.signature_algorithm.parameters.is_some() && cert.signature_algorithm.algorithm_oid.len() == 3 {
++        return Err(ProfileError::ExtensionsRequireV3);
++    }
+     // Rule 2 (§4.1.2.1 / §4.1.2.9): extensions present => version must be v3 (2).
+     if cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {
+         return Err(ProfileError::ExtensionsRequireV3);

@@ -1,0 +1,12 @@
+=== set_of-H1-M4 / set_of / der-verified/src/set_of.rs (2026-10-10T15:00:23Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T14:59:47Z
+slot_released_utc:   2026-10-10T15:00:23Z
+stubbing:            False
+predicted_assert:    unsorted_children_are_rejected: decode_set_of(&content) == Err(Unsorted { index: 0 })
+baseline set_of::proofs::unsorted_children_are_rejected: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::unsorted_children_are_rejected: FAILED   [want FAILED]  (36.7s)
+failed_descriptions:
+  - "assertion failed: decode_set_of(&content) == Err(SetOfError::Unsorted { index: 0 })"

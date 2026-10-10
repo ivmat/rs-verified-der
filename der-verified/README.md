@@ -36,7 +36,7 @@ Some of the evidence travels with the crate and some of it does not, so here is 
 
 **In this package** (what you get from `cargo add der-verified`, no clone and no network):
 
-- **All 34 source files, including every one of the 297 Kani proof harnesses.** They are
+- **All 34 source files, including every one of the 298 Kani proof harnesses.** They are
   `#[cfg(kani)]` modules inside the same sources you compile, so with
   [Kani](https://model-checking.github.io/kani/) installed you can re-run them here:
   ```sh

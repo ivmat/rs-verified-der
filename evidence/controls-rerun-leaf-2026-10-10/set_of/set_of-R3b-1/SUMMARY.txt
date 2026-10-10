@@ -1,0 +1,14 @@
+=== set_of-R3b-1 / set_of / der-verified/src/set_of.rs (2026-10-10T15:47:17Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:25:08Z
+slot_released_utc:   2026-10-10T15:47:17Z
+stubbing:            False
+predicted_assert:    strict_is_exact_composition: strict == Ok(content)
+baseline set_of::proofs::strict_is_exact_composition: SUCCESSFUL   [want SUCCESSFUL]
+baseline set_of::proofs::strict_rejects_trailing: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::strict_is_exact_composition: FAILED   [want FAILED]  (514.2s)
+green    set_of::proofs::strict_rejects_trailing: SUCCESSFUL   [want SUCCESSFUL]  (37.5s)
+failed_descriptions:
+  - "assertion failed: strict == Ok(content)"

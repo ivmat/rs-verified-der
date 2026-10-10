@@ -1,0 +1,18 @@
+=== profile-R3a-1 / profile / der-verified/src/profile.rs (2026-10-10T15:08:39Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:08:28Z
+slot_released_utc:   2026-10-10T15:08:39Z
+stubbing:            False
+predicted_assert:    validate_profile_is_exactly_the_documented_precedence: r == expected
+baseline profile::proofs::validate_profile_is_exactly_the_documented_precedence: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::error_precedence_follows_declaration_order: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule1_mismatch_iff_algorithms_differ: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::validate_profile_is_exactly_the_documented_precedence: FAILED   [want FAILED]  (3.1s)
+green    profile::proofs::error_precedence_follows_declaration_order: SUCCESSFUL   [want SUCCESSFUL]  (1.0s)
+green    profile::proofs::rule1_mismatch_iff_algorithms_differ: SUCCESSFUL   [want SUCCESSFUL]  (2.0s)
+green    profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]  (0.9s)
+failed_descriptions:
+  - "assertion failed: r == expected"

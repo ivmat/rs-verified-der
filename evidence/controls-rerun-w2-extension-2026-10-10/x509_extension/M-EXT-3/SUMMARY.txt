@@ -1,0 +1,15 @@
+=== M-EXT-3 / x509_extension / der-verified/src/x509_extension.rs (2026-10-10T15:59:39Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:57:49Z
+slot_released_utc:   2026-10-10T15:59:39Z
+stubbing:            True
+predicted_assert:    H-EXT-1 (i) result == expected (CriticalConstructed leg)
+baseline x509_extension::proofs::parse_extension_faithful: SUCCESSFUL   [want SUCCESSFUL]
+baseline x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]
+red      x509_extension::proofs::parse_extension_faithful: FAILED   [want FAILED]  (84.8s)
+green    x509_extension::proofs::validate_extensions_structured_one_member: SUCCESSFUL   [want SUCCESSFUL]  (25.8s)
+failed_descriptions:
+  - ""§11.5: a present critical encoding FALSE is exactly CriticalMustBeTrue""
+  - ""parse_extension result differs from the total expected result""

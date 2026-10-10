@@ -1,0 +1,20 @@
+=== profile-L4-e / profile / der-verified/src/profile.rs (2026-10-10T15:51:20Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:51:12Z
+slot_released_utc:   2026-10-10T15:51:20Z
+stubbing:            False
+predicted_assert:    precedence/error_precedence: r == expected when notBefore has a fraction and notAfter a year<=2049 (HasFraction instead of notAfter's YearTooEarly)
+baseline profile::proofs::validate_profile_is_exactly_the_documented_precedence: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::error_precedence_follows_declaration_order: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule4_fraction_iff_generalized_with_fraction: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::validate_profile_is_exactly_the_documented_precedence: FAILED   [want FAILED]  (3.0s)
+red      profile::proofs::error_precedence_follows_declaration_order: FAILED   [want FAILED]  (1.0s)
+green    profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]  (1.0s)
+green    profile::proofs::rule4_fraction_iff_generalized_with_fraction: SUCCESSFUL   [want SUCCESSFUL]  (1.5s)
+green    profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]  (0.9s)
+failed_descriptions:
+  - "assertion failed: r == expected"

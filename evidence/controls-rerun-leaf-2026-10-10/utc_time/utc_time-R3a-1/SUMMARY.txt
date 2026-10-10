@@ -1,0 +1,16 @@
+=== utc_time-R3a-1 / utc_time / der-verified/src/utc_time.rs (2026-10-10T15:08:12Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:08:05Z
+slot_released_utc:   2026-10-10T15:08:12Z
+stubbing:            False
+predicted_assert:    encode_is_total_exact_oracle: r.is_none()
+baseline utc_time::proofs::encode_is_total_exact_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline utc_time::proofs::roundtrip_all_fields: SUCCESSFUL   [want SUCCESSFUL]
+baseline utc_time::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]
+red      utc_time::proofs::encode_is_total_exact_oracle: FAILED   [want FAILED]  (1.9s)
+green    utc_time::proofs::roundtrip_all_fields: SUCCESSFUL   [want SUCCESSFUL]  (1.4s)
+green    utc_time::proofs::decode_accepts_only_canonical: SUCCESSFUL   [want SUCCESSFUL]  (1.6s)
+failed_descriptions:
+  - "assertion failed: r.is_none()"

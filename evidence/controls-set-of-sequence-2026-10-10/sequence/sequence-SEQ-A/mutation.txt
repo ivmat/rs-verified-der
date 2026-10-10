@@ -1,0 +1,19 @@
+file: der-verified/src/sequence.rs
+--- old ---
+    Ok(count)
+}
+--- new ---
+    Ok(count + 1)
+}
+--- unified diff ---
+--- a/der-verified/src/sequence.rs
++++ b/der-verified/src/sequence.rs
+@@ -139,7 +139,7 @@
+             Err(e) => return Err(SequenceError::Element(e)),
+         }
+     }
+-    Ok(count)
++    Ok(count + 1)
+ }
+ 
+ /// Decode a complete DER SEQUENCE from the front of `input`, returning the SEQUENCE **content**

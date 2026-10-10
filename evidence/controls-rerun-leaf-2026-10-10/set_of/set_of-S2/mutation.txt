@@ -1,0 +1,17 @@
+file: der-verified/src/set_of.rs
+--- old ---
+if longer[j] != 0 {
+--- new ---
+if longer[j] > 1 {
+--- unified diff ---
+--- a/der-verified/src/set_of.rs
++++ b/der-verified/src/set_of.rs
+@@ -129,7 +129,7 @@
+     let (longer, is_a_longer) = if a.len() > b.len() { (a, true) } else { (b, false) };
+     let mut j = n;
+     while j < longer.len() {
+-        if longer[j] != 0 {
++        if longer[j] > 1 {
+             // The longer encoding has a non-zero byte where the shorter is virtually zero-padded.
+             return if is_a_longer { Ordering::Greater } else { Ordering::Less };
+         }

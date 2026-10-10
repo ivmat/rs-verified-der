@@ -1,0 +1,886 @@
+[
+  {
+    "id": "utc_time-U1",
+    "module": "utc_time",
+    "claim": "terminator must be exactly uppercase Z",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "if content[12] != b'Z' {",
+    "new": "if content[12] != b'Z' && content[12] != b'z' {",
+    "red": [
+      "utc_time::proofs::accepted_iff_canonical_oracle"
+    ],
+    "green": [
+      "utc_time::proofs::month_range_is_classified"
+    ],
+    "predicted_assert": "accepted_iff_canonical_oracle :310 (lowercase z accepted)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "grader G2: spec-G2.json id utc_time-U1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G2 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+    "primary_provenance": "G2",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "utc_time-U2",
+    "module": "utc_time",
+    "claim": "month field range is 01..=12",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "if month < 1 || month > 12 {",
+    "new": "if month < 1 || month > 13 {",
+    "red": [
+      "utc_time::proofs::month_range_is_classified"
+    ],
+    "green": [
+      "utc_time::proofs::day_range_is_classified"
+    ],
+    "predicted_assert": "month_range_is_classified :362 (mo=13 Ok)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "grader G2: spec-G2.json id utc_time-U2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G2 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+    "primary_provenance": "G2",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "utc_time-U3",
+    "module": "utc_time",
+    "claim": "full_year_rfc5280 pivot is year2 < 50 => 20YY",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "if t.year2 < 50 {",
+    "new": "if t.year2 <= 50 {",
+    "red": [
+      "utc_time::proofs::full_year_pivot_is_correct"
+    ],
+    "green": [
+      "utc_time::proofs::accepted_iff_canonical_oracle"
+    ],
+    "predicted_assert": "full_year_pivot_is_correct :454",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "grader G2: spec-G2.json id utc_time-U3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G2 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+    "primary_provenance": "G2",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "utc_time-A-swap",
+    "module": "utc_time",
+    "claim": "minute and second fields are read from / written to their own octet positions (paired decode+encode swap hides from every round-trip harness)",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "    let minute = two_digits(content, 8);\n    let second = two_digits(content, 10);\n    if month < 1 || month > 12 {\n        return Err(UtcTimeError::MonthRange);\n    }\n    if day < 1 || day > 31 {\n        return Err(UtcTimeError::DayRange);\n    }\n    if hour > 23 {\n        return Err(UtcTimeError::HourRange);\n    }\n    if minute > 59 {\n        return Err(UtcTimeError::MinuteRange);\n    }\n    if second > 59 {\n        return Err(UtcTimeError::SecondRange);\n    }\n    Ok(UtcTime { year2, month, day, hour, minute, second })\n}\n\n/// Encode a [`UtcTime`] as canonical DER content (`YYMMDDHHMMSSZ`, 13 octets) into `out`.\n///\n/// Returns the number of octets written (always 13), or `None` if any field is out of its canonical\n/// range or `out` is too small. The range guard makes this the exact inverse of [`decode_utc_time`].\n///\n/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.\npub fn encode_utc_time(t: &UtcTime, out: &mut [u8]) -> Option<usize> {\n    if !fields_in_range(t) {\n        return None;\n    }\n    if out.len() < 13 {\n        return None;\n    }\n    write_two(out, 0, t.year2);\n    write_two(out, 2, t.month);\n    write_two(out, 4, t.day);\n    write_two(out, 6, t.hour);\n    write_two(out, 8, t.minute);\n    write_two(out, 10, t.second);",
+    "new": "    let minute = two_digits(content, 10);\n    let second = two_digits(content, 8);\n    if month < 1 || month > 12 {\n        return Err(UtcTimeError::MonthRange);\n    }\n    if day < 1 || day > 31 {\n        return Err(UtcTimeError::DayRange);\n    }\n    if hour > 23 {\n        return Err(UtcTimeError::HourRange);\n    }\n    if minute > 59 {\n        return Err(UtcTimeError::MinuteRange);\n    }\n    if second > 59 {\n        return Err(UtcTimeError::SecondRange);\n    }\n    Ok(UtcTime { year2, month, day, hour, minute, second })\n}\n\n/// Encode a [`UtcTime`] as canonical DER content (`YYMMDDHHMMSSZ`, 13 octets) into `out`.\n///\n/// Returns the number of octets written (always 13), or `None` if any field is out of its canonical\n/// range or `out` is too small. The range guard makes this the exact inverse of [`decode_utc_time`].\n///\n/// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.\npub fn encode_utc_time(t: &UtcTime, out: &mut [u8]) -> Option<usize> {\n    if !fields_in_range(t) {\n        return None;\n    }\n    if out.len() < 13 {\n        return None;\n    }\n    write_two(out, 0, t.year2);\n    write_two(out, 2, t.month);\n    write_two(out, 4, t.day);\n    write_two(out, 6, t.hour);\n    write_two(out, 10, t.minute);\n    write_two(out, 8, t.second);",
+    "red": [
+      "utc_time::proofs::accepted_iff_canonical_oracle"
+    ],
+    "green": [
+      "utc_time::proofs::roundtrip_all_fields",
+      "utc_time::proofs::decode_accepts_only_canonical"
+    ],
+    "predicted_assert": "accepted_iff_canonical_oracle: t.minute == digit pair at 8/9",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-A-results.md Item 5 (round A): four edits applied together; accepted_iff_canonical_oracle FAILED on `t.minute == (buf[8] - b'0') * 10 + (buf[9] - b'0')`; roundtrip_all_fields and decode_accepts_only_canonical stayed SUCCESSFUL (G2 R-U1 paired-fault blind spot)"
+    ],
+    "status": "applicable",
+    "anchor": "four hunks (decode minute/second reads, encode minute/second writes) merged into ONE contiguous span from `let minute = two_digits(content, 8);` through `write_two(out, 10, t.second);` (about 33 production lines)",
+    "primary_provenance": "round-A",
+    "text_basis": "merged-span"
+  },
+  {
+    "id": "utc_time-R2-1",
+    "module": "utc_time",
+    "claim": "decode_utc_time returns the exact error variant (NonDigit vs NotZulu on overlap; exact-result reference)",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "            return Err(UtcTimeError::NonDigit);",
+    "new": "            return Err(if content[12] != b'Z' { UtcTimeError::NotZulu } else { UtcTimeError::NonDigit });",
+    "red": [
+      "utc_time::proofs::decode_is_exactly_the_reference"
+    ],
+    "green": [
+      "utc_time::proofs::accepted_iff_canonical_oracle"
+    ],
+    "predicted_assert": "decode_is_exactly_the_reference: got == want",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r2-results.md Item 2 (round 2): FAILED `got == want`; old accepted_iff_canonical_oracle SUCCESSFUL on the mutant"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text",
+    "primary_provenance": "round-r2",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "utc_time-R3a-1",
+    "module": "utc_time",
+    "claim": "encode_utc_time returns None when the output is shorter than 13 octets (symbolic capacity)",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "    if out.len() < 13 {\n        return None;\n    }",
+    "new": "    if out.len() < 13 {\n        return Some(0);\n    }",
+    "red": [
+      "utc_time::proofs::encode_is_total_exact_oracle"
+    ],
+    "green": [
+      "utc_time::proofs::roundtrip_all_fields",
+      "utc_time::proofs::decode_accepts_only_canonical"
+    ],
+    "predicted_assert": "encode_is_total_exact_oracle: r.is_none()",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r3a-results.md Item 4 (round 3a): `if out.len() < 13 { return None; }` -> `return Some(0);` FAILED `r.is_none()`; old roundtrip_all_fields / decode_accepts_only_canonical SUCCESSFUL"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text",
+    "primary_provenance": "round-r3a",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "utc_time-R4-1",
+    "module": "utc_time",
+    "claim": "encode_utc_time writes nothing on None (write contract)",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "    if out.len() < 13 {\n        return None;\n    }",
+    "new": "    if out.len() < 13 {\n        if !out.is_empty() { out[0] = 0xEE; }\n        return None;\n    }",
+    "red": [
+      "utc_time::proofs::encode_is_total_exact_oracle"
+    ],
+    "green": [],
+    "predicted_assert": "encode_is_total_exact_oracle: out == backing",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r4-results.md Item 2 (round 4): `out[0] = 0xEE` before the capacity `return None` FAILED `out == backing`"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text; guarded write (see octet_string-R4-1)",
+    "primary_provenance": "round-r4",
+    "text_basis": "reconstructed-from-prose"
+  },
+  {
+    "id": "utc_time-R4-2",
+    "module": "utc_time",
+    "claim": "full_year_rfc5280 formula holds for ALL year2 values (above-99 inputs map to 1900 + year2)",
+    "src": "der-verified/src/utc_time.rs",
+    "old": "    if t.year2 < 50 {\n        2000 + t.year2 as u16",
+    "new": "    if t.year2 > 99 { return 0; }\n    if t.year2 < 50 {\n        2000 + t.year2 as u16",
+    "red": [
+      "utc_time::proofs::full_year_pivot_is_correct"
+    ],
+    "green": [],
+    "predicted_assert": "full_year_pivot_is_correct: full == 1900 + y as u16",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r4-results.md Item 3 (round 4): `if t.year2 > 99 { return 0 }` FAILED `full == 1900 + y as u16`"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text",
+    "primary_provenance": "round-r4",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "profile-P1",
+    "module": "profile",
+    "claim": "rule 3: GeneralizedTime year <= 2049 is rejected (2049/2050 boundary)",
+    "src": "der-verified/src/profile.rs",
+    "old": "if t.year <= 2049 {",
+    "new": "if t.year < 2049 {",
+    "red": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+    ],
+    "green": [
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": ":361",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "grader G2: spec-G2.json id profile-P1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G2 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b) | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "G2",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+  },
+  {
+    "id": "profile-P2",
+    "module": "profile",
+    "claim": "rule 2: extensions require version v3 (version != 2)",
+    "src": "der-verified/src/profile.rs",
+    "old": "cert.tbs_certificate.version != 2",
+    "new": "cert.tbs_certificate.version < 2",
+    "red": [
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+    ],
+    "predicted_assert": ":325",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "grader G2: spec-G2.json id profile-P2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G2 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b) | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "G2",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+  },
+  {
+    "id": "profile-P3",
+    "module": "profile",
+    "claim": "rule 3: notAfter violation reports the NotAfter variant",
+    "src": "der-verified/src/profile.rs",
+    "old": "ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;",
+    "new": "ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;",
+    "red": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+    ],
+    "green": [
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": ":363",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "grader G2: spec-G2.json id profile-P3 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G2 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b) | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "G2",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+  },
+  {
+    "id": "profile-A-1",
+    "module": "profile",
+    "claim": "rule 1 compares algorithm_oid AND parameters (ignoring parameters must be red)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    if cert.signature_algorithm != cert.tbs_certificate.signature {",
+    "new": "    if cert.signature_algorithm.algorithm_oid != cert.tbs_certificate.signature.algorithm_oid {",
+    "red": [
+      "profile::proofs::rule1_mismatch_iff_algorithms_differ"
+    ],
+    "green": [],
+    "predicted_assert": "rule1_mismatch_iff_algorithms_differ",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-A-results.md Item 6 gap witness 1 (round A): FAILED `(r == Err(ProfileError::SignatureAlgorithmMismatch)) == differ` (cover 4/5 on the mutant)"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text; lane A edits validate_profile (see profile_flag) | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-A",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+  },
+  {
+    "id": "profile-A-2",
+    "module": "profile",
+    "claim": "rule 1 compares parameter BYTES, not just presence",
+    "src": "der-verified/src/profile.rs",
+    "old": "    if cert.signature_algorithm != cert.tbs_certificate.signature {",
+    "new": "    if cert.signature_algorithm.algorithm_oid != cert.tbs_certificate.signature.algorithm_oid\n        || cert.signature_algorithm.parameters.is_some() != cert.tbs_certificate.signature.parameters.is_some() {",
+    "red": [
+      "profile::proofs::rule1_mismatch_iff_algorithms_differ"
+    ],
+    "green": [],
+    "predicted_assert": "rule1_mismatch_iff_algorithms_differ",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-A-results.md Item 6 gap witness 2 (round A): condition `algorithm_oid != ... || parameters.is_some() != parameters.is_some()` FAILED the same assert"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text; expression given in prose in the results, written out here | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-A",
+    "text_basis": "reconstructed-from-prose",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+  },
+  {
+    "id": "profile-R2-1",
+    "module": "profile",
+    "claim": "validate_profile returns the exact result for equal algorithm pairs (a spurious error for equal pairs with parameters must be red)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    // Rule 2 (§4.1.2.1 / §4.1.2.9): extensions present => version must be v3 (2).\n",
+    "new": "    if cert.signature_algorithm.parameters.is_some() && cert.signature_algorithm.algorithm_oid.len() == 3 {\n        return Err(ProfileError::ExtensionsRequireV3);\n    }\n    // Rule 2 (§4.1.2.1 / §4.1.2.9): extensions present => version must be v3 (2).\n",
+    "red": [
+      "profile::proofs::rule1_mismatch_iff_algorithms_differ"
+    ],
+    "green": [],
+    "predicted_assert": "rule1_mismatch_iff_algorithms_differ: exact result",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r2-results.md Item 1 (round 2): inserted before the \"Rule 2\" comment; FAILED `r == if differ { Err(Mismatch) } else { Ok(()) }`"
+    ],
+    "status": "applicable",
+    "anchor": "anchored on the \"// Rule 2\" comment line (production comment text; lane A may move it) | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-r2",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged."
+  },
+  {
+    "id": "profile-R3a-1",
+    "module": "profile",
+    "claim": "validate_profile checks rules in the documented order (extensions rule before rule 1 only when parameters present)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature.",
+    "new": "    if cert.signature_algorithm.parameters.is_some() && cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {\n        return Err(ProfileError::ExtensionsRequireV3);\n    }\n    // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature.",
+    "red": [
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+    ],
+    "green": [
+      "profile::proofs::error_precedence_follows_declaration_order",
+      "profile::proofs::rule1_mismatch_iff_algorithms_differ",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r3a-results.md Item 1 (round 3a): inserted before the \"Rule 1\" comment; FAILED `r == expected`; the three old harnesses SUCCESSFUL (blind) on the mutant"
+    ],
+    "status": "applicable",
+    "anchor": "anchored on the \"// Rule 1\" comment line; lane A changes precedence, so the greens (error_precedence_follows_declaration_order in particular) must be re-judged after rule 4 lands | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-r3a",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. Greens re-judged: error_precedence_follows_declaration_order still builds the outer algorithm with parameters = None (symbolic_alg(.., false)), rule1_... holds v3+extensions, rule2_... has no parameters, so the inserted early-return stays blind to all three."
+  },
+  {
+    "id": "profile-R4-1",
+    "module": "profile",
+    "claim": "after rule 4: a fractional GeneralizedTime from 2050 on is reported with rule 4's variant, never rule 3's (mutant lets the fraction trigger the year-rule error)",
+    "src": "der-verified/src/profile.rs",
+    "old": "        if t.year <= 2049 {\n            return Err(on_generalized_too_early);",
+    "new": "        if t.year <= 2049 || !t.fraction.is_empty() {\n            return Err(on_generalized_too_early);",
+    "red": [
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::error_precedence_follows_declaration_order"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+    ],
+    "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r4-results.md Item 1 mutant 1 (round 4): `t.year <= 2049 || !t.fraction.is_empty()` FAILED `r == expected`"
+    ],
+    "status": "re-anchored",
+    "anchor": "anchored inside check_time_encoding_year; lane A adds a fraction rule NEAR this function, so this mutation (reads the fraction) may become equivalent to a legal behaviour after rule 4 -- re-judge | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-r4",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: KEPT, re-targeted (not retired). Text unchanged (old occurs once). Before rule 4 the mutation meant 'the fraction must not change the verdict'; rule 4 makes the fraction a legal input, so that wording is obsolete. The mutation is still a wrong behaviour: a 2050+ fractional time must yield *HasFraction, the mutant yields *YearTooEarly. Reds now: PREC (r == expected) and rule4_fraction_iff_generalized_with_fraction (new; years >= 2050, so only rule 4 may fire); error_precedence_follows_declaration_order is expected red as well (symbolic fraction + year) -- observed, see laneA-results.md. Green: rule3_... (every fraction there is empty, so the mutant behaves as pristine). Intent: rule 3 and rule 4 are separate rules with separate variants. Observed at 538285d: PREC, R4 and ERRP all FAILED; R3 SUCCESSFUL."
+  },
+  {
+    "id": "profile-R4-2",
+    "module": "profile",
+    "claim": "a hand-built UTCTime with year2 > 99 is accepted (no extra Utc arm)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    if let Time::Generalized(t) = time {\n        if t.year <= 2049 {",
+    "new": "    if let Time::Utc(u) = time {\n        if u.year2 > 99 {\n            return Err(on_generalized_too_early);\n        }\n    }\n    if let Time::Generalized(t) = time {\n        if t.year <= 2049 {",
+    "red": [
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+    ],
+    "green": [],
+    "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r4-results.md Item 1 mutant 2 (round 4): `Time::Utc(u) if u.year2 > 99 => Err(..)` prepended; FAILED `r == expected`"
+    ],
+    "status": "applicable",
+    "anchor": "results gave a match-arm sketch; written as an equivalent `if let Time::Utc(u)` guard before the Generalized check. Anchored inside check_time_encoding_year (lane A may restructure it) | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-r4",
+    "text_basis": "reconstructed-from-prose",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. No greens (as before)."
+  },
+  {
+    "id": "profile-R4-3",
+    "module": "profile",
+    "claim": "verdict does not read the month of a too-early GeneralizedTime",
+    "src": "der-verified/src/profile.rs",
+    "old": "        if t.year <= 2049 {\n            return Err(on_generalized_too_early);",
+    "new": "        if t.year <= 2049 || t.month == 0 {\n            return Err(on_generalized_too_early);",
+    "red": [
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+    ],
+    "green": [],
+    "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r4-results.md Item 1 mutant 3 (round 4): `t.year <= 2049 || t.month == 0` FAILED `r == expected`"
+    ],
+    "status": "applicable",
+    "anchor": "anchored inside check_time_encoding_year (lane A may restructure it) | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-r4",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. No greens (as before)."
+  },
+  {
+    "id": "profile-R4-4",
+    "module": "profile",
+    "claim": "rule 2 triggers on extensions presence, not on non-empty extensions content",
+    "src": "der-verified/src/profile.rs",
+    "old": "    if cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {",
+    "new": "    if cert.tbs_certificate.extensions.map_or(false, |e| !e.is_empty()) && cert.tbs_certificate.version != 2 {",
+    "red": [
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+    ],
+    "green": [],
+    "predicted_assert": "validate_profile_is_exactly_the_documented_precedence: r == expected",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "harness-r4-results.md Item 1 mutant 4 (round 4): `extensions.map_or(false, |e| !e.is_empty()) && version != 2` FAILED `r == expected`"
+    ],
+    "status": "applicable",
+    "anchor": "anchored on the Rule-2 condition line; the same line P2 mutates (different mutation). Lane A changes precedence and may reorder rules | laneA: re-checked at 538285d",
+    "profile_flag": true,
+    "primary_provenance": "round-r4",
+    "text_basis": "verbatim",
+    "notes": "laneA 538285d: re-judged after rule 4 landed (profile.rs rewritten around the rule-3 block, precedence harnesses extended): old text still occurs exactly once, mutation and intent unchanged; red/green sets unchanged. No greens (as before)."
+  },
+  {
+    "id": "set_of-S1",
+    "module": "set_of",
+    "claim": "cmp_padded: a non-zero tail on the longer encoding sorts it after (tail-padding sign)",
+    "src": "der-verified/src/set_of.rs",
+    "old": "return if is_a_longer { Ordering::Greater } else { Ordering::Less };",
+    "new": "return if is_a_longer { Ordering::Less } else { Ordering::Greater };",
+    "red": [
+      "set_of::proofs::cmp_padded_matches_oracle"
+    ],
+    "green": [
+      "set_of::proofs::ordering_iff_oracle"
+    ],
+    "predicted_assert": ":431",
+    "stubbing": false,
+    "timeout_s": 5400,
+    "provenance": [
+      "grader G3: spec-G3.json id set_of-S1 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G3 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+    "primary_provenance": "G3",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "set_of-S2",
+    "module": "set_of",
+    "claim": "cmp_padded: any non-zero tail byte (0x01 included) breaks the padded tie",
+    "src": "der-verified/src/set_of.rs",
+    "old": "if longer[j] != 0 {",
+    "new": "if longer[j] > 1 {",
+    "red": [
+      "set_of::proofs::cmp_padded_matches_oracle"
+    ],
+    "green": [
+      "set_of::proofs::ordering_iff_oracle"
+    ],
+    "predicted_assert": ":431",
+    "stubbing": false,
+    "timeout_s": 5400,
+    "provenance": [
+      "grader G3: spec-G3.json id set_of-S2 (observed red at pristine 8ce35ca, RESULTS.md in leaf-controls-2026-10-02)",
+      "preregistered in grading record G3 section 3"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged since pristine 8ce35ca (old text occurs once in 1374f9b)",
+    "primary_provenance": "G3",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "set_of-B-GW-S2",
+    "module": "set_of",
+    "claim": "decode_set_of_tlv enforces the ordering rule (result of decode_set_of is not discarded)",
+    "src": "der-verified/src/set_of.rs",
+    "old": "    decode_set_of(tlv.value)?;",
+    "new": "    let _ = decode_set_of(tlv.value);",
+    "red": [
+      "set_of::proofs::tlv_entry_enforces_ordering_exactly"
+    ],
+    "green": [
+      "set_of::proofs::ordering_matches_whole_encoding_oracle"
+    ],
+    "predicted_assert": "tlv_entry_enforces_ordering_exactly: r == Err(e)",
+    "stubbing": false,
+    "timeout_s": 5400,
+    "provenance": [
+      "harness-B-results.md Item 4 GW-S2 (round B): tlv_entry_enforces_ordering_exactly FAILED `r == Err(e)` (wall 243 s); ordering_matches_whole_encoding_oracle SUCCESSFUL (does not call the TLV entry)"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text",
+    "primary_provenance": "round-B",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "set_of-R3b-1",
+    "module": "set_of",
+    "claim": "decode_set_of_tlv_strict returns Ok(content) when the whole input is consumed (strict composition)",
+    "src": "der-verified/src/set_of.rs",
+    "old": "    if used != input.len() {\n        return Err(SetOfError::TrailingData);\n    }\n    Ok(content)",
+    "new": "    let _ = (content, used);\n    Err(SetOfError::TrailingData)",
+    "red": [
+      "set_of::proofs::strict_is_exact_composition"
+    ],
+    "green": [
+      "set_of::proofs::strict_rejects_trailing"
+    ],
+    "predicted_assert": "strict_is_exact_composition: strict == Ok(content)",
+    "stubbing": false,
+    "timeout_s": 5400,
+    "provenance": [
+      "harness-r3b-results.md Item 6a (round 3b): branch + `Ok(content)` replaced by `Err(TrailingData)`; FAILED `strict == Ok(content)` (Kani 514 s; baseline peak 13.7 GB); old strict_rejects_trailing SUCCESSFUL"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text; `let _ = (content, used);` added so the mutant compiles without unused-variable warnings (results: \"replaced by Err(TrailingData)\"). HEAVY: ~520 s Kani, ~13.7 GB peak at baseline AND under mutation.",
+    "primary_provenance": "round-r3b",
+    "text_basis": "reconstructed-from-prose"
+  },
+  {
+    "id": "set_of-R3b-2",
+    "module": "set_of",
+    "claim": "encode_set_of_into accepts empty content (a Some(2) SET OF)",
+    "src": "der-verified/src/set_of.rs",
+    "old": "    let tag = Tag { class: Class::Universal, constructed: true, number: TAG };\n    encode_tlv_into(tag, children_content, out)",
+    "new": "    if children_content.is_empty() { return None; }\n    let tag = Tag { class: Class::Universal, constructed: true, number: TAG };\n    encode_tlv_into(tag, children_content, out)",
+    "red": [
+      "set_of::proofs::encode_is_exact_over_content_and_capacity"
+    ],
+    "green": [
+      "set_of::proofs::roundtrip_two_sorted_children"
+    ],
+    "predicted_assert": "encode_is_exact_over_content_and_capacity: r == Some(total)",
+    "stubbing": false,
+    "timeout_s": 5400,
+    "provenance": [
+      "harness-r3b-results.md Item 6b (round 3b): prepended `if children_content.is_empty() { return None; }`; FAILED `r == Some(total)`; old roundtrip_two_sorted_children SUCCESSFUL (non-empty content only)"
+    ],
+    "status": "applicable",
+    "anchor": "unchanged production text",
+    "primary_provenance": "round-r3b",
+    "text_basis": "verbatim"
+  },
+  {
+    "id": "profile-L4-a",
+    "module": "profile",
+    "claim": "rule 4: a fractional notBefore GeneralizedTime is rejected (drop the notBefore fraction check)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n",
+    "new": "    // MUTATED: notBefore fraction check dropped\n",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::error_precedence_follows_declaration_order"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4: r == expected (Ok instead of NotBeforeGeneralizedTimeHasFraction); precedence r == expected; error_precedence r == expected",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+  },
+  {
+    "id": "profile-L4-b",
+    "module": "profile",
+    "claim": "rule 4: a fractional notAfter GeneralizedTime is rejected (drop the notAfter fraction check)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+    "new": "    // MUTATED: notAfter fraction check dropped\n",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::error_precedence_follows_declaration_order"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4: r == expected (Ok instead of NotAfterGeneralizedTimeHasFraction); precedence r == expected; error_precedence r == expected",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+  },
+  {
+    "id": "profile-L4-c",
+    "module": "profile",
+    "claim": "rule 4: each field reports its own variant (swap the two variants)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+    "new": "    check_time_no_fraction(&validity.not_before, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::error_precedence_follows_declaration_order"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4/precedence/error_precedence: r == expected (wrong variant)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+  },
+  {
+    "id": "profile-L4-d",
+    "module": "profile",
+    "claim": "precedence: rule 3 (both fields) is checked before rule 4 (move rule 4 ahead of rule 3)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n\n    // Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.\n    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both\n    // rule-3 fields (declaration order), notBefore first.\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+    "new": "    // Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.\n    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both\n    // rule-3 fields (declaration order), notBefore first.\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n\n    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n",
+    "red": [
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::error_precedence_follows_declaration_order"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "precedence/error_precedence: r == expected on a year<=2049 GeneralizedTime that also has a fraction (HasFraction instead of YearTooEarly); rule3 and rule4 harnesses are blind (empty fraction / year>=2050)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+  },
+  {
+    "id": "profile-L4-e",
+    "module": "profile",
+    "claim": "precedence: rule 3 then rule 4 for BOTH fields, not interleaved per field (rule3 nb, rule4 nb, rule3 na, rule4 na)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n\n    // Rule 4 (§4.1.2.5.2): a GeneralizedTime in validity MUST NOT include fractional seconds.\n    // `Time::Utc` has no fraction field, so only the Generalized arm is checked. Checked after both\n    // rule-3 fields (declaration order), notBefore first.\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+    "new": "    check_time_encoding_year(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeYearTooEarly)?;\n    check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;\n    check_time_encoding_year(&validity.not_after, ProfileError::NotAfterGeneralizedTimeYearTooEarly)?;\n    check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;\n",
+    "red": [
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::error_precedence_follows_declaration_order"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "precedence/error_precedence: r == expected when notBefore has a fraction and notAfter a year<=2049 (HasFraction instead of notAfter's YearTooEarly)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+  },
+  {
+    "id": "profile-L4-f",
+    "module": "profile",
+    "claim": "rule 4 polarity: a fraction-FREE GeneralizedTime is accepted, a fractional one rejected (negate require_no_fraction)",
+    "src": "der-verified/src/profile.rs",
+    "old": "        if !require_no_fraction(t) {\n            return Err(on_fraction);",
+    "new": "        if require_no_fraction(t) {\n            return Err(on_fraction);",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::error_precedence_follows_declaration_order",
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+    ],
+    "green": [
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4/precedence/error_precedence: r == expected (clean 2050+ GeneralizedTime rejected, fractional accepted)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d. PREREGISTRATION DEVIATION (observed 538285d): rule3_generalized_too_early_iff_year_le_2049 was predicted GREEN but is FAILED, because the mutant also rejects fraction-free / second==0 times that harness expects to be accepted (it is an exact-result harness). The preregistered reds all FAILED as predicted; the green prediction was my error, so the harness moved to red."
+  },
+  {
+    "id": "profile-L4-g",
+    "module": "profile",
+    "claim": "rule 4 emptiness: ANY non-empty fraction is rejected, including a one-octet one (off-by-one on the length test)",
+    "src": "der-verified/src/profile.rs",
+    "old": "        if !require_no_fraction(t) {\n            return Err(on_fraction);",
+    "new": "        if t.fraction.len() > 1 {\n            return Err(on_fraction);",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::error_precedence_follows_declaration_order"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4/precedence: r == expected (1-octet fraction accepted); error_precedence uses a 1-octet fraction too and is expected red, observed but not required",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d. Observed: ERRP also FAILED (predicted 'expected, not required'), so it is listed as red."
+  },
+  {
+    "id": "profile-L4-h",
+    "module": "profile",
+    "claim": "rule 4 applies to the GeneralizedTime arm only and does not reject a UTCTime (check the Utc arm too)",
+    "src": "der-verified/src/profile.rs",
+    "old": "    if let Time::Generalized(t) = time {\n        if !require_no_fraction(t) {",
+    "new": "    if let Time::Utc(u) = time {\n        if u.second == 0 {\n            return Err(on_fraction);\n        }\n    }\n    if let Time::Generalized(t) = time {\n        if !require_no_fraction(t) {",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence",
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049"
+    ],
+    "green": [
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4/precedence: r == expected (UTCTime with second == 0 rejected with a fraction variant)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d. PREREGISTRATION DEVIATION (observed 538285d): rule3_generalized_too_early_iff_year_le_2049 was predicted GREEN but is FAILED, because the mutant also rejects fraction-free / second==0 times that harness expects to be accepted (it is an exact-result harness). The preregistered reds all FAILED as predicted; the green prediction was my error, so the harness moved to red."
+  },
+  {
+    "id": "profile-L4-i",
+    "module": "profile",
+    "claim": "rule 4 rests on require_no_fraction: a require_no_fraction that is always true leaves fractional times accepted by validate_profile",
+    "src": "der-verified/src/generalized_time.rs",
+    "old": "pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {\n    t.fraction.is_empty()",
+    "new": "pub fn require_no_fraction(t: &GeneralizedTime<'_>) -> bool {\n    true",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+    ],
+    "green": [
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4/precedence: r == expected (fractional time accepted); the generalized_time harness require_no_fraction_iff_no_fraction_octets is red for the same mutation per generalized_time-R3a-1",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "laneA-rule4"
+    ],
+    "primary_provenance": "laneA-rule4",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs at 538285d (rule 4 landed); preregistered in laneA-results.md before any run",
+    "notes": "lane A preregistered control (laneA-results.md section 3), written BEFORE any run at 538285d."
+  },
+  {
+    "id": "profile-L4-len4",
+    "module": "profile",
+    "claim": "rule 4 has no length-dependent hole: a fraction of exactly 4 octets is rejected like every other non-empty fraction (needs the profile harnesses' fraction window to reach length 4)",
+    "src": "der-verified/src/profile.rs",
+    "old": "        if !require_no_fraction(t) {",
+    "new": "        if !require_no_fraction(t) && t.fraction.len() != 4 {",
+    "red": [
+      "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+      "profile::proofs::validate_profile_is_exactly_the_documented_precedence"
+    ],
+    "green": [
+      "profile::proofs::error_precedence_follows_declaration_order",
+      "profile::proofs::rule3_generalized_too_early_iff_year_le_2049",
+      "profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3"
+    ],
+    "predicted_assert": "rule4/precedence: r == expected (a 4-octet fraction is accepted by the mutant)",
+    "stubbing": false,
+    "timeout_s": 1800,
+    "provenance": [
+      "profile-verify-fix"
+    ],
+    "primary_provenance": "profile-verify-fix",
+    "status": "applicable",
+    "text_basis": "verbatim",
+    "profile_flag": true,
+    "anchor": "written against profile.rs after the fraction window was raised from 2 to 4 octets (lane F, branch der-coverage-w12)",
+    "notes": "preregistered in laneF-predictions.md BEFORE any run. Observed: with the OLD window (0..=2) R4 and PREC were SUCCESSFUL on this mutant (it survived); with the window 0..=4 R4 and PREC FAILED with `assertion failed: r == expected`, ERRP/R3/R2 SUCCESSFUL. The new unit test rejects_fractions_of_length_three_and_four_on_both_fields also fails on it. Evidence: laneF-evidence/."
+  }
+]

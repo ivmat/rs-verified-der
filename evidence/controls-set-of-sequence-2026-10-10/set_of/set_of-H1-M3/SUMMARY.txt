@@ -1,0 +1,12 @@
+=== set_of-H1-M3 / set_of / der-verified/src/set_of.rs (2026-10-10T14:59:47Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T14:43:46Z
+slot_released_utc:   2026-10-10T14:59:47Z
+stubbing:            False
+predicted_assert:    refactored_walk_matches_previous_walk: exact Result equality (Element vs Tlv variant); 2 of 3 covers satisfied before the failure
+baseline set_of::proofs::refactored_walk_matches_previous_walk: SUCCESSFUL   [want SUCCESSFUL]
+red      set_of::proofs::refactored_walk_matches_previous_walk: FAILED   [want FAILED]  (431.8s)
+failed_descriptions:
+  - "assertion failed: refactored == previous"

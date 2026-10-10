@@ -1,0 +1,21 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+
+    if ev_used != value_input.len() {
+
+--- new ---
+
+    if ev_used > value_input.len() {
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -249,7 +249,7 @@
+     }
+     let (extn_value, ev_used) =
+         decode_octet_string(value_input).map_err(ExtensionError::BadExtnValue)?;
+-    if ev_used != value_input.len() {
++    if ev_used > value_input.len() {
+         return Err(ExtensionError::TrailingInExtension);
+     }
+ 

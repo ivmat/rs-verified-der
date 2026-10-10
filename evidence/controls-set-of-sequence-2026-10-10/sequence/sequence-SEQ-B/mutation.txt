@@ -1,0 +1,19 @@
+file: der-verified/src/sequence.rs
+--- old ---
+            Ok(_) => count += 1,
+            Err(e) => return Err(SequenceError::Element(e)),
+--- new ---
+            Ok(_) => count += 1,
+            Err(_e) => break,
+--- unified diff ---
+--- a/der-verified/src/sequence.rs
++++ b/der-verified/src/sequence.rs
+@@ -136,7 +136,7 @@
+     for child in Elements::new(content) {
+         match child {
+             Ok(_) => count += 1,
+-            Err(e) => return Err(SequenceError::Element(e)),
++            Err(_e) => break,
+         }
+     }
+     Ok(count)

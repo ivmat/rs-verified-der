@@ -1,0 +1,19 @@
+file: der-verified/src/x509_extension.rs
+--- old ---
+    if count == 0 {
+
+--- new ---
+    if false {
+
+--- unified diff ---
+--- a/der-verified/src/x509_extension.rs
++++ b/der-verified/src/x509_extension.rs
+@@ -302,7 +302,7 @@
+     }
+ 
+     // 3. RFC 5280 §4.1: SIZE (1..MAX) -- at least one Extension is required.
+-    if count == 0 {
++    if false {
+         return Err(ExtensionsError::EmptyExtensions);
+     }
+     Ok(())

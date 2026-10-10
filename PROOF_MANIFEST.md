@@ -264,6 +264,10 @@ module (§7) they are the *only* evidence that exists.
 | `evidence/check-ba40709.log` | `ba40709` | 171 | 0 | 3 |
 | `evidence/check-bffab69.log` | `bffab69` | 203 | 0 | 3 |
 | `evidence/check-d05d3f2.log` | `d05d3f2` | 210 | 0 | 3 |
+| `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_never_panics.log` | `d68eeca` | 1 | 0 | 1 |
+| `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` | `d68eeca` | 1 | 0 | 0 |
+| `evidence/check-d68eeca-heavy-x509_name-validate_rdn_never_panics.log` | `d68eeca` | 1 | 0 | 0 |
+| `evidence/check-d68eeca.log` | `d68eeca` | 295 | 0 | 2 |
 | `evidence/check-ea8dad4-remainder.log` | `ea8dad4` | 8 | 0 | 2 |
 | `evidence/check-ea8dad4.log` | `ea8dad4` | 162 | 0 | 0 |
 | `evidence/check-ffcea81.log` | `ffcea81` | 191 | 0 | 3 |
@@ -273,7 +277,10 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
+**The run evidence captured at `d68eeca` still speaks for HEAD** (a SPLIT floor of 4 logs, read together: the main half `evidence/check-d68eeca.log` and its 3 heavy-harness companion logs `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_never_panics.log`, `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_ok_path_witnessed.log`, `evidence/check-d68eeca-heavy-x509_name-validate_rdn_never_panics.log`). No build input it depends on has changed since the anchor `d68eeca`: `git diff d68eeca -- check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs lean` is empty.
+
+This is a **sufficient** condition, not an iff. An empty diff over the L3 build inputs (`check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs`) since the anchor, with the §2 toolchain pins unchanged, means the Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty diff, or a moved pin, means re-run: it does not by itself show the evidence is wrong. The generator checks the diff only; whether a §2 pin moved is for the reader. Run the command rather than trusting this sentence.
+
 - `evidence/check-0e327b7.log` (at `0e327b7`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-24ddb69.log` (at `24ddb69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -297,20 +304,20 @@ Every column here is read out of the committed log itself, so this table is repr
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
 in this document a reader cannot check from the source alone:
 
-- **The current floor at `17ee51e` (2026-10-03) is a SPLIT floor: there is no single-run 297-harness floor at this commit.**
-  `evidence/check-42c8165.log` is the MAIN half: one capped (`MemoryMax=20G`) `check.sh` pass in which the
-  `cargo kani` stage ran **294 harnesses** (a temporary copy of `check.sh` with the kani line restricted
+- **The current floor at `d68eeca` (2026-10-10) is a SPLIT floor: there is no single-run 298-harness floor at this commit.**
+  `evidence/check-d68eeca.log` is the MAIN half: one capped (`MemoryMax=20G`) `check.sh` pass in which the
+  `cargo kani` stage ran **295 harnesses** (a temporary copy of `check.sh` with the kani line restricted
   by `--exact --harness`; `check.sh` itself is unchanged), with the L4 Lean lid and every document gate in the same
-  pass — `Complete - 294 successfully verified harnesses, 0 failures, 294 total.` The other **3**
+  pass — `Complete - 295 successfully verified harnesses, 0 failures, 295 total.` The other **3**
   (`x509_extension::validate_extensions_never_panics`, `x509_extension::validate_extensions_ok_path_witnessed`,
   `x509_name::validate_rdn_never_panics`; kept out of the 20 GiB pass because earlier measurements approached or
   exceeded 20 GiB) ran separately, one at a time, at `MemoryMax=24G`, at the same commit with the same toolchain.
-  Their measured peaks under that cap, read from the `peak memory:` header line of each companion log, are **20G**,
-  **16.7G** and **16.3G** respectively (the `>20 GB peak each` phrase in those headers is the earlier estimate, not
-  the measurement). Their logs are `evidence/check-42c8165-heavy-<module>-<harness>.log`,
-  each ending `Complete - 1 successfully verified harnesses, 0 failures, 1 total.` The floor is 294 + 3 = 297, all
-  `SUCCESSFUL`. `check.sh`'s own summary line `L3 kani floor: GREEN` refers to the 294-harness restricted stage only.
-  The two logs of the extension pair are also the sat-twin evidence of `evidence/planted-twins-2026-10-03/`.
+  Their measured peaks under that cap, read from the `peak memory:` header line of each companion log, are **20.1G**,
+  **16.5G** and **17.3G** respectively (the `>20 GB peak each` phrase in those headers is the earlier estimate, not
+  the measurement). Their logs are `evidence/check-d68eeca-heavy-<module>-<harness>.log`,
+  each ending `Complete - 1 successfully verified harnesses, 0 failures, 1 total.` The floor is 295 + 3 = 298, all
+  `SUCCESSFUL`. `check.sh`'s own summary line `L3 kani floor: GREEN` refers to the 295-harness restricted stage only.
+  The two logs of the extension pair are also the sat-twin evidence of `evidence/planted-twins-2026-10-10/`.
 - **The verdict is now read off a committed artifact, not transcribed.** The previous single-pass run was
   **2026-09-18 at commit `d05d3f2`** (`evidence/check-d05d3f2.log`) — `Complete - 210 successfully
   verified harnesses, 0 failures, 210 total.`, `cargo test` green (530 + 34), every document gate
@@ -355,9 +362,8 @@ in this document a reader cannot check from the source alone:
   advisory region just above §3.4's table, computed as `git diff <anchor> -- <build inputs>` being
   empty. The build inputs are the L3 closure (`check.sh`, `der-verified/src`, `der-verified/Cargo.toml`,
   `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`, `.cargo`, `der-verified/build.rs`) plus `lean/` for the
-  L4 lid, not the two source trees alone. The anchor is the run's capture commit or, when that commit is
-  not part of the published history, the published commit with the identical tree (`17ee51e` for the
-  split floor). An empty diff with the §2 toolchain pins unchanged is a **sufficient** condition for the
+  L4 lid, not the two source trees alone. The anchor is the run's capture commit (`d68eeca` for the split
+  floor) or, when that commit is not part of the published history, the published commit with the identical tree. An empty diff with the §2 toolchain pins unchanged is a **sufficient** condition for the
   evidence to still apply, never an iff: anything else means re-run, not that the evidence is wrong. A
   split floor is named as one set (the main log and every companion log together). That region is
   deliberately *advisory*: it needs git history, which a tarball or a shallow clone may not have, and
@@ -386,8 +392,8 @@ in this document a reader cannot check from the source alone:
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
 **At `d05d3f2`, L3 and L4 were witnessed by the same single run, which removed the separate-artifact drift
-argument earlier versions of this bullet had to make. At `17ee51e` the lean-lid stage ran in the same pass as the
-294-harness main half of the split floor, and the 3 heavy harnesses ran separately, so there is no single-run L3
+argument earlier versions of this bullet had to make. At `d68eeca` the lean-lid stage ran in the same pass as the
+295-harness main half of the split floor, and the 3 heavy harnesses ran separately, so there is no single-run L3
 floor at that commit (§3.4).** The `d05d3f2` run set `DER_REQUIRE_LEAN=1`,
 so the L4 lean-lid stage ran in the same pass as the L3 floor — an absent Aeneas/Charon/Lean stack
 would have *failed* it, not skipped — and printed `lean-lid-status: PASS` / `lean lid: PASS
@@ -1043,7 +1049,7 @@ that the deep glue is *exercised* rests on the witness sibling, not on the symbo
 halves are stated because either alone would mislead.
 
 <!-- BEGIN DISCLOSED:unreachable-checks -->
-These are property checks that Kani reports as UNREACHABLE in a harness whose evidence records per-check status: the three heavy harnesses run alone at 24 GiB (`evidence/check-42c8165-heavy-*.log`). Kani also reports unreachable checks for most other harnesses, as the `(N unreachable)` count on each `** 0 of M failed` line in `evidence/check-42c8165.log`. That log keeps only the summary lines, so those checks are counted there but not named. An unreachable check is not a failure. It means that harness's inputs never reach that code. The code's safety rests on the harnesses named in the last column; those safety references are themselves bounded harnesses (or the named lid), each with its own declared domain (§4, §8.1), so the reference carries the code over that domain and not beyond it.
+These are property checks that Kani reports as UNREACHABLE in a harness whose evidence records per-check status: the three heavy harnesses run alone at 24 GiB (`evidence/check-d68eeca-heavy-*.log`). Kani also reports unreachable checks for most other harnesses, as the `(N unreachable)` count on each `** 0 of M failed` line in `evidence/check-d68eeca.log`. That log keeps only the summary lines, so those checks are counted there but not named. An unreachable check is not a failure. It means that harness's inputs never reach that code. The code's safety rests on the harnesses named in the last column; those safety references are themselves bounded harnesses (or the named lid), each with its own declared domain (§4, §8.1), so the reference carries the code over that domain and not beyond it.
 
 | Harness | Check | Kani status | Location | Why the harness does not reach it | Safety of that code is carried by |
 |---|---|---|---|---|---|
@@ -1082,7 +1088,7 @@ The name parser's accept path is witnessed by other harnesses, which use no stub
 `x509_name::validate_name_single_atv_exact` (backing `[u8; 11]`) and
 `x509_name::validate_name_two_atvs_exact` (backing `[u8; 19]`) call the real `validate_name`, and
 through it the real `validate_rdn`. Each has a `kani::cover` of the `Ok` result, and both covers are
-satisfied (`3 of 3` cover properties each in `evidence/check-42c8165.log`). This is bounded-backing
+satisfied (`3 of 3` cover properties each in `evidence/check-d68eeca.log`). This is bounded-backing
 evidence for those two structured shapes, not a proof over every input.
 
 The limitation that remains is for the TBS and certificate compositions. Their witnesses run under

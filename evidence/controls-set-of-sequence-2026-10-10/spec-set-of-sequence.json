@@ -1,0 +1,110 @@
+[
+  {
+    "id": "set_of-H1-M1",
+    "module": "set_of",
+    "src": "der-verified/src/set_of.rs",
+    "old": "        prev = Some(this);\n        count += 1;\n    }\n    Ok(count)\n}",
+    "new": "        prev = Some(this);\n        count += 2;\n    }\n    Ok(count)\n}",
+    "red": [
+      "set_of::proofs::duplicate_adjacent_encodings_are_accepted"
+    ],
+    "green": [],
+    "predicted_assert": "duplicate_adjacent_encodings_are_accepted: decode_set_of == Ok(2) (mutant returns Ok(4))",
+    "claim": "PM/set_of: reported child count and exact-result glue on accepted input",
+    "stubbing": false,
+    "timeout_s": 3600
+  },
+  {
+    "id": "set_of-H1-M2",
+    "module": "set_of",
+    "src": "der-verified/src/set_of.rs",
+    "old": "            // and `count - 1` (the previous child's index) cannot underflow.\n            if cmp_padded(p, this) == Ordering::Greater {",
+    "new": "            // and `count - 1` (the previous child's index) cannot underflow.\n            if false && cmp_padded(p, this) == Ordering::Greater {",
+    "red": [
+      "set_of::proofs::unsorted_children_are_rejected"
+    ],
+    "green": [],
+    "predicted_assert": "unsorted_children_are_rejected: Err(Unsorted { index: 0 }) expected, mutant accepts",
+    "claim": "PM/set_of: section 11.6 descending-pair rejection (production decode_set_of only; same mutation as the earlier refactor-time control, applied to the first (production) occurrence; supersedes set_of-S3)",
+    "stubbing": false,
+    "timeout_s": 3600
+  },
+  {
+    "id": "set_of-H1-M3",
+    "module": "set_of",
+    "src": "der-verified/src/set_of.rs",
+    "old": "            Some(Err(e)) => return Err(SetOfError::Element(e)),",
+    "new": "            Some(Err(e)) => return Err(SetOfError::Tlv(e)),",
+    "red": [
+      "set_of::proofs::refactored_walk_matches_previous_walk"
+    ],
+    "green": [],
+    "timeout_s": 5400,
+    "predicted_assert": "refactored_walk_matches_previous_walk: exact Result equality (Element vs Tlv variant); 2 of 3 covers satisfied before the failure",
+    "claim": "PM/set_of: exact child-error variant mapping and behavioural equivalence",
+    "stubbing": false
+  },
+  {
+    "id": "set_of-H1-M4",
+    "module": "set_of",
+    "src": "der-verified/src/set_of.rs",
+    "old": "        let used = before.len() - after.len();",
+    "new": "        let used = before.len() - after.len() - 1;",
+    "red": [
+      "set_of::proofs::unsorted_children_are_rejected"
+    ],
+    "green": [],
+    "predicted_assert": "unsorted_children_are_rejected: decode_set_of(&content) == Err(Unsorted { index: 0 })",
+    "claim": "PM/set_of: cursor-delta raw-span derivation used by section 11.6 ordering",
+    "stubbing": false,
+    "timeout_s": 3600
+  },
+  {
+    "id": "set_of-H1-M5",
+    "module": "set_of",
+    "src": "der-verified/src/sequence.rs",
+    "old": "                self.rest = &self.rest[used..];",
+    "new": "                self.rest = &self.rest[used - 1..];",
+    "red": [
+      "set_of::proofs::no_over_read"
+    ],
+    "green": [],
+    "predicted_assert": "no_over_read: assert!(new_off == off + expected_used)",
+    "claim": "PM/set_of: R1 per-child cursor boundary / exact advance (transient edit of lidded sequence.rs)",
+    "stubbing": false,
+    "timeout_s": 3600
+  },
+  {
+    "id": "sequence-SEQ-A",
+    "module": "sequence",
+    "src": "der-verified/src/sequence.rs",
+    "old": "    Ok(count)\n}",
+    "new": "    Ok(count + 1)\n}",
+    "red": [
+      "sequence::proofs::ok_implies_exact_tiling",
+      "sequence::proofs::roundtrip_two_children"
+    ],
+    "green": [],
+    "predicted_assert": "ok_implies_exact_tiling: assertion failed: seen == k ; roundtrip_two_children: decode_sequence(content) == Ok(2)",
+    "claim": "PM/sequence: child count of decode_sequence (SEQ-A of mutation-controls-2026-08-19-oid-sequence, re-derived verbatim)",
+    "stubbing": false,
+    "timeout_s": 3600
+  },
+  {
+    "id": "sequence-SEQ-B",
+    "module": "sequence",
+    "src": "der-verified/src/sequence.rs",
+    "old": "            Ok(_) => count += 1,\n            Err(e) => return Err(SequenceError::Element(e)),",
+    "new": "            Ok(_) => count += 1,\n            Err(_e) => break,",
+    "red": [
+      "sequence::proofs::ok_implies_exact_tiling"
+    ],
+    "green": [
+      "sequence::proofs::roundtrip_two_children"
+    ],
+    "predicted_assert": "ok_implies_exact_tiling: unwrap_failed in the independent re-walk (sequence.rs unwrap on a swallowed malformed child); roundtrip_two_children stays SUCCESSFUL (survivor by design)",
+    "claim": "PM/sequence: malformed child is rejected, not swallowed (SEQ-B of mutation-controls-2026-08-19-oid-sequence, re-derived verbatim)",
+    "stubbing": false,
+    "timeout_s": 3600
+  }
+]

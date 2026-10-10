@@ -1,0 +1,17 @@
+file: der-verified/src/profile.rs
+--- old ---
+cert.tbs_certificate.version != 2
+--- new ---
+cert.tbs_certificate.version < 2
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -200,7 +200,7 @@
+     }
+ 
+     // Rule 2 (§4.1.2.1 / §4.1.2.9): extensions present => version must be v3 (2).
+-    if cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version != 2 {
++    if cert.tbs_certificate.extensions.is_some() && cert.tbs_certificate.version < 2 {
+         return Err(ProfileError::ExtensionsRequireV3);
+     }
+ 

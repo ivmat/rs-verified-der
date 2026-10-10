@@ -1,0 +1,14 @@
+=== utc_time-U1 / utc_time / der-verified/src/utc_time.rs (2026-10-10T15:07:43Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:07:36Z
+slot_released_utc:   2026-10-10T15:07:43Z
+stubbing:            False
+predicted_assert:    accepted_iff_canonical_oracle :310 (lowercase z accepted)
+baseline utc_time::proofs::accepted_iff_canonical_oracle: SUCCESSFUL   [want SUCCESSFUL]
+baseline utc_time::proofs::month_range_is_classified: SUCCESSFUL   [want SUCCESSFUL]
+red      utc_time::proofs::accepted_iff_canonical_oracle: FAILED   [want FAILED]  (2.6s)
+green    utc_time::proofs::month_range_is_classified: SUCCESSFUL   [want SUCCESSFUL]  (0.8s)
+failed_descriptions:
+  - "assertion failed: result.is_ok() == is_canonical_der_utctime(&buf[..n])"

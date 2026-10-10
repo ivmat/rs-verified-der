@@ -1,0 +1,14 @@
+=== profile-P2 / profile / der-verified/src/profile.rs (2026-10-10T15:08:20Z) ===
+verdict:             OBSERVED-RED
+kani:                cargo-kani 0.67.0
+git_head:            d68eecaf0a5aa04bcc5fa5657d3c2bc1d9c39f11
+slot_acquired_utc:   2026-10-10T15:08:18Z
+slot_released_utc:   2026-10-10T15:08:20Z
+stubbing:            False
+predicted_assert:    :325
+baseline profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: SUCCESSFUL   [want SUCCESSFUL]
+baseline profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]
+red      profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3: FAILED   [want FAILED]  (0.6s)
+green    profile::proofs::rule3_generalized_too_early_iff_year_le_2049: SUCCESSFUL   [want SUCCESSFUL]  (1.0s)
+failed_descriptions:
+  - "assertion failed: (r == Err(ProfileError::ExtensionsRequireV3)) == (has_ext && version != 2)"

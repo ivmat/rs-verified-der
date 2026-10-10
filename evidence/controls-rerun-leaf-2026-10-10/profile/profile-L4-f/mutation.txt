@@ -1,0 +1,19 @@
+file: der-verified/src/profile.rs
+--- old ---
+        if !require_no_fraction(t) {
+            return Err(on_fraction);
+--- new ---
+        if require_no_fraction(t) {
+            return Err(on_fraction);
+--- unified diff ---
+--- a/der-verified/src/profile.rs
++++ b/der-verified/src/profile.rs
+@@ -172,7 +172,7 @@
+ /// `on_fraction` lets the caller report which of `notBefore` / `notAfter` was the offending field.
+ fn check_time_no_fraction(time: &Time<'_>, on_fraction: ProfileError) -> Result<(), ProfileError> {
+     if let Time::Generalized(t) = time {
+-        if !require_no_fraction(t) {
++        if require_no_fraction(t) {
+             return Err(on_fraction);
+         }
+     }

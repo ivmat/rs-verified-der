@@ -1,0 +1,243 @@
+[
+  {
+    "id": "M-EXT-1",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "\n    if ev_used != value_input.len() {\n",
+    "new": "\n    if ev_used > value_input.len() {\n",
+    "red": [
+      "x509_extension::proofs::parse_extension_faithful"
+    ],
+    "green": [
+      "x509_extension::proofs::parse_extension_never_panics"
+    ],
+    "predicted_assert": "H-EXT-1 (i) result == expected (TrailingInExtension leg; Err becomes Ok)",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "public parse_extension body",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-2",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "            if !b {\n",
+    "new": "            if false {\n",
+    "red": [
+      "x509_extension::proofs::parse_extension_faithful"
+    ],
+    "green": [
+      "x509_extension::proofs::parse_extension_never_panics",
+      "x509_extension::proofs::validate_extensions_structured_one_member"
+    ],
+    "predicted_assert": "H-EXT-1 (ii) section-11.5 assert (and also (i) result == expected)",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "public parse_extension body",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-3",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "            if peek.tag.constructed {\n",
+    "new": "            if false {\n",
+    "red": [
+      "x509_extension::proofs::parse_extension_faithful"
+    ],
+    "green": [
+      "x509_extension::proofs::validate_extensions_structured_one_member"
+    ],
+    "predicted_assert": "H-EXT-1 (i) result == expected (CriticalConstructed leg)",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "public parse_extension body",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-4",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "    if count == 0 {\n",
+    "new": "    if false {\n",
+    "red": [
+      "x509_extension::proofs::validate_extensions_structured_empty"
+    ],
+    "green": [
+      "x509_extension::proofs::parse_extension_faithful",
+      "x509_extension::proofs::validate_extensions_structured_one_member"
+    ],
+    "predicted_assert": "H-EXT-2a assert r == Err(EmptyExtensions)",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "public validate_extensions body",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-5",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "    validate_oid(tlv.value).map_err(ExtensionError::BadOid)?;\n",
+    "new": "",
+    "red": [
+      "x509_extension::proofs::parse_extension_faithful",
+      "x509_extension::proofs::validate_extensions_structured_one_member",
+      "x509_extension::proofs::validate_extensions_structured_two_members"
+    ],
+    "green": [
+      "x509_extension::proofs::validate_extensions_structured_empty"
+    ],
+    "predicted_assert": "H-EXT-1 (i) result == expected; H-EXT-2b/2c r == expected (BadOid leg). Sibling is H-EXT-2a (no member) because the existing validate_extensions_ok_path_witnessed is >16 GB at unwind 12 (watchdog-killed)",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "same-module private helper decode_extn_id_tlv",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-6",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "    Ok(Extension { extn_id, critical, extn_value })\n",
+    "new": "    Ok(Extension { extn_id, critical: true, extn_value })\n",
+    "red": [
+      "x509_extension::proofs::parse_extension_faithful"
+    ],
+    "green": [
+      "x509_extension::proofs::validate_extensions_structured_two_members"
+    ],
+    "predicted_assert": "H-EXT-1 (i) result == expected and (iii) ext.critical == (rest[0] == 0x01)",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "public parse_extension body",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-7",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "\n        return Err(ExtensionError::ExtnIdWrongTag);\n",
+    "new": "\n        return Err(ExtensionError::ExtnIdConstructed);\n",
+    "red": [
+      "x509_extension::proofs::parse_extension_faithful"
+    ],
+    "green": [
+      "x509_extension::proofs::parse_extension_never_panics",
+      "x509_extension::proofs::validate_extensions_structured_two_members"
+    ],
+    "predicted_assert": "H-EXT-1 (i) result == expected only (variant swap; the exact-result teeth)",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "same-module private helper decode_extn_id_tlv (ADDED by implementer, not in the plan table)",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-8",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "        off += used;\n",
+    "new": "        off += 2;\n",
+    "red": [
+      "x509_extension::proofs::validate_extensions_structured_one_member",
+      "x509_extension::proofs::validate_extensions_structured_two_members",
+      "x509_extension::proofs::validate_extensions_structured_second_identifier"
+    ],
+    "green": [
+      "x509_extension::proofs::validate_extensions_structured_empty",
+      "x509_extension::proofs::parse_extension_faithful"
+    ],
+    "predicted_assert": "H-EXT-2b/c/d r == expected (walk misparses after the first member: the child at offset 2 is the extnID TLV, a WrongTag SEQUENCE); H-EXT-2a (no member) unaffected",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "public validate_extensions body (ADDED by implementer, not in the plan table)",
+    "provenance": [
+      "W2-3-5-controls/mutations.json + predictions.tsv (preregistered 2026-10-02, observed RED on the earlier bytes)"
+    ],
+    "primary_provenance": "composed-contract",
+    "status": "re-anchored",
+    "anchor": "old text must occur once in the final tree (check_applicability.py)"
+  },
+  {
+    "id": "M-EXT-9",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "    let outer = decode_sequence_tlv_strict(input).map_err(ExtensionsError::BadOuterSeq)?;\n",
+    "new": "    let outer = decode_sequence_tlv_strict(input).map_err(|_| ExtensionsError::EmptyExtensions)?;\n",
+    "red": [
+      "x509_extension::proofs::validate_extensions_rejects_outer_envelope"
+    ],
+    "green": [
+      "x509_extension::proofs::validate_extensions_rejects_child_framing",
+      "x509_extension::proofs::validate_extensions_structured_one_member"
+    ],
+    "predicted_assert": "outer envelope: outer envelope result differs from the primitive's decision",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "validate_extensions maps outer envelope errors to BadOuterSeq(e)",
+    "provenance": [
+      "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+    ],
+    "primary_provenance": "pin-completion",
+    "status": "new",
+    "anchor": "old text occurs once in the final tree"
+  },
+  {
+    "id": "M-EXT-10",
+    "module": "x509_extension",
+    "src": "der-verified/src/x509_extension.rs",
+    "old": "            ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::Tlv(e)))\n",
+    "new": "            { let _ = e; ExtensionsError::EmptyExtensions }\n",
+    "red": [
+      "x509_extension::proofs::validate_extensions_rejects_child_framing"
+    ],
+    "green": [
+      "x509_extension::proofs::validate_extensions_rejects_outer_envelope",
+      "x509_extension::proofs::validate_extensions_structured_second_identifier",
+      "x509_extension::proofs::validate_extensions_structured_one_member"
+    ],
+    "predicted_assert": "child framing: child framing error differs from the primitive's error",
+    "stubbing": true,
+    "timeout_s": 3600,
+    "claim": "validate_extensions maps a child framing error to BadExtension(BadSeq(Tlv(e)))",
+    "provenance": [
+      "laneD-evidence/PREREGISTRATION.md (written before the first run of this control)"
+    ],
+    "primary_provenance": "pin-completion",
+    "status": "new",
+    "anchor": "old text occurs once in the final tree"
+  }
+]
