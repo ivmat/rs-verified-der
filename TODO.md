@@ -163,6 +163,21 @@ scope boundary referenced below.
       IMPLICIT "§8.14.3". In X.690 (2021), §8.14.3 is the explicit case ("If implicit tagging … was
       not used") and §8.14.4 the implicit one. Fix with the next change to `der-verified/src`
       (a source edit moves the proof floor's freshness anchor).
+- [ ] **Push gate: accept a docs-only push without a full re-run when the floor is provably fresh.**
+      `gates/pre-push` rule 3 demands a full-suite receipt for every pushed sha, so a push that
+      changes only documentation costs a full `./check.sh` run (hours, ≥24 GiB). The question the
+      gate should ask is whether the committed floor evidence still speaks for the pushed sha, and
+      `gates/gen_proof_manifest.py` already answers it mechanically (`L3_BUILD_INPUTS` /
+      `VERIFIED_PATHS`, the anchor logic, and the "still speaks for HEAD" freshness sentence).
+      Proposed: rule 3 passes a sha that has either a full receipt, or a freshness check run in the
+      detached worktree at that sha proving (a) every build input is byte-identical to the floor
+      anchor, (b) the anchor's committed logs all end in 0 failures and together cover every
+      harness, (c) the anchor is an ancestor of the pushed sha. One source for the build-input
+      list (no copy in the hook). Tests must be watched failing: a `der-verified/src` change, a
+      `lean/` change, a tampered log trailer, a harness-count shortfall, a non-ancestor anchor,
+      each refused. Until this lands, a docs-only push either re-runs the suite or uses the logged
+      override on the owner's explicit word (first such case: 2026-10-15, docs-only, 0 build
+      inputs changed since `d68eeca`).
 - [ ] **State three delegated scopes in `COVERAGE.md`** (found by an independent audit of every
       composite parser for the EXPLICIT-wrapper / tiling defect class on 2026-10-15; result: no such
       defect, every malformed input rejected). Today they are documented only in module docs:
