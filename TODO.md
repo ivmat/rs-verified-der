@@ -143,14 +143,19 @@ scope boundary referenced below.
       decides get tests that fail when the requirement is broken (with an observed-red control).
       `COVERAGE.md` rows gain the list ids next to
       `DER-*`. **The acceptance-manifest mapping itself comes later**; first the list.
-      - [x] **The list is in this repo:** [`docs/requirements/x690-der.clauses.toml`](docs/requirements/x690-der.clauses.toml)
-            — 127 rows (98 X.690, 23 X.680, 2 each RFC 5280 / 7468 / 4648), ids by clause number,
-            all `shall`. It is still a **selection** (`slice = true`), with no completeness census.
-      - [ ] **Extend the list to a complete X.690 (2021) DER list:** a census over §8, §10 and §11
-            (every "shall" sentence mapped to a row, or classed as not testable or out of scope),
-            clause-level rows for what `COVERAGE.md` cites only at section level, and
-            `slice = false` once the census closes. Rows carry the clause number and a short
-            paraphrased title; the ITU-T text itself is not copied into this repo.
+      - [x] **The list is in this repo:** [`docs/requirements/x690-der.clauses.toml`](docs/requirements/x690-der.clauses.toml).
+            v2: 212 rows (183 X.690, 23 X.680, 2 each RFC 5280 / 7468 / 4648), ids by clause number
+            (`X690-8.23.9a` for list item a), `-a` for a further sentence of the same clause), force
+            `shall` / `shall-not`. Every v1 id is kept; one v1 title was corrected (`X690-8.1.3.6.1`).
+      - [x] **Census of every "shall" sentence in X.690 (2021) §8–§12:** 179 sentences, all
+            classified (73 mapped, 80 rows added, 1 not testable, 25 out of scope: CER-only §9,
+            BER options DER removes by §10.1/§10.2/§11.1, §12 transfer syntax). Plus six testable
+            declarative rules without "shall" (e.g. §11.3.2.4, §8.20.4, §8.5.7.5). Independently
+            reviewed; no title copies the ITU-T text (rows carry the clause number and a short
+            paraphrase).
+      - [ ] **Still a slice (`slice = true`):** declarative rules without "shall" are not censused
+            systematically, and the X.680 / RFC rows are retained selections. Close both before
+            calling the list complete.
       - [x] `DER-C-CTX-2` (§8.14.3, exactly one inner TLV per EXPLICIT wrapper) is enumerated in
             `COVERAGE.md`: enforced at every in-crate call site, test-only, delegated at the
             public primitive.
@@ -185,6 +190,14 @@ scope boundary referenced below.
       PKCS#8 `attributes` contents are fully opaque, including their framing (`pkcs8.rs` docs; the
       `DER-K-PKCS8` row does not say so); the ECPrivateKey `parameters` CHOICE arm is not checked
       (`ec_private_key.rs` docs; the `DER-K-ECPRIV` row does not say so).
+- [ ] **BIT STRING clause numbers in source comments and `DECISIONS.md` (X.690 2021 numbering).** The
+      shared list's census found three wrong citations; `COVERAGE.md` rows `DER-C-BITS-1..3` are
+      corrected (unused-bits count 0..7 is §8.6.2.2; zero padding bits is §11.2.1; the empty bit
+      string is §8.6.2.3; there is no §11.2.2.1). Still to fix with the next change to
+      `der-verified/src`: `bit_string.rs` module docs and comments (lines 3, 5, 7, 76, 78, 81, 104,
+      539, 560, 614) and `lib.rs` line 27. `DECISIONS.md` (append-only) says "§11.2.2 bundles two
+      different rules": in the 2021 edition they are §11.2.1 (zero padding) and §11.2.2 (trailing
+      zero removal for NamedBitList); add a dated note rather than editing the record.
 - [ ] **`COVERAGE.md` §2 row count is stale:** it says "Of the 75 rows below, 36 are weighted and
       39 are admitted"; the ledger in §5 has 78 rows (77 before `DER-C-CTX-2`). Recount both tiers.
 

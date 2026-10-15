@@ -1,10 +1,10 @@
 [standard]
 id = "asn1-selected-rules"
-title = "Selected ASN1 and PEM encoding rules"
+title = "X.690 (2021) DER requirements, with selected X.680 and RFC rows"
 edition = "X690-2021 RFC5280 RFC7468 RFC4648"
 provenance = "external"
 slice = true
-slice_note = "Selected BER DER PEM rules; CER and certificate-only policy are declared separately."
+slice_note = "The census basis is every \"shall\" sentence of X.690 §8–§12; declarative rules without \"shall\" are not censused, with selected additions recorded separately. X.680 and RFC rows are retained selections without a census. Retained CER/BER legacy rows: X690-9 (CER context), X690-8.1.3.6.1 (BER indefinite-length octet), X690-8.1.1.2 (legacy primitive-layout title) and X690-8.1.1.3 (BER layout illustration). DER excludes indefinite lengths and constructed string forms by 10.1 and 10.2."
 numbering = "the standard's own clause numbers"
 
 [[clause]]
@@ -34,7 +34,7 @@ source = "secondary"
 [[clause]]
 id = "X690-8.1.3.6.1"
 ref = "8.1.3.6.1"
-title = "Indefinite length terminates at its own level"
+title = "Indefinite length uses the single octet 0x80"
 force = "shall"
 side = "decoder"
 source = "secondary"
@@ -1020,5 +1020,685 @@ id = "X680-47.3"
 ref = "47.3"
 title = "UTCTime tag and syntax"
 force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.5"
+ref = "8.1.5"
+title = "Definite encodings have no EOC trailer"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.3.1-a"
+ref = "8.3.1"
+title = "INTEGER payload has at least one octet"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.1"
+ref = "8.5.1"
+title = "REAL uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.2"
+ref = "8.5.2"
+title = "Positive REAL zero has an empty payload"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.3"
+ref = "8.5.3"
+title = "Negative REAL zero uses the special-value representation"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.4"
+ref = "8.5.4"
+title = "REAL encoding preserves the abstract decimal or binary radix"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.5"
+ref = "8.5.5"
+title = "Nonzero REAL chooses its radix from the abstract value"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.5-a"
+ref = "8.5.5"
+title = "Binary REAL uses the binary payload layout"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.5-b"
+ref = "8.5.5"
+title = "Decimal REAL uses a character payload"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.6"
+ref = "8.5.6"
+title = "REAL header bits distinguish binary decimal and special values"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.7"
+ref = "8.5.7"
+title = "Binary REAL sign magnitude and scale reproduce its mantissa"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.7.1"
+ref = "8.5.7.1"
+title = "Binary REAL header sign agrees with its value"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.7.2"
+ref = "8.5.7.2"
+title = "Binary REAL radix bits select the permitted base"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.7.3"
+ref = "8.5.7.3"
+title = "Binary REAL scale bits represent its scaling factor"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.7.4"
+ref = "8.5.7.4"
+title = "Binary REAL exponent header agrees with its signed payload"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.8"
+ref = "8.5.8"
+title = "Decimal REAL has no externally supplied scaling factor"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.9"
+ref = "8.5.9"
+title = "Special REAL values use their assigned single-octet codes"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.13"
+ref = "8.13"
+title = "CHOICE carries the selected alternative directly"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.15"
+ref = "8.15"
+title = "Open values carry a complete encoding of their actual type"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.16.1"
+ref = "8.16.1"
+title = "INSTANCE OF uses the prescribed tagged sequence layout"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.16.2"
+ref = "8.16.2"
+title = "INSTANCE OF fields preserve the associated abstract values"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.17.1"
+ref = "8.17.1"
+title = "EMBEDDED PDV follows its referenced ASN1 structure"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.17.2"
+ref = "8.17.2"
+title = "EMBEDDED PDV preserves payload syntax and identification values"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.1"
+ref = "8.18.1"
+title = "EXTERNAL uses its prescribed tagged sequence and choice layout"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.3"
+ref = "8.18.3"
+title = "EXTERNAL descriptor presence and value mirror the abstract value"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.4"
+ref = "8.18.4"
+title = "EXTERNAL reference fields follow the identification table"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.5"
+ref = "8.18.5"
+title = "EXTERNAL payload follows its identified syntax and choice"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.6"
+ref = "8.18.6"
+title = "Single-type EXTERNAL selects a permitted payload alternative"
+force = "shall"
+side = "encoder"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.7"
+ref = "8.18.7"
+title = "Octet-based EXTERNAL payload selects an eligible alternative"
+force = "shall"
+side = "encoder"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.8"
+ref = "8.18.8"
+title = "Partial-octet EXTERNAL payload uses the bit-string alternative"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.9"
+ref = "8.18.9"
+title = "Typed EXTERNAL payload uses the actual ASN1 type and value"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.10"
+ref = "8.18.10"
+title = "Octet EXTERNAL payload preserves the negotiated encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.18.11"
+ref = "8.18.11"
+title = "Bit EXTERNAL payload preserves the negotiated encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.20.1"
+ref = "8.20.1"
+title = "Relative OID uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.20.2"
+ref = "8.20.2"
+title = "Relative OID joins its base-128 subidentifier encodings in order"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.20.2-a"
+ref = "8.20.2"
+title = "Relative OID subidentifiers have no redundant leading group"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.20.3"
+ref = "8.20.3"
+title = "Relative OID carries one subidentifier for each arc"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.21.1"
+ref = "8.21.1"
+title = "OID IRI uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.21.2"
+ref = "8.21.2"
+title = "OID IRI carries UTF8 lexical items without inter-item whitespace"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.21.2-a"
+ref = "8.21.2"
+title = "OID IRI uses shortest UTF8 without announcers or escapes"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.22.1"
+ref = "8.22.1"
+title = "Relative OID IRI uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.22.2"
+ref = "8.22.2"
+title = "Relative OID IRI joins its UTF8 lexical items without whitespace"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.7"
+ref = "8.23.7"
+title = "UniversalString represents characters with four octets each"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.7-a"
+ref = "8.23.7"
+title = "UniversalString omits a character-encoding signature"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.8-a"
+ref = "8.23.8"
+title = "BMPString omits a character-encoding signature"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.9a"
+ref = "8.23.9 a)"
+title = "Unicode strings exclude ISO 2022 announcers"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.9b"
+ref = "8.23.9 b)"
+title = "Unicode strings exclude code-set designation and identification escapes"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.9c"
+ref = "8.23.9 c)"
+title = "Unicode strings exclude ISO 2022 invocation controls"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.9d"
+ref = "8.23.9 d)"
+title = "Unicode string coding stays within ISO 10646"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.9e"
+ref = "8.23.9 e)"
+title = "Unicode strings exclude graphic-subset identification controls"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.9f"
+ref = "8.23.9 f)"
+title = "Unicode strings exclude switches into ISO 2022 coding"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.10-a"
+ref = "8.23.10"
+title = "UTF8String uses shortest UTF8 without announcers or escapes"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.24.1"
+ref = "8.24.1"
+title = "Unrestricted strings follow their referenced ASN1 structure"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.24.2"
+ref = "8.24.2"
+title = "Unrestricted strings preserve payload syntax and other field values"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.25-a"
+ref = "8.25"
+title = "ObjectDescriptor follows its referenced ASN1 type definition"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.1.1"
+ref = "8.26.1.1"
+title = "TIME uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.1.2"
+ref = "8.26.1.2"
+title = "TIME carries UTF8 value notation without enclosing quotes"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.2.1"
+ref = "8.26.2.1"
+title = "DATE uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.2.2"
+ref = "8.26.2.2"
+title = "DATE removes enclosing quotes and date separators before UTF8 coding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.3.1"
+ref = "8.26.3.1"
+title = "TIME-OF-DAY uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.3.2"
+ref = "8.26.3.2"
+title = "TIME-OF-DAY removes enclosing quotes and colons before UTF8 coding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.4.1"
+ref = "8.26.4.1"
+title = "DATE-TIME uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.4.2"
+ref = "8.26.4.2"
+title = "DATE-TIME strips quotes separators and T before UTF8 coding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.5.1"
+ref = "8.26.5.1"
+title = "DURATION uses a primitive identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.26.5.2"
+ref = "8.26.5.2"
+title = "DURATION removes enclosing quotes and P before UTF8 coding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.1"
+ref = "11.3.1"
+title = "Binary REAL uses radix two and a normalized odd mantissa"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.1-a"
+ref = "11.3.1"
+title = "Binary REAL has zero scale and shortest mantissa and exponent"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.2"
+ref = "11.3.2"
+title = "Decimal REAL uses the decimal representation"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.2.1"
+ref = "11.3.2.1"
+title = "Decimal REAL selects the NR3 representation"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.2.2"
+ref = "11.3.2.2"
+title = "Decimal REAL has no space characters"
+force = "shall-not"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.2.3"
+ref = "11.3.2.3"
+title = "Decimal REAL starts with a minus sign or its first digit"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.2.5"
+ref = "11.3.2.5"
+title = "Decimal REAL places the decimal point directly before E"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.2.6"
+ref = "11.3.2.6"
+title = "Decimal REAL exponent uses canonical sign and digit spelling"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.4-a"
+ref = "11.4"
+title = "GeneralString designations use the lowest-numbered G or C set"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.9.1a"
+ref = "11.9.1 a)"
+title = "Modern time notation uses a point as the decimal separator"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.9.1b"
+ref = "11.9.1 b)"
+title = "Modern time offsets omit minutes when the offset is whole hours"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.9.1c"
+ref = "11.9.1 c)"
+title = "Interval end points omit a repeated time-zone difference"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.9.1d"
+ref = "11.9.1 d)"
+title = "Durations drop zero components except the least significant present"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.9.2"
+ref = "11.9.2"
+title = "Modern time payloads use the normalized value notation"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.1.4"
+ref = "8.1.1.4"
+title = "Subtype constraints and extension markers do not alter encodings"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.7.5"
+ref = "8.5.7.5"
+title = "Binary REAL stores N as an unsigned integer"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.5.8-a"
+ref = "8.5.8"
+title = "Decimal REAL payload encodes its value using ISO 6093"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.14.1"
+ref = "8.14.1"
+title = "Encoding-prefixed types retain the underlying type encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.20.4"
+ref = "8.20.4"
+title = "Relative OID subidentifiers preserve each arc value"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.3.2.4"
+ref = "11.3.2.4"
+title = "Decimal REAL mantissas exclude leading and trailing zero digits"
+force = "shall-not"
 side = "both"
 source = "primary"
