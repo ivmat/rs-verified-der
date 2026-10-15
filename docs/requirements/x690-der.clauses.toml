@@ -1,0 +1,1024 @@
+[standard]
+id = "asn1-selected-rules"
+title = "Selected ASN1 and PEM encoding rules"
+edition = "X690-2021 RFC5280 RFC7468 RFC4648"
+provenance = "external"
+slice = true
+slice_note = "Selected BER DER PEM rules; CER and certificate-only policy are declared separately."
+numbering = "the standard's own clause numbers"
+
+[[clause]]
+id = "X690-8.1"
+ref = "8.1"
+title = "Encoding layout"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.1.2"
+ref = "8.1.2"
+title = "Identifier octets"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.1.3"
+ref = "8.1.3"
+title = "Length octets"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.1.3.6.1"
+ref = "8.1.3.6.1"
+title = "Indefinite length terminates at its own level"
+force = "shall"
+side = "decoder"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.2"
+ref = "8.2"
+title = "BOOLEAN contents"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.3"
+ref = "8.3"
+title = "INTEGER contents"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.3.2"
+ref = "8.3.2"
+title = "INTEGER minimal sign representation"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.6"
+ref = "8.6"
+title = "BIT STRING contents"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.7"
+ref = "8.7"
+title = "OCTET STRING contents"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.8"
+ref = "8.8"
+title = "NULL contents"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.19"
+ref = "8.19"
+title = "Object identifier subidentifiers"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.23"
+ref = "8.23"
+title = "Restricted string contents"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-10.1"
+ref = "10.1"
+title = "DER definite minimal lengths"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-10.2"
+ref = "10.2"
+title = "DER primitive string forms"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-11.1"
+ref = "11.1"
+title = "DER BOOLEAN true octet"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-11.2"
+ref = "11.2"
+title = "DER BIT STRING zero padding"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-11.5"
+ref = "11.5"
+title = "DER default values omitted"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-11.6"
+ref = "11.6"
+title = "DER SET OF ordering"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-11.7"
+ref = "11.7"
+title = "DER GeneralizedTime syntax"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-11.8"
+ref = "11.8"
+title = "DER UTCTime syntax"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "RFC5280-4.1.2.5.1"
+ref = "RFC5280 \u00a74.1.2.5.1"
+title = "Certificate UTCTime seconds and zone"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "RFC5280-4.1.2.5.2"
+ref = "RFC5280 \u00a74.1.2.5.2"
+title = "Certificate GeneralizedTime excludes fractional seconds"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "RFC7468-2"
+ref = "RFC7468 \u00a72"
+title = "PEM boundaries whitespace and wrapping"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "RFC7468-3"
+ref = "RFC7468 \u00a73"
+title = "PEM textual grammar"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "RFC4648-3.3"
+ref = "RFC4648 \u00a73.3"
+title = "Base64 alphabet rejection"
+force = "shall"
+side = "decoder"
+source = "primary"
+
+[[clause]]
+id = "RFC4648-3.5"
+ref = "RFC4648 \u00a73.5"
+title = "Base64 canonical zero pad bits"
+force = "shall"
+side = "encoder"
+source = "primary"
+
+[[clause]]
+id = "X690-9"
+ref = "9"
+title = "CER rules"
+force = "shall"
+side = "both"
+source = "secondary"
+
+[[clause]]
+id = "X690-8.1.1.1"
+ref = "8.1.1.1"
+title = "Encoding components"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.1.2"
+ref = "8.1.1.2"
+title = "Primitive encoding layout"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.1.3"
+ref = "8.1.1.3"
+title = "Constructed encoding layout"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.2.1"
+ref = "8.1.2.1"
+title = "Tag class and number"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.2.2"
+ref = "8.1.2.2"
+title = "Low tag form"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.2.4"
+ref = "8.1.2.4"
+title = "High tag form"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.2.4.1"
+ref = "8.1.2.4.1"
+title = "High tag leading octet"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.2.4.2"
+ref = "8.1.2.4.2"
+title = "Base 128 tag digits and minimal first digit"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.2.5"
+ref = "8.1.2.5"
+title = "Primitive and constructed bit"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.3.2"
+ref = "8.1.3.2"
+title = "Primitive definite length"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.3.3"
+ref = "8.1.3.3"
+title = "Definite length content size"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.3.4"
+ref = "8.1.3.4"
+title = "Short length"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.3.5"
+ref = "8.1.3.5"
+title = "Long length and forbidden ff"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.1.4"
+ref = "8.1.4"
+title = "Contents octets"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.2.1"
+ref = "8.2.1"
+title = "Primitive BOOLEAN one octet"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.2.2"
+ref = "8.2.2"
+title = "BOOLEAN abstract values"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.3.1"
+ref = "8.3.1"
+title = "Primitive INTEGER"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.3.3"
+ref = "8.3.3"
+title = "Signed two complement INTEGER"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.4"
+ref = "8.4"
+title = "ENUMERATED uses INTEGER encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.6.2"
+ref = "8.6.2"
+title = "BIT STRING initial octet"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.6.2.1"
+ref = "8.6.2.1"
+title = "BIT STRING bit order"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.6.2.2"
+ref = "8.6.2.2"
+title = "Unused count zero to seven"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.6.2.3"
+ref = "8.6.2.3"
+title = "Empty BIT STRING"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.7.1"
+ref = "8.7.1"
+title = "OCTET STRING form"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.7.2"
+ref = "8.7.2"
+title = "Primitive OCTET STRING contents"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.8.1"
+ref = "8.8.1"
+title = "Primitive NULL"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.8.2"
+ref = "8.8.2"
+title = "Empty NULL contents"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.9"
+ref = "8.9"
+title = "SEQUENCE encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.9.1"
+ref = "8.9.1"
+title = "Constructed SEQUENCE"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.9.2"
+ref = "8.9.2"
+title = "SEQUENCE components in definition order"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.9.3"
+ref = "8.9.3"
+title = "OPTIONAL and DEFAULT components"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.10"
+ref = "8.10"
+title = "SEQUENCE OF encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.10.1"
+ref = "8.10.1"
+title = "Constructed SEQUENCE OF"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.10.2"
+ref = "8.10.2"
+title = "Complete homogeneous encodings"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.10.3"
+ref = "8.10.3"
+title = "SEQUENCE OF order"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.11"
+ref = "8.11"
+title = "SET encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.11.1"
+ref = "8.11.1"
+title = "Constructed SET"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.11.2"
+ref = "8.11.2"
+title = "SET complete components"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.11.3"
+ref = "8.11.3"
+title = "SET OPTIONAL and DEFAULT"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.12"
+ref = "8.12"
+title = "SET OF encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.12.1"
+ref = "8.12.1"
+title = "Constructed SET OF"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.12.2"
+ref = "8.12.2"
+title = "SET OF homogeneous encodings"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.12.3"
+ref = "8.12.3"
+title = "SET OF order not abstractly significant"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.14"
+ref = "8.14"
+title = "Tagged value encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.14.2"
+ref = "8.14.2"
+title = "Tagged base encoding"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.14.3"
+ref = "8.14.3"
+title = "EXPLICIT complete constructed wrapper"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.14.4"
+ref = "8.14.4"
+title = "IMPLICIT replaces identifier"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.19.1"
+ref = "8.19.1"
+title = "Primitive OID"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.19.2"
+ref = "8.19.2"
+title = "Minimal base 128 OID subidentifiers"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.19.3"
+ref = "8.19.3"
+title = "OID component count"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.19.4"
+ref = "8.19.4"
+title = "First two OID arcs combine"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.19.5"
+ref = "8.19.5"
+title = "Subsequent OID arcs"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.1"
+ref = "8.23.1"
+title = "Restricted string characters"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.2"
+ref = "8.23.2"
+title = "Independent strings"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.3"
+ref = "8.23.3"
+title = "Restricted strings as octet strings"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.4"
+ref = "8.23.4"
+title = "Numeric and Printable mapping"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.5"
+ref = "8.23.5"
+title = "Registered character encodings"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.5.1"
+ref = "8.23.5.1"
+title = "Registered escape sequences"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.5.2"
+ref = "8.23.5.2"
+title = "Initial character sets"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.5.3"
+ref = "8.23.5.3"
+title = "Escape sequence restrictions"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.5.4"
+ref = "8.23.5.4"
+title = "Announcers require permission"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.8"
+ref = "8.23.8"
+title = "BMPString two octet characters"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.9"
+ref = "8.23.9"
+title = "String control functions"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.23.10"
+ref = "8.23.10"
+title = "UTF8String octets"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-8.25"
+ref = "8.25"
+title = "Useful times encoded as restricted strings"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-10.3"
+ref = "10.3"
+title = "DER SET tag ordering"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.2.1"
+ref = "11.2.1"
+title = "Zero unused padding bits"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.2.2"
+ref = "11.2.2"
+title = "Named BIT STRING trailing zeros"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.4"
+ref = "11.4"
+title = "GeneralString canonical escape selection"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.7.1"
+ref = "11.7.1"
+title = "GeneralizedTime Z suffix"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.7.2"
+ref = "11.7.2"
+title = "GeneralizedTime seconds"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.7.3"
+ref = "11.7.3"
+title = "GeneralizedTime fractional zeros"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.7.4"
+ref = "11.7.4"
+title = "GeneralizedTime decimal point"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.7.5"
+ref = "11.7.5"
+title = "GeneralizedTime midnight"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.8.1"
+ref = "11.8.1"
+title = "UTCTime Z suffix"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.8.2"
+ref = "11.8.2"
+title = "UTCTime seconds"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X690-11.8.3"
+ref = "11.8.3"
+title = "UTCTime midnight"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-8"
+ref = "8"
+title = "Universal and user tags"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-18"
+ref = "18"
+title = "BOOLEAN values and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-19"
+ref = "19"
+title = "INTEGER values and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-20"
+ref = "20"
+title = "ENUMERATED values and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-22"
+ref = "22"
+title = "BIT STRING values and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-22.7"
+ref = "22.7"
+title = "Named BIT STRING value semantics"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-23"
+ref = "23"
+title = "OCTET STRING values and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-24"
+ref = "24"
+title = "NULL value and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-25"
+ref = "25"
+title = "SEQUENCE fields and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-26"
+ref = "26"
+title = "SEQUENCE OF values and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-27"
+ref = "27"
+title = "SET fields and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-28"
+ref = "28"
+title = "SET OF values and tag"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-31.2"
+ref = "31.2"
+title = "Tagged types"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-32"
+ref = "32"
+title = "OBJECT IDENTIFIER values and arcs"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-41.1"
+ref = "41.1"
+title = "Restricted string tags and repertoires"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-41.2"
+ref = "41.2"
+title = "NumericString character set"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-41.4"
+ref = "41.4"
+title = "PrintableString character set"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-41.15"
+ref = "41.15"
+title = "BMPString repertoire"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-41.16"
+ref = "41.16"
+title = "UTF8String repertoire"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-46.2"
+ref = "46.2"
+title = "GeneralizedTime value"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-46.3"
+ref = "46.3"
+title = "GeneralizedTime tag and syntax"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-47.2"
+ref = "47.2"
+title = "UTCTime value"
+force = "shall"
+side = "both"
+source = "primary"
+
+[[clause]]
+id = "X680-47.3"
+ref = "47.3"
+title = "UTCTime tag and syntax"
+force = "shall"
+side = "both"
+source = "primary"

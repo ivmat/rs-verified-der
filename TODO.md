@@ -130,6 +130,48 @@ scope boundary referenced below.
       vacuity, and the L4 lid sitting UNRUN for four commits — see `evidence/FLOOR-2026-08-03.md` §3).
       **A green that has never been watched to go red is not the deliverable here.** Land it in a
       session that can push and watch a real run fail.
+- [ ] **Map the standard-compliance part of `acceptance.toml` to a shared X.690 requirement list.**
+      Today the manifest's `clause` is the module (`PM/<module>`), and its own header says so: *"not a
+      real enumerated spec-clause inventory"*. `COVERAGE.md` has rule rows, but with this repo's own ids
+      (`DER-*`) and section-level references (§8.14, not §8.14.3). The target is one
+      implementation-neutral list of X.690 (2021) requirements, ids by clause number (`X690-8.14.3`),
+      with a completeness census over §8, §10 and §11 (every "shall" sentence mapped to a row, or
+      classed as not testable or out of scope). The same list can then be applied to any DER
+      implementation in any language. Here each claim names the list row(s) it covers; a Rust claim
+      may cover a narrower row than the list states. Formal proofs cannot cover every requirement:
+      the mapping records, per requirement, proof / test / neither, and the requirements no proof
+      decides get tests that fail when the requirement is broken (with an observed-red control).
+      `COVERAGE.md` rows gain the list ids next to
+      `DER-*`. **The acceptance-manifest mapping itself comes later**; first the list.
+      - [x] **The list is in this repo:** [`docs/requirements/x690-der.clauses.toml`](docs/requirements/x690-der.clauses.toml)
+            — 127 rows (98 X.690, 23 X.680, 2 each RFC 5280 / 7468 / 4648), ids by clause number,
+            all `shall`. It is still a **selection** (`slice = true`), with no completeness census.
+      - [ ] **Extend the list to a complete X.690 (2021) DER list:** a census over §8, §10 and §11
+            (every "shall" sentence mapped to a row, or classed as not testable or out of scope),
+            clause-level rows for what `COVERAGE.md` cites only at section level, and
+            `slice = false` once the census closes. Rows carry the clause number and a short
+            paraphrased title; the ITU-T text itself is not copied into this repo.
+      - [x] `DER-C-CTX-2` (§8.14.3, exactly one inner TLV per EXPLICIT wrapper) is enumerated in
+            `COVERAGE.md`: enforced at every in-crate call site, test-only, delegated at the
+            public primitive.
+      ⚠ **First known partial row:** against X.690 §8.14.3 (EXPLICIT: the contents octets are the
+      complete base encoding), `DER-C-CTX` decodes within the wrapper length, but an `Ok` does not
+      require the value octets to be exactly one complete inner TLV — that check is the caller's.
+      The mapping must show this row as partial. Follow-up candidate: prove at the explicit-context
+      entry point that the wrapper holds exactly one complete inner TLV.
+- [ ] **Source-comment slip in `context_tag.rs` (module docs):** they call EXPLICIT "§8.14.2" and
+      IMPLICIT "§8.14.3". In X.690 (2021), §8.14.3 is the explicit case ("If implicit tagging … was
+      not used") and §8.14.4 the implicit one. Fix with the next change to `der-verified/src`
+      (a source edit moves the proof floor's freshness anchor).
+- [ ] **State three delegated scopes in `COVERAGE.md`** (found by an independent audit of every
+      composite parser for the EXPLICIT-wrapper / tiling defect class on 2026-10-15; result: no such
+      defect, every malformed input rejected). Today they are documented only in module docs:
+      RSASSA-PSS parameters are never decoded (only the raw `parameters` TLV, `DER-X-ALGID`);
+      PKCS#8 `attributes` contents are fully opaque, including their framing (`pkcs8.rs` docs; the
+      `DER-K-PKCS8` row does not say so); the ECPrivateKey `parameters` CHOICE arm is not checked
+      (`ec_private_key.rs` docs; the `DER-K-ECPRIV` row does not say so).
+- [ ] **`COVERAGE.md` §2 row count is stale:** it says "Of the 75 rows below, 36 are weighted and
+      39 are admitted"; the ledger in §5 has 78 rows (77 before `DER-C-CTX-2`). Recount both tiers.
 
 ## API / scope
 

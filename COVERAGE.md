@@ -131,6 +131,17 @@ have a row for. Three of the most important rows here (`DER-F-8`, `DER-F-9`, `DE
 
 Item ids are stable and never reused. Rule references are to X.690 (2021) unless marked RFC 5280.
 
+**Formal verification covers part of the rule axis; tests are meant to cover the rest.** This ledger
+puts formal evidence first, because adding it is what this crate is for. But a proof is not practical
+for every rule: some need input sizes beyond any bounded harness, and some depend on value semantics
+outside this crate. For those rules the intended evidence is a test — a `#[test]` that fails when the
+rule is broken (the `test-only` label in §2). Read a `not-covered` row as a missing test as much as a
+missing proof. A test row is held to the same bar as a formal row: it counts only when a deliberate
+break of the rule has been seen to turn it red (an observed-red control). The shared X.690 requirement
+list is [`docs/requirements/x690-der.clauses.toml`](docs/requirements/x690-der.clauses.toml) (still a
+selection; see `TODO.md`); the planned mapping records, per requirement, whether a proof or a test
+covers it, or neither.
+
 ---
 
 ## 4. Self-verify recipes
@@ -261,6 +272,7 @@ in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, re
 | `DER-C-SETOF-3` | The shipped SET OF walk never over-reads, and each step advances by exactly the child's own encoded length | done | **CONTRACT** — **bounded-backing evidence** checks a harness-owned instance of SET OF's shared `Elements` walk per child against an independent oracle over `0..=6` octets; exact-result equivalence with the previous walk over `0..=8` octets checks production's returned results; the link between production's call sequence and the harness-owned iterator is by source inspection. Lean proves one accepted `Elements` step at any remaining-slice length, not exhaustion of the SET OF loop. This is the disclosed contract surface, not an unrestricted proof of SET OF-specific glue; see §6.4 | `N elements_next_progress` (`lean/SequenceProofs.lean`) · `K set_of::proofs::no_over_read` · `K set_of::proofs::refactored_walk_matches_previous_walk` |
 | `DER-C-SET` | General `SET` (§10.3) — DER ordering of a heterogeneous SET | **not-covered** | **out-of-scope** | `D DECISIONS.md` D13; README scope section. Not implemented, not claimed. |
 | `DER-C-CTX` | `[n] EXPLICIT` context tagging (§8.14) | done | **CONTRACT** (bounded-backing, `≤16` octets, symbolic `len` and full-range tag number, `unwind(20)`, no stubs) — exact total `Result` for the explicit form only (`decode_explicit_context_exact_result`, `decode_explicit_context_faithful`); an `Ok` does not require the value octets to be one complete inner TLV (inner well-formedness and tiling are the caller's) | `K context_tag::proofs::decode_explicit_context_never_panics` · `K context_tag::proofs::decode_explicit_context_faithful` · `K context_tag::proofs::decode_explicit_context_exact_result`. **Added after the `d05d3f2` row text was written (full floor now at `d68eeca`):** the exact total `Result` over a fully symbolic buffer of ≤16 bytes and a full-range tag number, `unwind(20)`, no stubs; explicit form only; inner-TLV well-formedness and tiling are the caller's. Disclosures: PROOF_MANIFEST.md §6.2 |
+| `DER-C-CTX-2` | `[n] EXPLICIT` wrapper holds **exactly one complete inner TLV** (§8.14.3: the contents octets are the complete base encoding) — list row `X690-8.14.3` in [`docs/requirements/x690-der.clauses.toml`](docs/requirements/x690-der.clauses.toml) | done **at every in-crate call site**; **delegated** at the public `decode_explicit_context` | **test-only** — each in-crate caller rejects trailing content inside the wrapper, and decoding continues after the wrapper, not after the inner element; the primitive returns the wrapper's content bounded by the wrapper's own length (`DER-C-CTX`) and leaves the one-TLV check to its caller, so an external caller can still skip it | `T x509_tbs_certificate::tests::rejects_version_inner_trailing` (`version [0]`) · `T ec_private_key::tests::rejects_parameters_two_inner_tlvs` (`[0]`) · `T ec_private_key::tests::rejects_public_key_inner_trailing` (`[1]`) · `T x509_extension::tests::rejects_trailing_after_extensions` (`extensions [3]` content via `decode_sequence_tlv_strict`). Point evidence at concrete inputs; no harness decides the composition |
 | `DER-C-CTX-IMP` | `[n] IMPLICIT` context tagging | **not-covered** | **out-of-scope** | `D PROOF_MANIFEST.md` §6.2 — *"only the explicit-context form is addressed"*. Consequence: X.509's deprecated `[1]`/`[2]` unique identifiers are **rejected**, not parsed (`DER-X-TBS-2`) |
 
 ### 5.3 X.509 / PKCS structural surface
