@@ -1,0 +1,6865 @@
+[inventory]
+id = "der-requirements"
+title = "DER verified-core requirements tree"
+source = "ITU-T X.690 (02/2021), X.680 (02/2021), and X.501: primary texts unavailable; carried rows from x690-der.clauses.toml sha256 512fcae2a6bf33725e21582b2bf3cd9e8ec1669ec7b7599d783ceeab6586b5ad. RFC 5280 (May 2008) sha256 a2f2628c0a83b873fc4786abd921f9b2c02395954b655d190bf16b831633345d; RFC 8017 (November 2016) sha256 1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11; RFC 5915 (June 2010) sha256 5c7b3b2eb449618a581a0ac89209d5d6acc7c375689b2e91304b5dcd866151dc; RFC 5208 (May 2008) sha256 89f7338cf546abaee1d14eef7357440f4fc45e579d47dd4b436c29533abafc2e; RFC 5958 (August 2010) sha256 82778b9ce7b34f02b5ae9777bfb9e42579744aebd2e1479f476513864525af67; RFC 3279 (April 2002) sha256 6d3f19f18e17fa1c68da5aaf4021327748fabca840d7300443b77357a1fc1614; RFC 5480 (March 2009) sha256 593bf29fd0da2ff8b903c3ebf1c9d189a770039159e2ba46a0c3b91355037f26; RFC 8410 (August 2018) sha256 90a0ff0b3dd661d3e26e1873f40f2ca8b41709a7bbd755a1ed3599c4746313d2; RFC 3629 (November 2003) sha256 a2a3a39457d30420c812f87a38cc2b9194832f6982ef17e619de7d816879d6a6; RFC 7468 (April 2015) sha256 0b2c3c2087cc0b099789c90e61c0208e87b25793f0ce40090979e8c734b3d989; RFC 4648 (October 2006) sha256 84e14418f795d503be5f34bf23ce4ebaa119e9ec7c9f667d8caeb111385b178f"
+numbering = "Leaves use <SRC>-<clause>, letter suffixes for source lists, and -a/-b for further sentences; crate contracts use SAFE-, CODEC-, PROF-, and API- prefixes. SEC.* ids are inventory-only section groups."
+
+[[group]]
+id = "DER"
+title = "DER requirements"
+
+[[group]]
+id = "STD"
+title = "External standards"
+parent = "DER"
+
+[[group]]
+id = "SAFE"
+title = "Safety contracts"
+parent = "DER"
+
+[[group]]
+id = "CODEC"
+title = "Codec laws"
+parent = "DER"
+
+[[group]]
+id = "PROF"
+title = "Profile decisions"
+parent = "DER"
+
+[[group]]
+id = "API"
+title = "Public API commitments"
+parent = "DER"
+
+[[group]]
+id = "STD.X690"
+title = "ITU-T X.690"
+parent = "STD"
+
+[[group]]
+id = "SEC.X690.8"
+title = "X.690 basic encoding rules"
+parent = "STD.X690"
+
+[[group]]
+id = "SEC.X690.9"
+title = "X.690 canonical encoding rules"
+parent = "STD.X690"
+
+[[group]]
+id = "SEC.X690.10"
+title = "X.690 distinguished encoding rules"
+parent = "STD.X690"
+
+[[group]]
+id = "SEC.X690.11"
+title = "X.690 DER restricted encodings"
+parent = "STD.X690"
+
+[[group]]
+id = "STD.X680"
+title = "ITU-T X.680"
+parent = "STD"
+
+[[group]]
+id = "SEC.X680.carried"
+title = "X.680 carried selections"
+parent = "STD.X680"
+
+[[group]]
+id = "STD.X501"
+title = "ITU-T X.501"
+parent = "STD"
+
+[[group]]
+id = "STD.RFC5280"
+title = "RFC 5280"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC5280.4.1"
+title = "RFC 5280 basic certificate fields"
+parent = "STD.RFC5280"
+
+[[group]]
+id = "SEC.RFC5280.4.1.1"
+title = "RFC 5280 certificate fields"
+parent = "SEC.RFC5280.4.1"
+
+[[group]]
+id = "SEC.RFC5280.4.1.2"
+title = "RFC 5280 TBSCertificate"
+parent = "SEC.RFC5280.4.1"
+
+[[group]]
+id = "SEC.RFC5280.4.1.2.5"
+title = "RFC 5280 validity"
+parent = "SEC.RFC5280.4.1.2"
+
+[[group]]
+id = "SEC.RFC5280.4.2"
+title = "RFC 5280 certificate extensions"
+parent = "STD.RFC5280"
+
+[[group]]
+id = "SEC.RFC5280.5"
+title = "RFC 5280 CRLs"
+parent = "STD.RFC5280"
+
+[[group]]
+id = "SEC.RFC5280.6"
+title = "RFC 5280 path validation"
+parent = "STD.RFC5280"
+
+[[group]]
+id = "SEC.RFC5280.7"
+title = "RFC 5280 internationalized names"
+parent = "STD.RFC5280"
+
+[[group]]
+id = "STD.RFC8017"
+title = "RFC 8017"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC8017.A.1"
+title = "RFC 8017 RSA key representation"
+parent = "STD.RFC8017"
+
+[[group]]
+id = "STD.RFC5915"
+title = "RFC 5915"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC5915.3"
+title = "RFC 5915 EC private key format"
+parent = "STD.RFC5915"
+
+[[group]]
+id = "SEC.RFC5915.4"
+title = "RFC 5915 encoding considerations"
+parent = "STD.RFC5915"
+
+[[group]]
+id = "STD.RFC5208"
+title = "RFC 5208"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC5208.5"
+title = "RFC 5208 private-key information"
+parent = "STD.RFC5208"
+
+[[group]]
+id = "SEC.RFC5208.6"
+title = "RFC 5208 encrypted private-key information"
+parent = "STD.RFC5208"
+
+[[group]]
+id = "STD.RFC5958"
+title = "RFC 5958"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC5958.2"
+title = "RFC 5958 asymmetric key packages"
+parent = "STD.RFC5958"
+
+[[group]]
+id = "SEC.RFC5958.3"
+title = "RFC 5958 encrypted private-key information"
+parent = "STD.RFC5958"
+
+[[group]]
+id = "STD.RFC3279"
+title = "RFC 3279"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC3279.2.2.3"
+title = "RFC 3279 ECDSA signatures"
+parent = "STD.RFC3279"
+
+[[group]]
+id = "SEC.RFC3279.2.3.1"
+title = "RFC 3279 RSA keys"
+parent = "STD.RFC3279"
+
+[[group]]
+id = "STD.RFC5480"
+title = "RFC 5480"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC5480.2"
+title = "RFC 5480 subject public keys"
+parent = "STD.RFC5480"
+
+[[group]]
+id = "SEC.RFC5480.2.1"
+title = "RFC 5480 EC algorithm identifiers"
+parent = "SEC.RFC5480.2"
+
+[[group]]
+id = "SEC.RFC5480.2.2"
+title = "RFC 5480 EC public key encoding"
+parent = "SEC.RFC5480.2"
+
+[[group]]
+id = "SEC.RFC5480.3"
+title = "RFC 5480 key usage"
+parent = "STD.RFC5480"
+
+[[group]]
+id = "STD.RFC8410"
+title = "RFC 8410"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC8410.3"
+title = "RFC 8410 algorithm identifiers"
+parent = "STD.RFC8410"
+
+[[group]]
+id = "SEC.RFC8410.4"
+title = "RFC 8410 public keys"
+parent = "STD.RFC8410"
+
+[[group]]
+id = "SEC.RFC8410.5"
+title = "RFC 8410 key usage"
+parent = "STD.RFC8410"
+
+[[group]]
+id = "SEC.RFC8410.6"
+title = "RFC 8410 signatures"
+parent = "STD.RFC8410"
+
+[[group]]
+id = "SEC.RFC8410.7"
+title = "RFC 8410 private keys"
+parent = "STD.RFC8410"
+
+[[group]]
+id = "STD.RFC3629"
+title = "RFC 3629"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC3629.3"
+title = "RFC 3629 UTF-8 definition"
+parent = "STD.RFC3629"
+
+[[group]]
+id = "SEC.RFC3629.4"
+title = "RFC 3629 UTF-8 byte syntax"
+parent = "STD.RFC3629"
+
+[[group]]
+id = "STD.RFC7468"
+title = "RFC 7468"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC7468.2"
+title = "RFC 7468 general considerations"
+parent = "STD.RFC7468"
+
+[[group]]
+id = "SEC.RFC7468.3"
+title = "RFC 7468 textual grammar"
+parent = "STD.RFC7468"
+
+[[group]]
+id = "STD.RFC4648"
+title = "RFC 4648"
+parent = "STD"
+
+[[group]]
+id = "SEC.RFC4648.3.3"
+title = "RFC 4648 non-alphabet characters"
+parent = "STD.RFC4648"
+
+[[group]]
+id = "SEC.RFC4648.3.5"
+title = "RFC 4648 canonical encoding"
+parent = "STD.RFC4648"
+
+[[item]]
+id = "X690-8.1"
+ref = "8.1"
+title = "Encoding layout"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-8.1.2"
+ref = "8.1.2"
+title = "Identifier octets"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+
+[[item]]
+id = "X690-8.1.3"
+ref = "8.1.3"
+title = "Length octets"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "X690-8.1.3.6.1"
+ref = "8.1.3.6.1"
+title = "Indefinite length uses the single octet 0x80"
+parent = "SEC.X690.8"
+force = "shall"
+side = "decoder"
+source = "secondary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "X690-8.2"
+ref = "8.2"
+title = "BOOLEAN contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.3"
+ref = "8.3"
+title = "INTEGER contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["integer", "big_integer"]
+
+[[item]]
+id = "X690-8.3.2"
+ref = "8.3.2"
+title = "INTEGER minimal sign representation"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["integer", "big_integer"]
+
+[[item]]
+id = "X690-8.6"
+ref = "8.6"
+title = "BIT STRING contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-8.7"
+ref = "8.7"
+title = "OCTET STRING contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["octet_string"]
+
+[[item]]
+id = "X690-8.8"
+ref = "8.8"
+title = "NULL contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["null"]
+
+[[item]]
+id = "X690-8.19"
+ref = "8.19"
+title = "Object identifier subidentifiers"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["oid"]
+
+[[item]]
+id = "X690-8.23"
+ref = "8.23"
+title = "Restricted string contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-10.1"
+ref = "10.1"
+title = "DER definite minimal lengths"
+parent = "SEC.X690.10"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "X690-10.2"
+ref = "10.2"
+title = "DER primitive string forms"
+parent = "SEC.X690.10"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-11.1"
+ref = "11.1"
+title = "DER BOOLEAN true octet"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-11.2"
+ref = "11.2"
+title = "DER BIT STRING zero padding"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-11.5"
+ref = "11.5"
+title = "DER default values omitted"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["x509_extension", "x509_tbs_certificate"]
+
+[[item]]
+id = "X690-11.6"
+ref = "11.6"
+title = "DER SET OF ordering"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "X690-11.7"
+ref = "11.7"
+title = "DER GeneralizedTime syntax"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "X690-11.8"
+ref = "11.8"
+title = "DER UTCTime syntax"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "RFC5280-4.1.2.5.1"
+ref = "RFC5280 \u00a74.1.2.5.1"
+title = "Certificate UTCTime seconds and zone"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time", "generalized_time", "profile"]
+line = 1253
+
+[[item]]
+id = "RFC5280-4.1.2.5.2"
+ref = "RFC5280 \u00a74.1.2.5.2"
+title = "Certificate GeneralizedTime excludes fractional seconds"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time", "generalized_time", "profile"]
+line = 1270
+
+[[item]]
+id = "RFC7468-2"
+ref = "RFC7468 \u00a72"
+title = "PEM boundaries whitespace and wrapping"
+parent = "SEC.RFC7468.2"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no PEM or textual-encoding parser; crate scope in der-verified/src/lib.rs"
+modules = []
+line = 175
+
+[[item]]
+id = "X680-census-pending"
+title = "Primary-text census pending"
+ref = "X.680"
+parent = "STD.X680"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "secondary"
+disposition = "in"
+reason = "source text not yet on the box"
+modules = []
+
+[[item]]
+id = "X501-census-pending"
+title = "Primary-text census pending"
+ref = "X.501"
+parent = "STD.X501"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "secondary"
+disposition = "in"
+reason = "source text not yet on the box"
+modules = []
+
+[[item]]
+id = "X690-declarative-census-pending"
+title = "Non-shall rule census pending"
+ref = "X.690"
+parent = "STD.X690"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "secondary"
+disposition = "in"
+reason = "primary text not yet on the box"
+modules = []
+
+[[item]]
+id = "RFC5280-4.1"
+title = "Certificate has three ordered fields"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_certificate"]
+line = 879
+
+[[item]]
+id = "RFC5280-4.1-a"
+title = "TBSCertificate contains the signed certificate body"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_tbs_certificate"]
+line = 884
+
+[[item]]
+id = "RFC5280-4.1-b"
+title = "Version enumerates v1 through v3"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_tbs_certificate"]
+line = 909
+
+[[item]]
+id = "RFC5280-4.1-c"
+title = "Certificate serial number is an INTEGER"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_tbs_certificate", "big_integer"]
+line = 911
+
+[[item]]
+id = "RFC5280-4.1-d"
+title = "Validity contains notBefore and notAfter"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_validity"]
+line = 913
+
+[[item]]
+id = "RFC5280-4.1-e"
+title = "Time selects UTCTime or GeneralizedTime"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_validity"]
+line = 917
+
+[[item]]
+id = "RFC5280-4.1-f"
+title = "SubjectPublicKeyInfo contains algorithm and key bits"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_spki"]
+line = 923
+
+[[item]]
+id = "RFC5280-4.1-g"
+title = "Extensions is a nonempty sequence"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_extension"]
+line = 927
+
+[[item]]
+id = "RFC5280-4.1-h"
+title = "Extension carries identifier criticality and value"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_extension"]
+line = 929
+
+[[item]]
+id = "RFC5280-4.1.1.2"
+title = "Outer and inner signature algorithms match"
+ref = "RFC5280 §4.1.1.2"
+parent = "SEC.RFC5280.4.1.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+line = 985
+
+[[item]]
+id = "RFC5280-4.1.1.2-a"
+title = "AlgorithmIdentifier contains OID and optional parameters"
+ref = "RFC5280 §4.1.1.2"
+parent = "SEC.RFC5280.4.1.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_algorithm_identifier"]
+line = 976
+
+[[item]]
+id = "RFC5280-4.1.2.1"
+title = "Extensions require certificate version three"
+ref = "RFC5280 §4.1.2.1"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["profile", "x509_tbs_certificate"]
+line = 1024
+
+[[item]]
+id = "RFC5280-4.1.2.1-a"
+title = "Unique identifiers should select version two"
+ref = "RFC5280 §4.1.2.1"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer version-selection rule; unique identifiers are rejected under DECISIONS.md D23"
+modules = ["x509_tbs_certificate"]
+line = 1026
+
+[[item]]
+id = "RFC5280-4.1.2.1-b"
+title = "Basic-only certificates should use version one"
+ref = "RFC5280 §4.1.2.1"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer version-selection rule"
+modules = []
+line = 1028
+
+[[item]]
+id = "RFC5280-4.1.2.1-c"
+title = "Decoders should accept any certificate version"
+ref = "RFC5280 §4.1.2.1"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "parser intentionally accepts only v1, v2, and v3; DECISIONS.md D23"
+modules = ["x509_tbs_certificate"]
+line = 1032
+
+[[item]]
+id = "RFC5280-4.1.2.1-d"
+title = "Decoders recognize version three"
+ref = "RFC5280 §4.1.2.1"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["x509_tbs_certificate"]
+line = 1033
+
+[[item]]
+id = "RFC5280-4.1.2.2"
+title = "Serial numbers are positive integers"
+ref = "RFC5280 §4.1.2.2"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "RFC 5280 line 1041 binds the CA; x509_tbs_certificate keeps the serial opaque and accepts nonpositive values so decoders can handle them gracefully"
+modules = []
+line = 1041
+
+[[item]]
+id = "RFC5280-4.1.2.2-a"
+title = "Issuer serial numbers are unique"
+ref = "RFC5280 §4.1.2.2"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "uniqueness depends on issuer state, not certificate bytes"
+modules = []
+line = 1042
+
+[[item]]
+id = "RFC5280-4.1.2.2-b"
+title = "CAs generate nonnegative serial numbers"
+ref = "RFC5280 §4.1.2.2"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "certificate-producer obligation"
+modules = []
+line = 1044
+
+[[item]]
+id = "RFC5280-4.1.2.2-c"
+title = "Decoders handle serials through twenty octets"
+ref = "RFC5280 §4.1.2.2"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["big_integer", "x509_tbs_certificate"]
+line = 1048
+
+[[item]]
+id = "RFC5280-4.1.2.2-d"
+title = "CAs limit serials to twenty octets"
+ref = "RFC5280 §4.1.2.2"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must-not"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "certificate-producer obligation"
+modules = []
+line = 1049
+
+[[item]]
+id = "RFC5280-4.1.2.2-e"
+title = "Decoders gracefully handle nonpositive serials"
+ref = "RFC5280 §4.1.2.2"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["big_integer", "x509_tbs_certificate"]
+line = 1052
+
+[[item]]
+id = "RFC5280-4.1.2.3"
+title = "Inner and outer signature algorithms match"
+ref = "RFC5280 §4.1.2.3"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+line = 1061
+
+[[item]]
+id = "RFC5280-4.1.2.4"
+title = "Issuer name is nonempty"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["x509_name", "x509_tbs_certificate"]
+line = 1078
+
+[[item]]
+id = "RFC5280-4.1.2.4-a"
+title = "Name is an RDN sequence"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name"]
+line = 1083
+
+[[item]]
+id = "RFC5280-4.1.2.4-b"
+title = "RDN contains at least one attribute"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name"]
+line = 1088
+
+[[item]]
+id = "RFC5280-4.1.2.4-c"
+title = "Attribute carries type and value"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name"]
+line = 1091
+
+[[item]]
+id = "RFC5280-4.1.2.4-d"
+title = "CAs use PrintableString or UTF8String"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer encoding choice outside structural Name validation"
+modules = ["x509_name"]
+line = 1111
+
+[[item]]
+id = "RFC5280-4.1.2.4-e"
+title = "Structurally accept required issuer attributes"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+reason = "structural acceptance is implemented; attribute OID and DirectoryString semantics remain outside x509_name"
+modules = ["x509_name", "restricted_string", "utf8_string"]
+line = 1133
+
+[[item]]
+id = "RFC5280-4.1.2.4-f"
+title = "Structurally accept standard issuer attributes"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+reason = "structural acceptance is implemented; attribute OID and DirectoryString semantics remain outside x509_name"
+modules = ["x509_name", "restricted_string", "utf8_string"]
+line = 1140
+
+[[item]]
+id = "RFC5280-4.1.2.4-g"
+title = "Structurally accept additional issuer attributes"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "decoder"
+source = "primary"
+disposition = "in"
+reason = "structural acceptance is implemented; attribute OID and DirectoryString semantics remain outside x509_name"
+modules = ["x509_name", "restricted_string", "utf8_string"]
+line = 1153
+
+[[item]]
+id = "RFC5280-4.1.2.4-h"
+title = "Structurally accept domainComponent attributes"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+reason = "structural acceptance is implemented; attribute OID and DirectoryString semantics remain outside x509_name"
+modules = ["x509_name", "restricted_string", "utf8_string"]
+line = 1168
+
+[[item]]
+id = "RFC5280-4.1.2.4-i"
+title = "Relying parties process names for path chaining"
+ref = "RFC5280 §4.1.2.4"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "path-building obligation, not byte-level parsing"
+modules = []
+line = 1188
+
+[[item]]
+id = "RFC5280-4.1.2.5"
+title = "Validity year selects its time encoding"
+ref = "RFC5280 §4.1.2.5"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "must"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile", "utc_time", "generalized_time"]
+line = 1208
+
+[[item]]
+id = "RFC5280-4.1.2.5-a"
+title = "Decoders accept either Time alternative"
+ref = "RFC5280 §4.1.2.5"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["x509_validity"]
+line = 1211
+
+[[item]]
+id = "RFC5280-4.1.2.5-b"
+title = "No-expiry certificates should use year 9999"
+ref = "RFC5280 §4.1.2.5"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "should"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer selection of expiration value"
+modules = []
+line = 1223
+
+[[item]]
+id = "RFC5280-4.1.2.5-c"
+title = "Issuer prevents paths after status maintenance ends"
+ref = "RFC5280 §4.1.2.5"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer operational and path-state obligation"
+modules = []
+line = 1227
+
+[[item]]
+id = "RFC5280-4.1.2.5.1-a"
+title = "UTCTime uses Zulu and includes seconds"
+ref = "RFC5280 §4.1.2.5.1"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "must"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+line = 1253
+
+[[item]]
+id = "RFC5280-4.1.2.5.1-b"
+title = "UTCTime years use the profile pivot"
+ref = "RFC5280 §4.1.2.5.1"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+line = 1256
+
+[[item]]
+id = "RFC5280-4.1.2.5.1c"
+title = "Years fifty through ninety-nine mean 19YY"
+ref = "RFC5280 §4.1.2.5.1"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "shall"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+line = 1258
+
+[[item]]
+id = "RFC5280-4.1.2.5.1d"
+title = "Years zero through forty-nine mean 20YY"
+ref = "RFC5280 §4.1.2.5.1"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "shall"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+line = 1261
+
+[[item]]
+id = "RFC5280-4.1.2.5.2-a"
+title = "GeneralizedTime uses Zulu and includes seconds"
+ref = "RFC5280 §4.1.2.5.2"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "must"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+line = 1270
+
+[[item]]
+id = "RFC5280-4.1.2.5.2-b"
+title = "Validity GeneralizedTime omits fractions"
+ref = "RFC5280 §4.1.2.5.2"
+parent = "SEC.RFC5280.4.1.2.5"
+firmness = "draft"
+force = "must-not"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["profile", "generalized_time"]
+line = 1273
+
+[[item]]
+id = "RFC5280-4.1.2.6"
+title = "CA subjects use a nonempty matching name"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer identity and cross-certificate obligation"
+modules = []
+line = 1280
+
+[[item]]
+id = "RFC5280-4.1.2.6-a"
+title = "Alternative-only subjects use empty critical names"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer and extension-semantics obligation"
+modules = []
+line = 1298
+
+[[item]]
+id = "RFC5280-4.1.2.6-b"
+title = "Nonempty subjects contain distinguished names"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["x509_name", "x509_tbs_certificate"]
+line = 1303
+
+[[item]]
+id = "RFC5280-4.1.2.6-c"
+title = "CA subject names are unique"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "uniqueness requires issuer state"
+modules = []
+line = 1304
+
+[[item]]
+id = "RFC5280-4.1.2.6-d"
+title = "Structurally accept required subject attributes"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+reason = "structural acceptance is implemented; attribute OID and DirectoryString semantics remain outside x509_name"
+modules = ["x509_name", "restricted_string", "utf8_string"]
+line = 1311
+
+[[item]]
+id = "RFC5280-4.1.2.6-e"
+title = "Structurally accept recommended subject attributes"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "decoder"
+source = "primary"
+disposition = "in"
+reason = "structural acceptance is implemented; attribute OID and DirectoryString semantics remain outside x509_name"
+modules = ["x509_name", "restricted_string", "utf8_string"]
+line = 1313
+
+[[item]]
+id = "RFC5280-4.1.2.6-f"
+title = "CAs use permitted DirectoryString encodings"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer encoding choice"
+modules = []
+line = 1326
+
+[[item]]
+id = "RFC5280-4.1.2.6g"
+title = "CA subject encoding matches issuer encoding"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer cross-certificate encoding obligation"
+modules = []
+line = 1330
+
+[[item]]
+id = "RFC5280-4.1.2.6h"
+title = "Legacy string types should not serve new subjects"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should-not"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer encoding choice"
+modules = []
+line = 1351
+
+[[item]]
+id = "RFC5280-4.1.2.6-i"
+title = "Decoders should accept legacy string types"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "x509_name accepts their raw TLVs, but no module decodes TeletexString, BMPString, or UniversalString semantics"
+modules = ["x509_name"]
+line = 1359
+
+[[item]]
+id = "RFC5280-4.1.2.6-j"
+title = "New email identities use subjectAltName"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer extension-selection obligation"
+modules = []
+line = 1370
+
+[[item]]
+id = "RFC5280-4.1.2.8"
+title = "Unique identifiers require version two or three"
+ref = "RFC5280 §4.1.2.8"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "unique identifiers are deliberately rejected; DECISIONS.md D23"
+modules = ["x509_tbs_certificate"]
+line = 1389
+
+[[item]]
+id = "RFC5280-4.1.2.8-a"
+title = "Unique identifiers should not be reused"
+ref = "RFC5280 §4.1.2.8"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "recommended"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer naming practice"
+modules = []
+line = 1393
+
+[[item]]
+id = "RFC5280-4.1.2.8-b"
+title = "CAs omit unique identifiers"
+ref = "RFC5280 §4.1.2.8"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must-not"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "certificate-producer obligation"
+modules = []
+line = 1395
+
+[[item]]
+id = "RFC5280-4.1.2.8-c"
+title = "Decoders should parse unique identifiers"
+ref = "RFC5280 §4.1.2.8"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "should"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "unique identifiers are deliberately rejected; DECISIONS.md D23"
+modules = ["x509_tbs_certificate"]
+line = 1407
+
+[[item]]
+id = "RFC5280-4.1.2.9"
+title = "Extensions appear only in version three"
+ref = "RFC5280 §4.1.2.9"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["profile", "x509_tbs_certificate"]
+line = 1413
+
+[[item]]
+id = "RFC5280-4.2-a"
+title = "Unknown critical extensions invalidate certificates"
+ref = "RFC5280 §4.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "must"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "extension recognition and certificate use are above structural parsing"
+modules = []
+line = 1424
+
+[[item]]
+id = "RFC5280-4.2-b"
+title = "Recognized noncritical extensions are processed"
+ref = "RFC5280 §4.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "must"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "extension semantics are above structural parsing"
+modules = []
+line = 1428
+
+[[item]]
+id = "RFC5280-4.2-c"
+title = "Each extension identifier appears at most once"
+ref = "RFC5280 §4.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "must-not"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["x509_extension"]
+line = 1438
+
+[[item]]
+id = "RFC5280-4.2-d"
+title = "CAs support core certificate extensions"
+ref = "RFC5280 §4.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "certificate-producer capability obligation"
+modules = []
+line = 1448
+
+[[item]]
+id = "RFC5280-4.2-e"
+title = "Empty subjects require subjectAltName support"
+ref = "RFC5280 §4.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "certificate-producer capability obligation"
+modules = []
+line = 1451
+
+[[item]]
+id = "RFC5280-4.2-f"
+title = "Applications recognize baseline extensions"
+ref = "RFC5280 §4.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "must"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "extension semantics are above structural parsing"
+modules = []
+line = 1466
+
+[[item]]
+id = "RFC5280-4.2-g"
+title = "Applications should recognize identifier and mapping extensions"
+ref = "RFC5280 §4.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "should"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "extension semantics are above structural parsing"
+modules = []
+line = 1474
+
+[[item]]
+id = "RFC5280-4.2.1-excluded"
+title = "Standard extension semantics are outside structural parsing"
+ref = "RFC5280 §4.2.1"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "declarative"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "profile support is limited to PROF rows; PROOF_MANIFEST.md §6.2"
+modules = []
+line = 1478
+
+[[item]]
+id = "RFC5280-4.2.2-excluded"
+title = "Private extension semantics are outside structural parsing"
+ref = "RFC5280 §4.2.2"
+parent = "SEC.RFC5280.4.2"
+firmness = "draft"
+force = "declarative"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "OID-specific extension semantics are outside crate scope"
+modules = []
+line = 2695
+
+[[item]]
+id = "RFC5280-5-excluded"
+title = "CRL profile is outside certificate parsing"
+ref = "RFC5280 §5"
+parent = "SEC.RFC5280.5"
+firmness = "draft"
+force = "declarative"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "no CRL parser; crate scope in der-verified/src/lib.rs"
+modules = []
+line = 2984
+
+[[item]]
+id = "RFC5280-6-excluded"
+title = "Certification path validation is outside scope"
+ref = "RFC5280 §6"
+parent = "SEC.RFC5280.6"
+firmness = "draft"
+force = "declarative"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "path validation requires trust state and cryptography; PROOF_MANIFEST.md §6.2"
+modules = []
+line = 3945
+
+[[item]]
+id = "RFC5280-7-excluded"
+title = "Internationalized-name processing is outside scope"
+ref = "RFC5280 §7"
+parent = "SEC.RFC5280.7"
+firmness = "draft"
+force = "declarative"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "name comparison and preparation are relying-party semantics"
+modules = []
+line = 5305
+
+[[item]]
+id = "RFC8017-A.1"
+title = "RSA algorithm identifiers carry NULL parameters"
+ref = "RFC8017 §A.1"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "algorithm OID semantics are outside structural key parsing"
+modules = ["x509_algorithm_identifier"]
+line = 2984
+
+[[item]]
+id = "RFC8017-A.1.1"
+title = "RSAPublicKey contains modulus and exponent"
+ref = "RFC8017 §A.1.1"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_public_key"]
+line = 2999
+
+[[item]]
+id = "RFC8017-A.1.1-a"
+title = "RSA public keys use RSAPublicKey"
+ref = "RFC8017 §A.1.1"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "should"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_public_key"]
+line = 2996
+
+[[item]]
+id = "RFC8017-A.1.2"
+title = "RSAPrivateKey carries version and key components"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3036
+
+[[item]]
+id = "RFC8017-A.1.2-a"
+title = "Two-prime keys use version zero"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3051
+
+[[item]]
+id = "RFC8017-A.1.2-b"
+title = "Multi-prime keys use version one"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3052
+
+[[item]]
+id = "RFC8017-A.1.2-c"
+title = "Version matches other-prime presence"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3056
+
+[[item]]
+id = "RFC8017-A.1.2-d"
+title = "Version zero omits other primes"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3087
+
+[[item]]
+id = "RFC8017-A.1.2-e"
+title = "Version one carries at least one other prime"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3088
+
+[[item]]
+id = "RFC8017-A.1.2-f"
+title = "OtherPrimeInfos is a nonempty sequence"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3092
+
+[[item]]
+id = "RFC8017-A.1.2-g"
+title = "OtherPrimeInfo contains three integers"
+ref = "RFC8017 §A.1.2"
+parent = "SEC.RFC8017.A.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+line = 3094
+
+[[item]]
+id = "RFC5915-3"
+title = "EC private keys use ECPrivateKey"
+ref = "RFC5915 §3"
+parent = "SEC.RFC5915.3"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["ec_private_key"]
+line = 98
+
+[[item]]
+id = "RFC5915-3-a"
+title = "ECPrivateKey carries required and optional fields"
+ref = "RFC5915 §3"
+parent = "SEC.RFC5915.3"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["ec_private_key"]
+line = 103
+
+[[item]]
+id = "RFC5915-3-b"
+title = "EC private key version equals one"
+ref = "RFC5915 §3"
+parent = "SEC.RFC5915.3"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["ec_private_key"]
+line = 121
+
+[[item]]
+id = "RFC5915-3-c"
+title = "Conforming encodings include parameters"
+ref = "RFC5915 §3"
+parent = "SEC.RFC5915.3"
+firmness = "draft"
+force = "must"
+side = "encoder"
+source = "primary"
+disposition = "excluded"
+reason = "parser deliberately permits the ASN.1 OPTIONAL parameters field; DECISIONS.md structural scope"
+modules = ["ec_private_key"]
+line = 131
+
+[[item]]
+id = "RFC5915-3-d"
+title = "Conforming encodings should include public key"
+ref = "RFC5915 §3"
+parent = "SEC.RFC5915.3"
+firmness = "draft"
+force = "should"
+side = "encoder"
+source = "primary"
+disposition = "excluded"
+reason = "parser deliberately permits the ASN.1 OPTIONAL publicKey field"
+modules = ["ec_private_key"]
+line = 140
+
+[[item]]
+id = "RFC5915-4"
+title = "Generators should use DER"
+ref = "RFC5915 §4"
+parent = "SEC.RFC5915.4"
+firmness = "draft"
+force = "should"
+side = "encoder"
+source = "primary"
+disposition = "in"
+modules = ["ec_private_key"]
+line = 153
+
+[[item]]
+id = "RFC5915-4-a"
+title = "Receivers should accept BER and DER"
+ref = "RFC5915 §4"
+parent = "SEC.RFC5915.4"
+firmness = "draft"
+force = "should"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "crate is deliberately strict DER and rejects BER variants"
+modules = ["ec_private_key"]
+line = 153
+
+[[item]]
+id = "RFC5208-5"
+title = "Private keys use PrivateKeyInfo"
+ref = "RFC5208 §5"
+parent = "SEC.RFC5208.5"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["pkcs8"]
+line = 123
+
+[[item]]
+id = "RFC5208-5-a"
+title = "PrivateKeyInfo has four ordered fields"
+ref = "RFC5208 §5"
+parent = "SEC.RFC5208.5"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["pkcs8"]
+line = 125
+
+[[item]]
+id = "RFC5208-5-b"
+title = "PrivateKeyInfo version equals zero"
+ref = "RFC5208 §5"
+parent = "SEC.RFC5208.5"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["pkcs8"]
+line = 141
+
+[[item]]
+id = "RFC5208-6"
+title = "Encrypted keys use EncryptedPrivateKeyInfo"
+ref = "RFC5208 §6"
+parent = "SEC.RFC5208.6"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["encrypted_private_key_info"]
+line = 179
+
+[[item]]
+id = "RFC5208-6-a"
+title = "EncryptedPrivateKeyInfo carries algorithm and ciphertext"
+ref = "RFC5208 §6"
+parent = "SEC.RFC5208.6"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["encrypted_private_key_info"]
+line = 182
+
+[[item]]
+id = "RFC5958-2"
+title = "OneAsymmetricKey carries versioned key material"
+ref = "RFC5958 §2"
+parent = "SEC.RFC5958.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "PKCS#8 v2 OneAsymmetricKey is not implemented; pkcs8 handles RFC 5208 v1"
+modules = ["pkcs8"]
+line = 154
+
+[[item]]
+id = "RFC5958-2-a"
+title = "Generators should use DER packages"
+ref = "RFC5958 §2"
+parent = "SEC.RFC5958.2"
+firmness = "draft"
+force = "should"
+side = "encoder"
+source = "primary"
+disposition = "excluded"
+reason = "AsymmetricKeyPackage container is not implemented"
+modules = []
+line = 133
+
+[[item]]
+id = "RFC5958-2-b"
+title = "Receivers support BER packages"
+ref = "RFC5958 §2"
+parent = "SEC.RFC5958.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "crate is strict DER and does not parse AsymmetricKeyPackage"
+modules = []
+line = 138
+
+[[item]]
+id = "RFC5958-3"
+title = "Encrypted keys use EncryptedPrivateKeyInfo"
+ref = "RFC5958 §3"
+parent = "SEC.RFC5958.3"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["encrypted_private_key_info"]
+line = 264
+
+[[item]]
+id = "RFC5958-3-a"
+title = "EncryptedPrivateKeyInfo carries algorithm and ciphertext"
+ref = "RFC5958 §3"
+parent = "SEC.RFC5958.3"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["encrypted_private_key_info"]
+line = 267
+
+[[item]]
+id = "RFC5958-3-b"
+title = "Encrypted-key generators should use DER"
+ref = "RFC5958 §3"
+parent = "SEC.RFC5958.3"
+firmness = "draft"
+force = "should"
+side = "encoder"
+source = "primary"
+disposition = "in"
+modules = ["encrypted_private_key_info"]
+line = 297
+
+[[item]]
+id = "RFC5958-3-c"
+title = "Encrypted-key receivers support BER"
+ref = "RFC5958 §3"
+parent = "SEC.RFC5958.3"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "crate deliberately accepts DER only"
+modules = ["encrypted_private_key_info"]
+line = 298
+
+[[item]]
+id = "RFC3279-2.2.3"
+title = "ECDSA signatures contain two integers"
+ref = "RFC3279 §2.2.3"
+parent = "SEC.RFC3279.2.2.3"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["ecdsa_sig_value"]
+line = 375
+
+[[item]]
+id = "RFC3279-2.2.3-a"
+title = "ECDSA parameters are omitted"
+ref = "RFC3279 §2.2.3"
+parent = "SEC.RFC3279.2.2.3"
+firmness = "draft"
+force = "must"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "algorithm-identifier OID semantics are outside structural parsing"
+modules = ["x509_algorithm_identifier"]
+line = 361
+
+[[item]]
+id = "RFC3279-2.2.3-b"
+title = "Issuer curve parameters govern signature verification"
+ref = "RFC3279 §2.2.3"
+parent = "SEC.RFC3279.2.2.3"
+firmness = "draft"
+force = "shall"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "cryptographic signature verification is outside crate scope"
+modules = []
+line = 366
+
+[[item]]
+id = "RFC3279-2.2.3-c"
+title = "ECDSA values use the signature structure"
+ref = "RFC3279 §2.2.3"
+parent = "SEC.RFC3279.2.2.3"
+firmness = "draft"
+force = "must"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["ecdsa_sig_value"]
+line = 370
+
+[[item]]
+id = "RFC3279-2.3.1"
+title = "RSA public keys use RSAPublicKey"
+ref = "RFC3279 §2.3.1"
+parent = "SEC.RFC3279.2.3.1"
+firmness = "draft"
+force = "must"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_public_key"]
+line = 416
+
+[[item]]
+id = "RFC3279-2.3.1-a"
+title = "RSA algorithm parameters are NULL"
+ref = "RFC3279 §2.3.1"
+parent = "SEC.RFC3279.2.3.1"
+firmness = "draft"
+force = "must"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "algorithm-identifier OID semantics are outside structural parsing"
+modules = ["x509_algorithm_identifier"]
+line = 412
+
+[[item]]
+id = "RFC3279-2.3.1-b"
+title = "RSAPublicKey contains modulus and exponent"
+ref = "RFC3279 §2.3.1"
+parent = "SEC.RFC3279.2.3.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_public_key"]
+line = 418
+
+[[item]]
+id = "RFC5480-2"
+title = "EC SubjectPublicKeyInfo has two fields"
+ref = "RFC5480 §2"
+parent = "SEC.RFC5480.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_spki"]
+line = 130
+
+[[item]]
+id = "RFC5480-2-a"
+title = "AlgorithmIdentifier has OID and optional parameters"
+ref = "RFC5480 §2"
+parent = "SEC.RFC5480.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_algorithm_identifier"]
+line = 145
+
+[[item]]
+id = "RFC5480-2.1"
+title = "Implementations support id-ecPublicKey"
+ref = "RFC5480 §2.1"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "algorithm OID semantics are outside structural SPKI parsing; DECISIONS.md D18"
+modules = ["x509_spki"]
+line = 175
+
+[[item]]
+id = "RFC5480-2.1.1"
+title = "EC parameters choose a named curve"
+ref = "RFC5480 §2.1.1"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ECParameters contents are not interpreted; DECISIONS.md D18"
+modules = ["x509_spki"]
+line = 204
+
+[[item]]
+id = "RFC5480-2.1.1-a"
+title = "EC parameters are always present"
+ref = "RFC5480 §2.1.1"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "generic AlgorithmIdentifier permits absent parameters"
+modules = ["x509_algorithm_identifier", "x509_spki"]
+line = 201
+
+[[item]]
+id = "RFC5480-2.1.1-b"
+title = "Named curves are supported"
+ref = "RFC5480 §2.1.1"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "named-curve OID semantics are outside scope"
+modules = []
+line = 216
+
+[[item]]
+id = "RFC5480-2.1.1-c"
+title = "Implicit curves are forbidden"
+ref = "RFC5480 §2.1.1"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "must-not"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "ECParameters CHOICE contents are opaque"
+modules = []
+line = 221
+
+[[item]]
+id = "RFC5480-2.1.1-d"
+title = "Specified curves are forbidden"
+ref = "RFC5480 §2.1.1"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "must-not"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "ECParameters CHOICE contents are opaque"
+modules = []
+line = 231
+
+[[item]]
+id = "RFC5480-2.1.1-e"
+title = "Clients reject missing EC parameters"
+ref = "RFC5480 §2.1.1"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "generic SPKI parser does not interpret algorithm-specific parameters"
+modules = ["x509_spki"]
+line = 239
+
+[[item]]
+id = "RFC5480-2.2"
+title = "EC points are OCTET STRING values"
+ref = "RFC5480 §2.2"
+parent = "SEC.RFC5480.2.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "SPKI exposes opaque BIT STRING key bytes and does not decode ECPoint"
+modules = ["x509_spki"]
+line = 354
+
+[[item]]
+id = "RFC5480-2.2-a"
+title = "Implementations support uncompressed EC points"
+ref = "RFC5480 §2.2"
+parent = "SEC.RFC5480.2.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "EC point semantics are outside structural SPKI parsing"
+modules = []
+line = 356
+
+[[item]]
+id = "RFC5480-2.2-b"
+title = "Hybrid EC points are forbidden"
+ref = "RFC5480 §2.2"
+parent = "SEC.RFC5480.2.2"
+firmness = "draft"
+force = "must-not"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "EC point semantics are outside structural SPKI parsing"
+modules = []
+line = 358
+
+[[item]]
+id = "RFC5480-2.2-c"
+title = "Unknown EC point prefixes are rejected"
+ref = "RFC5480 §2.2"
+parent = "SEC.RFC5480.2.2"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "EC point bytes are opaque to x509_spki"
+modules = []
+line = 370
+
+[[item]]
+id = "RFC5480-3-excluded"
+title = "EC key-usage semantics are outside scope"
+ref = "RFC5480 §3"
+parent = "SEC.RFC5480.3"
+firmness = "draft"
+force = "declarative"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "key-usage semantics are profile and relying-party decisions"
+modules = []
+line = 376
+
+[[item]]
+id = "RFC8410-3"
+title = "Curve algorithm parameters are absent"
+ref = "RFC8410 §3"
+parent = "SEC.RFC8410.3"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "algorithm OID semantics are outside generic AlgorithmIdentifier parsing"
+modules = ["x509_algorithm_identifier"]
+line = 191
+
+[[item]]
+id = "RFC8410-3-a"
+title = "AlgorithmIdentifier contains OID and optional parameters"
+ref = "RFC8410 §3"
+parent = "SEC.RFC8410.3"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_algorithm_identifier"]
+line = 178
+
+[[item]]
+id = "RFC8410-4"
+title = "Safe-curve SPKI has algorithm and key bits"
+ref = "RFC8410 §4"
+parent = "SEC.RFC8410.4"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_spki"]
+line = 218
+
+[[item]]
+id = "RFC8410-4-a"
+title = "Safe-curve public keys are octet-aligned"
+ref = "RFC8410 §4"
+parent = "SEC.RFC8410.4"
+firmness = "draft"
+force = "declarative"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "x509_spki preserves BIT STRING unused-bit metadata but does not apply OID-specific alignment"
+modules = ["x509_spki", "bit_string"]
+line = 236
+
+[[item]]
+id = "RFC8410-5-excluded"
+title = "Safe-curve key-usage semantics are outside scope"
+ref = "RFC8410 §5"
+parent = "SEC.RFC8410.5"
+firmness = "draft"
+force = "declarative"
+side = "relying-party"
+source = "primary"
+disposition = "not-applicable"
+reason = "key-usage semantics are not interpreted"
+modules = []
+line = 252
+
+[[item]]
+id = "RFC8410-6"
+title = "Certificate signature has three fields"
+ref = "RFC8410 §6"
+parent = "SEC.RFC8410.6"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_certificate"]
+line = 303
+
+[[item]]
+id = "RFC8410-6-a"
+title = "Safe-curve signature parameters are absent"
+ref = "RFC8410 §6"
+parent = "SEC.RFC8410.6"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "algorithm OID semantics are outside certificate parsing"
+modules = ["x509_algorithm_identifier"]
+line = 308
+
+[[item]]
+id = "RFC8410-6-b"
+title = "EdDSA signature bytes have no ASN.1 wrapper"
+ref = "RFC8410 §6"
+parent = "SEC.RFC8410.6"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "signature bytes are opaque and cryptography is outside scope"
+modules = ["x509_certificate"]
+line = 312
+
+[[item]]
+id = "RFC8410-7"
+title = "OneAsymmetricKey carries safe-curve private keys"
+ref = "RFC8410 §7"
+parent = "SEC.RFC8410.7"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "RFC 5958 OneAsymmetricKey v2 is not implemented"
+modules = ["pkcs8"]
+line = 353
+
+[[item]]
+id = "RFC8410-7-a"
+title = "CurvePrivateKey is a nested OCTET STRING"
+ref = "RFC8410 §7"
+parent = "SEC.RFC8410.7"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "pkcs8 exposes privateKey content opaquely and does not apply OID-specific nesting"
+modules = ["pkcs8"]
+line = 367
+
+[[item]]
+id = "RFC3629-3"
+title = "UTF-8 uses one through four octets"
+ref = "RFC3629 §3"
+parent = "SEC.RFC3629.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+line = 180
+
+[[item]]
+id = "RFC3629-3-a"
+title = "Each scalar has one valid encoding"
+ref = "RFC3629 §3"
+parent = "SEC.RFC3629.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+line = 203
+
+[[item]]
+id = "RFC3629-3-b"
+title = "UTF-8 excludes surrogate code points"
+ref = "RFC3629 §3"
+parent = "SEC.RFC3629.3"
+firmness = "draft"
+force = "declarative"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+line = 231
+
+[[item]]
+id = "RFC3629-3-c"
+title = "Decoders reject invalid UTF-8 sequences"
+ref = "RFC3629 §3"
+parent = "SEC.RFC3629.3"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+line = 258
+
+[[item]]
+id = "RFC3629-4"
+title = "UTF-8 byte strings match the ABNF"
+ref = "RFC3629 §4"
+parent = "SEC.RFC3629.4"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+line = 270
+
+[[item]]
+id = "RFC7468-3"
+ref = "RFC7468 \u00a73"
+title = "PEM textual grammar"
+parent = "SEC.RFC7468.3"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no PEM or textual-encoding parser; crate scope in der-verified/src/lib.rs"
+modules = []
+line = 263
+
+[[item]]
+id = "RFC4648-3.3"
+ref = "RFC4648 \u00a73.3"
+title = "Base64 alphabet rejection"
+parent = "SEC.RFC4648.3.3"
+firmness = "draft"
+force = "shall"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "no Base64 codec; crate scope in der-verified/src/lib.rs"
+modules = []
+line = 200
+
+[[item]]
+id = "RFC4648-3.5"
+ref = "RFC4648 \u00a73.5"
+title = "Base64 canonical zero pad bits"
+parent = "SEC.RFC4648.3.5"
+firmness = "draft"
+force = "shall"
+side = "encoder"
+source = "primary"
+disposition = "excluded"
+reason = "no Base64 codec; crate scope in der-verified/src/lib.rs"
+modules = []
+line = 253
+
+[[item]]
+id = "X690-9"
+ref = "9"
+title = "CER rules"
+parent = "SEC.X690.9"
+force = "shall"
+side = "both"
+source = "secondary"
+disposition = "excluded"
+reason = "CER is not DER; der-verified implements DER only"
+modules = []
+
+[[item]]
+id = "X690-8.1.1.1"
+ref = "8.1.1.1"
+title = "Encoding components"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-8.1.1.2"
+ref = "8.1.1.2"
+title = "Primitive encoding layout"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-8.1.1.3"
+ref = "8.1.1.3"
+title = "Constructed encoding layout"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-8.1.2.1"
+ref = "8.1.2.1"
+title = "Tag class and number"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+
+[[item]]
+id = "X690-8.1.2.2"
+ref = "8.1.2.2"
+title = "Low tag form"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+
+[[item]]
+id = "X690-8.1.2.4"
+ref = "8.1.2.4"
+title = "High tag form"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+
+[[item]]
+id = "X690-8.1.2.4.1"
+ref = "8.1.2.4.1"
+title = "High tag leading octet"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+
+[[item]]
+id = "X690-8.1.2.4.2"
+ref = "8.1.2.4.2"
+title = "Base 128 tag digits and minimal first digit"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+
+[[item]]
+id = "X690-8.1.2.5"
+ref = "8.1.2.5"
+title = "Primitive and constructed bit"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+
+[[item]]
+id = "X690-8.1.3.2"
+ref = "8.1.3.2"
+title = "Primitive definite length"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "X690-8.1.3.3"
+ref = "8.1.3.3"
+title = "Definite length content size"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "X690-8.1.3.4"
+ref = "8.1.3.4"
+title = "Short length"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "X690-8.1.3.5"
+ref = "8.1.3.5"
+title = "Long length and forbidden ff"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "X690-8.1.4"
+ref = "8.1.4"
+title = "Contents octets"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-8.2.1"
+ref = "8.2.1"
+title = "Primitive BOOLEAN one octet"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.2.2"
+ref = "8.2.2"
+title = "BOOLEAN abstract values"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.3.1"
+ref = "8.3.1"
+title = "Primitive INTEGER"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer", "big_integer"]
+
+[[item]]
+id = "X690-8.3.3"
+ref = "8.3.3"
+title = "Signed two complement INTEGER"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer", "big_integer"]
+
+[[item]]
+id = "X690-8.4"
+ref = "8.4"
+title = "ENUMERATED uses INTEGER encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["enumerated"]
+
+[[item]]
+id = "X690-8.6.2"
+ref = "8.6.2"
+title = "BIT STRING initial octet"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-8.6.2.1"
+ref = "8.6.2.1"
+title = "BIT STRING bit order"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-8.6.2.2"
+ref = "8.6.2.2"
+title = "Unused count zero to seven"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-8.6.2.3"
+ref = "8.6.2.3"
+title = "Empty BIT STRING"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-8.7.1"
+ref = "8.7.1"
+title = "OCTET STRING form"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["octet_string"]
+
+[[item]]
+id = "X690-8.7.2"
+ref = "8.7.2"
+title = "Primitive OCTET STRING contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["octet_string"]
+
+[[item]]
+id = "X690-8.8.1"
+ref = "8.8.1"
+title = "Primitive NULL"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["null"]
+
+[[item]]
+id = "X690-8.8.2"
+ref = "8.8.2"
+title = "Empty NULL contents"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["null"]
+
+[[item]]
+id = "X690-8.9"
+ref = "8.9"
+title = "SEQUENCE encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "X690-8.9.1"
+ref = "8.9.1"
+title = "Constructed SEQUENCE"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "X690-8.9.2"
+ref = "8.9.2"
+title = "SEQUENCE components in definition order"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "X690-8.9.3"
+ref = "8.9.3"
+title = "OPTIONAL and DEFAULT components"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "X690-8.10"
+ref = "8.10"
+title = "SEQUENCE OF encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "X690-8.10.1"
+ref = "8.10.1"
+title = "Constructed SEQUENCE OF"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "X690-8.10.2"
+ref = "8.10.2"
+title = "Complete homogeneous encodings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "X690-8.10.3"
+ref = "8.10.3"
+title = "SEQUENCE OF order"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "X690-8.11"
+ref = "8.11"
+title = "SET encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
+modules = []
+
+[[item]]
+id = "X690-8.11.1"
+ref = "8.11.1"
+title = "Constructed SET"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
+modules = []
+
+[[item]]
+id = "X690-8.11.2"
+ref = "8.11.2"
+title = "SET complete components"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
+modules = []
+
+[[item]]
+id = "X690-8.11.3"
+ref = "8.11.3"
+title = "SET OPTIONAL and DEFAULT"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
+modules = []
+
+[[item]]
+id = "X690-8.12"
+ref = "8.12"
+title = "SET OF encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of", "x509_name"]
+
+[[item]]
+id = "X690-8.12.1"
+ref = "8.12.1"
+title = "Constructed SET OF"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of", "x509_name"]
+
+[[item]]
+id = "X690-8.12.2"
+ref = "8.12.2"
+title = "SET OF homogeneous encodings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of", "x509_name"]
+
+[[item]]
+id = "X690-8.12.3"
+ref = "8.12.3"
+title = "SET OF order not abstractly significant"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "set_of validates DER wire ordering but exposes no abstract unordered collection semantics; DECISIONS.md D13"
+modules = ["set_of", "x509_name"]
+
+[[item]]
+id = "X690-8.14"
+ref = "8.14"
+title = "Tagged value encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+
+[[item]]
+id = "X690-8.14.2"
+ref = "8.14.2"
+title = "Tagged base encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+
+[[item]]
+id = "X690-8.14.3"
+ref = "8.14.3"
+title = "EXPLICIT complete constructed wrapper"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+
+[[item]]
+id = "X690-8.14.4"
+ref = "8.14.4"
+title = "IMPLICIT replaces identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+
+[[item]]
+id = "X690-8.19.1"
+ref = "8.19.1"
+title = "Primitive OID"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+
+[[item]]
+id = "X690-8.19.2"
+ref = "8.19.2"
+title = "Minimal base 128 OID subidentifiers"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+
+[[item]]
+id = "X690-8.19.3"
+ref = "8.19.3"
+title = "OID component count"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+
+[[item]]
+id = "X690-8.19.4"
+ref = "8.19.4"
+title = "First two OID arcs combine"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+
+[[item]]
+id = "X690-8.19.5"
+ref = "8.19.5"
+title = "Subsequent OID arcs"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+
+[[item]]
+id = "X690-8.23.1"
+ref = "8.23.1"
+title = "Restricted string characters"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.2"
+ref = "8.23.2"
+title = "Independent strings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.3"
+ref = "8.23.3"
+title = "Restricted strings as octet strings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.4"
+ref = "8.23.4"
+title = "Numeric and Printable mapping"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.5"
+ref = "8.23.5"
+title = "Registered character encodings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.5.1"
+ref = "8.23.5.1"
+title = "Registered escape sequences"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.5.2"
+ref = "8.23.5.2"
+title = "Initial character sets"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.5.3"
+ref = "8.23.5.3"
+title = "Escape sequence restrictions"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.5.4"
+ref = "8.23.5.4"
+title = "Announcers require permission"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.8"
+ref = "8.23.8"
+title = "BMPString two octet characters"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.9"
+ref = "8.23.9"
+title = "String control functions"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.10"
+ref = "8.23.10"
+title = "UTF8String octets"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.25"
+ref = "8.25"
+title = "Useful times encoded as restricted strings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time", "generalized_time"]
+
+[[item]]
+id = "X690-10.3"
+ref = "10.3"
+title = "DER SET tag ordering"
+parent = "SEC.X690.10"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
+modules = []
+
+[[item]]
+id = "X690-11.2.1"
+ref = "11.2.1"
+title = "Zero unused padding bits"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-11.2.2"
+ref = "11.2.2"
+title = "Named BIT STRING trailing zeros"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "X690-11.4"
+ref = "11.4"
+title = "GeneralString canonical escape selection"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string", "utf8_string"]
+
+[[item]]
+id = "X690-11.7.1"
+ref = "11.7.1"
+title = "GeneralizedTime Z suffix"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "X690-11.7.2"
+ref = "11.7.2"
+title = "GeneralizedTime seconds"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "X690-11.7.3"
+ref = "11.7.3"
+title = "GeneralizedTime fractional zeros"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "X690-11.7.4"
+ref = "11.7.4"
+title = "GeneralizedTime decimal point"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "X690-11.7.5"
+ref = "11.7.5"
+title = "GeneralizedTime midnight"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "X690-11.8.1"
+ref = "11.8.1"
+title = "UTCTime Z suffix"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "X690-11.8.2"
+ref = "11.8.2"
+title = "UTCTime seconds"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "X690-11.8.3"
+ref = "11.8.3"
+title = "UTCTime midnight"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "X680-8"
+ref = "8"
+title = "Universal and user tags"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-18"
+ref = "18"
+title = "BOOLEAN values and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-19"
+ref = "19"
+title = "INTEGER values and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-20"
+ref = "20"
+title = "ENUMERATED values and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-22"
+ref = "22"
+title = "BIT STRING values and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-22.7"
+ref = "22.7"
+title = "Named BIT STRING value semantics"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-23"
+ref = "23"
+title = "OCTET STRING values and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-24"
+ref = "24"
+title = "NULL value and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-25"
+ref = "25"
+title = "SEQUENCE fields and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-26"
+ref = "26"
+title = "SEQUENCE OF values and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-27"
+ref = "27"
+title = "SET fields and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-28"
+ref = "28"
+title = "SET OF values and tag"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-31.2"
+ref = "31.2"
+title = "Tagged types"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-32"
+ref = "32"
+title = "OBJECT IDENTIFIER values and arcs"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-41.1"
+ref = "41.1"
+title = "Restricted string tags and repertoires"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-41.2"
+ref = "41.2"
+title = "NumericString character set"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-41.4"
+ref = "41.4"
+title = "PrintableString character set"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-41.15"
+ref = "41.15"
+title = "BMPString repertoire"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-41.16"
+ref = "41.16"
+title = "UTF8String repertoire"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-46.2"
+ref = "46.2"
+title = "GeneralizedTime value"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-46.3"
+ref = "46.3"
+title = "GeneralizedTime tag and syntax"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-47.2"
+ref = "47.2"
+title = "UTCTime value"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X680-47.3"
+ref = "47.3"
+title = "UTCTime tag and syntax"
+parent = "SEC.X680.carried"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["identifier_form"]
+
+[[item]]
+id = "X690-8.1.5"
+ref = "8.1.5"
+title = "Definite encodings have no EOC trailer"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-8.3.1-a"
+ref = "8.3.1"
+title = "INTEGER payload has at least one octet"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer", "big_integer"]
+
+[[item]]
+id = "X690-8.5.1"
+ref = "8.5.1"
+title = "REAL uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.2"
+ref = "8.5.2"
+title = "Positive REAL zero has an empty payload"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.3"
+ref = "8.5.3"
+title = "Negative REAL zero uses the special-value representation"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.4"
+ref = "8.5.4"
+title = "REAL encoding preserves the abstract decimal or binary radix"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.5"
+ref = "8.5.5"
+title = "Nonzero REAL chooses its radix from the abstract value"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.5-a"
+ref = "8.5.5"
+title = "Binary REAL uses the binary payload layout"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.5-b"
+ref = "8.5.5"
+title = "Decimal REAL uses a character payload"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.6"
+ref = "8.5.6"
+title = "REAL header bits distinguish binary decimal and special values"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.7"
+ref = "8.5.7"
+title = "Binary REAL sign magnitude and scale reproduce its mantissa"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.7.1"
+ref = "8.5.7.1"
+title = "Binary REAL header sign agrees with its value"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.7.2"
+ref = "8.5.7.2"
+title = "Binary REAL radix bits select the permitted base"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.7.3"
+ref = "8.5.7.3"
+title = "Binary REAL scale bits represent its scaling factor"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.7.4"
+ref = "8.5.7.4"
+title = "Binary REAL exponent header agrees with its signed payload"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.8"
+ref = "8.5.8"
+title = "Decimal REAL has no externally supplied scaling factor"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.9"
+ref = "8.5.9"
+title = "Special REAL values use their assigned single-octet codes"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.13"
+ref = "8.13"
+title = "CHOICE carries the selected alternative directly"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_validity"]
+
+[[item]]
+id = "X690-8.15"
+ref = "8.15"
+title = "Open values carry a complete encoding of their actual type"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.16.1"
+ref = "8.16.1"
+title = "INSTANCE OF uses the prescribed tagged sequence layout"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.16.2"
+ref = "8.16.2"
+title = "INSTANCE OF fields preserve the associated abstract values"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.17.1"
+ref = "8.17.1"
+title = "EMBEDDED PDV follows its referenced ASN1 structure"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.17.2"
+ref = "8.17.2"
+title = "EMBEDDED PDV preserves payload syntax and identification values"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.1"
+ref = "8.18.1"
+title = "EXTERNAL uses its prescribed tagged sequence and choice layout"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.3"
+ref = "8.18.3"
+title = "EXTERNAL descriptor presence and value mirror the abstract value"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.4"
+ref = "8.18.4"
+title = "EXTERNAL reference fields follow the identification table"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.5"
+ref = "8.18.5"
+title = "EXTERNAL payload follows its identified syntax and choice"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.6"
+ref = "8.18.6"
+title = "Single-type EXTERNAL selects a permitted payload alternative"
+parent = "SEC.X690.8"
+force = "shall"
+side = "encoder"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.7"
+ref = "8.18.7"
+title = "Octet-based EXTERNAL payload selects an eligible alternative"
+parent = "SEC.X690.8"
+force = "shall"
+side = "encoder"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.8"
+ref = "8.18.8"
+title = "Partial-octet EXTERNAL payload uses the bit-string alternative"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.9"
+ref = "8.18.9"
+title = "Typed EXTERNAL payload uses the actual ASN1 type and value"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.10"
+ref = "8.18.10"
+title = "Octet EXTERNAL payload preserves the negotiated encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.18.11"
+ref = "8.18.11"
+title = "Bit EXTERNAL payload preserves the negotiated encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.20.1"
+ref = "8.20.1"
+title = "Relative OID uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.20.2"
+ref = "8.20.2"
+title = "Relative OID joins its base-128 subidentifier encodings in order"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.20.2-a"
+ref = "8.20.2"
+title = "Relative OID subidentifiers have no redundant leading group"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.20.3"
+ref = "8.20.3"
+title = "Relative OID carries one subidentifier for each arc"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.21.1"
+ref = "8.21.1"
+title = "OID IRI uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.21.2"
+ref = "8.21.2"
+title = "OID IRI carries UTF8 lexical items without inter-item whitespace"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.21.2-a"
+ref = "8.21.2"
+title = "OID IRI uses shortest UTF8 without announcers or escapes"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.22.1"
+ref = "8.22.1"
+title = "Relative OID IRI uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.22.2"
+ref = "8.22.2"
+title = "Relative OID IRI joins its UTF8 lexical items without whitespace"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-8.23.7"
+ref = "8.23.7"
+title = "UniversalString represents characters with four octets each"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.7-a"
+ref = "8.23.7"
+title = "UniversalString omits a character-encoding signature"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.8-a"
+ref = "8.23.8"
+title = "BMPString omits a character-encoding signature"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.9a"
+ref = "8.23.9 a)"
+title = "Unicode strings exclude ISO 2022 announcers"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.9b"
+ref = "8.23.9 b)"
+title = "Unicode strings exclude code-set designation and identification escapes"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.9c"
+ref = "8.23.9 c)"
+title = "Unicode strings exclude ISO 2022 invocation controls"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.9d"
+ref = "8.23.9 d)"
+title = "Unicode string coding stays within ISO 10646"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.9e"
+ref = "8.23.9 e)"
+title = "Unicode strings exclude graphic-subset identification controls"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.9f"
+ref = "8.23.9 f)"
+title = "Unicode strings exclude switches into ISO 2022 coding"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.23.10-a"
+ref = "8.23.10"
+title = "UTF8String uses shortest UTF8 without announcers or escapes"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.24.1"
+ref = "8.24.1"
+title = "Unrestricted strings follow their referenced ASN1 structure"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.24.2"
+ref = "8.24.2"
+title = "Unrestricted strings preserve payload syntax and other field values"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
+modules = []
+
+[[item]]
+id = "X690-8.25-a"
+ref = "8.25"
+title = "ObjectDescriptor follows its referenced ASN1 type definition"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "X690-8.26.1.1"
+ref = "8.26.1.1"
+title = "TIME uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.1.2"
+ref = "8.26.1.2"
+title = "TIME carries UTF8 value notation without enclosing quotes"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.2.1"
+ref = "8.26.2.1"
+title = "DATE uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.2.2"
+ref = "8.26.2.2"
+title = "DATE removes enclosing quotes and date separators before UTF8 coding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.3.1"
+ref = "8.26.3.1"
+title = "TIME-OF-DAY uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.3.2"
+ref = "8.26.3.2"
+title = "TIME-OF-DAY removes enclosing quotes and colons before UTF8 coding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.4.1"
+ref = "8.26.4.1"
+title = "DATE-TIME uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.4.2"
+ref = "8.26.4.2"
+title = "DATE-TIME strips quotes separators and T before UTF8 coding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.5.1"
+ref = "8.26.5.1"
+title = "DURATION uses a primitive identifier"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.26.5.2"
+ref = "8.26.5.2"
+title = "DURATION removes enclosing quotes and P before UTF8 coding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-11.3.1"
+ref = "11.3.1"
+title = "Binary REAL uses radix two and a normalized odd mantissa"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.3.1-a"
+ref = "11.3.1"
+title = "Binary REAL has zero scale and shortest mantissa and exponent"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.3.2"
+ref = "11.3.2"
+title = "Decimal REAL uses the decimal representation"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.3.2.1"
+ref = "11.3.2.1"
+title = "Decimal REAL selects the NR3 representation"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.3.2.2"
+ref = "11.3.2.2"
+title = "Decimal REAL has no space characters"
+parent = "SEC.X690.11"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.3.2.3"
+ref = "11.3.2.3"
+title = "Decimal REAL starts with a minus sign or its first digit"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.3.2.5"
+ref = "11.3.2.5"
+title = "Decimal REAL places the decimal point directly before E"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.3.2.6"
+ref = "11.3.2.6"
+title = "Decimal REAL exponent uses canonical sign and digit spelling"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-11.4-a"
+ref = "11.4"
+title = "GeneralString designations use the lowest-numbered G or C set"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string", "utf8_string"]
+
+[[item]]
+id = "X690-11.9.1a"
+ref = "11.9.1 a)"
+title = "Modern time notation uses a point as the decimal separator"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-11.9.1b"
+ref = "11.9.1 b)"
+title = "Modern time offsets omit minutes when the offset is whole hours"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-11.9.1c"
+ref = "11.9.1 c)"
+title = "Interval end points omit a repeated time-zone difference"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-11.9.1d"
+ref = "11.9.1 d)"
+title = "Durations drop zero components except the least significant present"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-11.9.2"
+ref = "11.9.2"
+title = "Modern time payloads use the normalized value notation"
+parent = "SEC.X690.11"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
+modules = []
+
+[[item]]
+id = "X690-8.1.1.4"
+ref = "8.1.1.4"
+title = "Subtype constraints and extension markers do not alter encodings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "X690-8.5.7.5"
+ref = "8.5.7.5"
+title = "Binary REAL stores N as an unsigned integer"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.5.8-a"
+ref = "8.5.8"
+title = "Decimal REAL payload encodes its value using ISO 6093"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "X690-8.14.1"
+ref = "8.14.1"
+title = "Encoding-prefixed types retain the underlying type encoding"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+
+[[item]]
+id = "X690-8.20.4"
+ref = "8.20.4"
+title = "Relative OID subidentifiers preserve each arc value"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
+modules = []
+
+[[item]]
+id = "X690-11.3.2.4"
+ref = "11.3.2.4"
+title = "Decimal REAL mantissas exclude leading and trailing zero digits"
+parent = "SEC.X690.11"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no module in der-verified/src implements REAL"
+modules = []
+
+[[item]]
+id = "SAFE-unsafe-1"
+title = "Library code contains no unsafe Rust"
+ref = "der-verified/src/lib.rs"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["lib"]
+
+[[item]]
+id = "SAFE-panic-framing-1"
+title = "Framing entry points never panic on any input"
+ref = "PROOF_MANIFEST.md §5"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "length", "tlv", "identifier_form", "context_tag"]
+
+[[item]]
+id = "SAFE-panic-content-1"
+title = "Content codecs never panic on any input"
+ref = "PROOF_MANIFEST.md §5"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean", "integer", "big_integer", "bit_string", "null", "oid", "enumerated", "generalized_time", "utc_time", "utf8_string", "restricted_string"]
+
+[[item]]
+id = "SAFE-panic-collections-1"
+title = "Collection codecs never panic on any input"
+ref = "PROOF_MANIFEST.md §5"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence", "set_of", "octet_string"]
+
+[[item]]
+id = "SAFE-panic-keys-1"
+title = "Key-container parsers never panic on any input"
+ref = "PROOF_MANIFEST.md §5"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["pkcs8", "encrypted_private_key_info", "ec_private_key", "ecdsa_sig_value", "rsa_public_key", "rsa_private_key"]
+
+[[item]]
+id = "SAFE-panic-x509-1"
+title = "X.509 parsers never panic on any input"
+ref = "PROOF_MANIFEST.md §5"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_algorithm_identifier", "x509_spki", "x509_name", "x509_validity", "x509_extension", "x509_tbs_certificate", "x509_certificate"]
+
+[[item]]
+id = "SAFE-panic-profile-1"
+title = "Profile validation never panics on any value"
+ref = "PROOF_MANIFEST.md §7"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "SAFE-termination-1"
+title = "Identifier decoding terminates for arbitrary input length"
+ref = "COVERAGE.md DER-F-1b"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag"]
+
+[[item]]
+id = "SAFE-termination-2"
+title = "TLV and sequence walks terminate"
+ref = "PROOF_MANIFEST.md §3.2"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv", "sequence"]
+
+[[item]]
+id = "SAFE-overread-1"
+title = "Accepted TLV decoding never reads beyond input"
+ref = "COVERAGE.md DER-F-6"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "SAFE-overread-2"
+title = "Sequence child walking never overreads"
+ref = "COVERAGE.md DER-C-SEQ-2"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "SAFE-overread-3"
+title = "SET OF child walking never overreads"
+ref = "COVERAGE.md DER-C-SETOF-3"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "SAFE-resource-1"
+title = "Decode paths allocate no heap memory"
+ref = "DECISIONS.md D36"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["lib"]
+
+[[item]]
+id = "SAFE-resource-2"
+title = "Composition depth is statically bounded"
+ref = "PROOF_MANIFEST.md §8.1"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "proof bounds are evidence limits, not a public input-size or nesting promise"
+modules = ["x509_certificate", "x509_tbs_certificate"]
+
+[[item]]
+id = "SAFE-errors-1"
+title = "Profile errors follow documented precedence"
+ref = "COVERAGE.md DER-P-4"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "SAFE-errors-2"
+title = "Parser errors deterministically identify first failing field"
+ref = "module error enums and harnesses"
+parent = "SAFE"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "determinism follows implementation order but is not promised uniformly outside profile"
+modules = ["pkcs8", "ec_private_key", "rsa_private_key", "x509_certificate"]
+
+[[item]]
+id = "CODEC-tag-decode-encode"
+title = "tag decode after encode preserves values"
+ref = "der-verified/src/tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag"]
+
+[[item]]
+id = "CODEC-tag-encode-decode"
+title = "tag re-encoding preserves accepted bytes"
+ref = "der-verified/src/tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag"]
+
+[[item]]
+id = "CODEC-tag-unique"
+title = "tag accepted values have canonical encodings"
+ref = "der-verified/src/tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag"]
+
+[[item]]
+id = "CODEC-tag-reject-nonder"
+title = "tag rejects promised non-DER variants"
+ref = "der-verified/src/tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag"]
+
+[[item]]
+id = "CODEC-length-decode-encode"
+title = "length decode after encode preserves values"
+ref = "der-verified/src/length.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "CODEC-length-encode-decode"
+title = "length re-encoding preserves accepted bytes"
+ref = "der-verified/src/length.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "CODEC-length-unique"
+title = "length accepted values have canonical encodings"
+ref = "der-verified/src/length.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "CODEC-length-reject-nonder"
+title = "length rejects promised non-DER variants"
+ref = "der-verified/src/length.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "CODEC-tlv-decode-encode"
+title = "tlv decode after encode preserves values"
+ref = "der-verified/src/tlv.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "CODEC-tlv-encode-decode"
+title = "tlv re-encoding preserves accepted bytes"
+ref = "der-verified/src/tlv.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "CODEC-tlv-unique"
+title = "tlv accepted values have canonical encodings"
+ref = "der-verified/src/tlv.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "CODEC-tlv-reject-nonder"
+title = "tlv rejects promised non-DER variants"
+ref = "der-verified/src/tlv.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+
+[[item]]
+id = "CODEC-boolean-decode-encode"
+title = "boolean decode after encode preserves values"
+ref = "der-verified/src/boolean.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "CODEC-boolean-encode-decode"
+title = "boolean re-encoding preserves accepted bytes"
+ref = "der-verified/src/boolean.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "CODEC-boolean-unique"
+title = "boolean accepted values have canonical encodings"
+ref = "der-verified/src/boolean.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "CODEC-boolean-reject-nonder"
+title = "boolean rejects promised non-DER variants"
+ref = "der-verified/src/boolean.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+
+[[item]]
+id = "CODEC-integer-decode-encode"
+title = "integer decode after encode preserves values"
+ref = "der-verified/src/integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer"]
+
+[[item]]
+id = "CODEC-integer-encode-decode"
+title = "integer re-encoding preserves accepted bytes"
+ref = "der-verified/src/integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer"]
+
+[[item]]
+id = "CODEC-integer-unique"
+title = "integer accepted values have canonical encodings"
+ref = "der-verified/src/integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer"]
+
+[[item]]
+id = "CODEC-integer-reject-nonder"
+title = "integer rejects promised non-DER variants"
+ref = "der-verified/src/integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer"]
+
+[[item]]
+id = "CODEC-big-integer-decode-encode"
+title = "big-integer decode after encode preserves values"
+ref = "der-verified/src/big_integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["big_integer"]
+
+[[item]]
+id = "CODEC-big-integer-encode-decode"
+title = "big-integer re-encoding preserves accepted bytes"
+ref = "der-verified/src/big_integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["big_integer"]
+
+[[item]]
+id = "CODEC-big-integer-unique"
+title = "big-integer accepted values have canonical encodings"
+ref = "der-verified/src/big_integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["big_integer"]
+
+[[item]]
+id = "CODEC-big-integer-reject-nonder"
+title = "big-integer rejects promised non-DER variants"
+ref = "der-verified/src/big_integer.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["big_integer"]
+
+[[item]]
+id = "CODEC-bit-string-decode-encode"
+title = "bit-string decode after encode preserves values"
+ref = "der-verified/src/bit_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "CODEC-bit-string-encode-decode"
+title = "bit-string re-encoding preserves accepted bytes"
+ref = "der-verified/src/bit_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "CODEC-bit-string-unique"
+title = "bit-string accepted values have canonical encodings"
+ref = "der-verified/src/bit_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "CODEC-bit-string-reject-nonder"
+title = "bit-string rejects promised non-DER variants"
+ref = "der-verified/src/bit_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "CODEC-null-decode-encode"
+title = "null decode after encode preserves values"
+ref = "der-verified/src/null.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "null exposes no encoder and no complete abstract-value equality model"
+modules = ["null"]
+
+[[item]]
+id = "CODEC-null-encode-decode"
+title = "null re-encoding preserves accepted bytes"
+ref = "der-verified/src/null.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "null exposes no encoder and no complete abstract-value equality model"
+modules = ["null"]
+
+[[item]]
+id = "CODEC-null-unique"
+title = "null accepted values have canonical encodings"
+ref = "der-verified/src/null.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "null exposes no encoder and no complete abstract-value equality model"
+modules = ["null"]
+
+[[item]]
+id = "CODEC-null-reject-nonder"
+title = "null rejects promised non-DER variants"
+ref = "der-verified/src/null.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["null"]
+
+[[item]]
+id = "CODEC-oid-decode-encode"
+title = "oid decode after encode preserves values"
+ref = "der-verified/src/oid.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid exposes no encoder and no complete abstract-value equality model"
+modules = ["oid"]
+
+[[item]]
+id = "CODEC-oid-encode-decode"
+title = "oid re-encoding preserves accepted bytes"
+ref = "der-verified/src/oid.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid exposes no encoder and no complete abstract-value equality model"
+modules = ["oid"]
+
+[[item]]
+id = "CODEC-oid-unique"
+title = "oid accepted values have canonical encodings"
+ref = "der-verified/src/oid.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid exposes no encoder and no complete abstract-value equality model"
+modules = ["oid"]
+
+[[item]]
+id = "CODEC-oid-reject-nonder"
+title = "oid rejects promised non-DER variants"
+ref = "der-verified/src/oid.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+
+[[item]]
+id = "CODEC-enumerated-decode-encode"
+title = "enumerated decode after encode preserves values"
+ref = "der-verified/src/enumerated.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["enumerated"]
+
+[[item]]
+id = "CODEC-enumerated-encode-decode"
+title = "enumerated re-encoding preserves accepted bytes"
+ref = "der-verified/src/enumerated.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["enumerated"]
+
+[[item]]
+id = "CODEC-enumerated-unique"
+title = "enumerated accepted values have canonical encodings"
+ref = "der-verified/src/enumerated.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["enumerated"]
+
+[[item]]
+id = "CODEC-enumerated-reject-nonder"
+title = "enumerated rejects promised non-DER variants"
+ref = "der-verified/src/enumerated.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["enumerated"]
+
+[[item]]
+id = "CODEC-octet-string-decode-encode"
+title = "octet-string decode after encode preserves values"
+ref = "der-verified/src/octet_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["octet_string"]
+
+[[item]]
+id = "CODEC-octet-string-encode-decode"
+title = "octet-string re-encoding preserves accepted bytes"
+ref = "der-verified/src/octet_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["octet_string"]
+
+[[item]]
+id = "CODEC-octet-string-unique"
+title = "octet-string accepted values have canonical encodings"
+ref = "der-verified/src/octet_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["octet_string"]
+
+[[item]]
+id = "CODEC-octet-string-reject-nonder"
+title = "octet-string rejects promised non-DER variants"
+ref = "der-verified/src/octet_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["octet_string"]
+
+[[item]]
+id = "CODEC-utf8-string-decode-encode"
+title = "utf8-string decode after encode preserves values"
+ref = "der-verified/src/utf8_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+
+[[item]]
+id = "CODEC-utf8-string-encode-decode"
+title = "utf8-string re-encoding preserves accepted bytes"
+ref = "der-verified/src/utf8_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+
+[[item]]
+id = "CODEC-utf8-string-unique"
+title = "utf8-string accepted values have canonical encodings"
+ref = "der-verified/src/utf8_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+
+[[item]]
+id = "CODEC-utf8-string-reject-nonder"
+title = "utf8-string rejects promised non-DER variants"
+ref = "der-verified/src/utf8_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utf8_string"]
+
+[[item]]
+id = "CODEC-restricted-string-decode-encode"
+title = "restricted-string decode after encode preserves values"
+ref = "der-verified/src/restricted_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string"]
+
+[[item]]
+id = "CODEC-restricted-string-encode-decode"
+title = "restricted-string re-encoding preserves accepted bytes"
+ref = "der-verified/src/restricted_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string"]
+
+[[item]]
+id = "CODEC-restricted-string-unique"
+title = "restricted-string accepted values have canonical encodings"
+ref = "der-verified/src/restricted_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string"]
+
+[[item]]
+id = "CODEC-restricted-string-reject-nonder"
+title = "restricted-string rejects promised non-DER variants"
+ref = "der-verified/src/restricted_string.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string"]
+
+[[item]]
+id = "CODEC-generalized-time-decode-encode"
+title = "generalized-time decode after encode preserves values"
+ref = "der-verified/src/generalized_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "CODEC-generalized-time-encode-decode"
+title = "generalized-time re-encoding preserves accepted bytes"
+ref = "der-verified/src/generalized_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "CODEC-generalized-time-unique"
+title = "generalized-time accepted values have canonical encodings"
+ref = "der-verified/src/generalized_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "CODEC-generalized-time-reject-nonder"
+title = "generalized-time rejects promised non-DER variants"
+ref = "der-verified/src/generalized_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time"]
+
+[[item]]
+id = "CODEC-utc-time-decode-encode"
+title = "utc-time decode after encode preserves values"
+ref = "der-verified/src/utc_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "CODEC-utc-time-encode-decode"
+title = "utc-time re-encoding preserves accepted bytes"
+ref = "der-verified/src/utc_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "CODEC-utc-time-unique"
+title = "utc-time accepted values have canonical encodings"
+ref = "der-verified/src/utc_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "CODEC-utc-time-reject-nonder"
+title = "utc-time rejects promised non-DER variants"
+ref = "der-verified/src/utc_time.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time"]
+
+[[item]]
+id = "CODEC-sequence-decode-encode"
+title = "sequence decode after encode preserves values"
+ref = "der-verified/src/sequence.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "CODEC-sequence-encode-decode"
+title = "sequence re-encoding preserves accepted bytes"
+ref = "der-verified/src/sequence.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "CODEC-sequence-unique"
+title = "sequence accepted values have canonical encodings"
+ref = "der-verified/src/sequence.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "CODEC-sequence-reject-nonder"
+title = "sequence rejects promised non-DER variants"
+ref = "der-verified/src/sequence.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "CODEC-set-of-decode-encode"
+title = "set-of decode after encode preserves values"
+ref = "der-verified/src/set_of.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "CODEC-set-of-encode-decode"
+title = "set-of re-encoding preserves accepted bytes"
+ref = "der-verified/src/set_of.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "CODEC-set-of-unique"
+title = "set-of accepted values have canonical encodings"
+ref = "der-verified/src/set_of.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "CODEC-set-of-reject-nonder"
+title = "set-of rejects promised non-DER variants"
+ref = "der-verified/src/set_of.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+
+[[item]]
+id = "CODEC-context-tag-decode-encode"
+title = "context-tag decode after encode preserves values"
+ref = "der-verified/src/context_tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "context_tag exposes no encoder and no complete abstract-value equality model"
+modules = ["context_tag"]
+
+[[item]]
+id = "CODEC-context-tag-encode-decode"
+title = "context-tag re-encoding preserves accepted bytes"
+ref = "der-verified/src/context_tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "context_tag exposes no encoder and no complete abstract-value equality model"
+modules = ["context_tag"]
+
+[[item]]
+id = "CODEC-context-tag-unique"
+title = "context-tag accepted values have canonical encodings"
+ref = "der-verified/src/context_tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "context_tag exposes no encoder and no complete abstract-value equality model"
+modules = ["context_tag"]
+
+[[item]]
+id = "CODEC-context-tag-reject-nonder"
+title = "context-tag rejects promised non-DER variants"
+ref = "der-verified/src/context_tag.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+
+[[item]]
+id = "CODEC-algorithm-identifier-decode-encode"
+title = "algorithm-identifier decode after encode preserves values"
+ref = "der-verified/src/x509_algorithm_identifier.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_algorithm_identifier exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_algorithm_identifier"]
+
+[[item]]
+id = "CODEC-algorithm-identifier-encode-decode"
+title = "algorithm-identifier re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_algorithm_identifier.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_algorithm_identifier exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_algorithm_identifier"]
+
+[[item]]
+id = "CODEC-algorithm-identifier-unique"
+title = "algorithm-identifier accepted values have canonical encodings"
+ref = "der-verified/src/x509_algorithm_identifier.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_algorithm_identifier exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_algorithm_identifier"]
+
+[[item]]
+id = "CODEC-algorithm-identifier-reject-nonder"
+title = "algorithm-identifier rejects promised non-DER variants"
+ref = "der-verified/src/x509_algorithm_identifier.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_algorithm_identifier"]
+
+[[item]]
+id = "CODEC-spki-decode-encode"
+title = "spki decode after encode preserves values"
+ref = "der-verified/src/x509_spki.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_spki exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_spki"]
+
+[[item]]
+id = "CODEC-spki-encode-decode"
+title = "spki re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_spki.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_spki exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_spki"]
+
+[[item]]
+id = "CODEC-spki-unique"
+title = "spki accepted values have canonical encodings"
+ref = "der-verified/src/x509_spki.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_spki exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_spki"]
+
+[[item]]
+id = "CODEC-spki-reject-nonder"
+title = "spki rejects promised non-DER variants"
+ref = "der-verified/src/x509_spki.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_spki"]
+
+[[item]]
+id = "CODEC-name-decode-encode"
+title = "name decode after encode preserves values"
+ref = "der-verified/src/x509_name.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_name exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_name"]
+
+[[item]]
+id = "CODEC-name-encode-decode"
+title = "name re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_name.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_name exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_name"]
+
+[[item]]
+id = "CODEC-name-unique"
+title = "name accepted values have canonical encodings"
+ref = "der-verified/src/x509_name.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_name exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_name"]
+
+[[item]]
+id = "CODEC-name-reject-nonder"
+title = "name rejects promised non-DER variants"
+ref = "der-verified/src/x509_name.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name"]
+
+[[item]]
+id = "CODEC-validity-decode-encode"
+title = "validity decode after encode preserves values"
+ref = "der-verified/src/x509_validity.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_validity exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_validity"]
+
+[[item]]
+id = "CODEC-validity-encode-decode"
+title = "validity re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_validity.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_validity exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_validity"]
+
+[[item]]
+id = "CODEC-validity-unique"
+title = "validity accepted values have canonical encodings"
+ref = "der-verified/src/x509_validity.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_validity exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_validity"]
+
+[[item]]
+id = "CODEC-validity-reject-nonder"
+title = "validity rejects promised non-DER variants"
+ref = "der-verified/src/x509_validity.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_validity"]
+
+[[item]]
+id = "CODEC-extension-decode-encode"
+title = "extension decode after encode preserves values"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_extension exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-extension-encode-decode"
+title = "extension re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_extension exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-extension-unique"
+title = "extension accepted values have canonical encodings"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_extension exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-extension-reject-nonder"
+title = "extension rejects promised non-DER variants"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-extensions-decode-encode"
+title = "extensions decode after encode preserves values"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_extension exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-extensions-encode-decode"
+title = "extensions re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_extension exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-extensions-unique"
+title = "extensions accepted values have canonical encodings"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_extension exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-extensions-reject-nonder"
+title = "extensions rejects promised non-DER variants"
+ref = "der-verified/src/x509_extension.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_extension"]
+
+[[item]]
+id = "CODEC-tbs-certificate-decode-encode"
+title = "tbs-certificate decode after encode preserves values"
+ref = "der-verified/src/x509_tbs_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_tbs_certificate exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_tbs_certificate"]
+
+[[item]]
+id = "CODEC-tbs-certificate-encode-decode"
+title = "tbs-certificate re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_tbs_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_tbs_certificate exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_tbs_certificate"]
+
+[[item]]
+id = "CODEC-tbs-certificate-unique"
+title = "tbs-certificate accepted values have canonical encodings"
+ref = "der-verified/src/x509_tbs_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_tbs_certificate exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_tbs_certificate"]
+
+[[item]]
+id = "CODEC-tbs-certificate-reject-nonder"
+title = "tbs-certificate rejects promised non-DER variants"
+ref = "der-verified/src/x509_tbs_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_tbs_certificate"]
+
+[[item]]
+id = "CODEC-certificate-decode-encode"
+title = "certificate decode after encode preserves values"
+ref = "der-verified/src/x509_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_certificate exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_certificate"]
+
+[[item]]
+id = "CODEC-certificate-encode-decode"
+title = "certificate re-encoding preserves accepted bytes"
+ref = "der-verified/src/x509_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_certificate exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_certificate"]
+
+[[item]]
+id = "CODEC-certificate-unique"
+title = "certificate accepted values have canonical encodings"
+ref = "der-verified/src/x509_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_certificate exposes no encoder and no complete abstract-value equality model"
+modules = ["x509_certificate"]
+
+[[item]]
+id = "CODEC-certificate-reject-nonder"
+title = "certificate rejects promised non-DER variants"
+ref = "der-verified/src/x509_certificate.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_certificate"]
+
+[[item]]
+id = "CODEC-pkcs8-decode-encode"
+title = "pkcs8 decode after encode preserves values"
+ref = "der-verified/src/pkcs8.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "pkcs8 exposes no encoder and no complete abstract-value equality model"
+modules = ["pkcs8"]
+
+[[item]]
+id = "CODEC-pkcs8-encode-decode"
+title = "pkcs8 re-encoding preserves accepted bytes"
+ref = "der-verified/src/pkcs8.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "pkcs8 exposes no encoder and no complete abstract-value equality model"
+modules = ["pkcs8"]
+
+[[item]]
+id = "CODEC-pkcs8-unique"
+title = "pkcs8 accepted values have canonical encodings"
+ref = "der-verified/src/pkcs8.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "pkcs8 exposes no encoder and no complete abstract-value equality model"
+modules = ["pkcs8"]
+
+[[item]]
+id = "CODEC-pkcs8-reject-nonder"
+title = "pkcs8 rejects promised non-DER variants"
+ref = "der-verified/src/pkcs8.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["pkcs8"]
+
+[[item]]
+id = "CODEC-encrypted-pkcs8-decode-encode"
+title = "encrypted-pkcs8 decode after encode preserves values"
+ref = "der-verified/src/encrypted_private_key_info.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "encrypted_private_key_info exposes no encoder and no complete abstract-value equality model"
+modules = ["encrypted_private_key_info"]
+
+[[item]]
+id = "CODEC-encrypted-pkcs8-encode-decode"
+title = "encrypted-pkcs8 re-encoding preserves accepted bytes"
+ref = "der-verified/src/encrypted_private_key_info.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "encrypted_private_key_info exposes no encoder and no complete abstract-value equality model"
+modules = ["encrypted_private_key_info"]
+
+[[item]]
+id = "CODEC-encrypted-pkcs8-unique"
+title = "encrypted-pkcs8 accepted values have canonical encodings"
+ref = "der-verified/src/encrypted_private_key_info.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "encrypted_private_key_info exposes no encoder and no complete abstract-value equality model"
+modules = ["encrypted_private_key_info"]
+
+[[item]]
+id = "CODEC-encrypted-pkcs8-reject-nonder"
+title = "encrypted-pkcs8 rejects promised non-DER variants"
+ref = "der-verified/src/encrypted_private_key_info.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["encrypted_private_key_info"]
+
+[[item]]
+id = "CODEC-ec-private-key-decode-encode"
+title = "ec-private-key decode after encode preserves values"
+ref = "der-verified/src/ec_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ec_private_key exposes no encoder and no complete abstract-value equality model"
+modules = ["ec_private_key"]
+
+[[item]]
+id = "CODEC-ec-private-key-encode-decode"
+title = "ec-private-key re-encoding preserves accepted bytes"
+ref = "der-verified/src/ec_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ec_private_key exposes no encoder and no complete abstract-value equality model"
+modules = ["ec_private_key"]
+
+[[item]]
+id = "CODEC-ec-private-key-unique"
+title = "ec-private-key accepted values have canonical encodings"
+ref = "der-verified/src/ec_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ec_private_key exposes no encoder and no complete abstract-value equality model"
+modules = ["ec_private_key"]
+
+[[item]]
+id = "CODEC-ec-private-key-reject-nonder"
+title = "ec-private-key rejects promised non-DER variants"
+ref = "der-verified/src/ec_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["ec_private_key"]
+
+[[item]]
+id = "CODEC-ecdsa-sig-value-decode-encode"
+title = "ecdsa-sig-value decode after encode preserves values"
+ref = "der-verified/src/ecdsa_sig_value.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ecdsa_sig_value exposes no encoder and no complete abstract-value equality model"
+modules = ["ecdsa_sig_value"]
+
+[[item]]
+id = "CODEC-ecdsa-sig-value-encode-decode"
+title = "ecdsa-sig-value re-encoding preserves accepted bytes"
+ref = "der-verified/src/ecdsa_sig_value.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ecdsa_sig_value exposes no encoder and no complete abstract-value equality model"
+modules = ["ecdsa_sig_value"]
+
+[[item]]
+id = "CODEC-ecdsa-sig-value-unique"
+title = "ecdsa-sig-value accepted values have canonical encodings"
+ref = "der-verified/src/ecdsa_sig_value.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ecdsa_sig_value exposes no encoder and no complete abstract-value equality model"
+modules = ["ecdsa_sig_value"]
+
+[[item]]
+id = "CODEC-ecdsa-sig-value-reject-nonder"
+title = "ecdsa-sig-value rejects promised non-DER variants"
+ref = "der-verified/src/ecdsa_sig_value.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["ecdsa_sig_value"]
+
+[[item]]
+id = "CODEC-rsa-public-key-decode-encode"
+title = "rsa-public-key decode after encode preserves values"
+ref = "der-verified/src/rsa_public_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "rsa_public_key exposes no encoder and no complete abstract-value equality model"
+modules = ["rsa_public_key"]
+
+[[item]]
+id = "CODEC-rsa-public-key-encode-decode"
+title = "rsa-public-key re-encoding preserves accepted bytes"
+ref = "der-verified/src/rsa_public_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "rsa_public_key exposes no encoder and no complete abstract-value equality model"
+modules = ["rsa_public_key"]
+
+[[item]]
+id = "CODEC-rsa-public-key-unique"
+title = "rsa-public-key accepted values have canonical encodings"
+ref = "der-verified/src/rsa_public_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "rsa_public_key exposes no encoder and no complete abstract-value equality model"
+modules = ["rsa_public_key"]
+
+[[item]]
+id = "CODEC-rsa-public-key-reject-nonder"
+title = "rsa-public-key rejects promised non-DER variants"
+ref = "der-verified/src/rsa_public_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_public_key"]
+
+[[item]]
+id = "CODEC-rsa-private-key-decode-encode"
+title = "rsa-private-key decode after encode preserves values"
+ref = "der-verified/src/rsa_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "rsa_private_key exposes no encoder and no complete abstract-value equality model"
+modules = ["rsa_private_key"]
+
+[[item]]
+id = "CODEC-rsa-private-key-encode-decode"
+title = "rsa-private-key re-encoding preserves accepted bytes"
+ref = "der-verified/src/rsa_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "rsa_private_key exposes no encoder and no complete abstract-value equality model"
+modules = ["rsa_private_key"]
+
+[[item]]
+id = "CODEC-rsa-private-key-unique"
+title = "rsa-private-key accepted values have canonical encodings"
+ref = "der-verified/src/rsa_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "rsa_private_key exposes no encoder and no complete abstract-value equality model"
+modules = ["rsa_private_key"]
+
+[[item]]
+id = "CODEC-rsa-private-key-reject-nonder"
+title = "rsa-private-key rejects promised non-DER variants"
+ref = "der-verified/src/rsa_private_key.rs"
+parent = "CODEC"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["rsa_private_key"]
+
+[[item]]
+id = "PROF-bit-string-preserve-zero-bits"
+title = "Generic bit strings preserve trailing zero bits"
+ref = "DECISIONS.md D1"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+
+[[item]]
+id = "PROF-integer-i64-cap"
+title = "Small INTEGER values are capped at i64"
+ref = "DECISIONS.md D2a"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["integer"]
+
+[[item]]
+id = "PROF-length-u32-cap"
+title = "Decoded lengths are capped at u32"
+ref = "DECISIONS.md D2b"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+
+[[item]]
+id = "PROF-tag-u32-cap"
+title = "Decoded tag numbers are capped at u32"
+ref = "DECISIONS.md D2c"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag"]
+
+[[item]]
+id = "PROF-lenient-trailing"
+title = "Composable decoders return consumed length"
+ref = "DECISIONS.md D4"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv", "sequence", "set_of"]
+
+[[item]]
+id = "PROF-sequence-framing-only"
+title = "Sequence walking defers child content canonicality"
+ref = "DECISIONS.md D5"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence"]
+
+[[item]]
+id = "PROF-general-set-excluded"
+title = "Heterogeneous SET decoding remains excluded"
+ref = "DECISIONS.md D13"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "DECISIONS.md D13 keeps general SET outside scope"
+modules = ["sequence", "set_of"]
+
+[[item]]
+id = "PROF-time-no-leap-second"
+title = "Time codecs reject leap-second value sixty"
+ref = "DECISIONS.md D9"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time", "generalized_time"]
+
+[[item]]
+id = "PROF-time-field-ranges"
+title = "Time codecs enforce individual field ranges"
+ref = "DECISIONS.md D10"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time", "generalized_time"]
+
+[[item]]
+id = "PROF-time-calendar-excluded"
+title = "Time codecs do not validate calendar dates"
+ref = "DECISIONS.md D10"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "cross-field calendar validity is deliberately above encoding syntax"
+modules = ["utc_time", "generalized_time"]
+
+[[item]]
+id = "PROF-explicit-context-only"
+title = "Generic context tagging supports EXPLICIT only"
+ref = "DECISIONS.md D22"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+
+[[item]]
+id = "PROF-unique-identifiers-rejected"
+title = "Deprecated certificate unique identifiers are rejected"
+ref = "DECISIONS.md D23"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_tbs_certificate"]
+
+[[item]]
+id = "PROF-ecdsa-range-excluded"
+title = "ECDSA scalar range checks remain excluded"
+ref = "DECISIONS.md D30"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "curve-order semantics require algorithm context"
+modules = ["ecdsa_sig_value"]
+
+[[item]]
+id = "PROF-ecdsa-low-s-excluded"
+title = "ECDSA low-S policy remains excluded"
+ref = "DECISIONS.md D30"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "low-S is protocol policy, not general DER"
+modules = ["ecdsa_sig_value"]
+
+[[item]]
+id = "PROF-P-1"
+title = "Certificate signature algorithm fields match"
+ref = "RFC5280 §4.1.1.2; COVERAGE.md DER-P-1"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-2"
+title = "Certificate extensions require version three"
+ref = "RFC5280 §4.1.2.1; COVERAGE.md DER-P-2"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-3"
+title = "Validity encoding follows the year boundary"
+ref = "RFC5280 §4.1.2.5; COVERAGE.md DER-P-3"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-4"
+title = "Profile violation precedence is stable"
+ref = "COVERAGE.md DER-P-4"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-5"
+title = "Basic constraints receive profile validation"
+ref = "COVERAGE.md DER-P-5"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+reason = "scope not yet decided: open maintainer decision on this profile rule"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-6"
+title = "Key usage receives profile validation"
+ref = "COVERAGE.md DER-P-6"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+reason = "scope not yet decided: open maintainer decision on this profile rule"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-7"
+title = "Name constraints receive profile validation"
+ref = "COVERAGE.md DER-P-7"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+reason = "scope not yet decided: open maintainer decision on this profile rule"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-8"
+title = "Certificate validity is compared with a clock"
+ref = "COVERAGE.md DER-P-8"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "crate has no clock and does not decide current validity"
+modules = []
+
+[[item]]
+id = "PROF-P-9"
+title = "Paths and signatures receive cryptographic validation"
+ref = "COVERAGE.md DER-P-9"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "path construction, trust, and cryptography are outside scope"
+modules = []
+
+[[item]]
+id = "PROF-P-10"
+title = "Names and OIDs receive semantic comparison"
+ref = "COVERAGE.md DER-P-10"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "string canonicalization, name comparison, and OID semantics are outside scope"
+modules = []
+
+[[item]]
+id = "PROF-P-11"
+title = "Validity GeneralizedTime omits fractional seconds"
+ref = "RFC5280 §4.1.2.5.2; COVERAGE.md DER-P-11"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-no-std-deferred"
+title = "No-std support remains deferred"
+ref = "DECISIONS.md D36"
+parent = "PROF"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "D36 defers the capability until its own gate and proof refresh"
+modules = ["lib"]
+
+[[item]]
+id = "API-stability-1"
+title = "Public API receives a final stability review"
+ref = "TODO.md release checklist"
+parent = "API"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+reason = "pending the public API review before the next release"
+modules = ["lib"]
+
+[[item]]
+id = "API-msrv-1"
+title = "Declared MSRV remains supported"
+ref = "der-verified/Cargo.toml rust-version"
+parent = "API"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+reason = "pending the public API review before the next release"
+modules = ["lib"]
+
+[[item]]
+id = "API-no-std-1"
+title = "Public API supports no-std consumers"
+ref = "DECISIONS.md D36"
+parent = "API"
+firmness = "draft"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "pending the public API review before the next release; D36 defers no_std"
+modules = ["lib"]
+
+[[item]]
+id = "RFC5280-4.1-i"
+title = "Issuer unique identifiers require version two or three"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "unique identifiers are rejected entirely under DECISIONS.md D23"
+modules = ["x509_tbs_certificate"]
+line = 893
+
+[[item]]
+id = "RFC5280-4.1-j"
+title = "Subject unique identifiers require version two or three"
+ref = "RFC5280 §4.1"
+parent = "SEC.RFC5280.4.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "unique identifiers are rejected entirely under DECISIONS.md D23"
+modules = ["x509_tbs_certificate"]
+line = 904
+
+[[item]]
+id = "RFC5280-4.1.2.6-k"
+title = "CRL issuer subject encoding matches issuer encoding"
+ref = "RFC5280 §4.1.2.6"
+parent = "SEC.RFC5280.4.1.2"
+firmness = "draft"
+force = "must"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "issuer cross-CRL encoding obligation"
+modules = []
+line = 1340
+
+[[item]]
+id = "RFC3279-2.3.1-c"
+title = "Signing key usages exclude encipherment usages"
+ref = "RFC3279 §2.3.1"
+parent = "SEC.RFC3279.2.3.1"
+firmness = "draft"
+force = "should-not"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "certificate-producer keyUsage selection, not DER structural decoding"
+modules = []
+line = 461
+
+[[item]]
+id = "RFC5480-2.1.2"
+title = "Restricted EC algorithms include parameters"
+ref = "RFC5480 §2.1.2"
+parent = "SEC.RFC5480.2.1"
+firmness = "draft"
+force = "must"
+side = "decoder"
+source = "primary"
+disposition = "excluded"
+reason = "generic AlgorithmIdentifier parsing does not enforce algorithm-specific parameter presence"
+modules = ["x509_algorithm_identifier", "x509_spki"]
+line = 326
+
+[[item]]
+id = "RFC7468-all"
+title = "RFC 7468 textual encoding is outside crate scope"
+ref = "RFC7468 (whole source)"
+parent = "STD.RFC7468"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no textual encoding module in der-verified/src"
+modules = []
+
+[[item]]
+id = "RFC4648-all"
+title = "RFC 4648 Base64 encoding is outside crate scope"
+ref = "RFC4648 (whole source)"
+parent = "STD.RFC4648"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no textual encoding module in der-verified/src"
+modules = []
+
