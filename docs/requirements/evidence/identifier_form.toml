@@ -6,9 +6,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "accepts_iff_no_encoded_rule_violated_and_never_rejects_non_universal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.1.2", "X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.5.1", "X690-8.8.1", "X690-8.19.1", "X690-8.20.1", "X690-8.21.1", "X690-8.22.1", "X690-8.26.1.1", "X690-8.26.2.1", "X690-8.26.3.1", "X690-8.26.4.1", "X690-8.26.5.1", "X690-8.9.1", "X690-8.12.1", "X690-8.16.1", "X690-8.17.1", "X690-8.18.1", "X690-8.24.1", "PROF-identifier-form-opt-in"]
+bounded = "all Tag values (four classes, bool form, u32 tag number)"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "constructed_form_rule_matches_oracle_on_all_tags"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.5.1", "X690-8.8.1", "X690-8.19.1", "X690-8.20.1", "X690-8.21.1", "X690-8.22.1", "X690-8.26.1.1", "X690-8.26.2.1", "X690-8.26.3.1", "X690-8.26.4.1", "X690-8.26.5.1", "X690-8.9.1", "X690-8.12.1", "X690-8.16.1", "X690-8.17.1", "X690-8.18.1", "X690-8.24.1"]
+bounded = "all Tag values (four classes, bool form, u32 tag number)"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -28,7 +28,7 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "identifier-form validation deliberately does not validate BOOLEAN, INTEGER, or NULL contents"
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "decode_tlv_form_checked_is_decode_tlv_refined_by_the_rule"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.5.1", "X690-8.8.1", "X690-8.19.1", "X690-8.20.1", "X690-8.21.1", "X690-8.22.1", "X690-8.26.1.1", "X690-8.26.2.1", "X690-8.26.3.1", "X690-8.26.4.1", "X690-8.26.5.1", "X690-8.9.1", "X690-8.12.1", "X690-8.16.1", "X690-8.17.1", "X690-8.18.1", "X690-8.24.1", "X690-8.1.1.2", "PROF-identifier-form-opt-in"]
+bounded = "input len <= 6; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "decode_tlv_form_checked_strict_requires_full_consumption"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["PROF-strict-trailing"]
+bounded = "input len <= 6; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "high_tag_universal_types_are_form_checked"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2.4", "X690-8.1.2.4.1", "X690-8.1.2.4.2", "X690-8.21.1", "X690-8.22.1", "X690-8.26.2.1", "X690-8.26.3.1", "X690-8.26.4.1", "X690-8.26.5.1"]
+bounded = "assigned high-tag numbers 31..=36 plus fixed tag-37 specimens; input len = 3; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "legal_der_the_comparison_library_rejected_is_still_accepted"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-10.2", "X690-8.18.1"]
+bounded = "two fixed TLV specimens; input len <= 4; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -78,7 +78,7 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "internal bit-mask consistency check; it does not exercise a decoder or public validator"
 
 [[entry]]
 kind = "kani"
@@ -86,9 +86,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "real_x509_identifiers_are_still_accepted"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-8", "X680-8a", "X680-8b", "X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.8.1", "X690-8.9.1", "X690-8.12.1", "X690-8.19.1"]
+bounded = "seven fixed TLV specimens; input len <= 3; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -96,9 +96,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "rejects_every_disclosed_illegal_identifier"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.1.2", "X690-8.2.1", "X690-8.5.1", "X690-8.19.1", "X690-10.2"]
+bounded = "ten fixed TLV specimens; input len <= 4; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -106,9 +106,9 @@ file = "der-verified/src/identifier_form.rs"
 name = "required_form_matches_oracle_on_all_u32"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-8b", "X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.5.1", "X690-8.8.1", "X690-8.19.1", "X690-8.20.1", "X690-8.21.1", "X690-8.22.1", "X690-8.26.1.1", "X690-8.26.2.1", "X690-8.26.3.1", "X690-8.26.4.1", "X690-8.26.5.1", "X690-8.9.1", "X690-8.12.1", "X690-8.16.1", "X690-8.17.1", "X690-8.18.1", "X690-8.24.1"]
+bounded = "all u32 universal tag numbers"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -116,29 +116,29 @@ file = "der-verified/src/identifier_form.rs"
 name = "reserved_eoc_rejected_iff_universal_zero"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.1.2"]
+bounded = "all Tag values (four classes, bool form, u32 tag number)"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "ber_constructed_string_forms_are_rejected"
 accept = []
-reject = []
+reject = ["X690-10.2", "PROF-identifier-form-opt-in"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "constructed_primitive_only_types_are_rejected"
-accept = []
-reject = []
+accept = ["X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.8.1", "X690-8.19.1", "X690-8.22.1", "X690-8.26.2.1", "X690-8.26.5.1"]
+reject = ["X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.8.1", "X690-8.19.1", "X690-8.22.1", "X690-8.26.2.1", "X690-8.26.5.1"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
@@ -148,114 +148,114 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "content-blindness regression; no inventory row requires the form checker to accept invalid contents"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "eoc_identifier_is_rejected_in_both_forms"
 accept = []
-reject = []
+reject = ["X690-8.1.1.2", "X690-8.1.5"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "framing_errors_pass_through_unchanged"
 accept = []
-reject = []
+reject = ["X690-8.1.3.3", "X690-10.1", "CODEC-tlv-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "framing_layer_remains_permissive"
-accept = []
+accept = ["PROF-identifier-form-opt-in"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "high_tag_assignments_are_decided"
-accept = []
-reject = []
+accept = ["X690-8.1.2.4", "X690-8.1.2.4.1", "X690-8.1.2.4.2", "X690-8.21.1", "X690-8.22.1", "X690-8.26.2.1", "X690-8.26.3.1", "X690-8.26.4.1", "X690-8.26.5.1", "PROF-identifier-form-opt-in"]
+reject = ["X690-8.1.2.4", "X690-8.1.2.4.2", "X690-8.21.1", "X690-8.22.1", "X690-8.26.2.1", "X690-8.26.3.1", "X690-8.26.4.1", "X690-8.26.5.1"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "non_universal_classes_are_never_rejected"
-accept = []
+accept = ["X690-8.1.2.1", "PROF-identifier-form-opt-in"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "primitive_constructed_only_types_are_rejected"
-accept = []
-reject = []
+accept = ["X690-8.1.2.5", "X690-8.9.1", "X690-8.12.1", "X690-8.16.1", "X690-8.17.1", "X690-8.18.1", "X690-8.24.1"]
+reject = ["X690-8.1.2.5", "X690-8.9.1", "X690-8.12.1", "X690-8.16.1", "X690-8.17.1", "X690-8.18.1", "X690-8.24.1"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "primitive_sequence_identifier_is_rejected"
 accept = []
-reject = []
+reject = ["X690-8.9.1"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "real_world_identifier_octets_are_accepted"
-accept = []
+accept = ["X680-8", "X680-8a", "X680-8b", "X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.8.1", "X690-8.9.1", "X690-8.12.1", "X690-8.19.1"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "required_form_number_30_bmpstring_is_primitive"
-accept = []
-reject = []
+accept = ["X690-10.2"]
+reject = ["X690-10.2"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "strict_rejects_trailing_bytes"
-accept = []
-reject = []
+accept = ["PROF-strict-trailing"]
+reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "unassigned_universal_numbers_are_accepted"
-accept = []
+accept = ["PROF-identifier-form-opt-in"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

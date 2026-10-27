@@ -6,9 +6,9 @@ file = "der-verified/src/encrypted_private_key_info.rs"
 name = "parse_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5208-6", "RFC5208-6-a", "RFC5958-3", "RFC5958-3-a"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/encrypted_private_key_info.rs"
 name = "parse_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -28,7 +28,7 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "positive witness harness; cover does not assert acceptance"
 
 [[entry]]
 kind = "kani"
@@ -36,106 +36,106 @@ file = "der-verified/src/encrypted_private_key_info.rs"
 name = "parse_strict_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1", "PROF-strict-trailing"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "composable_ignores_trailing_bytes"
-accept = []
+accept = ["RFC5208-6", "RFC5208-6-a", "RFC5958-3", "RFC5958-3-a"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "parses_minimal_specimen"
-accept = []
+accept = ["RFC5208-6", "RFC5208-6-a", "RFC5958-3", "RFC5958-3-a"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "parses_real_openssl_specimen"
-accept = []
+accept = ["RFC5208-6", "RFC5208-6-a", "RFC5958-3", "RFC5958-3-a"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_encrypted_data_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_encryption_algorithm_not_a_sequence"
 accept = []
-reject = []
+reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_missing_encrypted_data"
 accept = []
-reject = []
+reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_missing_encryption_algorithm"
 accept = []
-reject = []
+reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_non_sequence_outer_tag"
 accept = []
-reject = []
+reject = ["RFC5208-6", "RFC5958-3", "CODEC-encrypted-pkcs8-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_trailing_byte_after_encrypted_data"
 accept = []
-reject = []
+reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "strict_rejects_trailing_byte_after_epki"
 accept = []
-reject = []
+reject = ["PROF-strict-trailing", "CODEC-encrypted-pkcs8-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

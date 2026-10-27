@@ -6,9 +6,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "parse_extension_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-h", "X680-25t", "X690-8.9.2", "X690-8.9.3", "X690-11.5", "CODEC-extension-reject-nonder"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "parse_extension_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-x509-1"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "validate_extensions_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-x509-1"]
+bounded = "len <= 13; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -38,7 +38,7 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "cover-only concrete two-member happy-path witness; no asserted acceptance property"
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "validate_extensions_rejects_child_framing"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-g", "X690-8.10.2", "CODEC-extensions-reject-nonder"]
+bounded = "symbolic child length octet > 5; input = 16; unwind 5"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "validate_extensions_rejects_outer_envelope"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-g", "X690-8.10.1", "CODEC-extensions-reject-nonder"]
+bounded = "symbolic low-tag identifier and length octet; input = 9; unwind 5"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "validate_extensions_structured_empty"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-g", "CODEC-extensions-reject-nonder"]
+bounded = "fixed 2-byte empty Extensions; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -76,9 +76,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "validate_extensions_structured_one_member"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-g", "X690-8.10.1", "X690-8.10.2", "RFC5280-4.1-h"]
+bounded = "one member with symbolic one-byte OID content; input = 9; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -86,9 +86,9 @@ file = "der-verified/src/x509_extension.rs"
 name = "validate_extensions_structured_second_identifier"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-g", "X690-8.10.1", "X690-8.10.2", "RFC5280-4.1-h", "CODEC-extensions-reject-nonder"]
+bounded = "symbolic low-tag second-member identifier and one-byte OID; input = 16; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -96,236 +96,236 @@ file = "der-verified/src/x509_extension.rs"
 name = "validate_extensions_structured_two_members"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-g", "X690-8.10.1", "X690-8.10.2", "RFC5280-4.1-h"]
+bounded = "two members with symbolic one-byte OID contents; input = 16; unwind 3"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "parses_extension_critical_true"
-accept = []
+accept = ["RFC5280-4.1-h", "X680-25t", "X690-8.9.2", "X690-8.9.3", "X690-11.5"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "parses_extension_default_critical"
-accept = []
+accept = ["RFC5280-4.1-h", "X680-25t", "X690-8.9.2", "X690-8.9.3", "X690-11.5"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_child_tlv_framing_malformed_in_extensions"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-g", "X690-8.10.2", "CODEC-extensions-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_critical_constructed"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.2.1", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_critical_noncanonical"
 accept = []
-reject = []
+reject = ["X690-11.1", "X690-7.4", "CODEC-boolean-reject-nonder", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_critical_present_but_false"
 accept = []
-reject = []
+reject = ["X690-11.5", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_empty_extensions"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-g", "CODEC-extensions-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_extension_primitive_form"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.9.1", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_extensions_member_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-g", "X690-8.10.2", "CODEC-extensions-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_extn_id_constructed"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.19.1", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_extn_id_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_extn_value_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.7.1", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_malformed_member_extension"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-g", "RFC5280-4.1-h", "X690-8.10.2", "CODEC-extensions-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_missing_extn_value"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.9.2", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_non_canonical_extension_length"
 accept = []
-reject = []
+reject = ["X690-10.1", "X690-7.4", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_non_canonical_oid"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.19.2", "X690-7.4", "CODEC-oid-reject-nonder", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_spurious_field_before_extn_value"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.9.2", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_trailing_after_extensions"
 accept = []
-reject = []
+reject = ["PROF-strict-trailing", "CODEC-extensions-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_trailing_in_extension"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-h", "X690-8.9.2", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_truncated_extension"
 accept = []
-reject = []
+reject = ["X690-8.1.3.3", "CODEC-extension-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-g", "X690-8.10.1", "CODEC-extensions-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "validates_extensions_sequence"
-accept = []
+accept = ["RFC5280-4.1-g", "X690-8.10.1", "X690-8.10.2", "RFC5280-4.1-h"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
 name = "validates_two_minimal_extensions"
-accept = []
+accept = ["RFC5280-4.1-g", "X690-8.10.1", "X690-8.10.2", "RFC5280-4.1-h"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

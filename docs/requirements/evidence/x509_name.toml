@@ -6,9 +6,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_identifier"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.1", "CODEC-name-reject-nonder"]
+bounded = "one symbolic low-tag ATV identifier and bounded one-byte fields; input = 11; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_missing_value_exact"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+bounded = "one symbolic one-byte OID content; input = 9; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_oid_length"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+bounded = "one symbolic OID length octet plus bounded fields; input = 11; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_trailing_exact"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+bounded = "symbolic one-byte OID and two value tags; input = 13; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_value_length"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+bounded = "symbolic one-byte OID, value tag, and length; input = 11; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_empty_rdn"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
+bounded = "fixed empty RDN input; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_empty_sequence_accepted"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1"]
+bounded = "fixed empty RDNSequence input; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -76,9 +76,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_oid_identifier"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.1", "CODEC-name-reject-nonder"]
+bounded = "one symbolic low-tag OID identifier and bounded one-byte fields; input = 11; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -86,9 +86,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_outer_identifier"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "CODEC-name-reject-nonder"]
+bounded = "one symbolic low-tag outer identifier and bounded one-byte fields; input = 11; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -96,9 +96,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_rdn_identifier"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
+bounded = "one symbolic low-tag RDN identifier and bounded one-byte fields; input = 11; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -106,9 +106,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_single_atv_exact"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15"]
+bounded = "symbolic one-byte OID content and value tag; input = 11; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -116,9 +116,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_two_atvs_exact"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.12.2", "X690-11.6"]
+bounded = "two bounded ATVs with symbolic one-byte OID/value fields; input = 19; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -126,9 +126,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_two_atvs_unsorted"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-11.6", "CODEC-name-reject-nonder"]
+bounded = "two bounded ATVs with symbolic bytes in descending encodings; input = 19; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -136,9 +136,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_two_rdns_exact"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.10.2"]
+bounded = "two bounded RDNs with symbolic one-byte OID/value fields; input = 20; unwind 3"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -146,9 +146,9 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-x509-1"]
+bounded = "len <= 16; validate_rdn stubbed to bounded Result; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -156,196 +156,196 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_rdn_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-x509-1"]
+bounded = "len <= 16; unwind 12"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "accepts_multi_atv_rdn_dn"
-accept = []
+accept = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.12.2", "X690-11.6", "RFC5280-4.1.2.4-e", "RFC5280-4.1.2.4-f", "RFC5280-4.1.2.6-d", "RFC5280-4.1.2.6-e", "RFC5280-4.1.2.6-b"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "accepts_multi_rdn_dn"
-accept = []
+accept = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.10.2", "RFC5280-4.1.2.4-e", "RFC5280-4.1.2.4-f", "RFC5280-4.1.2.6-d", "RFC5280-4.1.2.6-e", "RFC5280-4.1.2.6-b"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "accepts_single_rdn_dn"
-accept = []
+accept = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "RFC5280-4.1.2.4-f", "RFC5280-4.1.2.6-e", "RFC5280-4.1.2.6-b"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_first_field_not_oid"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_primitive_form"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.1", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_with_one_field"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_with_three_fields"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_wrong_tag"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_constructed_oid"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.1", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_empty_rdn"
 accept = []
-reject = []
+reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_non_canonical_length_somewhere"
 accept = []
-reject = []
+reject = ["X690-10.1", "X690-7.4", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_non_canonical_oid"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.2", "X690-7.4", "CODEC-oid-reject-nonder", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_rdn_wrong_tag"
 accept = []
-reject = []
+reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_trailing_bytes_after_whole_name"
 accept = []
-reject = []
+reject = ["PROF-strict-trailing", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_trailing_bytes_inside_atv"
 accept = []
-reject = []
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_trailing_bytes_inside_rdn"
 accept = []
-reject = []
+reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X690-8.12.2", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_truncated_input"
 accept = []
-reject = []
+reject = ["X690-8.1.3.3", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_unsorted_set_of_members"
 accept = []
-reject = []
+reject = ["X690-11.6", "X690-7.4", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = []
+reject = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

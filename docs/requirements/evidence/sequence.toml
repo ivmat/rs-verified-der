@@ -6,9 +6,9 @@ file = "der-verified/src/sequence.rs"
 name = "accepted_identifier_is_canonical_0x30"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.9.1", "X680-25", "CODEC-sequence-encode-decode", "CODEC-sequence-unique", "X690-7.4"]
+bounded = "len <= 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/sequence.rs"
 name = "iterate_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-collections-1", "SAFE-termination-2"]
+bounded = "content len <= 8; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/sequence.rs"
 name = "no_over_read"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-overread-2", "SAFE-termination-2"]
+bounded = "content len <= 8; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/sequence.rs"
 name = "ok_implies_exact_tiling"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.9.1", "X690-8.10.1", "PROF-sequence-framing-only"]
+bounded = "fixed 8-octet content; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/sequence.rs"
 name = "roundtrip_two_children"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.9", "X690-8.9.1", "X680-25", "CODEC-sequence-decode-encode"]
+bounded = "two fixed children; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/sequence.rs"
 name = "strict_rejects_trailing"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["PROF-strict-trailing"]
+bounded = "one trailing octet; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,69 +66,69 @@ file = "der-verified/src/sequence.rs"
 name = "tag_correctness"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.9.1", "X680-25", "CODEC-sequence-reject-nonder"]
+bounded = "one-octet body; unwind 16"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "accepts_framing_but_not_content_canonicality"
-accept = []
+accept = ["PROF-sequence-framing-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "decode_sequence_counts_children_directly"
-accept = []
+accept = ["X690-8.9.1", "PROF-sequence-framing-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "decodes_empty_sequence"
-accept = []
+accept = ["X690-8.9", "X690-8.9.1", "X680-25"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "decodes_two_element_sequence"
-accept = []
+accept = ["X690-8.9", "X690-8.9.1", "X690-8.9.2", "X680-25"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "empty_content_is_zero_not_error"
-accept = []
+accept = ["X690-8.9.1", "PROF-sequence-framing-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "ignores_trailing_bytes_after_sequence"
-accept = []
+accept = ["PROF-lenient-trailing"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
@@ -138,107 +138,107 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "iterator fusion after an error has no inventory requirement"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_child_that_overruns_content"
 accept = []
-reject = []
+reject = ["CODEC-sequence-reject-nonder", "SAFE-overread-2"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_high_tag_form_of_tag_16"
 accept = []
-reject = []
+reject = ["CODEC-sequence-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_indefinite_length_envelope"
 accept = []
-reject = []
+reject = ["CODEC-sequence-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_non_minimal_length"
 accept = []
-reject = []
+reject = ["CODEC-sequence-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_non_sequence_tag_as_wrong_tag"
 accept = []
-reject = []
+reject = ["X680-25", "CODEC-sequence-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_primitive_sequence_identifier"
 accept = []
-reject = []
+reject = ["X690-8.9.1", "CODEC-sequence-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_set_tag_as_wrong_tag"
 accept = []
-reject = []
+reject = ["X680-25", "CODEC-sequence-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_truncated_envelope"
 accept = []
-reject = []
+reject = ["CODEC-sequence-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "roundtrips_via_encode"
-accept = []
+accept = ["CODEC-sequence-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "strict_accepts_exact_and_rejects_trailing"
-accept = []
+accept = ["PROF-strict-trailing"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
@@ -248,4 +248,4 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "documents excluded heterogeneous SET behavior; no in-scope row may be cited"

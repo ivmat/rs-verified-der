@@ -6,9 +6,9 @@ file = "der-verified/src/rsa_public_key.rs"
 name = "parse_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC8017-A.1.1", "RFC8017-A.1.1-a", "RFC3279-2.3.1", "RFC3279-2.3.1-b", "PROF-big-integer-comparison-only"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/rsa_public_key.rs"
 name = "parse_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/rsa_public_key.rs"
 name = "parse_strict_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -38,244 +38,244 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "cover-only concrete RSA-2048-shaped happy-path witness; conditional value checks do not assert that acceptance occurs"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "composable_ignores_trailing_bytes"
-accept = []
+accept = ["PROF-lenient-trailing"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "parses_rsa_2048_shaped_key_strict"
-accept = []
+accept = ["RFC8017-A.1.1", "RFC8017-A.1.1-a", "RFC3279-2.3.1", "RFC3279-2.3.1-b", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "parses_small_key_composable"
-accept = []
+accept = ["RFC8017-A.1.1", "RFC8017-A.1.1-a", "RFC3279-2.3.1", "RFC3279-2.3.1-b"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "parses_small_key_strict"
-accept = []
+accept = ["RFC8017-A.1.1", "RFC8017-A.1.1-a", "RFC3279-2.3.1", "RFC3279-2.3.1-b"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_ber_long_form_length_where_short_form_fits"
 accept = []
-reject = []
+reject = ["X690-10.1", "X690-7.4", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_empty_outer_content_missing_modulus"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_indefinite_length_outer_envelope"
 accept = []
-reject = []
+reject = ["X690-10.1", "X690-7.4", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_modulus_constructed"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.3.1", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_modulus_empty_integer"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.3.1-a", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_modulus_non_minimal_redundant_leading_zero"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.3.2", "X690-7.4", "CODEC-big-integer-reject-nonder", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_modulus_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_one_child_missing_public_exponent"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_primitive_outer_sequence_identifier"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1-a", "RFC3279-2.3.1", "X690-8.9.1", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_public_exponent_constructed"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.3.1", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_public_exponent_empty_integer"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.3.1-a", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_public_exponent_non_minimal_redundant_leading_zero"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.3.2", "X690-7.4", "CODEC-big-integer-reject-nonder", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_public_exponent_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_three_children_trailing_elements"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_trailing_bytes_inside_sequence_content"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_truncated_modulus_tlv"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.1.3.3", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_truncated_outer_envelope"
 accept = []
-reject = []
+reject = ["X690-8.1.3.3", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_truncated_public_exponent_tlv"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1", "RFC3279-2.3.1-b", "X690-8.1.3.3", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = []
+reject = ["RFC8017-A.1.1-a", "RFC3279-2.3.1", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/rsa_public_key.rs"
 name = "strict_rejects_trailing_byte_after_key"
 accept = []
-reject = []
+reject = ["PROF-strict-trailing", "CODEC-rsa-public-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

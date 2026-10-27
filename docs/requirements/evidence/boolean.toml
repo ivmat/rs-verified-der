@@ -6,9 +6,9 @@ file = "der-verified/src/boolean.rs"
 name = "one_octet_is_canonical"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.2", "X690-8.2.1", "X690-8.2.2", "X690-11.1", "X680-18d", "CODEC-boolean-encode-decode", "CODEC-boolean-unique", "CODEC-boolean-reject-nonder", "X690-7.4"]
+bounded = "all one-octet contents"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/boolean.rs"
 name = "roundtrip"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["CODEC-boolean-decode-encode"]
+bounded = "all bool values"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,36 +26,36 @@ file = "der-verified/src/boolean.rs"
 name = "wrong_length_is_bad_length"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.2.1", "CODEC-boolean-reject-nonder"]
+bounded = "len <= 16, len != 1"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/boolean.rs"
 name = "canonical_values"
-accept = []
+accept = ["X690-8.2", "X690-8.2.1", "X690-8.2.2", "X690-11.1", "X680-18d", "CODEC-boolean-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/boolean.rs"
 name = "rejects_non_canonical_true"
 accept = []
-reject = []
+reject = ["X690-11.1", "CODEC-boolean-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/boolean.rs"
 name = "rejects_wrong_length"
 accept = []
-reject = []
+reject = ["X690-8.2.1", "CODEC-boolean-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

@@ -6,9 +6,9 @@ file = "der-verified/src/ec_private_key.rs"
 name = "parse_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5915-3", "RFC5915-3-a", "RFC5915-3-b", "X680-25t", "X690-8.9.2", "X690-8.9.3"]
+bounded = "input len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/ec_private_key.rs"
 name = "parse_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1"]
+bounded = "input len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -28,7 +28,7 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "positive concrete witness harness; cover does not prove a quantified requirement"
 
 [[entry]]
 kind = "kani"
@@ -36,19 +36,19 @@ file = "der-verified/src/ec_private_key.rs"
 name = "parse_strict_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1"]
+bounded = "input len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "accepts_parameters_null_arm_choice_uninterpreted"
-accept = []
+accept = ["RFC5915-3", "RFC5915-3-a", "RFC5915-3-b", "X690-8.9.3"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
@@ -58,324 +58,324 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "composable entry-point trailing behavior has no inventory row"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "parses_minimal_specimen"
-accept = []
+accept = ["RFC5915-3", "RFC5915-3-a", "RFC5915-3-b", "X680-25t", "X690-8.9.3"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "parses_p256_specimen_composable_and_strict"
-accept = []
+accept = ["RFC5915-3", "RFC5915-3-a", "RFC5915-3-b", "X690-8.9.2", "X690-8.9.3"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "parses_specimen_with_only_parameters_present"
-accept = []
+accept = ["RFC5915-3", "RFC5915-3-a", "RFC5915-3-b", "X680-25t", "X690-8.9.3"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "parses_specimen_with_only_public_key_present"
-accept = []
+accept = ["RFC5915-3", "RFC5915-3-a", "RFC5915-3-b", "X680-25t", "X690-8.9.3"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_ber_long_form_length_where_short_form_fits"
 accept = []
-reject = []
+reject = ["CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_duplicate_parameters"
 accept = []
-reject = []
+reject = ["RFC5915-3-a", "X690-8.9.3"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_empty_outer_content_missing_version"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_indefinite_length_outer_envelope"
 accept = []
-reject = []
+reject = ["CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_missing_private_key"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_parameters_empty_wrapper"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_parameters_non_canonical_inner_length"
 accept = []
-reject = []
+reject = ["CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_parameters_primitive_form"
 accept = []
-reject = []
+reject = ["RFC5915-3-a", "CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_parameters_truncated_wrapper"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_parameters_two_inner_tlvs"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_primitive_outer_sequence_identifier"
 accept = []
-reject = []
+reject = ["RFC5915-3", "RFC5915-3-a", "CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_private_key_constructed"
 accept = []
-reject = []
+reject = ["RFC5915-3-a", "CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_private_key_truncated"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_private_key_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_public_key_inner_non_canonical_bit_string"
 accept = []
-reject = []
+reject = ["CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_public_key_inner_trailing"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_public_key_inner_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_public_key_wrapper_primitive"
 accept = []
-reject = []
+reject = ["RFC5915-3-a", "CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_trailing_context_2"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_truncated_outer_envelope"
 accept = []
-reject = []
+reject = ["RFC5915-3", "RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_unsupported_version_two"
 accept = []
-reject = []
+reject = ["RFC5915-3-b"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_unsupported_version_zero"
 accept = []
-reject = []
+reject = ["RFC5915-3-b"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_version_constructed"
 accept = []
-reject = []
+reject = ["RFC5915-3-a", "CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_version_empty_integer"
 accept = []
-reject = []
+reject = ["RFC5915-3-a", "CODEC-ec-private-key-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_version_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_wrong_order_public_key_then_parameters"
 accept = []
-reject = []
+reject = ["RFC5915-3-a", "X690-8.9.2"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = []
+reject = ["RFC5915-3", "RFC5915-3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ec_private_key.rs"
 name = "strict_rejects_trailing_byte_after_ec_private_key"
 accept = []
-reject = []
+reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

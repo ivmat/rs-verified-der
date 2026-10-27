@@ -6,9 +6,9 @@ file = "der-verified/src/enumerated.rs"
 name = "decode_delegates_to_integer"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.4"]
+bounded = "len <= 9; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/enumerated.rs"
 name = "encode_delegates_to_integer"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.4"]
+bounded = "all i64 values"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,29 +26,29 @@ file = "der-verified/src/enumerated.rs"
 name = "roundtrip"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["CODEC-enumerated-decode-encode"]
+bounded = "all i64; unwind 12"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/enumerated.rs"
 name = "matches_integer_for_concrete_values"
-accept = []
+accept = ["X690-8.4", "CODEC-enumerated-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/enumerated.rs"
 name = "rejects_non_minimal_same_as_integer"
 accept = []
-reject = []
+reject = ["X690-8.4", "CODEC-enumerated-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
@@ -58,4 +58,4 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "constant-only tag assertion; it does not accept or reject an encoded input"

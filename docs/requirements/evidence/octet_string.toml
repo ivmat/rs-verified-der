@@ -6,9 +6,9 @@ file = "der-verified/src/octet_string.rs"
 name = "accepted_content_is_the_tlv_value"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.7.2"]
+bounded = "len <= 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/octet_string.rs"
 name = "accepted_identifier_is_canonical_0x04"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-10.2", "X680-23", "CODEC-octet-string-unique", "X690-7.4"]
+bounded = "len <= 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/octet_string.rs"
 name = "classification_is_exact"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.7.1", "X690-8.7.2", "X690-10.2", "X680-23", "CODEC-octet-string-reject-nonder"]
+bounded = "len <= 16; unwind 17"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/octet_string.rs"
 name = "constructed_form_is_rejected"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-10.2", "CODEC-octet-string-reject-nonder"]
+bounded = "one-octet bodies; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/octet_string.rs"
 name = "decode_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-collections-1"]
+bounded = "len <= 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/octet_string.rs"
 name = "encode_with_symbolic_capacity_is_exact"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.7.2", "X690-10.2", "X680-23", "API-short-buffer-none"]
+bounded = "content len <= 14, cap <= 16; unwind 17"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/octet_string.rs"
 name = "non_octet_string_tag_is_wrong_tag"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-23", "CODEC-octet-string-reject-nonder"]
+bounded = "all low-form identifiers; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -76,126 +76,126 @@ file = "der-verified/src/octet_string.rs"
 name = "roundtrip_small"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.7", "X690-8.7.1", "X690-8.7.2", "X690-10.2", "X680-23", "CODEC-octet-string-decode-encode"]
+bounded = "content len <= 3; unwind 16"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "decodes_empty"
-accept = []
+accept = ["X690-8.7.2", "X690-10.2", "X680-23"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "decodes_simple"
-accept = []
+accept = ["X690-8.7", "X690-8.7.1", "X690-8.7.2", "X690-10.2", "X680-23"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "ignores_trailing_bytes"
-accept = []
+accept = ["X690-8.7.2"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_constructed_form"
 accept = []
-reject = []
+reject = ["X690-10.2", "CODEC-octet-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_high_tag_form_of_tag_4"
 accept = []
-reject = []
+reject = ["X680-23", "CODEC-octet-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_indefinite_length"
 accept = []
-reject = []
+reject = ["X690-10.2", "CODEC-octet-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_non_minimal_length"
 accept = []
-reject = []
+reject = ["CODEC-octet-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_sequence_tag_as_wrong_not_constructed"
 accept = []
-reject = []
+reject = ["X680-23", "CODEC-octet-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_truncated_value"
 accept = []
-reject = []
+reject = ["CODEC-octet-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_wrong_tag"
 accept = []
-reject = []
+reject = ["X680-23", "CODEC-octet-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "roundtrips_long_form_length"
-accept = []
+accept = ["X690-8.7.2", "CODEC-octet-string-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "roundtrips_via_encode"
-accept = []
+accept = ["CODEC-octet-string-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

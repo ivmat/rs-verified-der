@@ -6,9 +6,9 @@ file = "der-verified/src/context_tag.rs"
 name = "decode_explicit_context_exact_result"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-31i", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14.2", "X690-8.14.3", "CODEC-context-tag-reject-nonder", "PROF-explicit-context-only"]
+bounded = "len <= 16, all u32 tags; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/context_tag.rs"
 name = "decode_explicit_context_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-31i", "X680-31j", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
+bounded = "len <= 16, all u32 tags; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,86 +26,86 @@ file = "der-verified/src/context_tag.rs"
 name = "decode_explicit_context_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-framing-1"]
+bounded = "len <= 16, all expected tags; unwind 20"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "accepts_explicit_0_wrapper"
-accept = []
+accept = ["X680-31i", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "accepts_explicit_3_wrapper"
-accept = []
+accept = ["X680-31i", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_high_tag_form_of_context_number_0"
 accept = []
-reject = []
+reject = ["CODEC-context-tag-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_malformed_wrapper"
 accept = []
-reject = []
+reject = ["CODEC-context-tag-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_non_canonical_wrapper_length"
 accept = []
-reject = []
+reject = ["CODEC-context-tag-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_primitive_form"
 accept = []
-reject = []
+reject = ["X680-31l", "X680-31m", "X690-8.14.3", "CODEC-context-tag-reject-nonder", "PROF-explicit-context-only"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_wrong_class"
 accept = []
-reject = []
+reject = ["X680-31.2", "X690-8.14.2", "CODEC-context-tag-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_wrong_number"
 accept = []
-reject = []
+reject = ["X680-31.2", "X690-8.14.2", "CODEC-context-tag-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

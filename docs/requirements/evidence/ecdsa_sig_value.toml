@@ -6,9 +6,9 @@ file = "der-verified/src/ecdsa_sig_value.rs"
 name = "parse_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "PROF-big-integer-comparison-only"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/ecdsa_sig_value.rs"
 name = "parse_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/ecdsa_sig_value.rs"
 name = "parse_strict_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-keys-1", "PROF-strict-trailing"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -38,254 +38,254 @@ accept = []
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = "positive witness harness; cover does not assert acceptance"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "accepts_negative_r_der_permits_it_range_is_out_of_scope"
-accept = []
+accept = ["PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "composable_ignores_trailing_bytes"
-accept = []
+accept = ["RFC3279-2.2.3", "RFC3279-2.2.3-c"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "parses_p256_shaped_sig_with_high_bit_r"
-accept = []
+accept = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "parses_small_sig_composable"
-accept = []
+accept = ["RFC3279-2.2.3", "RFC3279-2.2.3-c"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "parses_small_sig_strict"
-accept = []
+accept = ["RFC3279-2.2.3", "RFC3279-2.2.3-c"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_ber_long_form_length_where_short_form_fits"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_empty_outer_content_missing_r"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_indefinite_length_outer_envelope"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_one_child_missing_s"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_primitive_outer_sequence_identifier"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_r_constructed"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_r_empty_integer"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_r_non_minimal_redundant_leading_zero"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_r_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_s_constructed"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_s_empty_integer"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_s_non_minimal_redundant_leading_zero"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_s_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_three_children_trailing_elements"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_trailing_bytes_inside_sequence_content"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_truncated_outer_envelope"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_truncated_r_tlv"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_truncated_s_tlv"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = []
+reject = ["RFC3279-2.2.3", "RFC3279-2.2.3-c", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
 name = "strict_rejects_trailing_byte_after_sig"
 accept = []
-reject = []
+reject = ["PROF-strict-trailing", "CODEC-ecdsa-sig-value-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

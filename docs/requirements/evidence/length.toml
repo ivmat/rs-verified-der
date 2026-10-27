@@ -6,9 +6,9 @@ file = "der-verified/src/length.rs"
 name = "decode_accepts_only_canonical"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-10.1", "CODEC-length-encode-decode", "CODEC-length-unique", "X690-7.4"]
+bounded = "fixed 8 octets; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/length.rs"
 name = "decode_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-framing-1"]
+bounded = "fixed 8 octets; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/length.rs"
 name = "indefinite_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-10.1", "CODEC-length-reject-nonder"]
+bounded = "0x80-prefixed 8 octets; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/length.rs"
 name = "leading_zero_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.3.5", "X690-10.1", "CODEC-length-reject-nonder", "X690-7.4"]
+bounded = "long form n=1..=7; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/length.rs"
 name = "long_form_of_short_value_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-length-reject-nonder", "X690-7.4"]
+bounded = "all values < 128; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/length.rs"
 name = "reserved_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.3.5", "CODEC-length-reject-nonder"]
+bounded = "0xff-prefixed 8 octets; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/length.rs"
 name = "roundtrip_all_u32"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.3", "X690-8.1.3.2", "X690-8.1.3.3", "X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-length-decode-encode"]
+bounded = "all u32; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -76,9 +76,9 @@ file = "der-verified/src/length.rs"
 name = "too_large_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["PROF-length-u32-cap", "RFC5280-B-size-upper-bound"]
+bounded = "five length octets; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -86,106 +86,106 @@ file = "der-verified/src/length.rs"
 name = "truncated_long_form_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.3.5", "CODEC-length-reject-nonder"]
+bounded = "two-octet truncated forms; unwind 10"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "long_form_canonical_examples"
-accept = []
+accept = ["X690-8.1.3.2", "X690-8.1.3.3", "X690-8.1.3.5", "X690-10.1", "CODEC-length-decode-encode", "PROF-length-u32-cap"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_empty_input"
 accept = []
-reject = []
+reject = ["CODEC-length-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_indefinite_length"
 accept = []
-reject = []
+reject = ["X690-10.1", "CODEC-length-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_leading_zero_octet"
 accept = []
-reject = []
+reject = ["X690-8.1.3.5", "X690-10.1", "CODEC-length-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_length_too_large_for_u32"
 accept = []
-reject = []
+reject = ["PROF-length-u32-cap", "RFC5280-B-size-upper-bound"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_non_minimal_long_form_of_small_value"
 accept = []
-reject = []
+reject = ["X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-length-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_non_minimal_long_form_of_zero"
 accept = []
-reject = []
+reject = ["X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-length-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_reserved_initial_octet"
 accept = []
-reject = []
+reject = ["X690-8.1.3.5", "CODEC-length-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_truncated_long_form"
 accept = []
-reject = []
+reject = ["X690-8.1.3.5", "CODEC-length-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
 name = "short_form_roundtrips"
-accept = []
+accept = ["X690-8.1.3.2", "X690-8.1.3.3", "X690-8.1.3.4", "X690-10.1", "CODEC-length-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

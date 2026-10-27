@@ -6,9 +6,9 @@ file = "der-verified/src/big_integer.rs"
 name = "accepted_is_fixed_point_of_minimizer"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["CODEC-big-integer-encode-decode", "CODEC-big-integer-unique"]
+bounded = "len <= 20; unwind 22"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/big_integer.rs"
 name = "empty_is_empty"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.1-a", "CODEC-big-integer-reject-nonder"]
+bounded = "empty input"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/big_integer.rs"
 name = "encode_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-content-1"]
+bounded = "input/output len <= 20; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/big_integer.rs"
 name = "is_negative_matches_sign_bit"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.3", "PROF-big-integer-comparison-only"]
+bounded = "len 1..=20; unwind 1"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/big_integer.rs"
 name = "minimality_is_local"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.2", "PROF-big-integer-comparison-only"]
+bounded = "len <= 20; unwind 1"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/big_integer.rs"
 name = "minimizer_output_is_always_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
+bounded = "len 1..=20; unwind 21"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/big_integer.rs"
 name = "redundant_negative_padding_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
+bounded = "all negative-sign second octets"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -76,9 +76,9 @@ file = "der-verified/src/big_integer.rs"
 name = "redundant_negative_padding_is_non_minimal_at_length"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
+bounded = "fixed 20 octets; unwind 1"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -86,9 +86,9 @@ file = "der-verified/src/big_integer.rs"
 name = "redundant_positive_padding_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
+bounded = "all positive-sign second octets"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -96,9 +96,9 @@ file = "der-verified/src/big_integer.rs"
 name = "redundant_positive_padding_is_non_minimal_at_length"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
+bounded = "fixed 20 octets; unwind 1"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -106,9 +106,9 @@ file = "der-verified/src/big_integer.rs"
 name = "strips_redundant_padding"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
+bounded = "fixed 20 octets; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -116,9 +116,9 @@ file = "der-verified/src/big_integer.rs"
 name = "validate_iff_minimal_oracle"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.3.1-a", "X690-8.3.2", "CODEC-big-integer-reject-nonder", "CODEC-big-integer-unique", "X690-7.4"]
+bounded = "len <= 20; unwind 1"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -126,146 +126,146 @@ file = "der-verified/src/big_integer.rs"
 name = "validate_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-content-1"]
+bounded = "len <= 20; unwind 1"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "accepts_minimal_positive_needing_leading_zero"
-accept = []
+accept = ["X690-8.3.2", "X690-8.3.3"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "accepts_minimal_positive_needing_leading_zero_at_x509_scale"
-accept = []
+accept = ["X690-8.3.2", "X690-8.3.3", "RFC5280-4.1.2.2-c", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "accepts_x509_scale_serial_number_integer_rs_would_reject_as_too_large"
-accept = []
+accept = ["RFC5280-4.1-c", "RFC5280-4.1.2.2-c", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "accepts_zero_and_minus_one"
-accept = []
+accept = ["X690-8.3", "X690-8.3.3", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "does_not_strip_past_a_sign_flipping_boundary"
-accept = []
+accept = ["X690-8.3.2", "X690-8.3.3", "CODEC-big-integer-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "encode_reports_none_when_out_is_too_small"
 accept = []
-reject = []
+reject = ["API-short-buffer-none"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "negative_bignum_at_x509_scale"
-accept = []
+accept = ["X690-8.3.3", "RFC5280-4.1.2.2-e", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "rejects_empty"
 accept = []
-reject = []
+reject = ["X690-8.3.1-a", "CODEC-big-integer-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "rejects_redundant_negative_padding"
 accept = []
-reject = []
+reject = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "rejects_redundant_positive_padding"
 accept = []
-reject = []
+reject = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "roundtrips_redundant_padded_buffer_through_the_minimizer"
-accept = []
+accept = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "strips_all_zero_content_to_single_zero_without_over_reading"
-accept = []
+accept = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "strips_multiple_redundant_leading_bytes"
-accept = []
+accept = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "strips_multiple_redundant_leading_bytes_at_x509_scale"
-accept = []
+accept = ["X690-8.3.2", "CODEC-big-integer-decode-encode", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

@@ -6,9 +6,9 @@ file = "der-verified/src/tlv.rs"
 name = "decode_tlv_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-framing-1", "SAFE-termination-2"]
+bounded = "len <= 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/tlv.rs"
 name = "decode_tlv_structure"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1", "X690-8.1.1.1", "X690-8.1.4", "SAFE-overread-1"]
+bounded = "len <= 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/tlv.rs"
 name = "strict_rejects_trailing"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["PROF-strict-trailing"]
+bounded = "one trailing octet; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/tlv.rs"
 name = "tlv_roundtrip_small"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.1.1", "X690-8.1.4", "CODEC-tlv-decode-encode"]
+bounded = "value len 3; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,126 +46,126 @@ file = "der-verified/src/tlv.rs"
 name = "tlv_truncated_value_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-overread-1", "CODEC-tlv-reject-nonder"]
+bounded = "four-octet specimen; unwind 16"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "decodes_empty_value"
-accept = []
+accept = ["X690-8.1.1.1", "X690-8.1.4", "PROF-lenient-trailing"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "decodes_simple_integer_tlv"
-accept = []
+accept = ["X690-8.1", "X690-8.1.1.1", "X690-8.1.4", "PROF-lenient-trailing"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "encode_accepts_exact_fit_buffer"
-accept = []
+accept = ["API-short-buffer-none"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "encode_rejects_output_buffer_too_small"
 accept = []
-reject = []
+reject = ["API-short-buffer-none"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_bad_tag"
 accept = []
-reject = []
+reject = ["CODEC-tlv-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_empty_input"
 accept = []
-reject = []
+reject = ["CODEC-tlv-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_indefinite_length_via_length_codec"
 accept = []
-reject = []
+reject = ["X690-10", "CODEC-tlv-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_truncated_value"
 accept = []
-reject = []
+reject = ["SAFE-overread-1", "CODEC-tlv-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "roundtrips_via_encode"
-accept = []
+accept = ["X690-8.1.1.1", "X690-8.1.4", "CODEC-tlv-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "strict_accepts_exact_tlv"
-accept = []
+accept = ["PROF-strict-trailing"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "strict_rejects_trailing_bytes"
 accept = []
-reject = []
+reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "trailing_bytes_are_not_consumed"
-accept = []
+accept = ["PROF-lenient-trailing"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

@@ -6,9 +6,9 @@ file = "der-verified/src/x509_spki.rs"
 name = "parse_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,196 +16,196 @@ file = "der-verified/src/x509_spki.rs"
 name = "parse_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-x509-1"]
+bounded = "len <= 16; unwind 20"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "accepts_null_parameters_as_raw_bytes"
-accept = []
+accept = ["RFC5280-4.1-f", "RFC5480-2"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "parses_ed25519_spki"
-accept = []
+accept = ["RFC5280-4.1-f", "RFC8410-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "parses_p256_spki_with_parameters"
-accept = []
+accept = ["RFC5280-4.1-f", "RFC5480-2"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_algorithm_identifier_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_algorithm_oid_malformed_tlv"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_algorithm_parameters_malformed_tlv"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_algorithm_trailing_elements"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_bit_string_nonzero_padding"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_bit_string_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_constructed_oid"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_constructed_public_key"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_missing_public_key"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_non_canonical_oid"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_non_canonical_outer_length"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_oid_wrong_tag"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_trailing_byte_after_spki"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_trailing_bytes_inside_outer_sequence"
 accept = []
-reject = []
+reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_truncated_input"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_spki.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = []
+reject = ["CODEC-spki-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

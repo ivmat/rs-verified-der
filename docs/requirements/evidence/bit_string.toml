@@ -6,9 +6,9 @@ file = "der-verified/src/bit_string.rs"
 name = "accepted_iff_canonical_oracle"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-reject-nonder", "CODEC-bit-string-unique", "X690-7.4"]
+bounded = "len <= 4; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/bit_string.rs"
 name = "decode_accepts_only_canonical"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-encode-decode", "CODEC-bit-string-unique", "X690-7.4"]
+bounded = "len <= 4; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/bit_string.rs"
 name = "decode_is_exactly_the_reference"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-reject-nonder"]
+bounded = "len <= 6; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/bit_string.rs"
 name = "decode_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-content-1"]
+bounded = "len <= 6; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/bit_string.rs"
 name = "empty_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.6.2", "CODEC-bit-string-reject-nonder"]
+bounded = "empty input"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/bit_string.rs"
 name = "empty_nonzero_unused_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.6.2.3", "CODEC-bit-string-reject-nonder"]
+bounded = "unused 1..=7"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_exactly_the_non_canonical"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-reject-nonder", "API-short-buffer-none"]
+bounded = "data len <= 3, cap <= 8; unwind 10"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -76,9 +76,9 @@ file = "der-verified/src/bit_string.rs"
 name = "nonzero_padding_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-11.2.1", "CODEC-bit-string-reject-nonder", "X690-7.4"]
+bounded = "unused 1..=7; unwind 6"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -86,9 +86,9 @@ file = "der-verified/src/bit_string.rs"
 name = "octet_aligned_iff_unused_zero"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["API-bit-string-octet-aligned"]
+bounded = "len <= 4; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -96,9 +96,9 @@ file = "der-verified/src/bit_string.rs"
 name = "require_octet_aligned_exact_on_built_values"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["API-bit-string-octet-aligned"]
+bounded = "data len <= 3, all u8 unused; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -106,9 +106,9 @@ file = "der-verified/src/bit_string.rs"
 name = "roundtrip_canonical"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["CODEC-bit-string-decode-encode", "X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1"]
+bounded = "data len <= 3; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -116,196 +116,196 @@ file = "der-verified/src/bit_string.rs"
 name = "unused_too_large_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.6.2.2", "CODEC-bit-string-reject-nonder"]
+bounded = "all unused counts > 7; unwind 6"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "accepts_empty_bit_string"
-accept = []
+accept = ["X690-8.6.2", "X690-8.6.2.3", "X690-11.2.1"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "accepts_full_octet"
-accept = []
+accept = ["X690-8.6.2", "X690-8.6.2.1", "X690-8.6.2.2", "X690-11.2.1"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "accepts_partial_octet_with_zero_padding"
-accept = []
+accept = ["X690-8.6.2", "X690-8.6.2.1", "X690-8.6.2.2", "X690-11.2.1"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "accepts_trailing_zero_bits_as_distinct_value"
-accept = []
+accept = ["X680-22m", "X680-22n", "PROF-bit-string-preserve-zero-bits"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "accepts_unused_seven_boundary"
-accept = []
+accept = ["X690-8.6.2.2", "X690-11.2.1"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_accepts_empty_data_with_zero_unused"
-accept = []
+accept = ["X690-8.6.2.3"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_accepts_exact_fit_buffer"
-accept = []
+accept = ["API-short-buffer-none"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_accepts_unused_seven_boundary"
-accept = []
+accept = ["X690-8.6.2.2", "X690-11.2.1"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_empty_data_with_nonzero_unused"
 accept = []
-reject = []
+reject = ["X690-8.6.2.3", "CODEC-bit-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_noncanonical_padding"
 accept = []
-reject = []
+reject = ["X690-11.2.1", "CODEC-bit-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_output_buffer_too_small"
 accept = []
-reject = []
+reject = ["API-short-buffer-none"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_unused_over_seven"
 accept = []
-reject = []
+reject = ["X690-8.6.2.2", "CODEC-bit-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "octet_aligned_accepts_zero_unused"
-accept = []
+accept = ["API-bit-string-octet-aligned"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "octet_aligned_rejects_unused_bits"
 accept = []
-reject = []
+reject = ["API-bit-string-octet-aligned"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "rejects_empty_content"
 accept = []
-reject = []
+reject = ["X690-8.6.2", "CODEC-bit-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "rejects_empty_with_nonzero_unused"
 accept = []
-reject = []
+reject = ["X690-8.6.2.3", "CODEC-bit-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "rejects_nonzero_padding"
 accept = []
-reject = []
+reject = ["X690-11.2.1", "CODEC-bit-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "rejects_unused_bits_over_seven"
 accept = []
-reject = []
+reject = ["X690-8.6.2.2", "CODEC-bit-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "roundtrips_via_encode"
-accept = []
+accept = ["CODEC-bit-string-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

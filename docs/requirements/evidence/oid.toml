@@ -6,9 +6,9 @@ file = "der-verified/src/oid.rs"
 name = "empty_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.19.3", "CODEC-oid-reject-nonder"]
+bounded = "empty input"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/oid.rs"
 name = "later_0x80_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
+bounded = "fixed 4 octets; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/oid.rs"
 name = "leading_0x80_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
+bounded = "fixed 5 octets; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/oid.rs"
 name = "unterminated_is_truncated"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.19.2-a", "X690-8.19.2-b", "CODEC-oid-reject-nonder"]
+bounded = "fixed 4 octets; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,46 +46,46 @@ file = "der-verified/src/oid.rs"
 name = "validate_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-content-1"]
+bounded = "fixed 6 octets; unwind 8"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/oid.rs"
 name = "accepts_valid_oids"
-accept = []
+accept = ["X690-8.19", "X690-8.19.2-a", "X690-8.19.2-b", "X690-8.19.2-c", "X690-8.19.2-d", "X690-8.19.2", "X690-8.19.3", "X690-8.19.4", "X690-8.19.5"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/oid.rs"
 name = "rejects_empty"
 accept = []
-reject = []
+reject = ["X690-8.19.3", "CODEC-oid-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/oid.rs"
 name = "rejects_non_minimal_subid"
 accept = []
-reject = []
+reject = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/oid.rs"
 name = "rejects_unterminated_subid"
 accept = []
-reject = []
+reject = ["X690-8.19.2-a", "X690-8.19.2-b", "CODEC-oid-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

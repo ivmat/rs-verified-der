@@ -6,9 +6,9 @@ file = "der-verified/src/tag.rs"
 name = "decode_tag_accepts_only_canonical"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2.2", "X690-8.1.2.4", "X690-8.1.2.4.2", "CODEC-tag-encode-decode", "CODEC-tag-unique", "X690-7.4"]
+bounded = "fixed 7 octets; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/tag.rs"
 name = "decode_tag_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-framing-1", "SAFE-termination-1"]
+bounded = "fixed 7 octets; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/tag.rs"
 name = "high_tag_of_small_number_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2.2", "X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
+bounded = "all small tag numbers; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/tag.rs"
 name = "leading_zero_high_tag_is_non_minimal"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
+bounded = "four-octet high-tag inputs; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/tag.rs"
 name = "roundtrip_all_tags"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2", "X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.4", "X690-8.1.2.4.1", "X690-8.1.2.4.2", "X690-8.1.2.5", "X680-8", "X680-8a", "CODEC-tag-decode-encode"]
+bounded = "all u32 tags/classes/forms; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/tag.rs"
 name = "too_large_tag_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["PROF-tag-u32-cap", "RFC5280-B-size-upper-bound"]
+bounded = "six-octet oversized tag; unwind 12"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,76 +66,76 @@ file = "der-verified/src/tag.rs"
 name = "truncated_high_tag_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.1.2.4", "X690-8.1.2.4.1", "CODEC-tag-reject-nonder"]
+bounded = "one-octet high-tag prefix; unwind 12"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
 name = "high_tag_examples_roundtrip"
-accept = []
+accept = ["X690-8.1.2.4", "X690-8.1.2.4.1", "X690-8.1.2.4.2", "CODEC-tag-decode-encode", "PROF-tag-u32-cap"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
 name = "low_tag_examples_roundtrip"
-accept = []
+accept = ["X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.5", "X680-8", "X680-19", "X680-25", "X680-31.2", "CODEC-tag-decode-encode"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
 name = "rejects_empty_input"
 accept = []
-reject = []
+reject = ["CODEC-tag-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
 name = "rejects_high_tag_for_small_number"
 accept = []
-reject = []
+reject = ["X690-8.1.2.2", "X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
 name = "rejects_high_tag_number_zero"
 accept = []
-reject = []
+reject = ["X690-8.1.2.2", "X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
 name = "rejects_leading_zero_continuation"
 accept = []
-reject = []
+reject = ["X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
 name = "rejects_truncated_high_tag"
 accept = []
-reject = []
+reject = ["X690-8.1.2.4", "X690-8.1.2.4.1", "CODEC-tag-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""

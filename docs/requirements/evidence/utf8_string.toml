@@ -6,9 +6,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "accepted_identifier_is_canonical"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a"]
+bounded = "fixed input len = 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -16,9 +16,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "constructed_form_is_rejected"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-10.2", "CODEC-utf8-string-reject-nonder"]
+bounded = "one symbolic ASCII octet; input len = 3; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -26,9 +26,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "decode_is_faithful"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "X690-7.4", "CODEC-utf8-string-unique", "CODEC-utf8-string-reject-nonder"]
+bounded = "input len <= 6; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -36,9 +36,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "decode_never_panics"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["SAFE-panic-content-1"]
+bounded = "len <= 8; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -46,9 +46,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "decode_str_is_exact_delegation"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-39", "X680-39a"]
+bounded = "input len <= 8; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -56,9 +56,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "encode_is_exact_over_content_and_capacity"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a", "X690-8.23.3", "X690-8.23.10", "API-short-buffer-none"]
+bounded = "content len <= 6; output capacity <= 10; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -66,9 +66,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "ill_formed_reports_position"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC3629-3-c"]
+bounded = "ill-formed content len 1..=6; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -76,9 +76,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "roundtrip"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["CODEC-utf8-string-decode-encode"]
+bounded = "well-formed content len <= 4; output len <= 16; unwind 16"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -86,9 +86,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "validate_iff_oracle"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "X690-7.4", "CODEC-utf8-string-unique", "CODEC-utf8-string-reject-nonder"]
+bounded = "content len <= 4; unwind 6"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -96,9 +96,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "validate_iff_oracle_multi"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "X690-7.4", "CODEC-utf8-string-unique", "CODEC-utf8-string-reject-nonder"]
+bounded = "content len <= 6; unwind 8"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -106,9 +106,9 @@ file = "der-verified/src/utf8_string.rs"
 name = "validate_iff_std"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4"]
+bounded = "content len <= 4; unwind 6"
+none = ""
 
 [[entry]]
 kind = "kani"
@@ -116,236 +116,236 @@ file = "der-verified/src/utf8_string.rs"
 name = "wrong_tag_is_classified"
 accept = []
 reject = []
-prove = []
-bounded = ""
-none = "phase B assigns requirement ids"
+prove = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a"]
+bounded = "symbolic low-tag identifier and one ASCII octet; input len = 3; unwind 16"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "accepts_ascii"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "accepts_empty"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "accepts_four_byte_emoji"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "accepts_maximum_valid_code_point_boundary"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "accepts_three_byte_euro_sign"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "accepts_two_byte_e_acute"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "accepts_two_byte_minimum_code_point_boundary"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "decode_utf8_str_exposes_str"
-accept = []
+accept = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a", "X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "decodes_empty_content"
-accept = []
+accept = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a", "X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "ill_formed_position_is_valid_up_to"
 accept = []
-reject = []
+reject = ["RFC3629-3-c", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_beyond_max_code_point"
 accept = []
-reject = []
+reject = ["RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_constructed_form"
 accept = []
-reject = []
+reject = ["X690-10.2", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_high_tag_form_of_tag_12"
 accept = []
-reject = []
+reject = ["X690-8.1.2.2", "X690-7.4", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_non_minimal_length"
 accept = []
-reject = []
+reject = ["X690-10.1", "X690-7.4", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_overlong_encodings"
 accept = []
-reject = []
+reject = ["RFC3629-3-a", "RFC3629-3-c", "RFC3629-4", "X690-8.23.10-a", "X690-7.4", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_stray_and_truncated_sequences"
 accept = []
-reject = []
+reject = ["RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_surrogates"
 accept = []
-reject = []
+reject = ["RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_truncated_value"
 accept = []
-reject = []
+reject = ["X690-8.1.3.3", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_well_formed_tlv_with_bad_content"
 accept = []
-reject = []
+reject = ["RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-reject-nonder"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "rejects_wrong_tag"
 accept = []
-reject = []
+reject = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a"]
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "roundtrips_ascii"
-accept = []
+accept = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a", "X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "roundtrips_multibyte_content"
-accept = []
+accept = ["X680-40b", "X680-41.1", "X680-41.16", "X690-8.23.3-a", "X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/utf8_string.rs"
 name = "two_byte_lead_uses_all_five_low_bits"
-accept = []
+accept = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.2", "X690-8.23.3", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-4"]
 reject = []
 prove = []
 bounded = ""
-none = "phase B assigns requirement ids"
+none = ""
