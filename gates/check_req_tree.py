@@ -61,7 +61,7 @@ def aggregate_errors(value: Any, path: str = "document") -> list[str]:
     return errors
 
 
-def validate(doc: dict[str, Any], legacy: dict[str, Any]) -> list[str]:
+def validate(doc: dict[str, Any]) -> list[str]:
     errors = aggregate_errors(doc)
     header = doc.get("inventory")
     if not isinstance(header, dict):
@@ -173,31 +173,17 @@ def validate(doc: dict[str, Any], legacy: dict[str, Any]) -> list[str]:
         if not has_item(ident):
             errors.append(f"{ident}: group has no descendant item")
 
-    legacy_rows = legacy.get("clause", legacy.get("item", []))
-    if not isinstance(legacy_rows, list):
-        errors.append("legacy: expected [[clause]] or [[item]] rows")
-    else:
-        for index, row in enumerate(legacy_rows):
-            ident = row.get("id") if isinstance(row, dict) else None
-            if not isinstance(ident, str):
-                errors.append(f"legacy[{index}]: missing string id")
-            elif ident not in item_by_id:
-                errors.append(f"{ident}: legacy id is missing from inventory items")
     return errors
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--inventory", type=Path, default=Path("docs/requirements/der.inventory.toml"))
-    parser.add_argument("--legacy", type=Path, default=Path("docs/requirements/x690-der.clauses.toml"))
     args = parser.parse_args(argv)
     inventory, status = parse_file(args.inventory, "inventory")
     if inventory is None:
         return status
-    legacy, legacy_status = parse_file(args.legacy, "legacy")
-    if legacy is None:
-        return legacy_status
-    errors = validate(inventory, legacy)
+    errors = validate(inventory)
     for error in errors:
         print(error)
     return 1 if errors else 0

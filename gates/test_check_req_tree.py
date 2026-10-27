@@ -14,7 +14,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CHECKER = ROOT / "gates" / "check_req_tree.py"
 REAL_INVENTORY = ROOT / "docs" / "requirements" / "der.inventory.toml"
-REAL_LEGACY = ROOT / "docs" / "requirements" / "x690-der.clauses.toml"
 
 MINIMAL = """
 [inventory]
@@ -54,20 +53,18 @@ modules = []
 
 
 class CheckerTests(unittest.TestCase):
-    def run_case(self, inventory: str, legacy: str = "[standard]\nid='s'\n") -> subprocess.CompletedProcess[str]:
+    def run_case(self, inventory: str) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             inv = base / "inventory.toml"
-            old = base / "legacy.toml"
             inv.write_text(textwrap.dedent(inventory), encoding="utf-8")
-            old.write_text(textwrap.dedent(legacy), encoding="utf-8")
             return subprocess.run(
-                [sys.executable, str(CHECKER), "--inventory", str(inv), "--legacy", str(old)],
+                [sys.executable, str(CHECKER), "--inventory", str(inv)],
                 text=True, capture_output=True, check=False,
             )
 
-    def assert_red(self, inventory: str, needle: str, legacy: str = "[standard]\nid='s'\n") -> None:
-        result = self.run_case(inventory, legacy)
+    def assert_red(self, inventory: str, needle: str) -> None:
+        result = self.run_case(inventory)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn(needle, result.stdout)
 
@@ -76,7 +73,7 @@ class CheckerTests(unittest.TestCase):
 
     def test_unreadable_input(self) -> None:
         result = subprocess.run(
-            [sys.executable, str(CHECKER), "--inventory", "/definitely/absent", "--legacy", str(REAL_LEGACY)],
+            [sys.executable, str(CHECKER), "--inventory", "/definitely/absent"],
             text=True, capture_output=True, check=False,
         )
         self.assertEqual(result.returncode, 2)
@@ -133,10 +130,6 @@ class CheckerTests(unittest.TestCase):
     def test_non_in_requires_reason(self) -> None:
         self.assert_red(MINIMAL.replace('disposition = "in"', 'disposition = "excluded"'), "requires a nonempty reason")
 
-    def test_missing_legacy_id(self) -> None:
-        legacy = "[standard]\nid='s'\n[[clause]]\nid='OLD'\n"
-        self.assert_red(MINIMAL, "OLD: legacy id", legacy)
-
     def test_aggregate_exact_key(self) -> None:
         self.assert_red(MINIMAL.replace('source = "x"', 'source = "x"\ncount = 1'), "aggregate-like key")
 
@@ -145,7 +138,7 @@ class CheckerTests(unittest.TestCase):
 
     def test_real_inventory(self) -> None:
         result = subprocess.run(
-            [sys.executable, str(CHECKER), "--inventory", str(REAL_INVENTORY), "--legacy", str(REAL_LEGACY)],
+            [sys.executable, str(CHECKER), "--inventory", str(REAL_INVENTORY)],
             cwd=ROOT, text=True, capture_output=True, check=False,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

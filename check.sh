@@ -5,6 +5,14 @@ set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo "== hygiene gate (doc links; pure stdlib) =="
 python3 "$ROOT/gates/check_links.py"
+echo "== requirements-tree gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_check_req_tree.py"
+echo "== requirements-tree gate (inventory structure; pure stdlib) =="
+python3 "$ROOT/gates/check_req_tree.py"
+echo "== requirement-evidence-map gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_check_req_map.py"
+echo "== requirement-evidence-map gate (maps vs source and inventory; pure stdlib) =="
+python3 "$ROOT/gates/check_req_map.py"
 echo "== proof-manifest gate: self-test (the gate's own gate; pure stdlib) =="
 # Runs BEFORE the gate it tests. Both directions are covered: the gate must not fail an honest
 # third party whose toolchain differs from ours, and must still fail on a drifted count or pin.

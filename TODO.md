@@ -143,7 +143,7 @@ scope boundary referenced below.
       decides get tests that fail when the requirement is broken (with an observed-red control).
       `COVERAGE.md` rows gain the list ids next to
       `DER-*`. **The acceptance-manifest mapping itself comes later**; first the list.
-      - [x] **The list is in this repo:** [`docs/requirements/x690-der.clauses.toml`](docs/requirements/x690-der.clauses.toml).
+      - [x] **The inventory is in this repo:** [`docs/requirements/der.inventory.toml`](docs/requirements/der.inventory.toml); it supersedes the legacy list.
             v2: 212 rows (183 X.690, 23 X.680, 2 each RFC 5280 / 7468 / 4648), ids by clause number
             (`X690-8.23.9a` for list item a), `-a` for a further sentence of the same clause), force
             `shall` / `shall-not`. Every v1 id is kept; one v1 title was corrected (`X690-8.1.3.6.1`).
