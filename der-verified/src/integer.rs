@@ -220,4 +220,146 @@ mod tests {
             Err(IntError::TooLarge)
         );
     }
+
+    // --- S4a (group 3): per-requirement tests ---
+
+    /// X680-19: an INTEGER TLV carries the literal identifier octet 0x02 (UNIVERSAL 2, decoded and encoded).
+    #[test]
+    fn accepts_integer_universal_2_identifier_octet() {
+        use crate::tag::{Class, Tag};
+        use crate::tlv::{decode_tlv_strict, encode_tlv_into};
+        // literal specimen: 02 01 05 (INTEGER 5)
+        let tlv = decode_tlv_strict(&[0x02, 0x01, 0x05]).unwrap();
+        assert_eq!(tlv.tag, Tag { class: Class::Universal, constructed: false, number: TAG });
+        assert_eq!(decode_integer(tlv.value), Ok(5));
+        // encoder direction: the first output octet is 0x02
+        let (content, n) = encode_integer(5);
+        let mut out = [0u8; 8];
+        let used = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: TAG },
+            &content[..n],
+            &mut out,
+        )
+        .unwrap();
+        assert_eq!(out[0], 0x02);
+        assert_eq!(&out[..used], &[0x02, 0x01, 0x05]);
+    }
+
+    /// X690-8.3.1: the INTEGER encoding is primitive (identifier bit 6 clear) with one or more content octets.
+    #[test]
+    fn accepts_primitive_integer_encoding() {
+        use crate::tag::{Class, Tag};
+        use crate::tlv::{decode_tlv_strict, encode_tlv_into};
+        // encoder: 128 needs two content octets (00 80); the TLV is 02 02 00 80 and primitive
+        let (content, n) = encode_integer(128);
+        assert!(n >= 1);
+        let mut out = [0u8; 8];
+        let used = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: TAG },
+            &content[..n],
+            &mut out,
+        )
+        .unwrap();
+        assert_eq!(&out[..used], &[0x02, 0x02, 0x00, 0x80]);
+        assert_eq!(out[0] & 0x20, 0, "constructed bit must be clear");
+        // decoder: the same literal TLV is primitive and its content decodes to 128
+        let tlv = decode_tlv_strict(&[0x02, 0x02, 0x00, 0x80]).unwrap();
+        assert!(!tlv.tag.constructed);
+        assert_eq!(decode_integer(tlv.value), Ok(128));
+    }
+
+    /// X690-8.3.1-a: a single content octet is the shortest accepted INTEGER payload, and the encoder never emits zero octets.
+    #[test]
+    fn accepts_single_octet_payload() {
+        assert_eq!(decode_integer(&[0x00]), Ok(0));
+        assert_eq!(decode_integer(&[0x7F]), Ok(127));
+        assert_eq!(decode_integer(&[0x80]), Ok(-128));
+        assert_eq!(decode_integer(&[0xFF]), Ok(-1));
+        for v in [0i64, 1, -1, 127, -128, i64::MAX, i64::MIN] {
+            let (_, n) = encode_integer(v);
+            assert!(n >= 1, "value {v} must encode to at least one octet");
+        }
+        assert_eq!(encode_integer(0).1, 1);
+    }
+
+    /// X690-8.3.3: a positive value of 2^63 (or a negative one below -2^63) is rejected as TooLarge, never wrapped through the sign bit.
+    #[test]
+    fn rejects_two_complement_overflow_instead_of_wrapping() {
+        // 00 80 00 .. 00 (9 octets) is +2^63; wrapping would give i64::MIN
+        assert_eq!(
+            decode_integer(&[0x00, 0x80, 0, 0, 0, 0, 0, 0, 0]),
+            Err(IntError::TooLarge)
+        );
+        // FF 7F FF .. FF (9 octets) is -2^63 - 1; wrapping would give i64::MAX
+        assert_eq!(
+            decode_integer(&[0xFF, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+            Err(IntError::TooLarge)
+        );
+        // the two's-complement neighbours that DO fit are read with the correct sign
+        assert_eq!(decode_integer(&[0x80, 0, 0, 0, 0, 0, 0, 0]), Ok(i64::MIN));
+        assert_eq!(decode_integer(&[0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), Ok(i64::MAX));
+    }
+
+    /// CODEC-integer-encode-decode: accepted content decodes, then re-encodes to exactly the same octets.
+    #[test]
+    fn roundtrips_accepted_content_through_decode_then_encode() {
+        let samples: [&[u8]; 12] = [
+            &[0x00],
+            &[0x7F],
+            &[0x80],
+            &[0xFF],
+            &[0x00, 0x80],
+            &[0xFF, 0x7F],
+            &[0x01, 0x00],
+            &[0x80, 0x00],
+            &[0x00, 0xFF, 0xFF],
+            &[0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+            &[0x80, 0, 0, 0, 0, 0, 0, 0],
+            &[0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+        ];
+        for content in samples {
+            let v = decode_integer(content).expect("sample is minimal");
+            let (buf, n) = encode_integer(v);
+            assert_eq!(&buf[..n], content, "content {content:02X?}");
+        }
+    }
+
+    /// CODEC-integer-unique: every padded alternate spelling of a value is rejected as NonMinimal; only the one minimal form is accepted.
+    #[test]
+    fn rejects_every_alternate_spelling_of_a_value() {
+        // value 1: minimal 01 accepted; 00 01, 00 00 01 and an 8-octet padded form rejected
+        assert_eq!(decode_integer(&[0x01]), Ok(1));
+        assert_eq!(decode_integer(&[0x00, 0x01]), Err(IntError::NonMinimal));
+        assert_eq!(decode_integer(&[0x00, 0x00, 0x01]), Err(IntError::NonMinimal));
+        assert_eq!(
+            decode_integer(&[0, 0, 0, 0, 0, 0, 0, 0x01]),
+            Err(IntError::NonMinimal)
+        );
+        // value -1: minimal FF accepted; FF FF, FF FF FF rejected
+        assert_eq!(decode_integer(&[0xFF]), Ok(-1));
+        assert_eq!(decode_integer(&[0xFF, 0xFF]), Err(IntError::NonMinimal));
+        assert_eq!(decode_integer(&[0xFF, 0xFF, 0xFF]), Err(IntError::NonMinimal));
+        // value 0: only 00 is accepted; 00 00 is a padded spelling
+        assert_eq!(decode_integer(&[0x00]), Ok(0));
+        assert_eq!(decode_integer(&[0x00, 0x00]), Err(IntError::NonMinimal));
+        // value -128: minimal 80 accepted; FF 80 is the padded spelling
+        assert_eq!(decode_integer(&[0x80]), Ok(-128));
+        assert_eq!(decode_integer(&[0xFF, 0x80]), Err(IntError::NonMinimal));
+    }
+
+    /// PROF-integer-i64-cap: full-width 8-octet contents at both ends of the i64 range are accepted (the cap is 8 octets, not fewer).
+    #[test]
+    fn accepts_full_width_eight_octet_values_at_the_i64_cap() {
+        assert_eq!(
+            decode_integer(&[0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+            Ok(i64::MAX)
+        );
+        assert_eq!(decode_integer(&[0x80, 0, 0, 0, 0, 0, 0, 0]), Ok(i64::MIN));
+        let (buf, n) = encode_integer(i64::MAX);
+        assert_eq!(n, 8);
+        assert_eq!(decode_integer(&buf[..n]), Ok(i64::MAX));
+        let (buf, n) = encode_integer(i64::MIN);
+        assert_eq!(n, 8);
+        assert_eq!(decode_integer(&buf[..n]), Ok(i64::MIN));
+    }
 }

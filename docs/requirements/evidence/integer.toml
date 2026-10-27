@@ -139,3 +139,73 @@ reject = []
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/integer.rs"
+name = "accepts_integer_universal_2_identifier_octet"
+accept = ["X680-19"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/integer.rs"
+name = "accepts_primitive_integer_encoding"
+accept = ["X690-8.3.1"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/integer.rs"
+name = "accepts_single_octet_payload"
+accept = ["X690-8.3.1-a"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/integer.rs"
+name = "rejects_two_complement_overflow_instead_of_wrapping"
+accept = ["X690-8.3.3"]
+reject = ["X690-8.3.3", "PROF-integer-i64-cap"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/integer.rs"
+name = "roundtrips_accepted_content_through_decode_then_encode"
+accept = ["CODEC-integer-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/integer.rs"
+name = "rejects_every_alternate_spelling_of_a_value"
+accept = []
+reject = ["CODEC-integer-unique", "CODEC-integer-reject-nonder", "X690-8.3.2", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/integer.rs"
+name = "accepts_full_width_eight_octet_values_at_the_i64_cap"
+accept = ["PROF-integer-i64-cap"]
+reject = []
+prove = []
+bounded = ""
+none = ""

@@ -59,3 +59,33 @@ reject = []
 prove = []
 bounded = ""
 none = "constant-only tag assertion; it does not accept or reject an encoded input"
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/enumerated.rs"
+name = "accepts_enumerated_universal_10_identifier_octet"
+accept = ["X680-20"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/enumerated.rs"
+name = "roundtrips_accepted_content_through_decode_then_encode"
+accept = ["CODEC-enumerated-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/enumerated.rs"
+name = "rejects_every_alternate_spelling_of_a_value"
+accept = []
+reject = ["CODEC-enumerated-unique", "CODEC-enumerated-reject-nonder", "X690-8.4", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""

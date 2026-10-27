@@ -162,4 +162,64 @@ mod tests {
             Err(crate::integer::IntError::NonMinimal)
         );
     }
+
+    // --- S4a (group 3): per-requirement tests ---
+
+    /// X680-20: an ENUMERATED TLV carries the literal identifier octet 0x0A (UNIVERSAL 10, decoded and encoded).
+    #[test]
+    fn accepts_enumerated_universal_10_identifier_octet() {
+        use crate::tag::{Class, Tag};
+        use crate::tlv::{decode_tlv_strict, encode_tlv_into};
+        // literal specimen: 0A 01 02 (ENUMERATED 2, a CRL reason code)
+        let tlv = decode_tlv_strict(&[0x0A, 0x01, 0x02]).unwrap();
+        assert_eq!(tlv.tag, Tag { class: Class::Universal, constructed: false, number: TAG });
+        assert_eq!(decode_enumerated(tlv.value), Ok(2));
+        // encoder direction: the first output octet is 0x0A
+        let (content, n) = encode_enumerated(2);
+        let mut out = [0u8; 4];
+        let used = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: TAG },
+            &content[..n],
+            &mut out,
+        )
+        .unwrap();
+        assert_eq!(out[0], 0x0A);
+        assert_eq!(&out[..used], &[0x0A, 0x01, 0x02]);
+    }
+
+    /// CODEC-enumerated-encode-decode: accepted content decodes, then re-encodes to exactly the same octets.
+    #[test]
+    fn roundtrips_accepted_content_through_decode_then_encode() {
+        let samples: [&[u8]; 8] = [
+            &[0x00],
+            &[0x02],
+            &[0x7F],
+            &[0x80],
+            &[0xFF],
+            &[0x00, 0x80],
+            &[0xFF, 0x7F],
+            &[0x01, 0x00, 0x00],
+        ];
+        for content in samples {
+            let v = decode_enumerated(content).expect("sample is minimal");
+            let (buf, n) = encode_enumerated(v);
+            assert_eq!(&buf[..n], content, "content {content:02X?}");
+        }
+    }
+
+    /// CODEC-enumerated-unique: every padded alternate spelling of an enumerated value is rejected as NonMinimal.
+    #[test]
+    fn rejects_every_alternate_spelling_of_a_value() {
+        use crate::integer::IntError;
+        // value 2: minimal 02 accepted; 00 02, 00 00 02 rejected
+        assert_eq!(decode_enumerated(&[0x02]), Ok(2));
+        assert_eq!(decode_enumerated(&[0x00, 0x02]), Err(IntError::NonMinimal));
+        assert_eq!(decode_enumerated(&[0x00, 0x00, 0x02]), Err(IntError::NonMinimal));
+        // value -1: minimal FF accepted; FF FF rejected
+        assert_eq!(decode_enumerated(&[0xFF]), Ok(-1));
+        assert_eq!(decode_enumerated(&[0xFF, 0xFF]), Err(IntError::NonMinimal));
+        // value 0: only 00 is accepted
+        assert_eq!(decode_enumerated(&[0x00]), Ok(0));
+        assert_eq!(decode_enumerated(&[0x00, 0x00]), Err(IntError::NonMinimal));
+    }
 }

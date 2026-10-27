@@ -116,4 +116,70 @@ mod tests {
         assert_eq!(decode_bool(&[]), Err(BoolError::BadLength));
         assert_eq!(decode_bool(&[0x00, 0x00]), Err(BoolError::BadLength));
     }
+
+    // --- S4a (group 3): per-requirement tests ---
+
+    /// X680-18: a BOOLEAN TLV carries the literal identifier octet 0x01 (UNIVERSAL 1, decoded and encoded).
+    #[test]
+    fn accepts_boolean_universal_1_identifier_octet() {
+        use crate::tag::{Class, Tag};
+        use crate::tlv::{decode_tlv_strict, encode_tlv_into};
+        // literal specimen: 01 01 FF (TRUE)
+        let tlv = decode_tlv_strict(&[0x01, 0x01, 0xFF]).unwrap();
+        assert_eq!(tlv.tag, Tag { class: Class::Universal, constructed: false, number: TAG });
+        assert_eq!(decode_bool(tlv.value), Ok(true));
+        // encoder direction: the first output octet is 0x01
+        let mut out = [0u8; 4];
+        let used = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: TAG },
+            &[encode_bool(false)],
+            &mut out,
+        )
+        .unwrap();
+        assert_eq!(out[0], 0x01);
+        assert_eq!(&out[..used], &[0x01, 0x01, 0x00]);
+    }
+
+    /// X680-18d: no octet other than 00 (FALSE) and FF (TRUE) is a BOOLEAN value; the other 254 are NonCanonical.
+    #[test]
+    fn rejects_every_octet_that_is_neither_true_nor_false() {
+        for b in 0u8..=255 {
+            match b {
+                0x00 => assert_eq!(decode_bool(&[b]), Ok(false)),
+                0xFF => assert_eq!(decode_bool(&[b]), Ok(true)),
+                _ => assert_eq!(decode_bool(&[b]), Err(BoolError::NonCanonical), "octet {b:#04x}"),
+            }
+        }
+    }
+
+    /// X690-8.2.2: a non-zero octet is never decoded as FALSE (FALSE is the zero octet only).
+    #[test]
+    fn rejects_non_zero_octet_as_false() {
+        for b in 1u8..=255 {
+            assert_ne!(decode_bool(&[b]), Ok(false), "octet {b:#04x}");
+        }
+        // the one TRUE octet DER allows is non-zero, and zero is not TRUE
+        assert_eq!(decode_bool(&[0xFF]), Ok(true));
+        assert_ne!(decode_bool(&[0x00]), Ok(true));
+    }
+
+    /// CODEC-boolean-encode-decode: accepted content decodes, then re-encodes to exactly the same octet.
+    #[test]
+    fn roundtrips_accepted_content_through_decode_then_encode() {
+        for content in [[0x00u8], [0xFF]] {
+            let v = decode_bool(&content).expect("canonical octet");
+            assert_eq!([encode_bool(v)], content);
+        }
+    }
+
+    /// CODEC-boolean-unique: TRUE has one accepted spelling (FF); every other non-zero spelling that BER allows is rejected.
+    #[test]
+    fn rejects_every_alternate_spelling_of_true() {
+        assert_eq!(decode_bool(&[0xFF]), Ok(true));
+        for alt in [0x01u8, 0x02, 0x7F, 0x80, 0xFE] {
+            assert_eq!(decode_bool(&[alt]), Err(BoolError::NonCanonical), "octet {alt:#04x}");
+        }
+        // and the accepted set maps to exactly two distinct values
+        assert_ne!(decode_bool(&[0x00]), decode_bool(&[0xFF]));
+    }
 }

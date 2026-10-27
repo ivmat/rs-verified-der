@@ -269,3 +269,23 @@ reject = []
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/big_integer.rs"
+name = "roundtrips_accepted_content_through_validate_then_encode"
+accept = ["CODEC-big-integer-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/big_integer.rs"
+name = "rejects_every_alternate_spelling_of_a_value"
+accept = []
+reject = ["CODEC-big-integer-unique", "CODEC-big-integer-reject-nonder", "X690-8.3.2", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""
