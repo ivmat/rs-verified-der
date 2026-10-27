@@ -123,6 +123,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_extension.rs"
+name = "rejects_ber_spellings_of_valid_extensions"
+accept = []
+reject = ["CODEC-extensions-reject-nonder", "X690-10.1", "X690-10.2", "X690-11.5", "X690-11.1", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_extension.rs"
 name = "rejects_child_tlv_framing_malformed_in_extensions"
 accept = []
 reject = ["RFC5280-4.1-g", "RFC5280-4.1-h", "X690-8.10.2"]

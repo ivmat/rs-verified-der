@@ -625,4 +625,164 @@ mod tests {
         let set_content = [0x02u8, 0x01, 0x02, 0x02, 0x01, 0x01]; // INTEGER 2, INTEGER 1 (unsorted)
         assert_eq!(decode_sequence(&set_content), Ok(2));
     }
+
+    // --- S4a group 4: SEQUENCE OF form, tag, order and CODEC-law specimens ---
+
+    /// X690-8.10.1: a SEQUENCE OF is written in the constructed form (identifier 0x30, constructed
+    /// bit 0x20 set), and the encoder sets it.
+    #[test]
+    fn accepts_sequence_of_in_constructed_form() {
+        // Three INTEGER elements of the same type.
+        let children = [0x02u8, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01, 0x03];
+        let mut out = [0u8; 16];
+        let n = encode_sequence_into(&children, &mut out).unwrap();
+        assert_eq!(out[0], 0x30);
+        assert_ne!(out[0] & 0x20, 0, "constructed bit");
+        assert_eq!(&out[..n], &[0x30, 0x09, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01, 0x03]);
+        // The literal constructed identifier decodes with all three elements.
+        let (content, used) = decode_sequence_tlv(&out[..n]).unwrap();
+        assert_eq!(used, n);
+        assert_eq!(decode_sequence(content), Ok(3));
+    }
+
+    /// X680-26: a SEQUENCE OF is UNIVERSAL 16, identifier octet 0x30 for the constructed form.
+    #[test]
+    fn accepts_sequence_of_under_universal_tag_16() {
+        assert_eq!(TAG, 16);
+        let mut out = [0u8; 8];
+        let n = encode_sequence_into(&[0x05, 0x00], &mut out).unwrap();
+        assert_eq!(&out[..n], &[0x30, 0x02, 0x05, 0x00]);
+        assert_eq!(out[0] >> 6, 0b00, "class bits UNIVERSAL");
+        assert_eq!(out[0] & 0x1F, 16, "tag number 16");
+        let (content, _) = decode_sequence_tlv(&[0x30, 0x02, 0x05, 0x00]).unwrap();
+        assert_eq!(content, &[0x05, 0x00]);
+    }
+
+    /// X680-26: the same constructed form under a different class or number is not a SEQUENCE OF
+    /// (APPLICATION 16 `0x70`, context-specific 16 `0xB0`, PRIVATE 16 `0xF0`, SET `0x31`, BOOLEAN `0x21`).
+    #[test]
+    fn rejects_sequence_of_content_under_other_tags() {
+        let body = [0x02u8, 0x01, 0x07];
+        for ident in [0x70u8, 0xB0, 0xF0, 0x31, 0x21] {
+            let der = [ident, 0x03, body[0], body[1], body[2]];
+            assert_eq!(decode_sequence_tlv(&der), Err(SequenceError::WrongTag), "identifier {ident:#04x}");
+        }
+        // The right identifier with the same body is accepted.
+        assert_eq!(
+            decode_sequence_tlv(&[0x30, 0x03, 0x02, 0x01, 0x07]),
+            Ok((&body[..], 5))
+        );
+    }
+
+    /// X690-8.10.3: the encodings keep the order of the values; neither the encoder nor the walk
+    /// sorts or reverses them.
+    #[test]
+    fn preserves_sequence_of_element_order() {
+        // INTEGER 3, INTEGER 1, INTEGER 2: deliberately not in ascending order.
+        let children = [0x02u8, 0x01, 0x03, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02];
+        let mut out = [0u8; 16];
+        let n = encode_sequence_into(&children, &mut out).unwrap();
+        assert_eq!(&out[2..n], &children[..]);
+        let (content, _) = decode_sequence_tlv(&out[..n]).unwrap();
+        let values: Vec<u8> = Elements::new(content).map(|r| r.unwrap().value[0]).collect();
+        assert_eq!(values, [3, 1, 2]);
+        assert_eq!(decode_sequence(content), Ok(3));
+    }
+
+    /// CODEC-sequence-encode-decode: re-encoding an accepted SEQUENCE reproduces its bytes, in the
+    /// short length form and in the long length form.
+    #[test]
+    fn roundtrips_accepted_bytes_through_reencode() {
+        // 64 NULL elements: 128 content octets need the long length form 81 80.
+        let mut long = vec![0x30u8, 0x81, 0x80];
+        for _ in 0..64 {
+            long.extend_from_slice(&[0x05, 0x00]);
+        }
+        let short = [0x30u8, 0x06, 0x02, 0x01, 0x07, 0x01, 0x01, 0xFF];
+        for der in [&[0x30u8, 0x00][..], &short[..], &long[..]] {
+            let content = decode_sequence_tlv_strict(der).unwrap();
+            let mut out = [0u8; 160];
+            let n = encode_sequence_into(content, &mut out).unwrap();
+            assert_eq!(&out[..n], der);
+        }
+    }
+
+    /// CODEC-sequence-unique: each of these is a complete BER spelling of the value
+    /// `SEQUENCE { INTEGER 7, BOOLEAN TRUE }`; DER accepts only `30 06 ...`.
+    #[test]
+    fn rejects_noncanonical_spellings_of_an_accepted_sequence() {
+        use crate::length::LengthError;
+        use crate::tag::TagError;
+        let canonical = [0x30u8, 0x06, 0x02, 0x01, 0x07, 0x01, 0x01, 0xFF];
+        assert_eq!(decode_sequence_tlv_strict(&canonical), Ok(&canonical[2..]));
+        // Long-form length 81 06 for length 6.
+        let long_len = [0x30u8, 0x81, 0x06, 0x02, 0x01, 0x07, 0x01, 0x01, 0xFF];
+        assert_eq!(
+            decode_sequence_tlv_strict(&long_len),
+            Err(SequenceError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+        // Indefinite length with an end-of-contents terminator.
+        let indefinite = [0x30u8, 0x80, 0x02, 0x01, 0x07, 0x01, 0x01, 0xFF, 0x00, 0x00];
+        assert_eq!(
+            decode_sequence_tlv_strict(&indefinite),
+            Err(SequenceError::Tlv(TlvError::Length(LengthError::Indefinite)))
+        );
+        // High-tag-number form 3F 10 for number 16.
+        let high_tag = [0x3Fu8, 0x10, 0x06, 0x02, 0x01, 0x07, 0x01, 0x01, 0xFF];
+        assert_eq!(
+            decode_sequence_tlv_strict(&high_tag),
+            Err(SequenceError::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+    }
+
+    /// Two ready ATV encodings for the Name specimens: `C=US` and `CN=Example CA`.
+    const ATV_C_US: [u8; 11] = [0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13, 0x02, 0x55, 0x53];
+    const ATV_CN: [u8; 19] = [
+        0x30, 0x11, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c, 0x0a, 0x45, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x20,
+        0x43, 0x41,
+    ];
+
+    /// An RDN (`SET OF` one ATV) built with the SET OF encoder.
+    fn rdn_with(atv: &[u8]) -> Vec<u8> {
+        let mut out = [0u8; 32];
+        let n = crate::set_of::encode_set_of_into(atv, &mut out).unwrap();
+        out[..n].to_vec()
+    }
+
+    /// X501-9.2-d: a Name is an ordered sequence of RDNs; the order is significant and is not sorted
+    /// (both orders of the same two RDNs are accepted and keep their order).
+    #[test]
+    fn accepts_name_as_ordered_rdn_sequence() {
+        let c = rdn_with(&ATV_C_US);
+        let cn = rdn_with(&ATV_CN);
+        for (first, second) in [(&c, &cn), (&cn, &c)] {
+            let mut children = first.clone();
+            children.extend_from_slice(second);
+            let mut out = [0u8; 80];
+            let n = encode_sequence_into(&children, &mut out).unwrap();
+            assert_eq!(crate::x509_name::validate_name(&out[..n]), Ok(()));
+            // The RDNs come back in the order written.
+            let (content, _) = decode_sequence_tlv(&out[..n]).unwrap();
+            let firsts: Vec<&[u8]> = Elements::new(content).map(|r| r.unwrap().value).collect();
+            assert_eq!(firsts[0], &first[2..]);
+            assert_eq!(firsts[1], &second[2..]);
+        }
+    }
+
+    /// X501-9.2-f: an RDNSequence is a SEQUENCE OF RDNs: identifier 0x30, any number of RDNs
+    /// including none.
+    #[test]
+    fn accepts_rdn_sequence_as_sequence_of_rdns() {
+        let c = rdn_with(&ATV_C_US);
+        let mut three = c.clone();
+        three.extend_from_slice(&c);
+        three.extend_from_slice(&rdn_with(&ATV_CN));
+        for children in [&[][..], &c[..], &three[..]] {
+            let mut out = [0u8; 100];
+            let n = encode_sequence_into(children, &mut out).unwrap();
+            assert_eq!(out[0], 0x30);
+            assert_eq!(crate::x509_name::validate_name(&out[..n]), Ok(()));
+            assert_eq!(decode_sequence(&out[2..n]), Ok(Elements::new(children).count()));
+        }
+    }
 }

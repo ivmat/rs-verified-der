@@ -586,4 +586,64 @@ mod tests {
             Err(EncryptedPrivateKeyInfoError::TrailingElements)
         );
     }
+
+    // --- S4a group 4: complete BER spellings of a valid value ---
+
+    /// CODEC-encrypted-pkcs8-reject-nonder: each input below is a complete BER spelling of the
+    /// `MINIMAL_EPKI` value (`encryptedData` = `aa bb`); only the DER spelling is accepted.
+    #[test]
+    fn rejects_ber_spellings_of_minimal_epki() {
+        use crate::length::LengthError;
+        use crate::tag::TagError;
+        use crate::tlv::TlvError;
+        assert!(parse_encrypted_private_key_info_strict(&MINIMAL_EPKI).is_ok());
+        // Constructed OCTET STRING holding one primitive segment `04 02 aa bb`.
+        let constructed =
+            [0x30u8, 0x0b, 0x30, 0x03, 0x06, 0x01, 0x00, 0x24, 0x04, 0x04, 0x02, 0xaa, 0xbb];
+        assert_eq!(
+            parse_encrypted_private_key_info_strict(&constructed),
+            Err(EncryptedPrivateKeyInfoError::EncryptedData(OctetStringError::Constructed))
+        );
+        // Outer length 09 spelled in the long form 81 09.
+        let long_outer = [0x30u8, 0x81, 0x09, 0x30, 0x03, 0x06, 0x01, 0x00, 0x04, 0x02, 0xaa, 0xbb];
+        assert_eq!(
+            parse_encrypted_private_key_info_strict(&long_outer),
+            Err(EncryptedPrivateKeyInfoError::BadOuterSeq(SequenceError::Tlv(TlvError::Length(
+                LengthError::NonMinimal
+            ))))
+        );
+        // encryptedData length 02 spelled in the long form 81 02.
+        let long_data = [0x30u8, 0x0a, 0x30, 0x03, 0x06, 0x01, 0x00, 0x04, 0x81, 0x02, 0xaa, 0xbb];
+        assert_eq!(
+            parse_encrypted_private_key_info_strict(&long_data),
+            Err(EncryptedPrivateKeyInfoError::EncryptedData(OctetStringError::Tlv(TlvError::Length(
+                LengthError::NonMinimal
+            ))))
+        );
+        // Indefinite-length outer SEQUENCE closed by an end-of-contents marker.
+        let indefinite =
+            [0x30u8, 0x80, 0x30, 0x03, 0x06, 0x01, 0x00, 0x04, 0x02, 0xaa, 0xbb, 0x00, 0x00];
+        assert_eq!(
+            parse_encrypted_private_key_info_strict(&indefinite),
+            Err(EncryptedPrivateKeyInfoError::BadOuterSeq(SequenceError::Tlv(TlvError::Length(
+                LengthError::Indefinite
+            ))))
+        );
+        // High-tag-number form 3F 10 of the outer SEQUENCE's number 16.
+        let high_tag = [0x3Fu8, 0x10, 0x09, 0x30, 0x03, 0x06, 0x01, 0x00, 0x04, 0x02, 0xaa, 0xbb];
+        assert_eq!(
+            parse_encrypted_private_key_info_strict(&high_tag),
+            Err(EncryptedPrivateKeyInfoError::BadOuterSeq(SequenceError::Tlv(TlvError::Tag(
+                TagError::NonMinimal
+            ))))
+        );
+        // AlgorithmIdentifier length 03 spelled in the long form 81 03.
+        let long_alg = [0x30u8, 0x0a, 0x30, 0x81, 0x03, 0x06, 0x01, 0x00, 0x04, 0x02, 0xaa, 0xbb];
+        assert_eq!(
+            parse_encrypted_private_key_info_strict(&long_alg),
+            Err(EncryptedPrivateKeyInfoError::EncryptionAlgorithm(AlgIdError::BadSeq(
+                SequenceError::Tlv(TlvError::Length(LengthError::NonMinimal))
+            )))
+        );
+    }
 }

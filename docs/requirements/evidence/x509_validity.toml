@@ -123,6 +123,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_validity.rs"
+name = "accepts_time_choice_with_selected_alternative_tag"
+accept = ["X680-29"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_validity.rs"
 name = "parses_generalized_generalized"
 accept = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13", "RFC5280-4.1.2.5.2", "RFC5280-4.1.2.5.2-a", "X690-11.7.1", "X690-11.7.2", "X690-11.7.5", "X680-46.2", "X680-46.3", "RFC5280-4.1.2.5"]
 reject = []

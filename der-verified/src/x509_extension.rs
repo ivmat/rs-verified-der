@@ -1118,4 +1118,77 @@ mod tests {
     fn validates_two_minimal_extensions() {
         assert_eq!(validate_extensions(&EXTENSIONS_TWO_MINIMAL), Ok(()));
     }
+
+    // --- S4a group 4: complete BER spellings of a valid Extensions value ---
+
+    /// CODEC-extensions-reject-nonder: each input below is a complete BER spelling of the valid
+    /// `Extensions` value `{ basicConstraints (critical absent) }`; only the DER spelling is accepted.
+    #[test]
+    fn rejects_ber_spellings_of_valid_extensions() {
+        use crate::length::LengthError;
+        // The DER value: 30 0b <Extension, 11 octets>.
+        let mut der = vec![0x30, 0x0b];
+        der.extend_from_slice(&EXT_BASIC_CONSTRAINTS_DEFAULT);
+        assert_eq!(validate_extensions(&der), Ok(()));
+
+        // Outer length 0b spelled in the long form 81 0b.
+        let mut long_outer = vec![0x30, 0x81, 0x0b];
+        long_outer.extend_from_slice(&EXT_BASIC_CONSTRAINTS_DEFAULT);
+        assert_eq!(
+            validate_extensions(&long_outer),
+            Err(ExtensionsError::BadOuterSeq(SequenceError::Tlv(TlvError::Length(
+                LengthError::NonMinimal
+            ))))
+        );
+
+        // Indefinite-length outer SEQUENCE closed by an end-of-contents marker.
+        let mut indefinite = vec![0x30, 0x80];
+        indefinite.extend_from_slice(&EXT_BASIC_CONSTRAINTS_DEFAULT);
+        indefinite.extend_from_slice(&[0x00, 0x00]);
+        assert_eq!(
+            validate_extensions(&indefinite),
+            Err(ExtensionsError::BadOuterSeq(SequenceError::Tlv(TlvError::Length(
+                LengthError::Indefinite
+            ))))
+        );
+
+        // Member length 09 spelled in the long form 81 09.
+        let mut long_member = vec![0x30, 0x0c, 0x30, 0x81, 0x09];
+        long_member.extend_from_slice(&EXT_BASIC_CONSTRAINTS_DEFAULT[2..]);
+        assert_eq!(
+            validate_extensions(&long_member),
+            Err(ExtensionsError::BadExtension(ExtensionError::BadSeq(SequenceError::Tlv(
+                TlvError::Length(LengthError::NonMinimal)
+            ))))
+        );
+
+        // extnValue as a constructed OCTET STRING holding one segment `04 02 30 00`.
+        let constructed_value = [
+            0x30, 0x0d, 0x30, 0x0b, 0x06, 0x03, 0x55, 0x1d, 0x13, 0x24, 0x04, 0x04, 0x02, 0x30, 0x00,
+        ];
+        assert_eq!(
+            validate_extensions(&constructed_value),
+            Err(ExtensionsError::BadExtension(ExtensionError::BadExtnValue(
+                crate::octet_string::OctetStringError::Constructed
+            )))
+        );
+
+        // DEFAULT value written out: critical = FALSE present as `01 01 00`.
+        let default_written = [
+            0x30, 0x0e, 0x30, 0x0c, 0x06, 0x03, 0x55, 0x1d, 0x13, 0x01, 0x01, 0x00, 0x04, 0x02, 0x30, 0x00,
+        ];
+        assert_eq!(
+            validate_extensions(&default_written),
+            Err(ExtensionsError::BadExtension(ExtensionError::CriticalMustBeTrue))
+        );
+
+        // critical = TRUE spelled `01 01 01` (BER accepts any non-zero octet as TRUE).
+        let ber_true = [
+            0x30, 0x0e, 0x30, 0x0c, 0x06, 0x03, 0x55, 0x1d, 0x13, 0x01, 0x01, 0x01, 0x04, 0x02, 0x30, 0x00,
+        ];
+        assert_eq!(
+            validate_extensions(&ber_true),
+            Err(ExtensionsError::BadExtension(ExtensionError::BadCritical(BoolError::NonCanonical)))
+        );
+    }
 }

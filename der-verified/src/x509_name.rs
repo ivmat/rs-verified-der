@@ -998,4 +998,77 @@ mod tests {
         bytes[8] = 0x80;
         assert_eq!(validate_name(&bytes), Err(NameError::BadAtvOid(OidError::NonMinimalSubid)));
     }
+
+    // --- S4a group 4: additional attribute types and non-DN subjects ---
+
+    /// One RDN `SET { SEQUENCE { OID, value } }`; every length in these specimens is below 128.
+    fn rdn_of(oid: &[u8], value_tlv: &[u8]) -> Vec<u8> {
+        let atv_len = 2 + oid.len() + value_tlv.len();
+        let mut out = vec![0x31, (2 + atv_len) as u8, 0x30, atv_len as u8, 0x06, oid.len() as u8];
+        out.extend_from_slice(oid);
+        out.extend_from_slice(value_tlv);
+        out
+    }
+
+    /// `SEQUENCE { rdns... }` around ready RDN encodings (content below 128 octets per call).
+    fn name_of(rdns: &[Vec<u8>]) -> Vec<u8> {
+        let content: Vec<u8> = rdns.iter().flatten().copied().collect();
+        assert!(content.len() < 128);
+        let mut out = vec![0x30, content.len() as u8];
+        out.extend_from_slice(&content);
+        out
+    }
+
+    /// RFC5280-4.1.2.4-g: attribute types beyond the MUST list (locality, title, surname, given
+    /// name, initials, pseudonym, generation qualifier, state) are structurally accepted.
+    #[test]
+    fn accepts_additional_issuer_attribute_types() {
+        // 2.5.4.7 locality, .8 state, .4 surname, .12 title, .42 givenName, .43 initials,
+        // .44 generationQualifier, .65 pseudonym.
+        for last in [0x07u8, 0x08, 0x04, 0x0c, 0x2a, 0x2b, 0x2c, 0x41] {
+            let utf8 = [0x0c, 0x03, b'a', b'b', b'c'];
+            let name = name_of(&[rdn_of(&[0x55, 0x04, last], &utf8)]);
+            assert_eq!(validate_name(&name), Ok(()), "attribute 2.5.4.{last}");
+        }
+        // All eight together as separate RDNs, after a country RDN.
+        let utf8 = [0x0c, 0x01, b'x'];
+        let rdns: Vec<Vec<u8>> = [0x06u8, 0x07, 0x08, 0x04, 0x0c]
+            .iter()
+            .map(|last| rdn_of(&[0x55, 0x04, *last], &utf8))
+            .collect();
+        assert_eq!(validate_name(&name_of(&rdns)), Ok(()));
+    }
+
+    /// RFC5280-4.1.2.4-h: the domainComponent attribute (0.9.2342.19200300.100.1.25, IA5String
+    /// value) is structurally accepted, one RDN per label.
+    #[test]
+    fn accepts_domain_component_attributes() {
+        let dc_oid = [0x09u8, 0x92, 0x26, 0x89, 0x93, 0xF2, 0x2C, 0x64, 0x01, 0x19];
+        let com = [0x16u8, 0x03, b'c', b'o', b'm'];
+        let example = [0x16u8, 0x07, b'e', b'x', b'a', b'm', b'p', b'l', b'e'];
+        // dc=com, dc=example (most significant label first, as RFC 4514 renders the reverse).
+        let name = name_of(&[rdn_of(&dc_oid, &com), rdn_of(&dc_oid, &example)]);
+        assert_eq!(validate_name(&name), Ok(()));
+        // The type OID is carried intact: the first ATV type TLV is the 12-octet domainComponent OID.
+        assert_eq!(&name[6..8], &[0x06, 0x0a]);
+        assert_eq!(&name[8..18], &dc_oid);
+    }
+
+    /// RFC5280-4.1.2.6-b: a non-empty subject must be a distinguished name; content that is not a
+    /// sequence of RDNs of attribute type-and-value pairs is rejected, while the empty sequence is
+    /// the separate "empty subject" case.
+    #[test]
+    fn rejects_nonempty_name_that_is_not_a_distinguished_name() {
+        // SEQUENCE { INTEGER 5 }: the child is not an RDN SET.
+        assert_eq!(
+            validate_name(&[0x30, 0x03, 0x02, 0x01, 0x05]),
+            Err(NameError::BadRdn(SetOfError::WrongTag))
+        );
+        // SEQUENCE { SET { INTEGER 5 } }: the RDN member is not an AttributeTypeAndValue.
+        assert_eq!(validate_name(&[0x30, 0x05, 0x31, 0x03, 0x02, 0x01, 0x05]), Err(NameError::AtvWrongTag));
+        // SEQUENCE { SET {} }: an RDN with no attribute.
+        assert_eq!(validate_name(&[0x30, 0x02, 0x31, 0x00]), Err(NameError::EmptyRdn));
+        // The empty RDNSequence itself is well-formed (an empty subject is a separate case).
+        assert_eq!(validate_name(&[0x30, 0x00]), Ok(()));
+    }
 }

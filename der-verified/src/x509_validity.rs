@@ -1127,4 +1127,57 @@ mod tests {
         bytes[17] = 0x02;
         assert_eq!(parse_validity(&bytes), Err(ValidityError::NotAfter(TimeError::WrongTag)));
     }
+
+    // --- S4a group 4: the Time CHOICE carries the selected alternative's tag ---
+
+    /// X680-29: each value of the `Time` CHOICE is encoded with the tag of the alternative chosen
+    /// (UTCTime 0x17, GeneralizedTime 0x18), and the parser selects the alternative from that tag.
+    #[test]
+    fn accepts_time_choice_with_selected_alternative_tag() {
+        use crate::tag::{Class, Tag};
+        use crate::tlv::encode_tlv_into;
+        let utc = UtcTime { year2: 49, month: 12, day: 31, hour: 23, minute: 59, second: 59 };
+        let gen = GeneralizedTime { year: 2050, month: 1, day: 1, hour: 0, minute: 0, second: 0, fraction: &[] };
+
+        let mut utc_content = [0u8; 13];
+        let n = crate::utc_time::encode_utc_time(&utc, &mut utc_content).unwrap();
+        let mut utc_tlv = [0u8; 16];
+        let utc_len = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: 23 },
+            &utc_content[..n],
+            &mut utc_tlv,
+        )
+        .unwrap();
+        assert_eq!(utc_tlv[0], 0x17);
+
+        let mut gen_content = [0u8; 20];
+        let n = crate::generalized_time::encode_generalized_time_into(&gen, &mut gen_content).unwrap();
+        let mut gen_tlv = [0u8; 24];
+        let gen_len = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: 24 },
+            &gen_content[..n],
+            &mut gen_tlv,
+        )
+        .unwrap();
+        assert_eq!(gen_tlv[0], 0x18);
+
+        // Both alternatives in both positions.
+        let arms: [(&[u8], Time<'_>); 2] = [(&utc_tlv[..utc_len], Time::Utc(utc)), (&gen_tlv[..gen_len], Time::Generalized(gen))];
+        for (nb_bytes, nb) in &arms {
+            for (na_bytes, na) in &arms {
+                let mut content = nb_bytes.to_vec();
+                content.extend_from_slice(na_bytes);
+                let mut der = [0u8; 64];
+                let m = encode_tlv_into(
+                    Tag { class: Class::Universal, constructed: true, number: 16 },
+                    &content,
+                    &mut der,
+                )
+                .unwrap();
+                let v = parse_validity(&der[..m]).unwrap();
+                assert_eq!(v.not_before, *nb);
+                assert_eq!(v.not_after, *na);
+            }
+        }
+    }
 }

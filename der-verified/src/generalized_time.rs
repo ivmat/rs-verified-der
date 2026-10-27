@@ -1199,4 +1199,165 @@ mod tests {
         let mut out = [0u8; 14];
         assert_eq!(encode_generalized_time_into(&t, &mut out), None);
     }
+
+    // --- S4a group 4: tag, CHOICE, midnight, CODEC-law and X.680 §46 specimens ---
+
+    /// Wrap `inner` content under `tag` with a DER TLV and return the buffer and used length.
+    fn tlv_of(class: crate::tag::Class, number: u32, inner: &[u8]) -> ([u8; 64], usize) {
+        let mut buf = [0u8; 64];
+        let tag = crate::tag::Tag { class, constructed: false, number };
+        let n = crate::tlv::encode_tlv_into(tag, inner, &mut buf).unwrap();
+        (buf, n)
+    }
+
+    /// `SEQUENCE { a, b }` around two ready TLVs.
+    fn validity_of(a: &[u8], b: &[u8]) -> ([u8; 128], usize) {
+        let mut content = [0u8; 100];
+        content[..a.len()].copy_from_slice(a);
+        content[a.len()..a.len() + b.len()].copy_from_slice(b);
+        let mut out = [0u8; 128];
+        let tag = crate::tag::Tag { class: crate::tag::Class::Universal, constructed: true, number: 16 };
+        let n = crate::tlv::encode_tlv_into(tag, &content[..a.len() + b.len()], &mut out).unwrap();
+        (out, n)
+    }
+
+    /// X680-46.3, X680-46b, X680-29: an encoded GeneralizedTime carries identifier 0x18 and its
+    /// content is VisibleString characters; the Time CHOICE selects the generalTime arm from it.
+    #[test]
+    fn accepts_generalized_time_under_universal_tag_24() {
+        let t = GeneralizedTime { year: 2099, month: 12, day: 31, hour: 23, minute: 59, second: 59, fraction: b"5" };
+        let mut content = [0u8; 32];
+        let n = encode_generalized_time_into(&t, &mut content).unwrap();
+        // VisibleString is the printable ASCII range 0x20..=0x7E.
+        assert!(content[..n].iter().all(|b| (0x20..=0x7E).contains(b)));
+        let (tlv, m) = tlv_of(crate::tag::Class::Universal, TAG, &content[..n]);
+        assert_eq!(tlv[0], 0x18);
+        assert_eq!(&tlv[2..m], b"20991231235959.5Z");
+        let (v, k) = validity_of(&tlv[..m], &tlv[..m]);
+        let parsed = crate::x509_validity::parse_validity(&v[..k]).unwrap();
+        assert_eq!(parsed.not_before, crate::x509_validity::Time::Generalized(t));
+        assert_eq!(parsed.not_after, crate::x509_validity::Time::Generalized(t));
+    }
+
+    /// X680-46.3, X680-29: GeneralizedTime content under any identifier other than UNIVERSAL 24 is
+    /// rejected by the Time CHOICE (VisibleString 0x1A, APPLICATION 24 0x58, UTCTime tag 0x17 with a
+    /// 15-octet body).
+    #[test]
+    fn rejects_generalized_time_content_under_other_tag() {
+        use crate::tag::Class;
+        use crate::x509_validity::{parse_validity, TimeError, ValidityError};
+        let body = b"20230615120000Z";
+        let (good, g) = tlv_of(Class::Universal, TAG, body);
+        // UNIVERSAL 26 (VisibleString), identifier octet 0x1A.
+        let (vs, v) = tlv_of(Class::Universal, 26, body);
+        assert_eq!(vs[0], 0x1A);
+        let (seq, n) = validity_of(&vs[..v], &good[..g]);
+        assert_eq!(parse_validity(&seq[..n]), Err(ValidityError::NotBefore(TimeError::WrongTag)));
+        // APPLICATION 24, identifier octet 0x58: right number, wrong class.
+        let (app, a) = tlv_of(Class::Application, TAG, body);
+        assert_eq!(app[0], 0x58);
+        let (seq, n) = validity_of(&good[..g], &app[..a]);
+        assert_eq!(parse_validity(&seq[..n]), Err(ValidityError::NotAfter(TimeError::WrongTag)));
+    }
+
+    /// X680-46b: a character outside the VisibleString range inside the value is rejected.
+    #[test]
+    fn rejects_non_visible_string_octet() {
+        // 0x80 is not a VisibleString character; it sits in the last fraction digit position.
+        assert_eq!(decode_generalized_time(b"20230615120000.5\x80Z"), Err(GeneralizedTimeError::NonDigit));
+        // A control character (US, 0x1F) in the mandatory part.
+        assert_eq!(decode_generalized_time(b"2023061512\x1f000Z"), Err(GeneralizedTimeError::NonDigit));
+    }
+
+    /// X680-46.2: the hours-and-minutes, hours-only and local-time-with-difference spellings (all BER
+    /// values of the type) are not accepted in DER.
+    #[test]
+    fn rejects_hours_minutes_and_local_difference_forms() {
+        // Minutes with a decimal fraction: 15 octets, but the '.' sits in a mandatory digit position.
+        assert_eq!(decode_generalized_time(b"202306151230.5Z"), Err(GeneralizedTimeError::NonDigit));
+        // Hours with a decimal fraction (13 octets) and hours only (11 octets).
+        assert_eq!(decode_generalized_time(b"2023061512.5Z"), Err(GeneralizedTimeError::BadLength));
+        assert_eq!(decode_generalized_time(b"2023061512Z"), Err(GeneralizedTimeError::BadLength));
+        // Local time plus difference from UTC, with seconds (19 octets) and hours-only offset (17).
+        assert_eq!(decode_generalized_time(b"20230615123045-0530"), Err(GeneralizedTimeError::NotZulu));
+        assert_eq!(decode_generalized_time(b"20230615123045+05"), Err(GeneralizedTimeError::NotZulu));
+        // Local time of day with a fraction and no terminator.
+        assert_eq!(decode_generalized_time(b"20230615123045.5"), Err(GeneralizedTimeError::NotZulu));
+    }
+
+    /// X690-11.7.5: midnight is written `YYYYMMDD000000Z` with the day that follows the midnight.
+    #[test]
+    fn accepts_midnight_as_000000z() {
+        // X.690 §11.7.5 example.
+        let t = decode_generalized_time(b"19920521000000Z").unwrap();
+        assert_eq!(
+            t,
+            GeneralizedTime { year: 1992, month: 5, day: 21, hour: 0, minute: 0, second: 0, fraction: &[] }
+        );
+        let mut out = [0u8; 32];
+        let n = encode_generalized_time_into(&t, &mut out).unwrap();
+        assert_eq!(&out[..n], b"19920521000000Z");
+        // The midnight that closes 2023-12-31 is written as 2024-01-01 000000Z.
+        let next = GeneralizedTime { year: 2024, month: 1, day: 1, hour: 0, minute: 0, second: 0, fraction: &[] };
+        let n = encode_generalized_time_into(&next, &mut out).unwrap();
+        assert_eq!(&out[..n], b"20240101000000Z");
+        assert_eq!(decode_generalized_time(&out[..n]), Ok(next));
+    }
+
+    /// PROF-time-no-leap-second: second 59 is the last accepted value and encodes; 60 is not.
+    #[test]
+    fn accepts_second_59_next_to_rejected_leap_second() {
+        let t = decode_generalized_time(b"20161231235959Z").unwrap();
+        assert_eq!(t.second, 59);
+        let mut out = [0u8; 32];
+        let n = encode_generalized_time_into(&t, &mut out).unwrap();
+        assert_eq!(&out[..n], b"20161231235959Z");
+        assert_eq!(decode_generalized_time(b"20161231235960Z"), Err(GeneralizedTimeError::SecondRange));
+    }
+
+    /// CODEC-generalized-time-encode-decode: re-encoding an accepted value reproduces its bytes.
+    #[test]
+    fn roundtrips_accepted_bytes_through_reencode() {
+        let specimens: [&[u8]; 5] = [
+            b"20230615120000Z",
+            b"20230615120000.1Z",
+            b"99991231235959.0000001Z",
+            b"00010101000000Z",
+            b"20240229083015.25Z",
+        ];
+        for bytes in specimens {
+            let t = decode_generalized_time(bytes).unwrap();
+            let mut out = [0u8; 40];
+            let n = encode_generalized_time_into(&t, &mut out).unwrap();
+            assert_eq!(&out[..n], bytes);
+        }
+    }
+
+    /// CODEC-generalized-time-unique: one value, one accepted spelling; the other spellings of the
+    /// same instant are rejected with their own error.
+    #[test]
+    fn rejects_noncanonical_spellings_of_an_accepted_value() {
+        let t = decode_generalized_time(b"20230615120000.1Z").unwrap();
+        assert_eq!(t.fraction, b"1");
+        assert_eq!(
+            decode_generalized_time(b"20230615120000.10Z"),
+            Err(GeneralizedTimeError::FractionTrailingZero)
+        );
+        assert_eq!(
+            decode_generalized_time(b"20230615120000.100Z"),
+            Err(GeneralizedTimeError::FractionTrailingZero)
+        );
+        assert_eq!(
+            decode_generalized_time(b"20230615120000,1Z"),
+            Err(GeneralizedTimeError::BadFractionSeparator)
+        );
+        // The value without a fraction has exactly one spelling too.
+        let whole = decode_generalized_time(b"20230615120000Z").unwrap();
+        assert!(whole.fraction.is_empty());
+        assert_eq!(
+            decode_generalized_time(b"20230615120000.0Z"),
+            Err(GeneralizedTimeError::FractionTrailingZero)
+        );
+        assert_eq!(decode_generalized_time(b"202306151200Z"), Err(GeneralizedTimeError::BadLength));
+    }
 }
