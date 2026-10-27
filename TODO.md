@@ -4,6 +4,50 @@ Tracked roadmap for `der-verified`. Grouped by theme; check items off as they la
 `PROOF_MANIFEST.md` for what is currently proven and `DECISIONS.md` for the rationale behind each
 scope boundary referenced below.
 
+## Open after the requirements pass (2026-10-27)
+
+The requirements tree (`docs/requirements/der.inventory.toml`), the evidence map (`docs/requirements/evidence/`) and the
+test-gap report (`docs/requirements/test-gaps.md`) are in place: every testable requirement row has its tests. Open items:
+
+**Before the next release or push**
+- [ ] Full fresh proof run at the release commit: every Kani harness (split floor at 20 GB plus the heavy harnesses at
+      24 GB) and the Lean lids. Six Lean-lid source files are marked PENDING after test-only edits
+      (`lean/lid-source-state.txt`), so `check.sh --strict` fails until a green Lean run.
+- [ ] Re-measure `x509_name::proofs::validate_rdn_never_panics` (about 17 GB before; `validate_rdn` now checks each attribute
+      value's identifier form).
+- [ ] Regenerate the acceptance manifest for the new source (it still describes the proof run at `d68eeca`), and decide
+      between the 0.3.2 format at the new commit and the 0.4.0 uplift with the requirements inventory.
+- [ ] Public API review. `StringError`, `Utf8Error`, `NameError`, `AlgIdError` and `SpkiError` gained variants, and they are
+      exhaustive enums, so this is a breaking change (see CHANGELOG). Decide the version, and whether these enums become
+      `#[non_exhaustive]`.
+
+**Proofs**
+- [ ] The three profile helper harnesses that exceed 20 GB: [`docs/proof-work/s5-profile-helper-harnesses.md`](docs/proof-work/s5-profile-helper-harnesses.md)
+      (plan: stub `decode_tlv` with its proven postcondition, as DECISIONS D26 does for `validate_rdn`). Until then
+      `profile::proofs::validate_profile_never_panics` is conditional on `has_repeated_leading_oid` being total (shown by
+      tests only).
+
+**Tests**
+- [ ] External test vectors (x509-limbo, Wycheproof DER/ECDSA cases) and differential runs against other DER parsers on
+      the same inputs.
+- [ ] Mutation testing over the whole suite (for example `cargo-mutants`); today each new test was checked red by a manual
+      mutation.
+
+**Scope decisions still open**
+- [ ] PKCS#8 attribute members are not decoded, so their values are not checked at all (the `[0]` wrapper is
+      context-specific). Decide whether to walk them.
+- [ ] UTF8String accepts CSI-introduced control sequences (X.690 §8.23.9 e); only ESC, SO, SI, SS2 and SS3 are rejected.
+- [ ] Basic constraints, key usage and name constraints (PROF-P-5/6/7) are excluded for now; a later milestone may add them.
+
+**Docs**
+- [ ] `der-verified/src/lib.rs` says the profile "enforces three rules" (it enforces eight) and calls the `otherPrimeInfos`
+      content opaque (each member is validated). `identifier_form.rs` comments give the X.690 clause numbers of
+      EMBEDDED PDV and RELATIVE-OID as 8.20/8.21 (they are 8.17/8.20).
+- [ ] README and PROOF_MANIFEST say "221 of the N harnesses" run in CI; by the shard filters it is 225 now, and no gate
+      guards it.
+- [ ] `COVERAGE.md` keeps its hand-written `DER-C-*` rows next to the generated inventory; decide whether the inventory
+      replaces them.
+
 ## Known limitations (verification)
 
 - [x] **`x509_name::validate_never_panics` — RESOLVED via a modular proof (DECISIONS.md D26).** The
