@@ -329,3 +329,53 @@ reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/pkcs8.rs"
+name = "rejects_end_of_contents_algorithm_parameters"
+accept = []
+reject = ["X690-8.1.5"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/pkcs8.rs"
+name = "rejects_constructed_boolean_algorithm_parameters"
+accept = []
+reject = ["X690-8.1.2.5", "X690-8.2.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/pkcs8.rs"
+name = "accepts_algorithm_parameters_with_legal_identifier"
+accept = ["X690-8.15", "X690-8.1.2.5", "PROF-strict-trailing"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/pkcs8.rs"
+name = "accepts_empty_integer_algorithm_parameters_contents_stay_opaque"
+accept = ["X690-8.15", "PROF-strict-trailing"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/pkcs8.rs"
+name = "accepts_attributes_wrapper_with_end_of_contents_bytes_inside_opaque"
+accept = ["PROF-strict-trailing"]
+reject = []
+prove = []
+bounded = ""
+none = ""

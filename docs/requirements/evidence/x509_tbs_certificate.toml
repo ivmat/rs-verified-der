@@ -24,7 +24,7 @@ none = "positive concrete witness harness with three stubs; cover does not prove
 kind = "test"
 file = "der-verified/src/x509_tbs_certificate.rs"
 name = "accepts_v3_tbs_without_unique_identifiers"
-accept = ["RFC5280-4.1.2.8-b", "PROF-unique-identifiers-rejected"]
+accept = ["RFC5280-4.1.2.8-b", "PROF-unique-identifiers-rejected", "X690-8.14.2", "X690-8.14.3"]
 reject = []
 prove = []
 bounded = ""
@@ -34,7 +34,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/x509_tbs_certificate.rs"
 name = "parses_complete_v3_certificate"
-accept = ["RFC5280-4.1-a", "RFC5280-4.1-b", "RFC5280-4.1-c", "RFC5280-4.1.2.1-d", "RFC5280-4.1.2.6-b", "X690-8.9.2"]
+accept = ["RFC5280-4.1-a", "RFC5280-4.1-b", "RFC5280-4.1-c", "RFC5280-4.1.2.1-d", "RFC5280-4.1.2.6-b", "X690-8.9.2", "X690-8.14.2", "X690-8.14.3"]
 reject = []
 prove = []
 bounded = ""
@@ -245,7 +245,7 @@ kind = "test"
 file = "der-verified/src/x509_tbs_certificate.rs"
 name = "rejects_version_inner_trailing"
 accept = []
-reject = ["RFC5280-4.1-b", "X690-8.14.3"]
+reject = ["RFC5280-4.1-b", "X690-8.14.3", "X690-8.14.2"]
 prove = []
 bounded = ""
 none = ""
@@ -276,6 +276,66 @@ file = "der-verified/src/x509_tbs_certificate.rs"
 name = "version_peek_requires_both_context_specific_and_number_zero"
 accept = []
 reject = ["RFC5280-4.1-b", "X690-8.9.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_extensions_wrapper_empty"
+accept = []
+reject = ["RFC5280-4.1-h", "X690-8.14.2", "X690-8.14.3"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_extensions_wrapper_sequence_plus_trailing_octet"
+accept = []
+reject = ["RFC5280-4.1-h", "X690-8.14.2", "X690-8.14.3"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_extensions_wrapper_truncated_inner_tlv"
+accept = []
+reject = ["RFC5280-4.1-h", "X690-8.14.2", "X690-8.14.3"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_version_wrapper_empty"
+accept = []
+reject = ["RFC5280-4.1-b", "X690-8.14.2", "X690-8.14.3"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_version_wrapper_integer_plus_trailing_octet"
+accept = []
+reject = ["RFC5280-4.1-b", "X690-8.14.2", "X690-8.14.3"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_version_wrapper_truncated_inner_tlv"
+accept = []
+reject = ["RFC5280-4.1-b", "X690-8.14.2", "X690-8.14.3"]
 prove = []
 bounded = ""
 none = ""

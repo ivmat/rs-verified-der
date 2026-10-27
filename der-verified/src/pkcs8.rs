@@ -49,7 +49,18 @@
 //!   individual `Attribute` (`AttributeTypeAndValue`-shaped, itself an open-ended `ANY`-valued
 //!   grammar). That is a separate, larger obligation, deliberately left to a caller — exactly as
 //!   curve-order range checks are left to a caller by [`crate::ecdsa_sig_value`]. Absent attributes
-//!   is normal (`Attributes` is `OPTIONAL`) and materializes as `None`, not an error. A trailing TLV
+//!   is normal (`Attributes` is `OPTIONAL`) and materializes as `None`, not an error.
+//! - **Identifier-form check on opaque values: the algorithm parameters only.** The
+//!   `privateKeyAlgorithm` field is delegated whole to
+//!   [`crate::x509_algorithm_identifier::parse_algorithm_identifier`], which rejects an opaque
+//!   `parameters` TLV whose identifier is the reserved end-of-contents `00` or has an impossible
+//!   primitive/constructed form (X.690 §8.1.5, §8.1.2.5, §10.2); that error arrives here as
+//!   [`Pkcs8Error::Algorithm`] wrapping `AlgIdError::ParametersForm`. This module adds **no
+//!   identifier-form check of its own**, and none could decide anything on the `[0]` attributes
+//!   wrapper: its identifier is context-specific, whose required form is a property of the schema
+//!   ([`crate::identifier_form`]'s scope fence accepts every non-UNIVERSAL identifier), and the
+//!   `Attribute` members inside it are never decoded. Contents stay opaque throughout, so
+//!   `A0 02 00 00` is still accepted. A trailing TLV
 //!   that is present but is **not** context `[0]` is a genuinely unpermitted third field — the outer
 //!   SEQUENCE admits nothing beyond `version`, `privateKeyAlgorithm`, `privateKey`, and the one
 //!   optional `[0]` — and is rejected as [`Pkcs8Error::TrailingElements`], the same variant used for
@@ -609,6 +620,7 @@ mod proofs {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::identifier_form::FormError;
 
     /// A real openssl-generated Ed25519 PKCS#8 v1 `PrivateKeyInfo` (RFC 8410 §7). Same specimen as
     /// the module doc's own example and the Kani `parse_ok_path_witnessed` harness; hand-verified
@@ -845,6 +857,79 @@ mod tests {
             parse_pkcs8_private_key_info(&bytes),
             Err(Pkcs8Error::Algorithm(AlgIdError::BadSeq(SequenceError::WrongTag)))
         );
+    }
+
+    #[test]
+    fn rejects_end_of_contents_algorithm_parameters() {
+        // The privateKeyAlgorithm's `parameters` are `00 00`, the reserved end-of-contents identifier
+        // (X.690 §8.1.5). The identifier-form check lives in `parse_algorithm_identifier`, which this
+        // module delegates to whole, so the rejection arrives wrapped in `Pkcs8Error::Algorithm`.
+        // 30 0e 02 01 00 30 07 06 03 2b 65 70 00 00 04 00
+        let bytes = [
+            0x30, 0x0e, 0x02, 0x01, 0x00, 0x30, 0x07, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x00, 0x00, 0x04,
+            0x00,
+        ];
+        assert_eq!(
+            parse_pkcs8_private_key_info(&bytes),
+            Err(Pkcs8Error::Algorithm(AlgIdError::ParametersForm(FormError::ReservedIdentifier)))
+        );
+    }
+
+    #[test]
+    fn rejects_constructed_boolean_algorithm_parameters() {
+        // The parameters `21 00` are a CONSTRUCTED BOOLEAN: BOOLEAN is primitive-only (X.690 §8.1.2.5).
+        // 30 0e 02 01 00 30 07 06 03 2b 65 70 21 00 04 00
+        let bytes = [
+            0x30, 0x0e, 0x02, 0x01, 0x00, 0x30, 0x07, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x21, 0x00, 0x04,
+            0x00,
+        ];
+        assert_eq!(
+            parse_pkcs8_private_key_info(&bytes),
+            Err(Pkcs8Error::Algorithm(AlgIdError::ParametersForm(FormError::MustBePrimitive)))
+        );
+    }
+
+    #[test]
+    fn accepts_algorithm_parameters_with_legal_identifier() {
+        // The conforming neighbour: NULL parameters `05 00` (primitive, legal identifier) are
+        // accepted and exposed verbatim.
+        // 30 0e 02 01 00 30 07 06 03 2b 65 70 05 00 04 00
+        let bytes = [
+            0x30, 0x0e, 0x02, 0x01, 0x00, 0x30, 0x07, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x05, 0x00, 0x04,
+            0x00,
+        ];
+        let info = parse_pkcs8_private_key_info_strict(&bytes).unwrap();
+        assert_eq!(info.algorithm.algorithm_oid, &[0x2b, 0x65, 0x70]);
+        assert_eq!(info.algorithm.parameters, Some(&[0x05, 0x00][..]));
+        assert_eq!(info.private_key, &[] as &[u8]);
+    }
+
+    #[test]
+    fn accepts_empty_integer_algorithm_parameters_contents_stay_opaque() {
+        // `02 00` (an empty INTEGER) has a legal identifier; its contents are not examined
+        // (PROF-opaque-contents-not-der-checked), so it is still accepted.
+        // 30 0e 02 01 00 30 07 06 03 2b 65 70 02 00 04 00
+        let bytes = [
+            0x30, 0x0e, 0x02, 0x01, 0x00, 0x30, 0x07, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x02, 0x00, 0x04,
+            0x00,
+        ];
+        let info = parse_pkcs8_private_key_info_strict(&bytes).unwrap();
+        assert_eq!(info.algorithm.parameters, Some(&[0x02, 0x00][..]));
+    }
+
+    #[test]
+    fn accepts_attributes_wrapper_with_end_of_contents_bytes_inside_opaque() {
+        // The `[0]` attributes wrapper is context-specific, so the identifier-form rule has nothing
+        // to decide about it (the required form of a non-UNIVERSAL identifier is schema-dependent),
+        // and its contents are opaque: `A0 02 00 00` is accepted and the two content octets are
+        // exposed verbatim. This pins the documented boundary, not a conformance claim.
+        // 30 10 02 01 00 30 05 06 03 2b 65 70 04 00 a0 02 00 00
+        let bytes = [
+            0x30, 0x10, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x00, 0xa0,
+            0x02, 0x00, 0x00,
+        ];
+        let info = parse_pkcs8_private_key_info_strict(&bytes).unwrap();
+        assert_eq!(info.attributes, Some(&[0x00, 0x00][..]));
     }
 
     #[test]

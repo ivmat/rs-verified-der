@@ -8,7 +8,7 @@
 //! independently-canonical values, and nothing in the ASN.1 grammar itself ties one to the other
 //! (see [`crate::x509_certificate`]'s and [`crate::x509_tbs_certificate`]'s module docs, which name
 //! this exact split and explicitly leave such rules "to the caller"). This module is that caller,
-//! for the first four such rules:
+//! for the first seven such rules:
 //!
 //! 1. **RFC 5280 §4.1.1.2**: the outer `Certificate.signatureAlgorithm` MUST be identical to the
 //!    `signature` field inside the signed `TBSCertificate`. A mismatch is a classic
@@ -46,13 +46,37 @@
 //!    compliant. Rule 4 is independent of rule 3's year check (a 2050-or-later GeneralizedTime with
 //!    a fraction passes rule 3 and fails rule 4), and it is checked after rule 3 for both fields (see
 //!    [`validate_profile`] for the exact order).
+//! 5. **RFC 5280 §4.2** (profile row `PROF-P-12`): a certificate MUST NOT include more than one
+//!    instance of a particular extension. [`crate::x509_extension::validate_extensions`] accepts two
+//!    `Extension`s with the same `extnID` (each is a valid `Extension` on its own), so the
+//!    duplicate check lives here: [`ProfileError::DuplicateExtension`]. The `extnID`s are compared
+//!    as canonical OID **content octets**, so two spellings of one extension that differ in
+//!    `critical` or `extnValue` still count as the same extension. A caller that uses
+//!    `validate_extensions` alone does not get this check.
+//! 6. **RFC 5280 §4.1.2.4** (profile row `PROF-P-13`): the `issuer` field MUST contain a non-empty
+//!    distinguished name. [`crate::x509_name::validate_name`] accepts the empty `Name` (`30 00`) by
+//!    design, because an empty `subject` is legal, so only the `issuer` is checked here, as
+//!    [`ProfileError::EmptyIssuer`]. An empty `subject` is not a violation.
+//! 7. **X.501 §9.3** (profile row `PROF-P-14`): a `RelativeDistinguishedName` holds at most one
+//!    value for each attribute type. [`crate::x509_name::validate_name`] and
+//!    [`crate::set_of::decode_set_of`] accept two `AttributeTypeAndValue`s with the same `type`
+//!    in one RDN, so the check lives here, for the `issuer` ([`ProfileError::IssuerDuplicateAttributeType`])
+//!    and the `subject` ([`ProfileError::SubjectDuplicateAttributeType`]). The attribute types are
+//!    compared as canonical OID content octets. The same type in two different RDNs of one Name is
+//!    legal.
 //!
 //! **Scope.** For a *parser-produced* `Certificate` (the output of
 //! [`crate::x509_certificate::parse_certificate`]), both `Certificate` and `TbsCertificate` are
 //! already fully structurally parsed by the time [`validate_profile`] runs — this module inspects
 //! already-materialized fields (`AlgorithmIdentifier` values, the `version` `u8`, the `extensions`
 //! `Option`, the `Validity`'s two `Time` CHOICE arms, their year fields, and the emptiness of a
-//! GeneralizedTime's fraction) and performs no byte-level decoding of its own. The structural claims in
+//! GeneralizedTime's fraction). Rules 1 to 4 perform no byte-level decoding of their own. Rules 5
+//! to 7 re-walk the already-validated `extensions`, `issuer` and `subject` byte spans with
+//! [`crate::sequence::Elements`], [`crate::sequence::decode_sequence_tlv_strict`] and
+//! [`crate::tlv::decode_tlv`] (read-only framing walks; they validate nothing that the parsers did
+//! not). On a hand-built span that does not walk (a truncated or mis-tagged element), the walk
+//! stops at the first element it cannot frame and reports no violation for the rest: rules 5 to 7
+//! are decided on the elements they can read. The structural claims in
 //! these docs hold for parser-produced values only: the fields of `Certificate` and its parts are
 //! public, so a caller can also build a value by hand that no parser would produce, and
 //! `validate_profile` reads such a value's fields exactly as it reads any other. It
@@ -99,6 +123,10 @@
 //! ```
 
 use crate::generalized_time::require_no_fraction;
+use crate::oid::TAG as OID_TAG;
+use crate::sequence::{decode_sequence_tlv_strict, Elements, SET_TAG, TAG as SEQUENCE_TAG};
+use crate::tag::Class;
+use crate::tlv::{decode_tlv, Tlv};
 use crate::x509_certificate::Certificate;
 use crate::x509_validity::Time;
 
@@ -134,6 +162,22 @@ pub enum ProfileError {
     /// RFC 5280 §4.1.2.5.2: `tbsCertificate.validity.notAfter` is encoded as GeneralizedTime and
     /// carries fractional seconds — a GeneralizedTime in `validity` MUST NOT include them.
     NotAfterGeneralizedTimeHasFraction,
+    /// RFC 5280 §4.2 (profile rule P-12): `tbsCertificate.extensions` contains two `Extension`s
+    /// with the same `extnID` — a certificate MUST NOT include more than one instance of a
+    /// particular extension. The `extnID`s are compared as canonical OID content octets.
+    DuplicateExtension,
+    /// RFC 5280 §4.1.2.4 (profile rule P-13): `tbsCertificate.issuer` is the empty `Name`
+    /// (an `RDNSequence` with zero RDNs, `30 00`) — the issuer field MUST contain a non-empty
+    /// distinguished name. An empty `subject` is legal and is not reported.
+    EmptyIssuer,
+    /// X.501 §9.3 (profile rule P-14): a `RelativeDistinguishedName` of `tbsCertificate.issuer`
+    /// holds two `AttributeTypeAndValue`s with the same attribute type. The types are compared as
+    /// canonical OID content octets.
+    IssuerDuplicateAttributeType,
+    /// X.501 §9.3 (profile rule P-14): a `RelativeDistinguishedName` of `tbsCertificate.subject`
+    /// holds two `AttributeTypeAndValue`s with the same attribute type. The types are compared as
+    /// canonical OID content octets.
+    SubjectDuplicateAttributeType,
 }
 
 /// RFC 5280 §4.1.2.5 / §4.1.2.5.1 / §4.1.2.5.2: check one already-decoded `Time` CHOICE value
@@ -179,18 +223,98 @@ fn check_time_no_fraction(time: &Time<'_>, on_fraction: ProfileError) -> Result<
     Ok(())
 }
 
-/// Check `cert` against this module's RFC 5280 profile rules (see the module docs for exactly
-/// which four).
+/// The `extnID` / attribute-type OID **content octets** of one element of a SEQUENCE OF
+/// `Extension` or of a SET OF `AttributeTypeAndValue`: `element` must be a constructed UNIVERSAL 16
+/// SEQUENCE whose first child is a primitive UNIVERSAL 6 OBJECT IDENTIFIER. Returns `None` for any
+/// element that does not frame that way (only a hand-built span can contain one: the parsers
+/// reject it).
+fn leading_oid<'a>(element: &Tlv<'a>) -> Option<&'a [u8]> {
+    if element.tag.class != Class::Universal || element.tag.number != SEQUENCE_TAG || !element.tag.constructed {
+        return None;
+    }
+    match decode_tlv(element.value) {
+        Ok((id, _))
+            if id.tag.class == Class::Universal && id.tag.number == OID_TAG && !id.tag.constructed =>
+        {
+            Some(id.value)
+        }
+        _ => None,
+    }
+}
+
+/// `true` iff two elements of `content` (a concatenation of `Extension`s or of
+/// `AttributeTypeAndValue`s) have the same [`leading_oid`] content octets. Compares every element
+/// with each later one (quadratic in the element count, allocation-free). Elements whose
+/// [`leading_oid`] is `None` take no part, and the walk stops at the first element that does not
+/// frame.
+fn has_repeated_leading_oid(content: &[u8]) -> bool {
+    let mut outer = Elements::new(content);
+    while let Some(Ok(first)) = outer.next() {
+        if let Some(id) = leading_oid(&first) {
+            let mut later = outer.clone();
+            while let Some(Ok(other)) = later.next() {
+                if leading_oid(&other) == Some(id) {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+/// P-12 (RFC 5280 §4.2): `true` iff `extensions` (the inner `Extensions` SEQUENCE TLV) holds two
+/// `Extension`s with the same `extnID` content octets.
+fn extensions_repeat_an_id(extensions: &[u8]) -> bool {
+    match decode_sequence_tlv_strict(extensions) {
+        Ok(content) => has_repeated_leading_oid(content),
+        Err(_) => false,
+    }
+}
+
+/// P-13 (RFC 5280 §4.1.2.4): `true` iff `name` is exactly the empty `RDNSequence`, `30 00`.
+fn name_is_empty(name: &[u8]) -> bool {
+    matches!(decode_sequence_tlv_strict(name), Ok(content) if content.is_empty())
+}
+
+/// P-14 (X.501 §9.3): `true` iff some `RelativeDistinguishedName` of `name` (a whole `Name` TLV)
+/// holds two `AttributeTypeAndValue`s with the same `type` content octets. The walk stops at the
+/// first RDN that does not frame as a constructed UNIVERSAL 17 SET.
+fn name_has_repeated_attribute_type(name: &[u8]) -> bool {
+    let rdns = match decode_sequence_tlv_strict(name) {
+        Ok(content) => content,
+        Err(_) => return false,
+    };
+    for rdn in Elements::new(rdns) {
+        match rdn {
+            Ok(rdn) => {
+                if rdn.tag.class != Class::Universal || rdn.tag.number != SET_TAG || !rdn.tag.constructed {
+                    return false;
+                }
+                if has_repeated_leading_oid(rdn.value) {
+                    return true;
+                }
+            }
+            Err(_) => return false,
+        }
+    }
+    false
+}
+
+/// Check `cert` against this module's RFC 5280 / X.501 profile rules (see the module docs for
+/// exactly which seven).
 ///
 /// `cert` is expected to be a structurally-valid [`Certificate`] (i.e. the output of
 /// [`crate::x509_certificate::parse_certificate`]; the public fields also allow a hand-built value,
-/// which is not checked structurally) — this function performs no DER decoding of its own, only
-/// comparisons over already-materialized fields. Returns `Ok(())` if all rules hold, else
-/// the first violated rule's [`ProfileError`] (checked in the order the variants are declared:
-/// signature-algorithm equality, then the extensions/version rule, then `notBefore`'s
+/// which is not checked structurally) — rules 1 to 4 perform no DER decoding of their own, only
+/// comparisons over already-materialized fields, and rules 5 to 7 only re-walk the already-validated
+/// `extensions`, `issuer` and `subject` spans (see the module docs). Returns `Ok(())` if all rules
+/// hold, else the first violated rule's [`ProfileError`] (checked in the order the variants are
+/// declared: signature-algorithm equality, then the extensions/version rule, then `notBefore`'s
 /// encoding-choice year rule, then `notAfter`'s, then `notBefore`'s no-fractional-seconds rule, then
-/// `notAfter`'s). Rule 4 is checked after both rule 3 fields so that the errors reported for
-/// certificates that were already rejected before rule 4 existed are unchanged.
+/// `notAfter`'s, then the duplicate-extension rule (P-12), then the empty-issuer rule (P-13), then the
+/// repeated-attribute-type rule for the issuer and then for the subject (P-14)). Rule 4 is checked
+/// after both rule 3 fields, and rules 5 to 7 after rule 4, so that the errors reported for
+/// certificates that were already rejected before those rules existed are unchanged.
 pub fn validate_profile(cert: &Certificate<'_>) -> Result<(), ProfileError> {
     // Rule 1 (§4.1.1.2): outer signatureAlgorithm == tbsCertificate.signature. `AlgorithmIdentifier`
     // derives `PartialEq`/`Eq`, comparing both `algorithm_oid` (byte slice) and `parameters`
@@ -219,6 +343,26 @@ pub fn validate_profile(cert: &Certificate<'_>) -> Result<(), ProfileError> {
     check_time_no_fraction(&validity.not_before, ProfileError::NotBeforeGeneralizedTimeHasFraction)?;
     check_time_no_fraction(&validity.not_after, ProfileError::NotAfterGeneralizedTimeHasFraction)?;
 
+    // Rule 5 (P-12, RFC 5280 §4.2): no extension appears twice (compared by extnID content octets).
+    if let Some(extensions) = cert.tbs_certificate.extensions {
+        if extensions_repeat_an_id(extensions) {
+            return Err(ProfileError::DuplicateExtension);
+        }
+    }
+
+    // Rule 6 (P-13, RFC 5280 §4.1.2.4): the issuer Name is not empty. The subject may be empty.
+    if name_is_empty(cert.tbs_certificate.issuer) {
+        return Err(ProfileError::EmptyIssuer);
+    }
+
+    // Rule 7 (P-14, X.501 §9.3): no RDN repeats an attribute type; issuer first, then subject.
+    if name_has_repeated_attribute_type(cert.tbs_certificate.issuer) {
+        return Err(ProfileError::IssuerDuplicateAttributeType);
+    }
+    if name_has_repeated_attribute_type(cert.tbs_certificate.subject) {
+        return Err(ProfileError::SubjectDuplicateAttributeType);
+    }
+
     Ok(())
 }
 
@@ -239,12 +383,14 @@ mod proofs {
     /// Build a `Certificate` whose *profile-relevant* fields are symbolic and whose
     /// profile-irrelevant fields are fixed.
     ///
-    /// This is the whole reason `profile` is cheap to verify where the `x509_*` modules are not: this
-    /// module performs **no byte-level decoding** (its own module docs say so), so a harness does not
+    /// This is the whole reason `profile` is cheap to verify where the `x509_*` modules are not: rules
+    /// 1 to 4 perform **no byte-level decoding** (the module docs say so), so a harness does not
     /// need a symbolic DER buffer and a parse — it needs a symbolic *value*. The opaque byte-span
-    /// fields (`serial_number`, `issuer`, `subject`, key material) are never read by
-    /// `validate_profile`, so fixing them to an empty slice loses no generality; what stays symbolic
-    /// is exactly what the four rules inspect.
+    /// fields (`serial_number`, `issuer`, `subject`, key material) are not read by rules 1 to 4, so
+    /// fixing them to an empty slice loses no generality for the harnesses that isolate those rules
+    /// (an empty slice does not frame as a `Name`, so rules 6 and 7 cannot fire on it); what stays
+    /// symbolic is exactly what rules 1 to 4 inspect. The harnesses for rules 5 to 7 build their
+    /// spans with `symbolic_cert_names`.
     fn symbolic_cert<'a>(
         sig_alg: AlgorithmIdentifier<'a>,
         tbs_sig: AlgorithmIdentifier<'a>,
@@ -253,14 +399,31 @@ mod proofs {
         validity: Validity<'a>,
     ) -> Certificate<'a> {
         const EMPTY: &[u8] = &[];
+        symbolic_cert_names(sig_alg, tbs_sig, version, extensions, validity, EMPTY, EMPTY)
+    }
+
+    /// `symbolic_cert` with caller-chosen `issuer` and `subject` spans, for the harnesses that
+    /// exercise rules 5 to 7 (P-12 to P-14). `symbolic_cert` passes the empty slice for both: an
+    /// empty slice does not frame as a `Name`, so rules 6 and 7 cannot fire on it and the
+    /// harnesses that use `symbolic_cert` keep isolating rules 1 to 4.
+    fn symbolic_cert_names<'a>(
+        sig_alg: AlgorithmIdentifier<'a>,
+        tbs_sig: AlgorithmIdentifier<'a>,
+        version: u8,
+        extensions: Option<&'a [u8]>,
+        validity: Validity<'a>,
+        issuer: &'a [u8],
+        subject: &'a [u8],
+    ) -> Certificate<'a> {
+        const EMPTY: &[u8] = &[];
         Certificate {
             tbs_certificate: TbsCertificate {
                 version,
                 serial_number: EMPTY,
                 signature: tbs_sig,
-                issuer: EMPTY,
+                issuer,
                 validity,
-                subject: EMPTY,
+                subject,
                 subject_public_key_info: SubjectPublicKeyInfo {
                     algorithm_oid: EMPTY,
                     parameters: None,
@@ -270,6 +433,48 @@ mod proofs {
             },
             signature_algorithm: sig_alg,
             signature_value: BitString { data: EMPTY, unused: 0 },
+        }
+    }
+
+    // Concrete specimens for rules 5 to 7. Every element is `30 05 06 01 <oid> <value>`:
+    // an `Extension` (value = empty OCTET STRING `04 00`) or an `AttributeTypeAndValue`
+    // (value = NULL `05 00`). The harnesses choose among them symbolically.
+
+    /// `Extensions` holding two `Extension`s with different `extnID`s (`2a`, `2b`). No violation.
+    const EXT_TWO_DISTINCT: [u8; 16] = [
+        0x30, 0x0e, 0x30, 0x05, 0x06, 0x01, 0x2a, 0x04, 0x00, 0x30, 0x05, 0x06, 0x01, 0x2b, 0x04, 0x00,
+    ];
+    /// `Extensions` holding two `Extension`s with the same `extnID` (`2a`). Rule 5 (P-12).
+    const EXT_TWO_SAME: [u8; 16] = [
+        0x30, 0x0e, 0x30, 0x05, 0x06, 0x01, 0x2a, 0x04, 0x00, 0x30, 0x05, 0x06, 0x01, 0x2a, 0x04, 0x00,
+    ];
+    /// A `Name` of one RDN holding two ATVs with different types (`55`, `56`). No violation.
+    const NAME_ONE_RDN_TWO_TYPES: [u8; 18] = [
+        0x30, 0x10, 0x31, 0x0e, 0x30, 0x05, 0x06, 0x01, 0x55, 0x05, 0x00, 0x30, 0x05, 0x06, 0x01, 0x56,
+        0x05, 0x00,
+    ];
+    /// A `Name` of one RDN holding two ATVs with the same type (`55`). Rule 7 (P-14).
+    const NAME_ONE_RDN_SAME_TYPE: [u8; 18] = [
+        0x30, 0x10, 0x31, 0x0e, 0x30, 0x05, 0x06, 0x01, 0x55, 0x05, 0x00, 0x30, 0x05, 0x06, 0x01, 0x55,
+        0x05, 0x00,
+    ];
+    /// A `Name` of two RDNs, each holding one ATV of the same type (`55`). Legal: no violation.
+    const NAME_TWO_RDNS_SAME_TYPE: [u8; 20] = [
+        0x30, 0x12, 0x31, 0x07, 0x30, 0x05, 0x06, 0x01, 0x55, 0x05, 0x00, 0x31, 0x07, 0x30, 0x05, 0x06,
+        0x01, 0x55, 0x05, 0x00,
+    ];
+
+    /// Choose a span by a symbolic `kind` in `0..=3`: `kind == 0` is the symbolic `window`, the others
+    /// are the three given specimens. (`kind` is constrained by the caller.)
+    fn pick_span<'a>(kind: u8, window: &'a [u8], k1: &'a [u8], k2: &'a [u8], k3: &'a [u8]) -> &'a [u8] {
+        if kind == 0 {
+            window
+        } else if kind == 1 {
+            k1
+        } else if kind == 2 {
+            k2
+        } else {
+            k3
         }
     }
 
@@ -474,10 +679,18 @@ mod proofs {
     /// inspection is needed: the reference below depends only on what the module docs say is
     /// inspected (algorithm identifiers, `version`, extensions PRESENCE, each Time's arm, year and
     /// fraction emptiness), and the assertion proves nothing else changes the result.
+    /// Rules 5 to 7 (P-12 to P-14, added in S4b): the `extensions`, `issuer` and `subject` spans are each
+    /// chosen symbolically (`ext_kind`, `issuer_kind`, `subject_kind`) between the symbolic window above
+    /// and concrete well-formed specimens (`EXT_TWO_DISTINCT`, `EXT_TWO_SAME`, `NAME_ONE_RDN_TWO_TYPES`,
+    /// `NAME_ONE_RDN_SAME_TYPE`, `NAME_TWO_RDNS_SAME_TYPE`). The reference spells the rule-5 and rule-7
+    /// violations from which specimen was chosen (a window of 0 to 2 octets cannot hold two elements)
+    /// and the rule-6 violation from the issuer's bytes (exactly `30 00`). The three spans are chosen
+    /// independently, so the proof covers every combination of the three rules and their precedence.
+    ///
     /// `expected` is an independent total reference written from the documented rule precedence (the
     /// `validate_profile` doc comment and the `ProfileError` declaration order: signature-algorithm,
     /// then extensions/version, then `notBefore`'s year rule, then `notAfter`'s, then `notBefore`'s
-    /// no-fraction rule, then `notAfter`'s): algorithm equality is computed from the raw bytes with
+    /// no-fraction rule, then `notAfter`'s, then P-12, P-13, P-14 issuer, P-14 subject): algorithm equality is computed from the raw bytes with
     /// `raw_bytes_differ` (not the derived `PartialEq`), the extensions and year rules are spelled
     /// from their RFC statements, and the no-fraction rule (§4.1.2.5.2) is spelled as "a
     /// GeneralizedTime whose fraction window is non-empty" from the window length, not from
@@ -488,14 +701,17 @@ mod proofs {
     ///
     /// Bounds (disclosed): 4-octet backings and lengths `0..=4` for the identifier bytes (the same
     /// domain as `rule1_mismatch_iff_algorithms_differ`); 2-octet backings, lengths `0..=2`, for the
-    /// irrelevant spans; a 4-octet backing, length `0..=4`, for each Generalized fraction. Slices
+    /// irrelevant spans and for the window choice of `extensions`, `issuer` and `subject`; for rules 5 to
+    /// 7 only the five concrete specimens (2 to 4 elements, at most 20 octets, one-octet OIDs) are
+    /// enumerated, not arbitrary element counts, OID lengths or RDN counts; a 4-octet backing, length
+    /// `0..=4`, for each Generalized fraction. Slices
     /// longer than that are not enumerated (for the fraction: lengths above 4 are covered by unit tests
     /// only, and the code reads emptiness, not length). The profile-irrelevant spans and fractions
     /// are inspected only for presence or emptiness, so their windows are representative. The two
     /// algorithm identifiers are compared octet by octet, however, so their `0..=4` windows bound
     /// the proof rather than establishing the result for arbitrary identifier lengths.
     #[kani::proof]
-    #[kani::unwind(6)]
+    #[kani::unwind(8)]
     fn validate_profile_is_exactly_the_documented_precedence() {
         let oid_a: [u8; 4] = kani::any();
         let oid_b: [u8; 4] = kani::any();
@@ -532,20 +748,45 @@ mod proofs {
         let sig_val: [u8; 2] = kani::any();
         let ext_back: [u8; 2] = kani::any();
         let spki_has_par: bool = kani::any();
+        let ext_kind: u8 = kani::any();
+        let issuer_kind: u8 = kani::any();
+        let subject_kind: u8 = kani::any();
+        kani::assume(ext_kind <= 2 && issuer_kind <= 3 && subject_kind <= 3);
+        let ext_span: &[u8] = if ext_kind == 0 {
+            window(&ext_back)
+        } else if ext_kind == 1 {
+            &EXT_TWO_DISTINCT
+        } else {
+            &EXT_TWO_SAME
+        };
+        let issuer_span = pick_span(
+            issuer_kind,
+            window(&issuer),
+            &NAME_ONE_RDN_TWO_TYPES,
+            &NAME_ONE_RDN_SAME_TYPE,
+            &NAME_TWO_RDNS_SAME_TYPE,
+        );
+        let subject_span = pick_span(
+            subject_kind,
+            window(&subject),
+            &NAME_ONE_RDN_TWO_TYPES,
+            &NAME_ONE_RDN_SAME_TYPE,
+            &NAME_TWO_RDNS_SAME_TYPE,
+        );
         let cert = Certificate {
             tbs_certificate: TbsCertificate {
                 version,
                 serial_number: window(&serial),
                 signature: b,
-                issuer: window(&issuer),
+                issuer: issuer_span,
                 validity: Validity { not_before: nb, not_after: na },
-                subject: window(&subject),
+                subject: subject_span,
                 subject_public_key_info: SubjectPublicKeyInfo {
                     algorithm_oid: window(&spki_oid),
                     parameters: if spki_has_par { Some(window(&spki_par)) } else { None },
                     subject_public_key: BitString { data: window(&spki_key), unused: kani::any() },
                 },
-                extensions: if has_ext { Some(window(&ext_back)) } else { None },
+                extensions: if has_ext { Some(ext_span) } else { None },
             },
             signature_algorithm: a,
             signature_value: BitString { data: window(&sig_val), unused: kani::any() },
@@ -561,6 +802,13 @@ mod proofs {
         let na_bad = na_gen && na_year <= 2049;
         let nb_frac = nb_gen && nb_flen > 0;
         let na_frac = na_gen && na_flen > 0;
+        let ext_dup = has_ext && ext_kind == 2;
+        let issuer_empty = issuer_kind == 0
+            && issuer_span.len() == 2
+            && issuer_span[0] == 0x30
+            && issuer_span[1] == 0x00;
+        let issuer_dup = issuer_kind == 2;
+        let subject_dup = subject_kind == 2;
         let expected = if alg_differ {
             Err(ProfileError::SignatureAlgorithmMismatch)
         } else if ext_bad {
@@ -573,6 +821,14 @@ mod proofs {
             Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)
         } else if na_frac {
             Err(ProfileError::NotAfterGeneralizedTimeHasFraction)
+        } else if ext_dup {
+            Err(ProfileError::DuplicateExtension)
+        } else if issuer_empty {
+            Err(ProfileError::EmptyIssuer)
+        } else if issuer_dup {
+            Err(ProfileError::IssuerDuplicateAttributeType)
+        } else if subject_dup {
+            Err(ProfileError::SubjectDuplicateAttributeType)
         } else {
             Ok(())
         };
@@ -632,6 +888,34 @@ mod proofs {
         kani::cover(
             r.is_ok() && has_ext && matches!(cert.tbs_certificate.extensions, Some(e) if e.is_empty()),
             "an accepted certificate with present-but-empty extensions content",
+        );
+        kani::cover(
+            r == Err(ProfileError::DuplicateExtension) && nb_frac == false && na_frac == false && has_a && has_b,
+            "P-12 is reported once rules 1 to 4 pass (parameters present on both identifiers)",
+        );
+        kani::cover(
+            r == Err(ProfileError::NotAfterGeneralizedTimeHasFraction) && ext_dup && issuer_empty && subject_dup,
+            "rule 4 wins over P-12, P-13 and P-14 all violated",
+        );
+        kani::cover(
+            r == Err(ProfileError::DuplicateExtension) && issuer_empty && subject_dup,
+            "P-12 wins over P-13 and P-14",
+        );
+        kani::cover(
+            r == Err(ProfileError::EmptyIssuer) && subject_dup,
+            "P-13 wins over P-14 for the subject",
+        );
+        kani::cover(
+            r == Err(ProfileError::IssuerDuplicateAttributeType) && subject_dup,
+            "P-14 reports the issuer before the subject",
+        );
+        kani::cover(
+            r == Err(ProfileError::SubjectDuplicateAttributeType) && issuer_kind == 3 && ext_kind == 1,
+            "P-14 reports the subject alone (distinct ids and a legal repeated type in the issuer)",
+        );
+        kani::cover(
+            r.is_ok() && ext_kind == 1 && issuer_kind == 3 && subject_kind == 3 && has_ext && version == 2,
+            "distinct extension ids and the same attribute type in different RDNs are accepted",
         );
     }
 
@@ -753,14 +1037,21 @@ mod proofs {
         kani::cover(r.is_ok() && !nb_gen && !na_gen, "two UTCTimes are accepted");
     }
 
-    // ---- P6: precedence across all four rules ----
+    // ---- P6: precedence across all seven rules ----
 
     /// The declared rule ORDER is part of the contract (`validate_profile`'s doc comment states it):
     /// signature-algorithm, then extensions/version, then `notBefore`'s year rule, then `notAfter`'s,
-    /// then `notBefore`'s no-fraction rule, then `notAfter`'s. With every rule independently
-    /// violable, the reported error is always the first violated one.
+    /// then `notBefore`'s no-fraction rule, then `notAfter`'s, then the duplicate-extension rule (P-12),
+    /// then the empty-issuer rule (P-13), then the issuer's and then the subject's repeated-attribute-type
+    /// rule (P-14). With every rule independently violable, the reported error is always the first
+    /// violated one.
+    ///
+    /// Rules 5 to 7 are driven by concrete specimens chosen symbolically (`ext_kind`, `issuer_kind`,
+    /// `subject_kind`; see `pick_span`), so the walks run on well-formed DER with a symbolic choice among
+    /// violating and conforming shapes. The issuer's `kind == 0` is a symbolic window of 0 to 2 octets:
+    /// its violation is the one the reference spells out from the bytes (exactly `30 00`).
     #[kani::proof]
-    #[kani::unwind(4)]
+    #[kani::unwind(8)]
     fn error_precedence_follows_declaration_order() {
         let oid_a: [u8; 2] = kani::any();
         let oid_b: [u8; 2] = kani::any();
@@ -772,14 +1063,48 @@ mod proofs {
         let na_year: u16 = kani::any();
         let nb_has_frac: bool = kani::any();
         let na_has_frac: bool = kani::any();
+        let ext_kind: u8 = kani::any();
+        let issuer_kind: u8 = kani::any();
+        let subject_kind: u8 = kani::any();
+        kani::assume(ext_kind <= 2 && issuer_kind <= 3 && subject_kind <= 3);
+        let issuer_back: [u8; 2] = kani::any();
+        let subject_back: [u8; 2] = kani::any();
         let a = symbolic_alg(&oid_a, &[0], false);
         let b = symbolic_alg(&oid_b, &[0], false);
         let frac: [u8; 1] = [0];
         let nb = symbolic_time(nb_gen, nb_year, 24, &frac, nb_has_frac);
         let na = symbolic_time(na_gen, na_year, 24, &frac, na_has_frac);
         const EXT: &[u8] = &[0x30, 0x00];
-        let cert = symbolic_cert(a, b, version, if has_ext { Some(EXT) } else { None },
-                                 Validity { not_before: nb, not_after: na });
+        let ext: &[u8] = if ext_kind == 0 {
+            EXT
+        } else if ext_kind == 1 {
+            &EXT_TWO_DISTINCT
+        } else {
+            &EXT_TWO_SAME
+        };
+        let issuer = pick_span(
+            issuer_kind,
+            window(&issuer_back),
+            &NAME_ONE_RDN_TWO_TYPES,
+            &NAME_ONE_RDN_SAME_TYPE,
+            &NAME_TWO_RDNS_SAME_TYPE,
+        );
+        let subject = pick_span(
+            subject_kind,
+            window(&subject_back),
+            &NAME_ONE_RDN_TWO_TYPES,
+            &NAME_ONE_RDN_SAME_TYPE,
+            &NAME_TWO_RDNS_SAME_TYPE,
+        );
+        let cert = symbolic_cert_names(
+            a,
+            b,
+            version,
+            if has_ext { Some(ext) } else { None },
+            Validity { not_before: nb, not_after: na },
+            issuer,
+            subject,
+        );
         let r = validate_profile(&cert);
 
         let bad1 = a != b;
@@ -788,6 +1113,12 @@ mod proofs {
         let bad4 = na_gen && na_year <= 2049;
         let bad5 = nb_gen && nb_has_frac;
         let bad6 = na_gen && na_has_frac;
+        // Rules 5 to 7, from the bytes of the span the harness chose (a 0..=2-octet window cannot hold
+        // two elements, so only the specimens can repeat an id or an attribute type).
+        let bad7 = has_ext && ext_kind == 2;
+        let bad8 = issuer_kind == 0 && issuer.len() == 2 && issuer[0] == 0x30 && issuer[1] == 0x00;
+        let bad9 = issuer_kind == 2;
+        let bad10 = subject_kind == 2;
         let expected = if bad1 {
             Err(ProfileError::SignatureAlgorithmMismatch)
         } else if bad2 {
@@ -800,36 +1131,67 @@ mod proofs {
             Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)
         } else if bad6 {
             Err(ProfileError::NotAfterGeneralizedTimeHasFraction)
+        } else if bad7 {
+            Err(ProfileError::DuplicateExtension)
+        } else if bad8 {
+            Err(ProfileError::EmptyIssuer)
+        } else if bad9 {
+            Err(ProfileError::IssuerDuplicateAttributeType)
+        } else if bad10 {
+            Err(ProfileError::SubjectDuplicateAttributeType)
         } else {
             Ok(())
         };
         assert!(r == expected);
         kani::cover(
-            bad1 && bad2 && bad3 && bad4 && bad5 && bad6,
-            "all six violations at once -- rule 1 still wins",
+            bad1 && bad2 && bad3 && bad4 && bad5 && bad6 && bad7 && bad8 && bad10,
+            "all violations at once -- rule 1 still wins",
         );
         kani::cover(!bad1 && bad2 && bad3, "rule 2 wins over rule 3");
         kani::cover(!bad1 && !bad2 && !bad3 && bad4 && bad5, "notAfter's year error wins over notBefore's fraction error");
         kani::cover(!bad1 && !bad2 && !bad3 && !bad4 && bad5 && bad6, "notBefore's fraction error wins over notAfter's");
         kani::cover(!bad1 && !bad2 && !bad3 && !bad4 && !bad5 && bad6, "notAfter's fraction error is reachable alone");
+        kani::cover(
+            !bad1 && !bad2 && !bad3 && !bad4 && !bad5 && !bad6 && bad7 && bad8 && bad10,
+            "P-12 wins over P-13 and P-14 (the fraction rules are satisfied)",
+        );
+        kani::cover(
+            r == Err(ProfileError::DuplicateExtension) && bad6 == false && bad5 == false,
+            "the duplicate-extension error is reachable alone",
+        );
+        kani::cover(!bad7 && bad8 && bad10, "P-13 wins over P-14");
+        kani::cover(r == Err(ProfileError::EmptyIssuer), "the empty-issuer error is reachable");
+        kani::cover(!bad7 && bad9 && bad10, "the issuer's repeated type wins over the subject's");
+        kani::cover(
+            r == Err(ProfileError::SubjectDuplicateAttributeType),
+            "the subject's repeated-type error is reachable alone",
+        );
+        kani::cover(
+            r.is_ok() && has_ext && ext_kind == 1 && issuer_kind == 3 && subject_kind == 3,
+            "distinct extension ids and the same attribute type in different RDNs are accepted",
+        );
         kani::cover(r.is_ok(), "a fully conforming certificate is accepted");
     }
 
     // ---- P7: totality ----
 
     /// `validate_profile` is total on symbolic profile-relevant fields: no panic, no arithmetic
-    /// overflow, for any combination of the fields the four rules inspect.
+    /// overflow, for any combination of the fields the seven rules inspect. The `extensions`,
+    /// `issuer` and `subject` spans are arbitrary symbolic windows of `0..=6` octets (not only
+    /// well-formed DER), so the walks of rules 5 to 7 are exercised on every shape of short, truncated
+    /// or mis-tagged input up to that bound.
     ///
     /// **Every harness in this module carries an explicit `#[kani::unwind]`, and that is load-bearing
     /// rather than stylistic.** Rule 1 compares two `AlgorithmIdentifier`s, whose `parameters` field
     /// is an `Option<&[u8]>`; with the presence of that `Option` left symbolic, an unbounded harness
     /// sends CBMC into `memcmp` unwinding that does not converge — observed at ~18,000 iterations
-    /// before the run was OOM-killed inside its 14 GB cgroup. The bound of 4 makes it converge in
-    /// under a minute, and CBMC's own unwinding assertion (checked, not assumed) confirms 4
-    /// iterations suffice, so the bound costs no generality. Read an OOM on one of these as a
-    /// missing bound before reading it as an intractable harness.
+    /// before the run was OOM-killed inside its 14 GB cgroup. A finite bound makes it converge, and
+    /// CBMC's own unwinding assertion (checked, not assumed) confirms the bound suffices, so the bound
+    /// costs no generality. The bound is 8 since rules 5 to 7 added element walks over the 6-octet
+    /// windows (the bound was 4 before; it is not yet measured at 8). Read an OOM on one of these as
+    /// a missing bound before reading it as an intractable harness.
     #[kani::proof]
-    #[kani::unwind(4)]
+    #[kani::unwind(8)]
     fn validate_profile_never_panics() {
         let oid_a: [u8; 2] = kani::any();
         let oid_b: [u8; 2] = kani::any();
@@ -845,13 +1207,26 @@ mod proofs {
         let y2: u8 = kani::any();
         let frac: [u8; 1] = kani::any();
         let has_frac: bool = kani::any();
+        let ext_back: [u8; 6] = kani::any();
+        let issuer_back: [u8; 6] = kani::any();
+        let subject_back: [u8; 6] = kani::any();
+        let ext_len: usize = kani::any();
+        let issuer_len: usize = kani::any();
+        let subject_len: usize = kani::any();
+        kani::assume(ext_len <= 6 && issuer_len <= 6 && subject_len <= 6);
         let a = symbolic_alg(&oid_a, &par, has_a);
         let b = symbolic_alg(&oid_b, &par, has_b);
         let nb = symbolic_time(nb_gen, nb_year, y2, &frac, has_frac);
         let na = symbolic_time(na_gen, na_year, y2, &frac, has_frac);
-        const EXT: &[u8] = &[0x30, 0x00];
-        let cert = symbolic_cert(a, b, version, if has_ext { Some(EXT) } else { None },
-                                 Validity { not_before: nb, not_after: na });
+        let cert = symbolic_cert_names(
+            a,
+            b,
+            version,
+            if has_ext { Some(&ext_back[..ext_len]) } else { None },
+            Validity { not_before: nb, not_after: na },
+            &issuer_back[..issuer_len],
+            &subject_back[..subject_len],
+        );
         let r = validate_profile(&cert);
         // A totality harness has no functional `assert!` by construction, so without these it would
         // be the crate's only harness whose sole checks are Kani's implicit panic/overflow/memory
@@ -859,6 +1234,10 @@ mod proofs {
         // post-state effects of the widest symbolic instance in this module.
         kani::cover(r.is_ok(), "a conforming certificate is accepted at the fully-symbolic bound");
         kani::cover(r.is_err(), "a violating certificate is rejected at the fully-symbolic bound");
+        kani::cover(
+            r == Err(ProfileError::EmptyIssuer),
+            "rule 6 fires on a symbolic issuer window (the empty Name is reachable)",
+        );
     }
 }
 
@@ -1061,13 +1440,25 @@ mod tests {
         extensions: Option<&[u8]>,
         validity: &[u8],
     ) -> Vec<u8> {
+        build_tbs_full(version_bytes, extensions, validity, &NAME_CN_EXAMPLE_CA, &NAME_CN_EXAMPLE_CA)
+    }
+
+    /// Same as `build_tbs_with_validity`, but with caller-chosen `issuer` and `subject` `Name` spans
+    /// too — lets tests seed the name rules (P-13, P-14) without duplicating the assembly.
+    fn build_tbs_full(
+        version_bytes: &[u8],
+        extensions: Option<&[u8]>,
+        validity: &[u8],
+        issuer: &[u8],
+        subject: &[u8],
+    ) -> Vec<u8> {
         let mut content = Vec::new();
         content.extend_from_slice(version_bytes);
         content.extend_from_slice(&SERIAL_1);
         content.extend_from_slice(&SIGNATURE_ED25519);
-        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // issuer
+        content.extend_from_slice(issuer);
         content.extend_from_slice(validity);
-        content.extend_from_slice(&NAME_CN_EXAMPLE_CA); // subject
+        content.extend_from_slice(subject);
         content.extend_from_slice(&SPKI_ED25519);
         if let Some(ext) = extensions {
             let extensions_seq = wrap(0x30, ext); // Extensions SEQUENCE
@@ -1480,14 +1871,234 @@ mod tests {
         assert_eq!(validate_profile(&cert), Err(ProfileError::SignatureAlgorithmMismatch));
     }
 
+    // --- Rules 5 to 7 (S4b batch B1): P-12 duplicate extension, P-13 empty issuer, P-14 repeated
+    //     attribute type. Fixtures are built from the small encoders below.
+
+    const OID_CN: [u8; 3] = [0x55, 0x04, 0x03];
+    const OID_ORG: [u8; 3] = [0x55, 0x04, 0x0a];
+    const OID_BASIC_CONSTRAINTS: [u8; 3] = [0x55, 0x1d, 0x13];
+    const OID_KEY_USAGE: [u8; 3] = [0x55, 0x1d, 0x0f];
+    /// An empty `Name` (`RDNSequence` with zero RDNs).
+    const NAME_EMPTY: [u8; 2] = [0x30, 0x00];
+
+    /// `Extension ::= SEQUENCE { extnID, critical (only when true), extnValue }`.
+    fn extension(oid: &[u8], critical: bool, value: &[u8]) -> Vec<u8> {
+        let mut content = wrap(0x06, oid);
+        if critical {
+            content.extend_from_slice(&[0x01, 0x01, 0xff]);
+        }
+        content.extend(wrap(0x04, value));
+        wrap(0x30, &content)
+    }
+
+    /// `AttributeTypeAndValue ::= SEQUENCE { type OID, value UTF8String }`.
+    fn atv(oid: &[u8], text: &[u8]) -> Vec<u8> {
+        let mut content = wrap(0x06, oid);
+        content.extend(wrap(0x0c, text));
+        wrap(0x30, &content)
+    }
+
+    /// `RelativeDistinguishedName`: the SET OF the given encoded ATVs, in the order given (the
+    /// caller keeps them in §11.6 ascending order).
+    fn rdn(atvs: &[Vec<u8>]) -> Vec<u8> {
+        wrap(0x31, &atvs.concat())
+    }
+
+    /// `Name`: the `RDNSequence` of the given encoded RDNs.
+    fn name(rdns: &[Vec<u8>]) -> Vec<u8> {
+        wrap(0x30, &rdns.concat())
+    }
+
+    /// Parse a v3 certificate with `extensions` content, `issuer` and `subject`, check that the fixture
+    /// really parsed, and return `validate_profile`'s result.
+    fn profile_result_for(extensions: &[u8], issuer: &[u8], subject: &[u8]) -> Result<(), ProfileError> {
+        let tbs = build_tbs_full(&VERSION_V3, Some(extensions), &VALIDITY_UTC_UTC, issuer, subject);
+        let bytes = build_certificate(&tbs, &SIGNATURE_ED25519);
+        let cert = parse_certificate(&bytes).expect("fixture must be structurally valid");
+        validate_profile(&cert)
+    }
+
+    /// P-12 accept: three extensions whose `extnID`s are all different pass, including an OID
+    /// that has another extension's OID as a prefix (the whole content octets are compared).
+    #[test]
+    fn accepts_distinct_extension_ids() {
+        let longer_oid = [0x55, 0x1d, 0x13, 0x01];
+        let exts = [
+            extension(&OID_BASIC_CONSTRAINTS, false, &[0x30, 0x00]),
+            extension(&OID_KEY_USAGE, true, &[0x03, 0x02, 0x05, 0xa0]),
+            extension(&longer_oid, false, &[0x30, 0x00]),
+        ]
+        .concat();
+        assert_eq!(profile_result_for(&exts, &NAME_CN_EXAMPLE_CA, &NAME_CN_EXAMPLE_CA), Ok(()));
+    }
+
+    /// P-12 reject: the same `extnID` twice is rejected even when `critical` and `extnValue`
+    /// differ, so the `extnID` alone decides.
+    #[test]
+    fn rejects_duplicate_extension_id() {
+        let exts = [
+            extension(&OID_BASIC_CONSTRAINTS, false, &[0x30, 0x00]),
+            extension(&OID_BASIC_CONSTRAINTS, true, &[0x30, 0x03, 0x01, 0x01, 0xff]),
+        ]
+        .concat();
+        assert_eq!(
+            profile_result_for(&exts, &NAME_CN_EXAMPLE_CA, &NAME_CN_EXAMPLE_CA),
+            Err(ProfileError::DuplicateExtension)
+        );
+    }
+
+    /// P-12 reject: the repeated `extnID` need not be adjacent (first and third of three).
+    #[test]
+    fn rejects_duplicate_extension_id_that_is_not_adjacent() {
+        let exts = [
+            extension(&OID_BASIC_CONSTRAINTS, false, &[0x30, 0x00]),
+            extension(&OID_KEY_USAGE, true, &[0x03, 0x02, 0x05, 0xa0]),
+            extension(&OID_BASIC_CONSTRAINTS, false, &[0x30, 0x00]),
+        ]
+        .concat();
+        assert_eq!(
+            profile_result_for(&exts, &NAME_CN_EXAMPLE_CA, &NAME_CN_EXAMPLE_CA),
+            Err(ProfileError::DuplicateExtension)
+        );
+    }
+
+    /// P-13 reject: an empty issuer `Name` (`30 00`) is rejected.
+    #[test]
+    fn rejects_empty_issuer() {
+        let tbs = build_tbs_full(
+            &VERSION_V3,
+            Some(&EXT_BASIC_CONSTRAINTS_DEFAULT),
+            &VALIDITY_UTC_UTC,
+            &NAME_EMPTY,
+            &NAME_CN_EXAMPLE_CA,
+        );
+        let bytes = build_certificate(&tbs, &SIGNATURE_ED25519);
+        let cert = parse_certificate(&bytes).expect("fixture must be structurally valid");
+        // Sanity: the parsers accept the empty issuer, so only this rule can reject it.
+        assert_eq!(cert.tbs_certificate.issuer, &NAME_EMPTY[..]);
+        assert_eq!(validate_profile(&cert), Err(ProfileError::EmptyIssuer));
+    }
+
+    /// P-13 accept: an empty subject is legal (RFC 5280 §4.1.2.6 allows it), so only the issuer is
+    /// checked.
+    #[test]
+    fn accepts_empty_subject() {
+        let tbs = build_tbs_full(
+            &VERSION_V3,
+            Some(&EXT_BASIC_CONSTRAINTS_DEFAULT),
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &NAME_EMPTY,
+        );
+        let bytes = build_certificate(&tbs, &SIGNATURE_ED25519);
+        let cert = parse_certificate(&bytes).expect("fixture must be structurally valid");
+        assert_eq!(cert.tbs_certificate.subject, &NAME_EMPTY[..]);
+        assert_eq!(validate_profile(&cert), Ok(()));
+    }
+
+    /// P-14 reject: an issuer RDN that holds `CN=A` and `CN=B` (the same attribute type twice, in
+    /// §11.6 order) is rejected with the issuer variant.
+    #[test]
+    fn rejects_issuer_rdn_with_repeated_attribute_type() {
+        let issuer = name(&[rdn(&[atv(&OID_CN, b"A"), atv(&OID_CN, b"B")])]);
+        assert_eq!(
+            profile_result_for(&EXT_BASIC_CONSTRAINTS_DEFAULT, &issuer, &NAME_CN_EXAMPLE_CA),
+            Err(ProfileError::IssuerDuplicateAttributeType)
+        );
+    }
+
+    /// P-14 reject: the same defect in the subject gives the subject variant. The repeated type is
+    /// in the second RDN, after a clean first RDN.
+    #[test]
+    fn rejects_subject_rdn_with_repeated_attribute_type() {
+        let subject = name(&[
+            rdn(&[atv(&OID_ORG, b"Org")]),
+            rdn(&[atv(&OID_CN, b"A"), atv(&OID_CN, b"B")]),
+        ]);
+        assert_eq!(
+            profile_result_for(&EXT_BASIC_CONSTRAINTS_DEFAULT, &NAME_CN_EXAMPLE_CA, &subject),
+            Err(ProfileError::SubjectDuplicateAttributeType)
+        );
+    }
+
+    /// P-14 accept: the same attribute type in DIFFERENT RDNs of one Name is legal, in both the issuer
+    /// and the subject.
+    #[test]
+    fn accepts_same_attribute_type_in_different_rdns() {
+        let n = name(&[rdn(&[atv(&OID_CN, b"A")]), rdn(&[atv(&OID_CN, b"B")])]);
+        assert_eq!(profile_result_for(&EXT_BASIC_CONSTRAINTS_DEFAULT, &n, &n), Ok(()));
+    }
+
+    /// P-14 accept: a multi-valued RDN with different attribute types is legal, including a type whose
+    /// OID has the other type's OID as a prefix (the whole content octets are compared).
+    #[test]
+    fn accepts_multi_valued_rdn_with_distinct_attribute_types() {
+        let longer_oid = [0x55, 0x04, 0x03, 0x01];
+        let n = name(&[rdn(&[
+            atv(&OID_CN, b"A"),
+            atv(&OID_ORG, b"A"),
+            atv(&longer_oid, b"A"),
+        ])]);
+        assert_eq!(profile_result_for(&EXT_BASIC_CONSTRAINTS_DEFAULT, &n, &n), Ok(()));
+    }
+
+    /// P-14 precedence: the issuer's repeated attribute type is reported before the subject's.
+    #[test]
+    fn issuer_repeated_attribute_type_checked_before_subject() {
+        let dup = name(&[rdn(&[atv(&OID_CN, b"A"), atv(&OID_CN, b"B")])]);
+        assert_eq!(
+            profile_result_for(&EXT_BASIC_CONSTRAINTS_DEFAULT, &dup, &dup),
+            Err(ProfileError::IssuerDuplicateAttributeType)
+        );
+    }
+
+    /// Rules 5 to 7 read hand-built spans that do not walk (empty, truncated, mis-tagged elements)
+    /// without panicking and report no violation for what they cannot frame.
+    #[test]
+    fn rules_5_to_7_ignore_spans_that_do_not_frame() {
+        let bytes = valid_v3_certificate_bytes();
+        let base = parse_certificate(&bytes).unwrap();
+        let spans: [&[u8]; 10] = [
+            &[],
+            &[0x30],
+            &[0x30, 0x05, 0x30],
+            &[0x30, 0x02, 0x30, 0x00],
+            &[0x30, 0x04, 0x02, 0x02, 0x06, 0x00],
+            &[0x31, 0x00],
+            &[0x30, 0x04, 0x31, 0x02, 0x30, 0x00],
+            &[0x30, 0x06, 0x31, 0x04, 0x30, 0x02, 0x04, 0x00],
+            // Two INTEGER elements whose content starts with the same `06 00`: not Extensions.
+            &[0x30, 0x08, 0x02, 0x02, 0x06, 0x00, 0x02, 0x02, 0x06, 0x00],
+            // A SEQUENCE where the RDN SET belongs, holding two ATV-shaped elements with one type.
+            &[0x30, 0x0e, 0x30, 0x0c, 0x30, 0x04, 0x06, 0x00, 0x05, 0x00, 0x30, 0x04, 0x06, 0x00, 0x05, 0x00],
+        ];
+        for span in spans {
+            let mut cert = base;
+            cert.tbs_certificate.extensions = Some(span);
+            cert.tbs_certificate.subject = span;
+            assert_eq!(validate_profile(&cert), Ok(()), "span {span:?}");
+        }
+    }
+
     // --- S4a group 4: the precedence ladder ---
 
+    /// One stage of the precedence ladder: every input the profile reads, and the expected result.
+    struct Stage {
+        sig_alg: &'static [u8],
+        version: &'static [u8],
+        not_before: Vec<u8>,
+        not_after: Vec<u8>,
+        extensions: Vec<u8>,
+        issuer: Vec<u8>,
+        subject: Vec<u8>,
+        expected: Result<(), ProfileError>,
+    }
+
     /// PROF-P-4: with every rule violated at once, repairing the reported violation moves the report
-    /// to the next rule in declaration order; the fully repaired certificate is accepted.
+    /// to the next rule in declaration order (rules 1 to 4, then P-12, P-13, and P-14 for the issuer
+    /// and then the subject); the fully repaired certificate is accepted.
     #[test]
     fn repairing_violations_in_declaration_order_ends_in_acceptance() {
-        // (outer signatureAlgorithm, version bytes, notBefore, notAfter) at each stage; extensions
-        // are always present, so a DEFAULT v1 certificate violates rule 2.
         let nb_gen_2049_frac = time_tlv(true, b"20490101000000.5Z");
         let na_gen_2049_frac = time_tlv(true, b"20491231235959.5Z");
         let nb_gen_2050_frac = time_tlv(true, b"20500101000000.5Z");
@@ -1495,22 +2106,54 @@ mod tests {
         let nb_gen_2050 = time_tlv(true, b"20500101000000Z");
         let na_gen_2060 = time_tlv(true, b"20601231235959Z");
         let nb_utc = time_tlv(false, b"490101000000Z");
-        type Stage<'a> = (&'a [u8], &'a [u8], &'a Vec<u8>, &'a Vec<u8>, Result<(), ProfileError>);
-        let stages: [Stage<'_>; 7] = [
-            (&SIGNATURE_RSA_SHA256, &[], &nb_gen_2049_frac, &na_gen_2049_frac, Err(ProfileError::SignatureAlgorithmMismatch)),
-            (&SIGNATURE_ED25519, &[], &nb_gen_2049_frac, &na_gen_2049_frac, Err(ProfileError::ExtensionsRequireV3)),
-            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2049_frac, &na_gen_2049_frac, Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)),
-            (&SIGNATURE_ED25519, &VERSION_V3, &nb_utc, &na_gen_2049_frac, Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)),
-            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050_frac, &na_gen_2060_frac, Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)),
-            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060_frac, Err(ProfileError::NotAfterGeneralizedTimeHasFraction)),
-            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060, Ok(())),
+        let ext_dup = [
+            extension(&OID_BASIC_CONSTRAINTS, false, &[0x30, 0x00]),
+            extension(&OID_BASIC_CONSTRAINTS, false, &[0x30, 0x00]),
+        ]
+        .concat();
+        let ext_ok = EXT_BASIC_CONSTRAINTS_DEFAULT.to_vec();
+        let dup_name = name(&[rdn(&[atv(&OID_CN, b"A"), atv(&OID_CN, b"B")])]);
+        let ok_name = NAME_CN_EXAMPLE_CA.to_vec();
+        let empty = NAME_EMPTY.to_vec();
+        // Each stage repairs the violation the previous stage reported. Extensions are always
+        // present, so a DEFAULT v1 certificate violates rule 2. The issuer goes empty (P-13), then
+        // repeated-attribute (P-14), then clean; the subject stays repeated-attribute until the end.
+        let stage = |sig_alg: &'static [u8],
+                     version: &'static [u8],
+                     nb: &Vec<u8>,
+                     na: &Vec<u8>,
+                     ext: &Vec<u8>,
+                     issuer: &Vec<u8>,
+                     subject: &Vec<u8>,
+                     expected: Result<(), ProfileError>| Stage {
+            sig_alg,
+            version,
+            not_before: nb.clone(),
+            not_after: na.clone(),
+            extensions: ext.clone(),
+            issuer: issuer.clone(),
+            subject: subject.clone(),
+            expected,
+        };
+        let stages = [
+            stage(&SIGNATURE_RSA_SHA256, &[], &nb_gen_2049_frac, &na_gen_2049_frac, &ext_dup, &empty, &dup_name, Err(ProfileError::SignatureAlgorithmMismatch)),
+            stage(&SIGNATURE_ED25519, &[], &nb_gen_2049_frac, &na_gen_2049_frac, &ext_dup, &empty, &dup_name, Err(ProfileError::ExtensionsRequireV3)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2049_frac, &na_gen_2049_frac, &ext_dup, &empty, &dup_name, Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_utc, &na_gen_2049_frac, &ext_dup, &empty, &dup_name, Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050_frac, &na_gen_2060_frac, &ext_dup, &empty, &dup_name, Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060_frac, &ext_dup, &empty, &dup_name, Err(ProfileError::NotAfterGeneralizedTimeHasFraction)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060, &ext_dup, &empty, &dup_name, Err(ProfileError::DuplicateExtension)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060, &ext_ok, &empty, &dup_name, Err(ProfileError::EmptyIssuer)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060, &ext_ok, &dup_name, &dup_name, Err(ProfileError::IssuerDuplicateAttributeType)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060, &ext_ok, &ok_name, &dup_name, Err(ProfileError::SubjectDuplicateAttributeType)),
+            stage(&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060, &ext_ok, &ok_name, &ok_name, Ok(())),
         ];
-        for (index, (sig_alg, version, nb, na, expected)) in stages.iter().enumerate() {
-            let v = validity_of(nb, na);
-            let tbs = build_tbs_with_validity(version, Some(&EXT_BASIC_CONSTRAINTS_DEFAULT), &v);
-            let bytes = build_certificate(&tbs, sig_alg);
+        for (index, st) in stages.iter().enumerate() {
+            let v = validity_of(&st.not_before, &st.not_after);
+            let tbs = build_tbs_full(st.version, Some(&st.extensions), &v, &st.issuer, &st.subject);
+            let bytes = build_certificate(&tbs, st.sig_alg);
             let cert = parse_certificate(&bytes).expect("fixture must be structurally valid");
-            assert_eq!(validate_profile(&cert), *expected, "stage {index}");
+            assert_eq!(validate_profile(&cert), st.expected, "stage {index}");
         }
     }
 }

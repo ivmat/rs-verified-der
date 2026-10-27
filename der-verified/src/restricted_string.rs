@@ -20,15 +20,20 @@
 //!   `@ * _ & !` and every other ASCII punctuation/symbol — a classic differential trap (some lax
 //!   parsers erroneously widen this set).
 //! - **IA5String** (UNIVERSAL 22, identifier `0x16`): the full 7-bit set, `0x00..=0x7F` (control
-//!   characters included). Any octet `>= 0x80` is invalid.
+//!   characters included), **except the escape octet `0x1B`**. Any octet `>= 0x80` is invalid.
+//!   X.690 Table 3 lists IA5String among the types that do not allow explicit escape sequences
+//!   (§8.23.5.3), and every escape sequence starts with ESC, so the codec rejects `0x1B` with
+//!   [`StringError::Ia5Escape`]. [`Charset::contains`] still answers the X.680 repertoire question
+//!   (ESC is an IA5 character); the escape rule is applied by [`validate_content`]. CR, LF, TAB and
+//!   the other C0 controls stay accepted.
 //! - **NumericString** (UNIVERSAL 18, identifier `0x12`): digits `0x30..=0x39` and SPACE (`0x20`)
 //!   **only** — notably excludes hyphen `-` and colon `:`, which some implementations wrongly permit.
 //! - **VisibleString** / ISO646String (UNIVERSAL 26, identifier `0x1A`): the graphic characters
 //!   `0x20..=0x7E` (SPACE through `~`) — excludes control characters and DEL (`0x7F`).
 //!
-//! **Scope boundary (see `DECISIONS.md`).** This module validates **charset-membership only** — the
-//! sole content-level DER rule for these types (there is no "minimal encoding" concept here: the
-//! octets *are* the value). Empty content (zero octets) is **accepted** — vacuously charset-valid.
+//! **Scope boundary (see `DECISIONS.md`).** This module validates **charset-membership** — the
+//! main content-level DER rule for these types (there is no "minimal encoding" concept here: the
+//! octets *are* the value) — plus the X.690 Table 3 ban on escape sequences in IA5String. Empty content (zero octets) is **accepted** — vacuously charset-valid.
 //! Out of scope, as a caller-applied X.509 profile layer (the same altitude split as the time types,
 //! D10): `SIZE` / length-limit constraints, and the `DirectoryString` CHOICE rules (which of these
 //! types — plus `TeletexString`/`UTF8String`/`BMPString` — an attribute is allowed to use).
@@ -87,8 +92,10 @@ impl Charset {
         }
     }
 
-    /// Whether byte `b` belongs to this type's X.680 character set. This is the production
-    /// predicate; the Kani proofs check it against an *independently*-formulated oracle per charset
+    /// Whether byte `b` belongs to this type's X.680 character set. For IA5String this is the
+    /// whole 7-bit repertoire, ESC (`0x1B`) included: the X.690 ban on escape sequences is not a
+    /// repertoire rule and is applied in [`validate_content`] (see [`StringError::Ia5Escape`]).
+    /// This is the production predicate; the Kani proofs check it against an *independently*-formulated oracle per charset
     /// (see the module's `#[cfg(kani)]` block) so a typo in either side cannot hide.
     pub fn contains(self, b: u8) -> bool {
         match self {
@@ -128,17 +135,31 @@ pub enum StringError {
         /// The invalid octet's value.
         byte: u8,
     },
+    /// Content-level, IA5String only: the escape octet ESC (`0x1B`) at `position`. X.690 §8.23.5.3
+    /// and Table 3 say IA5String does not allow explicit escape sequences, and §8.23.5.1 and
+    /// §8.23.5.4 limit the escapes and announcers a type may carry; every ISO 2022 escape sequence
+    /// or announcer starts with ESC, so ESC itself is rejected. All other IA5 octets, including
+    /// CR, LF, TAB and the other C0 controls, stay accepted.
+    Ia5Escape {
+        /// Byte offset of the first ESC octet within the content.
+        position: usize,
+    },
 }
 
-/// Validate that every octet of `content` belongs to `charset`. Returns the *first* offending
-/// position/byte on failure (error-class correctness: [`StringError::OutOfCharset`] always names the
-/// earliest violation). Empty content is accepted (vacuously charset-valid — see the module docs).
+/// Validate that every octet of `content` belongs to `charset`, and, for IA5String, that no octet
+/// is ESC (`0x1B`, X.690 Table 3). Returns the *first* offending octet on failure
+/// ([`StringError::OutOfCharset`] for an octet outside the charset, [`StringError::Ia5Escape`] for an
+/// IA5 ESC octet; whichever comes earliest in the content is reported). Empty content is accepted
+/// (vacuously charset-valid — see the module docs).
 pub fn validate_content(content: &[u8], charset: Charset) -> Result<(), StringError> {
     let mut i = 0;
     while i < content.len() {
         let b = content[i];
         if !charset.contains(b) {
             return Err(StringError::OutOfCharset { position: i, byte: b });
+        }
+        if charset == Charset::Ia5 && b == 0x1B {
+            return Err(StringError::Ia5Escape { position: i });
         }
         i += 1;
     }
@@ -151,7 +172,7 @@ pub fn validate_content(content: &[u8], charset: Charset) -> Result<(), StringEr
 /// Enforces: the correct UNIVERSAL tag number (else [`StringError::WrongTag`]), **primitive** form
 /// (else [`StringError::Constructed`] — the constructed/segmented form is BER-only), definite length
 /// and no over-read (via [`decode_tlv`]), and charset-membership of every content octet (else
-/// [`StringError::OutOfCharset`]).
+/// [`StringError::OutOfCharset`]; for IA5String also no ESC octet, else [`StringError::Ia5Escape`]).
 ///
 /// Tag identity is checked before primitiveness, so a well-formed TLV of a *different* type (e.g.
 /// SEQUENCE `0x30`) is `WrongTag`, not `Constructed` — mirroring [`crate::octet_string`]. Trailing
@@ -176,7 +197,8 @@ pub fn decode_restricted_string(
 /// Encode `content` as a canonical DER restricted string of the given `charset` (primitive, the
 /// charset's UNIVERSAL tag number) into `out`.
 ///
-/// Returns the number of bytes written, or `None` if any content byte is out-of-charset, `out` is
+/// Returns the number of bytes written, or `None` if any content byte is out-of-charset (for
+/// IA5String this includes ESC, `0x1B`: the encoder never emits what the decoder rejects), `out` is
 /// too small, or `content` is longer than the length codec supports (`> u32::MAX`).
 ///
 /// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
@@ -280,6 +302,12 @@ mod proofs {
         (0x20..=0x7E).contains(&b)
     }
 
+    /// Whether the CODEC accepts octet `b` in `cs`: the X.680 repertoire oracle, minus ESC
+    /// (`0x1B`) for IA5String (X.690 Table 3, §8.23.5.3: no explicit escape sequences).
+    fn oracle_accepts(cs: Charset, b: u8) -> bool {
+        oracle_of(cs, b) && !(cs == Charset::Ia5 && b == 0x1B)
+    }
+
     // -----------------------------------------------------------------------
     // 1. Charset-exactness: production `Charset::contains` matches the independent oracle over
     //    *all* 256 bytes. The killer proof against widening/narrowing typos (`@` in Printable,
@@ -331,7 +359,8 @@ mod proofs {
         let buf: [u8; 4] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 4);
-        let all_in = (0..n).all(|i| oracle_ia5(buf[i]));
+        // IA5String: the 7-bit repertoire minus ESC (0x1B), the X.690 Table 3 escape rule.
+        let all_in = (0..n).all(|i| oracle_ia5(buf[i]) && buf[i] != 0x1B);
         assert!(validate_content(&buf[..n], Charset::Ia5).is_ok() == all_in);
     }
 
@@ -380,7 +409,7 @@ mod proofs {
         let content: [u8; 3] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 3);
-        kani::assume((0..n).all(|i| oracle_ia5(content[i])));
+        kani::assume((0..n).all(|i| oracle_ia5(content[i]) && content[i] != 0x1B));
         let mut out = [0u8; 16];
         let written = encode_restricted_string_into(&content[..n], Charset::Ia5, &mut out).unwrap();
         let (dec, used) = decode_restricted_string(&out[..written], Charset::Ia5).unwrap();
@@ -630,7 +659,8 @@ mod proofs {
     // 9. Decoder-level faithfulness (the typed TLV decoder's WHOLE acceptance set, not only the
     //    content validator): over a fully symbolic 6-octet buffer with symbolic length 0..=6,
     //    `decode_restricted_string` is classified EXACTLY, in the documented order, against
-    //    - the independent per-charset allow-list oracles above (content),
+    //    - the independent per-charset allow-list oracles above (content; IA5String also refuses
+    //      ESC, 0x1B, with its own `Ia5Escape` variant),
     //    - an independent literal UNIVERSAL tag number per charset (not `Charset::tag_number`),
     //    - `decode_tlv` as the separately-verified envelope reference.
     //    Without this, the content gate at `decode_restricted_string` (`validate_content(tlv.value,
@@ -685,7 +715,7 @@ mod proofs {
                     let mut first_bad: Option<usize> = None;
                     let mut i = 0;
                     while i < v.len() {
-                        if !oracle_of(cs, v[i]) {
+                        if !oracle_accepts(cs, v[i]) {
                             first_bad = Some(i);
                             break;
                         }
@@ -693,8 +723,14 @@ mod proofs {
                     }
                     match first_bad {
                         Some(p) => {
-                            kani::cover(true, "out-of-charset content reached");
-                            assert!(r == Err(StringError::OutOfCharset { position: p, byte: v[p] }));
+                            if oracle_of(cs, v[p]) {
+                                // only IA5String's ESC octet is in the repertoire yet refused
+                                kani::cover(true, "IA5String ESC content reached");
+                                assert!(r == Err(StringError::Ia5Escape { position: p }));
+                            } else {
+                                kani::cover(true, "out-of-charset content reached");
+                                assert!(r == Err(StringError::OutOfCharset { position: p, byte: v[p] }));
+                            }
                         }
                         None => {
                             kani::cover(!v.is_empty(), "non-empty in-charset content accepted");
@@ -833,7 +869,8 @@ mod proofs {
     /// in-charset AND out-of-charset), capacity symbolic (`0..=8`), output buffer initially
     /// symbolic. `encode_restricted_string_into(content, cs, &mut out[..cap])` returns EXACTLY:
     /// - `None` if some content octet is outside the charset per the independent allow-list oracle
-    ///   `oracle_of` (no call into `Charset::contains`), whatever the capacity;
+    ///   `oracle_of` (no call into `Charset::contains`), or is ESC (`0x1B`) in IA5String, whatever
+    ///   the capacity;
     /// - else `None` if `cap < 2 + n` (identifier octet = the charset's literal UNIVERSAL tag number
     ///   as a primitive low-tag octet, one short-form length octet since `n <= 4`, then content);
     /// - else `Some(2 + n)` with emitted bytes exactly `tag n content` and every octet at or past the
@@ -853,7 +890,7 @@ mod proofs {
         let init: [u8; 8] = kani::any();
         let mut out = init;
         let r = encode_restricted_string_into(content, cs, &mut out[..cap]);
-        let all_in = (0..n).all(|i| oracle_of(cs, content[i]));
+        let all_in = (0..n).all(|i| oracle_accepts(cs, content[i]));
         let total = 2 + n;
         if !all_in {
             kani::cover(cap >= total, "out-of-charset content rejected despite ample capacity");
@@ -1196,17 +1233,25 @@ mod tests {
 
     /// Rows X690-8.23.5, X690-8.23.5.2 (accept): IA5String starts with ISO 646 G0 (registration
     /// 6) and the C0 controls (registration 1) assigned, so every octet 0x00..=0x7F is its own
-    /// ISO 2022 code and is accepted unchanged.
+    /// ISO 2022 code and is accepted unchanged. The one exception is ESC (0x1B): Table 3 allows
+    /// no explicit escape sequences in IA5String, so that octet is rejected (see
+    /// `rejects_ia5_escape_octet_and_names_its_position`) and is left out of this specimen.
     #[test]
     fn accepts_ia5_c0_and_g0_octets_as_their_iso2022_codes() {
-        let mut input = [0u8; 3 + 128];
-        input[..3].copy_from_slice(&[0x16, 0x81, 0x80]);
+        let mut input = [0u8; 2 + 127];
+        input[..2].copy_from_slice(&[0x16, 127]);
+        let mut n = 2;
         for i in 0..128u8 {
-            input[3 + i as usize] = i;
+            if i != 0x1B {
+                input[n] = i;
+                n += 1;
+            }
         }
+        assert_eq!(n, input.len());
         let (content, used) = decode_restricted_string(&input, Charset::Ia5).unwrap();
         assert_eq!(used, input.len());
-        assert_eq!(content, &input[3..]);
+        assert_eq!(content, &input[2..]);
+        assert!(!content.contains(&0x1B));
     }
 
     /// Rows X690-8.23.5, X690-8.23.5.2 (accept): VisibleString starts with G0 (registration 6)
@@ -1276,6 +1321,92 @@ mod tests {
                 charset
             );
         }
+    }
+
+    /// Row X690-8.23.5.3 (accept): the escape ban of Table 3 is about escape sequences only. The
+    /// C0 controls next to ESC (0x1A, 0x1C), CR, LF, TAB, NUL and DEL stay accepted in
+    /// IA5String, in the decoder and in the encoder. `Charset::contains` keeps answering the
+    /// X.680 repertoire question, so ESC is still an IA5 character there.
+    #[test]
+    fn accepts_ia5_controls_that_are_not_the_escape_octet() {
+        let content: [u8; 9] = [0x0D, 0x0A, 0x09, 0x1A, 0x1C, 0x00, 0x7F, b'A', 0x1F];
+        let mut input = [0u8; 2 + 9];
+        input[..2].copy_from_slice(&[0x16, 9]);
+        input[2..].copy_from_slice(&content);
+        assert_eq!(decode_ia5_string(&input), Ok((&content[..], 11)));
+        let mut out = [0u8; 16];
+        assert_eq!(encode_ia5_string_into(&content, &mut out), Some(11));
+        assert_eq!(&out[..11], &input[..]);
+        assert!(Charset::Ia5.contains(0x1B));
+    }
+
+    /// Rows X690-8.23.5.1, X690-8.23.5.3 (reject): IA5String allows no explicit escape sequences,
+    /// and every escape sequence starts with ESC (0x1B). The decoder rejects the ESC octet alone,
+    /// at the start, in the middle and at the end, and reports its position. When an octet
+    /// outside the repertoire comes first, that octet is reported instead (first offender wins).
+    #[test]
+    fn rejects_ia5_escape_octet_and_names_its_position() {
+        assert_eq!(decode_ia5_string(&[0x16, 0x01, 0x1B]), Err(StringError::Ia5Escape { position: 0 }));
+        assert_eq!(
+            decode_ia5_string(&[0x16, 0x03, b'a', 0x1B, b'b']),
+            Err(StringError::Ia5Escape { position: 1 })
+        );
+        assert_eq!(
+            decode_ia5_string(&[0x16, 0x03, b'a', b'b', 0x1B]),
+            Err(StringError::Ia5Escape { position: 2 })
+        );
+        // the first ESC is reported when there are two
+        assert_eq!(
+            decode_ia5_string(&[0x16, 0x03, 0x1B, b'a', 0x1B]),
+            Err(StringError::Ia5Escape { position: 0 })
+        );
+        // an earlier out-of-repertoire octet wins; an earlier ESC wins over a later one
+        assert_eq!(
+            decode_ia5_string(&[0x16, 0x02, 0x80, 0x1B]),
+            Err(StringError::OutOfCharset { position: 0, byte: 0x80 })
+        );
+        assert_eq!(
+            decode_ia5_string(&[0x16, 0x02, 0x1B, 0x80]),
+            Err(StringError::Ia5Escape { position: 0 })
+        );
+        assert_eq!(
+            validate_content(&[b'x', 0x1B], Charset::Ia5),
+            Err(StringError::Ia5Escape { position: 1 })
+        );
+        // the same octet is an out-of-repertoire octet in the other three types, not an escape
+        for charset in [Charset::Printable, Charset::Numeric, Charset::Visible] {
+            assert_eq!(
+                validate_content(&[0x1B], charset),
+                Err(StringError::OutOfCharset { position: 0, byte: 0x1B })
+            );
+        }
+    }
+
+    /// Row X690-8.23.5.4 (reject): an announcer is ESC SP F (0x1B 0x20 0x46 ...). In IA5String it
+    /// is rejected at the ESC octet, the same as in the other three types, even though SP and F
+    /// alone are ordinary IA5 text.
+    #[test]
+    fn rejects_announcer_escape_sequence_in_ia5() {
+        assert_eq!(
+            decode_ia5_string(&[0x16, 0x04, b'1', 0x1B, 0x20, 0x46]),
+            Err(StringError::Ia5Escape { position: 1 })
+        );
+        // the tail without the introducer is accepted
+        assert_eq!(decode_ia5_string(&[0x16, 0x03, b'1', 0x20, 0x46]), Ok((&b"1 F"[..], 5)));
+    }
+
+    /// Row X690-8.23.5.3 (reject): an encoder never emits what the decoder rejects. The IA5String
+    /// encoder refuses content that holds an ESC octet and writes nothing.
+    #[test]
+    fn encode_refuses_ia5_escape_octet() {
+        let mut out = [0xA5u8; 16];
+        assert_eq!(encode_ia5_string_into(&[0x1B], &mut out), None);
+        assert_eq!(encode_ia5_string_into(&[b'a', 0x1B, 0x20, 0x46], &mut out), None);
+        assert_eq!(encode_restricted_string_into(&[b'a', 0x1B], Charset::Ia5, &mut out), None);
+        assert_eq!(out, [0xA5u8; 16]);
+        // the neighbouring octets 0x1A and 0x1C encode
+        assert_eq!(encode_ia5_string_into(&[0x1A, 0x1C], &mut out), Some(4));
+        assert_eq!(&out[..4], &[0x16, 0x02, 0x1A, 0x1C]);
     }
 
     /// Rows RFC5280-B-printable-specials, X680-41.4 (accept): the whole 74-character

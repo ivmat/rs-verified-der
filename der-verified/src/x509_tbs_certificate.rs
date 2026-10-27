@@ -1216,6 +1216,108 @@ mod tests {
         wrap(0xA3, &wrap(0x30, &EXT_BASIC_CONSTRAINTS_DEFAULT))
     }
 
+    // --- S4b-B4: an EXPLICIT wrapper holds exactly one complete inner value (X690-8.14.2/8.14.3).
+    //     `decode_explicit_context` does not check this; each caller does.
+
+    /// X690-8.14.2, X690-8.14.3: a `[0]` version wrapper holding a complete INTEGER plus one
+    /// trailing octet inside the wrapper (`A0 04 02 01 02 AA`) is rejected.
+    #[test]
+    fn rejects_version_wrapper_integer_plus_trailing_octet() {
+        let bytes = wrap(0x30, &[0xA0, 0x04, 0x02, 0x01, 0x02, 0xAA]);
+        assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::VersionInnerTrailing));
+    }
+
+    /// X690-8.14.2, X690-8.14.3: an EMPTY `[0]` version wrapper (`A0 00`) holds no inner value
+    /// and is rejected.
+    #[test]
+    fn rejects_version_wrapper_empty() {
+        let bytes = wrap(0x30, &[0xA0, 0x00]);
+        assert_eq!(
+            parse_tbs_certificate(&bytes),
+            Err(TbsCertificateError::BadVersionInnerTlv(TlvError::Tag(
+                crate::tag::TagError::Truncated
+            )))
+        );
+    }
+
+    /// X690-8.14.2, X690-8.14.3: a `[0]` version wrapper whose inner TLV is truncated (the INTEGER
+    /// declares 5 content octets, 0 follow) is rejected.
+    #[test]
+    fn rejects_version_wrapper_truncated_inner_tlv() {
+        let bytes = wrap(0x30, &[0xA0, 0x02, 0x02, 0x05]);
+        assert_eq!(
+            parse_tbs_certificate(&bytes),
+            Err(TbsCertificateError::BadVersionInnerTlv(TlvError::Truncated))
+        );
+    }
+
+    /// X690-8.14.2, X690-8.14.3: a `[3]` extensions wrapper holding a complete `Extensions`
+    /// SEQUENCE plus one trailing octet inside the wrapper is rejected by `validate_extensions`.
+    #[test]
+    fn rejects_extensions_wrapper_sequence_plus_trailing_octet() {
+        let mut inner = wrap(0x30, &EXT_BASIC_CONSTRAINTS_DEFAULT);
+        inner.push(0xAA);
+        let ext = wrap(0xA3, &inner);
+        let bytes = tbs_of(&[
+            &VERSION_V3,
+            &SERIAL_1,
+            &SIGNATURE_ED25519,
+            &NAME_CN_EXAMPLE_CA,
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &SPKI_ED25519,
+            &ext,
+        ]);
+        assert_eq!(
+            parse_tbs_certificate(&bytes),
+            Err(TbsCertificateError::BadExtensions(ExtensionsError::BadOuterSeq(
+                SequenceError::TrailingData
+            )))
+        );
+    }
+
+    /// X690-8.14.2, X690-8.14.3: an EMPTY `[3]` extensions wrapper (`A3 00`) holds no inner value
+    /// and is rejected.
+    #[test]
+    fn rejects_extensions_wrapper_empty() {
+        let ext = [0xA3u8, 0x00];
+        let bytes = tbs_of(&[
+            &VERSION_V3,
+            &SERIAL_1,
+            &SIGNATURE_ED25519,
+            &NAME_CN_EXAMPLE_CA,
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &SPKI_ED25519,
+            &ext,
+        ]);
+        assert!(matches!(
+            parse_tbs_certificate(&bytes),
+            Err(TbsCertificateError::BadExtensions(ExtensionsError::BadOuterSeq(_)))
+        ));
+    }
+
+    /// X690-8.14.2, X690-8.14.3: a `[3]` extensions wrapper whose inner SEQUENCE is truncated (it
+    /// declares 5 content octets, 0 follow) is rejected.
+    #[test]
+    fn rejects_extensions_wrapper_truncated_inner_tlv() {
+        let ext = [0xA3u8, 0x02, 0x30, 0x05];
+        let bytes = tbs_of(&[
+            &VERSION_V3,
+            &SERIAL_1,
+            &SIGNATURE_ED25519,
+            &NAME_CN_EXAMPLE_CA,
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &SPKI_ED25519,
+            &ext,
+        ]);
+        assert!(matches!(
+            parse_tbs_certificate(&bytes),
+            Err(TbsCertificateError::BadExtensions(ExtensionsError::BadOuterSeq(_)))
+        ));
+    }
+
     /// RFC5280-4.1.2.8-b, PROF-unique-identifiers-rejected: a v3 TBSCertificate that omits both
     /// unique identifiers (what a conforming CA issues) is accepted, with its extensions.
     #[test]

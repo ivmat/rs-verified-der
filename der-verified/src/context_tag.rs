@@ -67,6 +67,20 @@ pub enum ContextTagError {
 /// value), not yet decoded — and the total number of bytes the wrapper and its content consumed
 /// from `input`. The caller applies the inner type's own decoder to the returned slice.
 ///
+/// **The contents are NOT checked.** This function returns the wrapper's contents without checking
+/// that they are one complete encoding: `A0 00` (empty), `A0 01 FF` (a truncated inner TLV) and
+/// `A0 04 02 01 05 AA` (a complete TLV plus a trailing octet) are all accepted. Under X.690
+/// 8.14.2 and 8.14.3 an EXPLICIT wrapper holds exactly one complete encoding of the inner type, so
+/// every caller MUST decode the returned slice strictly and require the inner value to tile it
+/// exactly. The in-crate callers and the error each returns for a trailing octet inside the wrapper:
+/// - TBSCertificate version `[0]` ([`crate::x509_tbs_certificate`]):
+///   `TbsCertificateError::VersionInnerTrailing`;
+/// - `ECPrivateKey` `[0]` parameters ([`crate::ec_private_key`]): `ParametersError::InnerTrailing`;
+/// - `ECPrivateKey` `[1]` publicKey ([`crate::ec_private_key`]): `PublicKeyError::InnerTrailing`;
+/// - TBSCertificate extensions `[3]` ([`crate::x509_tbs_certificate`]): through
+///   [`crate::x509_extension::validate_extensions`], which requires its outer SEQUENCE to consume
+///   the whole slice (`ExtensionsError::BadOuterSeq`).
+///
 /// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `decode_explicit_context_never_panics` harness); returns a classified [`ContextTagError`] on any structural
 /// deviation.
 pub fn decode_explicit_context(

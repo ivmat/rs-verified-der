@@ -54,6 +54,7 @@
 
 use crate::bit_string::{decode_bit_string, BitString, BitStringError};
 use crate::bit_string::TAG as BIT_STRING_TAG;
+use crate::identifier_form::FormError;
 use crate::oid::OidError;
 use crate::sequence::{decode_sequence_tlv_strict, SequenceError};
 use crate::tag::Class;
@@ -108,6 +109,11 @@ pub enum SpkiError {
     /// The AlgorithmIdentifier SEQUENCE has more than its two permitted fields (algorithm,
     /// parameters): bytes remain in its content after the parameters TLV.
     AlgorithmTrailingElements,
+    /// The optional `algorithm.parameters` TLV is well-framed but its identifier is not a legal DER
+    /// identifier (end-of-contents `00 00`, or an impossible primitive/constructed form for a
+    /// UNIVERSAL type; X.690 §8.1.5, §8.1.2, §10.2) -- see
+    /// [`AlgIdError::ParametersForm`](crate::x509_algorithm_identifier::AlgIdError::ParametersForm).
+    AlgorithmParametersForm(FormError),
     /// No `subjectPublicKey` BIT STRING is present after the AlgorithmIdentifier (the outer
     /// SEQUENCE's content ended after its first child).
     MissingPublicKey,
@@ -137,6 +143,7 @@ fn map_algid_error(e: AlgIdError) -> SpkiError {
         AlgIdError::BadOid(e) => SpkiError::BadOid(e),
         AlgIdError::BadParametersTlv(e) => SpkiError::BadParametersTlv(e),
         AlgIdError::TrailingElements => SpkiError::AlgorithmTrailingElements,
+        AlgIdError::ParametersForm(e) => SpkiError::AlgorithmParametersForm(e),
     }
 }
 
@@ -594,6 +601,20 @@ mod tests {
         assert_eq!(
             parse_subject_public_key_info(&bytes),
             Err(SpkiError::BadParametersTlv(TlvError::Truncated))
+        );
+    }
+
+    #[test]
+    fn rejects_algorithm_parameters_end_of_contents() {
+        // AlgorithmIdentifier parameters `00 00` are the reserved end-of-contents identifier
+        // (X.690 §8.1.5): framed as one TLV, but never legal DER. Reached through the SPKI-level
+        // delegation (`map_algid_error`).
+        // 30 09 30 07 06 03 2b 65 70 00 00  (the outer SEQUENCE ends after the AlgorithmIdentifier; the
+        // failure is inside the latter, found before the missing public key is looked at)
+        let bytes = [0x30, 0x09, 0x30, 0x07, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x00, 0x00];
+        assert_eq!(
+            parse_subject_public_key_info(&bytes),
+            Err(SpkiError::AlgorithmParametersForm(FormError::ReservedIdentifier))
         );
     }
 
