@@ -341,4 +341,119 @@ mod tests {
         assert_eq!(n, 3);
         assert_eq!(&out[..n], &[0x02, 0x01, 0x07]);
     }
+
+    // --- S4a additions: tests for rows that had no test in the role named ---
+
+    /// X690-8.1.1.1: the components appear in order identifier, length, contents. A TLV that stops
+    /// after the identifier has no length component, and one that stops after the length has no
+    /// contents component. Neither is accepted.
+    #[test]
+    fn rejects_tlv_missing_length_or_contents_component() {
+        assert_eq!(decode_tlv(&[0x02]), Err(TlvError::Length(LengthError::Truncated)));
+        assert_eq!(decode_tlv(&[0x1F, 0x2A]), Err(TlvError::Length(LengthError::Truncated)));
+        assert_eq!(decode_tlv(&[0x02, 0x01]), Err(TlvError::Truncated));
+        assert_eq!(decode_tlv(&[0x30, 0x82, 0x01, 0x00]), Err(TlvError::Truncated));
+    }
+
+    /// X690-8.1.1.2: a definite length has no end-of-contents octets. Two zero octets after a
+    /// complete definite-length TLV are not part of it: they are left unconsumed, and the strict
+    /// decoder reports them as trailing data.
+    #[test]
+    fn accepts_definite_length_tlv_without_end_of_contents() {
+        let input = [0x04u8, 0x01, 0xAA, 0x00, 0x00];
+        let (tlv, used) = decode_tlv(&input).unwrap();
+        assert_eq!(used, 3);
+        assert_eq!(tlv.value, &[0xAA]);
+        assert_eq!(decode_tlv_strict(&input), Err(TlvError::TrailingData));
+        assert_eq!(decode_tlv_strict(&input[..3]).unwrap().value, &[0xAA]);
+    }
+
+    /// X690-8.1.3.2: a primitive encoding uses the definite length form. A primitive OCTET STRING,
+    /// INTEGER or NULL with the indefinite length octet 0x80 (and an end-of-contents pair) is
+    /// rejected as `Indefinite`.
+    #[test]
+    fn rejects_primitive_tlv_with_indefinite_length() {
+        assert_eq!(
+            decode_tlv(&[0x04, 0x80, 0xAA, 0x00, 0x00]),
+            Err(TlvError::Length(LengthError::Indefinite))
+        );
+        assert_eq!(
+            decode_tlv(&[0x02, 0x80, 0x07, 0x00, 0x00]),
+            Err(TlvError::Length(LengthError::Indefinite))
+        );
+        assert_eq!(
+            decode_tlv(&[0x05, 0x80, 0x00, 0x00]),
+            Err(TlvError::Length(LengthError::Indefinite))
+        );
+    }
+
+    /// X690-8.1.4: the contents octets are as many octets as the length field declares. A TLV with
+    /// fewer contents octets than declared is rejected as `Truncated`, including when the length is
+    /// in the long form and the contents are one octet short.
+    #[test]
+    fn rejects_contents_shorter_than_declared_length() {
+        assert_eq!(decode_tlv(&[0x04, 0x03, 0xAA, 0xBB]), Err(TlvError::Truncated));
+        assert_eq!(decode_tlv(&[0x04, 0x01]), Err(TlvError::Truncated));
+        let mut short = [0xABu8; 3 + 127];
+        short[0] = 0x04;
+        short[1] = 0x81;
+        short[2] = 0x80;
+        assert_eq!(decode_tlv(&short), Err(TlvError::Truncated));
+        let mut exact = [0xABu8; 3 + 128];
+        exact[..3].copy_from_slice(&[0x04, 0x81, 0x80]);
+        let (tlv, used) = decode_tlv(&exact).unwrap();
+        assert_eq!(used, 131);
+        assert_eq!(tlv.value.len(), 128);
+    }
+
+    /// CODEC-tlv-encode-decode: for each accepted TLV, encoding the decoded tag and value reproduces
+    /// exactly the same octets (decode then encode).
+    #[test]
+    fn roundtrips_accepted_tlv_bytes_through_encoder() {
+        let mut long = [0x5Au8; 3 + 128];
+        long[..3].copy_from_slice(&[0x04, 0x81, 0x80]);
+        let short_specimens: [&[u8]; 6] = [
+            &[0x02, 0x01, 0x07],
+            &[0x05, 0x00],
+            &[0xA3, 0x03, 0x02, 0x01, 0x05],
+            &[0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02],
+            &[0x5F, 0x81, 0x00, 0x02, 0xDE, 0xAD],
+            &[0x1F, 0x1F, 0x00],
+        ];
+        for bytes in short_specimens.into_iter().chain(core::iter::once(&long[..])) {
+            let (tlv, used) = decode_tlv(bytes).unwrap();
+            assert_eq!(used, bytes.len());
+            let mut out = [0u8; 160];
+            let n = encode_tlv_into(tlv.tag, tlv.value, &mut out).unwrap();
+            assert_eq!(&out[..n], bytes, "decode then encode must reproduce {bytes:02x?}");
+            assert_eq!(decode_tlv(&out[..n]), Ok((tlv, n)), "encode then decode");
+        }
+    }
+
+    /// CODEC-tlv-unique, CODEC-tlv-reject-nonder, X690-7.4: these are complete, BER-valid alternate
+    /// spellings of `02 01 07` (INTEGER 7). The long-form length and the zero-padded length are
+    /// `NonMinimal` length errors, the high-tag spelling of tag number 2 is a `NonMinimal` tag
+    /// error. The canonical spelling is accepted.
+    #[test]
+    fn rejects_alternate_spellings_of_one_tlv() {
+        assert_eq!(
+            decode_tlv(&[0x02, 0x81, 0x01, 0x07]),
+            Err(TlvError::Length(LengthError::NonMinimal))
+        );
+        assert_eq!(
+            decode_tlv(&[0x02, 0x82, 0x00, 0x01, 0x07]),
+            Err(TlvError::Length(LengthError::NonMinimal))
+        );
+        assert_eq!(
+            decode_tlv(&[0x1F, 0x02, 0x01, 0x07]),
+            Err(TlvError::Tag(TagError::NonMinimal))
+        );
+        assert_eq!(
+            decode_tlv(&[0x1F, 0x80, 0x02, 0x01, 0x07]),
+            Err(TlvError::Tag(TagError::NonMinimal))
+        );
+        let (tlv, used) = decode_tlv(&[0x02, 0x01, 0x07]).unwrap();
+        assert_eq!(used, 3);
+        assert_eq!(tlv.value, &[0x07]);
+    }
 }

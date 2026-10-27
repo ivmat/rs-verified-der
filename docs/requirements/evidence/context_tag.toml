@@ -53,6 +53,26 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
+name = "accepts_explicit_wrapper_around_any_underlying_type"
+accept = ["X680-31j"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/context_tag.rs"
+name = "accepts_tagging_leaves_inner_value_unchanged"
+accept = ["X680-31k"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/context_tag.rs"
 name = "rejects_high_tag_form_of_context_number_0"
 accept = []
 reject = ["X690-8.1.2.2", "X690-8.1.2.4.2", "X690-8.14.3"]
@@ -86,6 +106,16 @@ file = "der-verified/src/context_tag.rs"
 name = "rejects_primitive_form"
 accept = []
 reject = ["X690-8.14.3", "PROF-explicit-context-only"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/context_tag.rs"
+name = "rejects_untagged_base_encoding_as_tagged_type"
+accept = []
+reject = ["X680-31j"]
 prove = []
 bounded = ""
 none = ""
