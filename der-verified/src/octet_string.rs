@@ -399,4 +399,89 @@ mod tests {
         assert_eq!(used, n);
         assert_eq!(dec, &content[..]);
     }
+
+    // --- S4a: tests for rows that had no accept or reject test ---
+
+    /// Rows X690-8.7.2, X690-8.1.3.3 (reject): the primitive contents octets are exactly the
+    /// data octets, so a TLV that declares more content octets than it carries is rejected and
+    /// no shorter value is returned in its place.
+    #[test]
+    fn rejects_fewer_content_octets_than_the_declared_length() {
+        // declares 4 octets, carries 3
+        assert_eq!(
+            decode_octet_string(&[0x04, 0x04, 0xDE, 0xAD, 0xBE]),
+            Err(OctetStringError::Tlv(TlvError::Truncated))
+        );
+        // declares 4 octets, carries none
+        assert_eq!(
+            decode_octet_string(&[0x04, 0x04]),
+            Err(OctetStringError::Tlv(TlvError::Truncated))
+        );
+        // long-form length 128, carries 127
+        let mut buf = [0xA5u8; 3 + 127];
+        buf[..3].copy_from_slice(&[0x04, 0x81, 0x80]);
+        assert_eq!(decode_octet_string(&buf), Err(OctetStringError::Tlv(TlvError::Truncated)));
+        // the exact-length twin is accepted and returns exactly the declared octets
+        let (content, used) = decode_octet_string(&[0x04, 0x03, 0xDE, 0xAD, 0xBE]).unwrap();
+        assert_eq!((content, used), (&[0xDE, 0xAD, 0xBE][..], 5));
+    }
+
+    /// Rows CODEC-octet-string-encode-decode (accept): bytes the decoder accepts are re-encoded
+    /// to the identical octets, in the short and the long length form.
+    #[test]
+    fn roundtrips_accepted_bytes_through_decode_then_encode() {
+        let long = {
+            let mut v = [0x5Au8; 3 + 130];
+            v[..3].copy_from_slice(&[0x04, 0x81, 0x82]);
+            v
+        };
+        let specimens: [&[u8]; 4] = [
+            &[0x04, 0x00],
+            &[0x04, 0x01, 0xAA],
+            &[0x04, 0x03, 0x01, 0x02, 0x03],
+            &long,
+        ];
+        for bytes in specimens {
+            let (content, used) = decode_octet_string(bytes).unwrap();
+            assert_eq!(used, bytes.len());
+            let mut out = [0u8; 160];
+            let n = encode_octet_string_into(content, &mut out).unwrap();
+            assert_eq!(&out[..n], bytes);
+        }
+    }
+
+    /// Rows CODEC-octet-string-unique, CODEC-octet-string-reject-nonder, X690-7.4, X690-10.2
+    /// (reject): the value {AA} has one accepted spelling, `04 01 AA`. Every BER-valid
+    /// alternate spelling is rejected: a constructed string with a valid segment, long-form
+    /// lengths, a high-tag identifier, and an indefinite-length constructed string.
+    #[test]
+    fn rejects_alternate_spellings_of_one_octet_string_value() {
+        use crate::length::LengthError;
+        use crate::tag::TagError;
+        assert_eq!(decode_octet_string(&[0x04, 0x01, 0xAA]), Ok((&[0xAAu8][..], 3)));
+        // constructed, one valid segment `04 01 AA`
+        assert_eq!(
+            decode_octet_string(&[0x24, 0x03, 0x04, 0x01, 0xAA]),
+            Err(OctetStringError::Constructed)
+        );
+        // long-form lengths for length 1
+        assert_eq!(
+            decode_octet_string(&[0x04, 0x81, 0x01, 0xAA]),
+            Err(OctetStringError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+        assert_eq!(
+            decode_octet_string(&[0x04, 0x82, 0x00, 0x01, 0xAA]),
+            Err(OctetStringError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+        // high-tag form of tag number 4
+        assert_eq!(
+            decode_octet_string(&[0x1F, 0x04, 0x01, 0xAA]),
+            Err(OctetStringError::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+        // BER indefinite-length constructed form with one valid segment and the end-of-contents
+        assert_eq!(
+            decode_octet_string(&[0x24, 0x80, 0x04, 0x01, 0xAA, 0x00, 0x00]),
+            Err(OctetStringError::Tlv(TlvError::Length(LengthError::Indefinite)))
+        );
+    }
 }

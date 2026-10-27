@@ -679,3 +679,93 @@ reject = ["X680-41.1", "X690-8.23.3-b"]
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "rejects_own_tag_number_in_a_non_universal_class"
+accept = []
+reject = ["X690-8.23.3", "X690-8.23.3-a", "X680-40b"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "accepts_ia5_c0_and_g0_octets_as_their_iso2022_codes"
+accept = ["X690-8.23.5", "X690-8.23.5.2"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "accepts_visible_g0_octets_as_their_iso2022_codes"
+accept = ["X690-8.23.5", "X690-8.23.5.2"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "rejects_octets_outside_the_assigned_iso2022_sets"
+accept = []
+reject = ["X690-8.23.5", "X690-8.23.5.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "accepts_announcer_tail_octets_without_the_escape_introducer"
+accept = ["X690-8.23.5.4"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "rejects_announcer_escape_sequence_in_printable_numeric_visible"
+accept = []
+reject = ["X690-8.23.5.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "accepts_the_full_printable_repertoire_next_to_at_and_underscore"
+accept = ["RFC5280-B-printable-specials", "X680-41.4"]
+reject = ["RFC5280-B-printable-specials"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "roundtrips_accepted_bytes_through_decode_then_encode"
+accept = ["CODEC-restricted-string-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "rejects_alternate_spellings_of_one_restricted_string_value"
+accept = []
+reject = ["CODEC-restricted-string-unique", "CODEC-restricted-string-reject-nonder", "X690-7.4", "X690-10.1", "X690-10.2"]
+prove = []
+bounded = ""
+none = ""

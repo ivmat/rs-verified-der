@@ -638,4 +638,60 @@ mod tests {
         assert_eq!(w, 2);
         assert_eq!(&out[..w], &[0x04, 0xF0]);
     }
+
+    // --- S4a: tests for rows that had no accept or reject test ---
+
+    /// Rows X690-8.6.2.1 (bit order, reject): the used bits start at bit 8 of the first value
+    /// octet, so the padding bits are the LOW-order bits of the final octet. A set low-order bit
+    /// is rejected; the same pattern moved to the high-order bits is accepted.
+    #[test]
+    fn rejects_value_bits_placed_in_the_low_order_positions() {
+        // 4 unused bits: the used nibble must sit in bits 8..5 (0xF0), not in bits 4..1 (0x0F).
+        assert_eq!(decode_bit_string(&[0x04, 0x0F]), Err(BitStringError::NonZeroPadding));
+        assert_eq!(decode_bit_string(&[0x04, 0x01]), Err(BitStringError::NonZeroPadding));
+        // 7 unused bits: one used bit, and it must be bit 8 (0x80), not bit 1 (0x01).
+        assert_eq!(decode_bit_string(&[0x07, 0x01]), Err(BitStringError::NonZeroPadding));
+        // The same values with the used bits at the leading end are accepted.
+        let bs = decode_bit_string(&[0x04, 0xF0]).unwrap();
+        assert_eq!((bs.data, bs.unused), (&[0xF0u8][..], 4));
+        let bs = decode_bit_string(&[0x07, 0x80]).unwrap();
+        assert_eq!((bs.data, bs.unused), (&[0x80u8][..], 7));
+    }
+
+    /// Rows CODEC-bit-string-encode-decode (accept): content accepted by the decoder is
+    /// re-encoded to the identical octets.
+    #[test]
+    fn roundtrips_accepted_content_through_decode_then_encode() {
+        let specimens: [&[u8]; 6] = [
+            &[0x00],
+            &[0x00, 0xFF],
+            &[0x04, 0xF0],
+            &[0x07, 0x80],
+            &[0x04, 0x12, 0x00],
+            &[0x03, 0xDE, 0xAD, 0xA0],
+        ];
+        for content in specimens {
+            let bs = decode_bit_string(content).unwrap();
+            let mut out = [0u8; 8];
+            let n = encode_bit_string_into(bs.data, bs.unused, &mut out).unwrap();
+            assert_eq!(&out[..n], content);
+        }
+    }
+
+    /// Rows CODEC-bit-string-unique, CODEC-bit-string-reject-nonder, X690-7.4, X690-11.2.1
+    /// (reject): one BIT STRING value has exactly one accepted spelling. The 4-bit value 1111
+    /// is `04 F0`; BER also lets the sender fill the padding bits with anything (`04 F1`,
+    /// `04 F8`, `04 FF`). Every such alternate spelling is rejected.
+    #[test]
+    fn rejects_padding_bit_spellings_of_one_value() {
+        let bs = decode_bit_string(&[0x04, 0xF0]).unwrap();
+        assert_eq!((bs.data, bs.unused), (&[0xF0u8][..], 4));
+        for alt in [[0x04u8, 0xF1], [0x04, 0xF8], [0x04, 0xFF], [0x04, 0xF4]] {
+            assert_eq!(decode_bit_string(&alt), Err(BitStringError::NonZeroPadding), "{:x?}", alt);
+        }
+        // 1-bit value `1`: `07 80` is the only spelling; filled padding is rejected.
+        assert!(decode_bit_string(&[0x07, 0x80]).is_ok());
+        assert_eq!(decode_bit_string(&[0x07, 0xFF]), Err(BitStringError::NonZeroPadding));
+        assert_eq!(decode_bit_string(&[0x07, 0x81]), Err(BitStringError::NonZeroPadding));
+    }
 }

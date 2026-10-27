@@ -199,3 +199,33 @@ reject = []
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/octet_string.rs"
+name = "rejects_fewer_content_octets_than_the_declared_length"
+accept = []
+reject = ["X690-8.7.2", "X690-8.1.3.3"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/octet_string.rs"
+name = "roundtrips_accepted_bytes_through_decode_then_encode"
+accept = ["CODEC-octet-string-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/octet_string.rs"
+name = "rejects_alternate_spellings_of_one_octet_string_value"
+accept = []
+reject = ["CODEC-octet-string-unique", "CODEC-octet-string-reject-nonder", "X690-7.4", "X690-10.1", "X690-10.2"]
+prove = []
+bounded = ""
+none = ""
