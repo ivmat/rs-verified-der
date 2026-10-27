@@ -399,6 +399,12 @@ def validate(
                     errors.append(
                         f"{entry.label()}: {role} id {ident!r} has disposition {inv.get('disposition')!r}, not 'in'"
                     )
+                if inv is not None:
+                    note = inv.get("note")
+                    if isinstance(note, str) and "umbrella" in note.lower():
+                        errors.append(
+                            f"{entry.label()}: {role} id {ident!r} has a note containing 'umbrella' and may not be cited"
+                        )
         if kind == "test" and row["prove"]:
             errors.append(f"{entry.label()}: test entries may not use prove")
         if kind == "lean" and (row["accept"] or row["reject"]):

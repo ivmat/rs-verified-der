@@ -32,6 +32,8 @@ is the Rust module path, for example `path = "tests::nested"`.
 An id in `accept` means that a conforming input is accepted. An id in `reject` means that a
 violating input is rejected. An id in `prove` means that a property is proved for a symbolic domain
 or for all inputs. Every id must name an `in` item in `../der.inventory.toml`.
+Rows whose inventory `note` contains `umbrella` must not be cited; cite the applicable sentence row
+instead.
 
 A test cannot use `prove`. A Lean entry can use only `prove`. A Kani entry that uses `prove` must
 state its bound in `bounded`, unless the crate documents the harness as unbounded. Use a short value

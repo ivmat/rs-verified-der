@@ -16,7 +16,7 @@ file = "der-verified/src/oid.rs"
 name = "later_0x80_is_non_minimal"
 accept = []
 reject = []
-prove = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
+prove = ["X690-8.19.2", "CODEC-oid-reject-nonder", "X690-7.4"]
 bounded = "fixed 4 octets; first octet < 0x80; second octet = 0x80; unwind 8"
 none = ""
 
@@ -26,7 +26,7 @@ file = "der-verified/src/oid.rs"
 name = "leading_0x80_is_non_minimal"
 accept = []
 reject = []
-prove = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
+prove = ["X690-8.19.2", "CODEC-oid-reject-nonder", "X690-7.4"]
 bounded = "fixed 5 octets; first octet = 0x80; unwind 8"
 none = ""
 
@@ -54,7 +54,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/oid.rs"
 name = "accepts_valid_oids"
-accept = ["X690-8.19", "X690-8.19.2-a", "X690-8.19.2-b", "X690-8.19.2-c", "X690-8.19.2-d", "X690-8.19.2", "X690-8.19.3", "X690-8.19.4", "X690-8.19.5"]
+accept = ["X690-8.19", "X690-8.19.2-a", "X690-8.19.2-b", "X690-8.19.2", "X690-8.19.3"]
 reject = []
 prove = []
 bounded = ""
@@ -75,7 +75,7 @@ kind = "test"
 file = "der-verified/src/oid.rs"
 name = "rejects_non_minimal_subid"
 accept = []
-reject = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
+reject = ["X690-8.19.2", "CODEC-oid-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""

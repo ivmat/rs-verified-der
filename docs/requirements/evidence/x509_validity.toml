@@ -86,7 +86,7 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_rejects_field_identifier"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2", "X690-10.2", "CODEC-validity-reject-nonder"]
+prove = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2", "X690-10.2"]
 bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; selected field identifier is low-tag; input = 32; unwind 20"
 none = ""
 
@@ -225,7 +225,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_not_before_constructed"
 accept = []
-reject = ["X690-10.2", "CODEC-validity-reject-nonder"]
+reject = ["X690-10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -275,7 +275,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_truncated"
 accept = []
-reject = ["X690-8.1.3.3"]
+reject = ["RFC5280-4.1-d", "X690-8.1.3.3"]
 prove = []
 bounded = ""
 none = ""

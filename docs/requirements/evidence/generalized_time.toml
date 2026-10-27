@@ -36,7 +36,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "decode_accepts_only_canonical"
 accept = []
 reject = []
-prove = ["CODEC-generalized-time-encode-decode", "CODEC-generalized-time-unique"]
+prove = ["CODEC-generalized-time-encode-decode"]
 bounded = "input len <= 19; fraction digits <= 3; unwind 20"
 none = ""
 

@@ -316,9 +316,9 @@ file = "lean/LengthProofs.lean"
 name = "decode_empty"
 accept = []
 reject = []
-prove = []
+prove = ["X690-8.1.3.3"]
 bounded = ""
-none = "proves empty input is Truncated; no matching inventory row"
+none = ""
 
 [[entry]]
 kind = "lean"
@@ -436,7 +436,7 @@ file = "lean/LengthProofs.lean"
 name = "decode_toolarge"
 accept = []
 reject = []
-prove = ["PROF-length-u32-cap", "RFC5280-B-size-upper-bound"]
+prove = ["PROF-length-u32-cap"]
 bounded = ""
 none = ""
 
@@ -926,7 +926,7 @@ file = "lean/TagProofs.lean"
 name = "decode_tag_loop_toolarge_spec"
 accept = []
 reject = []
-prove = ["PROF-tag-u32-cap", "RFC5280-B-size-upper-bound"]
+prove = ["PROF-tag-u32-cap"]
 bounded = ""
 none = ""
 
@@ -1066,7 +1066,7 @@ file = "lean/TagProofs.lean"
 name = "tag_decode_too_large"
 accept = []
 reject = []
-prove = ["PROF-tag-u32-cap", "RFC5280-B-size-upper-bound"]
+prove = ["PROF-tag-u32-cap"]
 bounded = ""
 none = ""
 
@@ -1076,7 +1076,7 @@ file = "lean/TagProofs.lean"
 name = "tag_decode_too_large_spec"
 accept = []
 reject = []
-prove = ["PROF-tag-u32-cap", "RFC5280-B-size-upper-bound"]
+prove = ["PROF-tag-u32-cap"]
 bounded = ""
 none = ""
 

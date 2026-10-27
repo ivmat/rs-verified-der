@@ -56,7 +56,7 @@ file = "der-verified/src/tag.rs"
 name = "too_large_tag_is_classified"
 accept = []
 reject = []
-prove = ["PROF-tag-u32-cap", "RFC5280-B-size-upper-bound"]
+prove = ["PROF-tag-u32-cap"]
 bounded = "first octet uses high-tag marker; fixed oversized continuation; unwind 12"
 none = ""
 

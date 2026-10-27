@@ -6,7 +6,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "accepted_identifier_is_canonical_ia5"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X680-41.1"]
+prove = ["X690-10.2"]
 bounded = "fixed 16-octet input; unwind 16"
 none = ""
 
@@ -16,7 +16,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "accepted_identifier_is_canonical_numeric"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X680-41.1"]
+prove = ["X690-10.2"]
 bounded = "fixed 16-octet input; unwind 16"
 none = ""
 
@@ -26,7 +26,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "accepted_identifier_is_canonical_printable"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X680-41.1"]
+prove = ["X690-10.2"]
 bounded = "fixed 16-octet input; unwind 16"
 none = ""
 
@@ -36,7 +36,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "accepted_identifier_is_canonical_visible"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X680-41.1"]
+prove = ["X690-10.2"]
 bounded = "fixed 16-octet input; unwind 16"
 none = ""
 
@@ -86,7 +86,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "constructed_form_is_rejected_ia5"
 accept = []
 reject = []
-prove = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+prove = ["X690-10.2"]
 bounded = "fixed 3-octet TLV with symbolic content; unwind 16"
 none = ""
 
@@ -96,7 +96,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "constructed_form_is_rejected_numeric"
 accept = []
 reject = []
-prove = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+prove = ["X690-10.2"]
 bounded = "fixed 3-octet TLV with symbolic content; unwind 16"
 none = ""
 
@@ -106,7 +106,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "constructed_form_is_rejected_printable"
 accept = []
 reject = []
-prove = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+prove = ["X690-10.2"]
 bounded = "fixed 3-octet TLV with symbolic content; unwind 16"
 none = ""
 
@@ -116,7 +116,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "constructed_form_is_rejected_visible"
 accept = []
 reject = []
-prove = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+prove = ["X690-10.2"]
 bounded = "fixed 3-octet TLV with symbolic content; unwind 16"
 none = ""
 
@@ -126,7 +126,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_ia5"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4"]
+prove = ["X690-10.2", "X690-8.23.3-b", "X680-41.1"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -136,7 +136,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_numeric"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.2"]
+prove = ["X690-10.2", "X690-8.23.3-b", "X680-41.1", "X690-8.23.4", "X680-41.2"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -146,7 +146,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_printable"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.4", "RFC5280-B-printable-specials"]
+prove = ["X690-10.2", "X690-8.23.3-b", "X680-41.1", "X690-8.23.4", "X680-41.4", "RFC5280-B-printable-specials"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -156,7 +156,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_visible"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4"]
+prove = ["X690-10.2", "X690-8.23.3-b", "X680-41.1"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -386,9 +386,9 @@ file = "der-verified/src/restricted_string.rs"
 name = "wrong_tag_is_classified_ia5"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "low-tag identifier other than canonical or constructed IA5String; one in-repertoire content octet; unwind 16"
-none = ""
+prove = []
+bounded = ""
+none = "symbolic wrong-tag classification does not independently pin the charset's literal identifier octet"
 
 [[entry]]
 kind = "kani"
@@ -396,9 +396,9 @@ file = "der-verified/src/restricted_string.rs"
 name = "wrong_tag_is_classified_numeric"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "low-tag identifier other than canonical or constructed NumericString; one in-repertoire content octet; unwind 16"
-none = ""
+prove = []
+bounded = ""
+none = "symbolic wrong-tag classification does not independently pin the charset's literal identifier octet"
 
 [[entry]]
 kind = "kani"
@@ -406,9 +406,9 @@ file = "der-verified/src/restricted_string.rs"
 name = "wrong_tag_is_classified_printable"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "low-tag identifier other than canonical or constructed PrintableString; one in-repertoire content octet; unwind 16"
-none = ""
+prove = []
+bounded = ""
+none = "symbolic wrong-tag classification does not independently pin the charset's literal identifier octet"
 
 [[entry]]
 kind = "kani"
@@ -416,9 +416,9 @@ file = "der-verified/src/restricted_string.rs"
 name = "wrong_tag_is_classified_visible"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "low-tag identifier other than canonical or constructed VisibleString; one in-repertoire content octet; unwind 16"
-none = ""
+prove = []
+bounded = ""
+none = "symbolic wrong-tag classification does not independently pin the charset's literal identifier octet"
 
 [[entry]]
 kind = "test"
@@ -445,10 +445,10 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "decode_rejects_truncated_value"
 accept = []
-reject = []
+reject = ["X690-8.1.3.3"]
 prove = []
 bounded = ""
-none = "truncated TLV framing is malformed, not a promised non-DER alternate"
+none = ""
 
 [[entry]]
 kind = "test"
@@ -545,7 +545,7 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "rejects_constructed_ia5"
 accept = []
-reject = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+reject = ["X690-10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -555,7 +555,7 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "rejects_constructed_numeric"
 accept = []
-reject = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+reject = ["X690-10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -565,7 +565,7 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "rejects_constructed_printable"
 accept = []
-reject = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+reject = ["X690-10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -575,7 +575,7 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "rejects_constructed_visible"
 accept = []
-reject = ["X690-10.2", "CODEC-restricted-string-reject-nonder"]
+reject = ["X690-10.2"]
 prove = []
 bounded = ""
 none = ""

@@ -16,7 +16,7 @@ file = "der-verified/src/tlv.rs"
 name = "decode_tlv_structure"
 accept = []
 reject = []
-prove = ["X690-8.1", "X690-8.1.1.1", "X690-8.1.4", "SAFE-overread-1"]
+prove = ["X690-8.1.1.1", "X690-8.1.4", "SAFE-overread-1"]
 bounded = "input len <= 16; unwind 16"
 none = ""
 
@@ -46,7 +46,7 @@ file = "der-verified/src/tlv.rs"
 name = "tlv_truncated_value_is_classified"
 accept = []
 reject = []
-prove = ["SAFE-overread-1"]
+prove = ["X690-8.1.3.3", "SAFE-overread-1"]
 bounded = "fixed tag and declared length; two symbolic value octets; unwind 16"
 none = ""
 
@@ -64,7 +64,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "decodes_simple_integer_tlv"
-accept = ["X690-8.1", "X690-8.1.1.1", "X690-8.1.4"]
+accept = ["X690-8.1.1.1", "X690-8.1.4"]
 reject = []
 prove = []
 bounded = ""
@@ -125,7 +125,7 @@ kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_truncated_value"
 accept = []
-reject = ["SAFE-overread-1"]
+reject = ["X690-8.1.3.3", "SAFE-overread-1"]
 prove = []
 bounded = ""
 none = ""

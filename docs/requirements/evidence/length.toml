@@ -76,7 +76,7 @@ file = "der-verified/src/length.rs"
 name = "too_large_is_classified"
 accept = []
 reject = []
-prove = ["PROF-length-u32-cap", "RFC5280-B-size-upper-bound"]
+prove = ["PROF-length-u32-cap"]
 bounded = "fixed 0x85 prefix; first value octet nonzero; four symbolic tail octets; unwind 10"
 none = ""
 
@@ -135,7 +135,7 @@ kind = "test"
 file = "der-verified/src/length.rs"
 name = "rejects_length_too_large_for_u32"
 accept = []
-reject = ["PROF-length-u32-cap", "RFC5280-B-size-upper-bound"]
+reject = ["PROF-length-u32-cap"]
 prove = []
 bounded = ""
 none = ""

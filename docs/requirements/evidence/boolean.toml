@@ -6,7 +6,7 @@ file = "der-verified/src/boolean.rs"
 name = "one_octet_is_canonical"
 accept = []
 reject = []
-prove = ["X690-8.2", "X690-8.2.1", "X690-8.2.2", "X690-11.1", "X680-18d", "CODEC-boolean-encode-decode", "CODEC-boolean-unique", "CODEC-boolean-reject-nonder", "X690-7.4"]
+prove = ["X690-8.2.1", "X690-8.2.2", "X690-11.1", "X680-18d", "CODEC-boolean-encode-decode", "CODEC-boolean-unique", "CODEC-boolean-reject-nonder", "X690-7.4"]
 bounded = "all one-octet contents"
 none = ""
 
@@ -34,7 +34,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/boolean.rs"
 name = "canonical_values"
-accept = ["X690-8.2", "X690-8.2.1", "X690-8.2.2", "X690-11.1", "X680-18d", "CODEC-boolean-decode-encode"]
+accept = ["X690-8.2.1", "X690-8.2.2", "X690-11.1", "X680-18d", "CODEC-boolean-decode-encode"]
 reject = []
 prove = []
 bounded = ""

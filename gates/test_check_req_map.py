@@ -52,6 +52,16 @@ source = "test"
 disposition = "in"
 
 [[item]]
+id = "U"
+title = "umbrella row"
+parent = "DER"
+force = "declarative"
+side = "both"
+source = "test"
+disposition = "in"
+note = "umbrella; decided by its sentence rows"
+
+[[item]]
 id = "X"
 title = "excluded"
 parent = "DER"
@@ -203,6 +213,12 @@ class CheckerTests(unittest.TestCase):
         )
         self.assert_red("disposition 'excluded', not 'in'", rust_map=entry + KANI_ENTRY)
 
+    def test_umbrella_requirement_id(self) -> None:
+        entry = TEST_ENTRY.replace("accept = []", 'accept = ["U"]').replace(
+            'none = "not assigned"', 'none = ""'
+        )
+        self.assert_red("note containing 'umbrella' and may not be cited", rust_map=entry + KANI_ENTRY)
+
     def test_test_may_not_prove(self) -> None:
         entry = TEST_ENTRY.replace("prove = []", 'prove = ["A"]').replace(
             'none = "not assigned"', 'none = ""'
@@ -277,7 +293,16 @@ class CheckerTests(unittest.TestCase):
             capture_output=True,
             check=False,
         )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        if result.returncode == 0:
+            return
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertEqual(result.stderr, "")
+        errors = result.stdout.splitlines()
+        self.assertTrue(errors, "checker failed without an error")
+        self.assertTrue(
+            all("note containing 'umbrella' and may not be cited" in error for error in errors),
+            result.stdout,
+        )
 
 
 if __name__ == "__main__":

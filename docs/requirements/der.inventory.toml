@@ -7851,7 +7851,8 @@ force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["tlv", "identifier_form"]
+modules = ["tlv", "identifier_form", "x509_name"]
+note = "gap: x509_name accepts the end-of-contents octets 00 00 as an attribute value (opaque framing only; x509_name.rs proofs)"
 line = 605
 
 [[item]]
@@ -8075,12 +8076,25 @@ line = 890
 [[item]]
 id = "X690-8.15"
 ref = "8.15"
-title = "Open values carry a complete encoding of their actual type"
+title = "An open-type value is exactly one framed TLV"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
+modules = ["x509_algorithm_identifier", "x509_name"]
+line = 942
+
+[[item]]
+id = "X690-8.15-a"
+ref = "8.15"
+title = "The value is a complete encoding of its actual type"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "opaque contents are not checked against their actual type; see PROF-opaque-contents-not-der-checked"
 modules = ["x509_algorithm_identifier", "x509_name"]
 line = 942
 
@@ -11548,7 +11562,7 @@ force = "contract"
 side = "decoder"
 source = "primary"
 disposition = "in"
-modules = ["tlv", "sequence", "set_of", "identifier_form", "pkcs8", "encrypted_private_key_info", "ec_private_key", "ecdsa_sig_value", "rsa_public_key", "rsa_private_key", "x509_certificate"]
+modules = ["tlv", "sequence", "set_of", "identifier_form", "pkcs8", "encrypted_private_key_info", "ec_private_key", "ecdsa_sig_value", "rsa_public_key", "rsa_private_key", "x509_certificate", "x509_spki"]
 
 [[item]]
 id = "PROF-identifier-form-opt-in"
@@ -11920,8 +11934,8 @@ force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["length", "integer", "tag"]
-note = "the crate's selected caps are recorded by PROF-length-u32-cap, PROF-integer-i64-cap, and PROF-tag-u32-cap"
+modules = []
+note = "covers SIZE (1..MAX) element counts only"
 line = 7429
 
 [[item]]
