@@ -1,7 +1,7 @@
 [inventory]
 id = "der-requirements"
 title = "DER verified-core requirements tree"
-source = "ITU-T X.690 (02/2021), X.680 (02/2021), and X.501: primary texts unavailable; carried rows from x690-der.clauses.toml sha256 512fcae2a6bf33725e21582b2bf3cd9e8ec1669ec7b7599d783ceeab6586b5ad. RFC 5280 (May 2008) sha256 a2f2628c0a83b873fc4786abd921f9b2c02395954b655d190bf16b831633345d; RFC 8017 (November 2016) sha256 1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11; RFC 5915 (June 2010) sha256 5c7b3b2eb449618a581a0ac89209d5d6acc7c375689b2e91304b5dcd866151dc; RFC 5208 (May 2008) sha256 89f7338cf546abaee1d14eef7357440f4fc45e579d47dd4b436c29533abafc2e; RFC 5958 (August 2010) sha256 82778b9ce7b34f02b5ae9777bfb9e42579744aebd2e1479f476513864525af67; RFC 3279 (April 2002) sha256 6d3f19f18e17fa1c68da5aaf4021327748fabca840d7300443b77357a1fc1614; RFC 5480 (March 2009) sha256 593bf29fd0da2ff8b903c3ebf1c9d189a770039159e2ba46a0c3b91355037f26; RFC 8410 (August 2018) sha256 90a0ff0b3dd661d3e26e1873f40f2ca8b41709a7bbd755a1ed3599c4746313d2; RFC 3629 (November 2003) sha256 a2a3a39457d30420c812f87a38cc2b9194832f6982ef17e619de7d816879d6a6; RFC 7468 (April 2015) sha256 0b2c3c2087cc0b099789c90e61c0208e87b25793f0ce40090979e8c734b3d989; RFC 4648 (October 2006) sha256 84e14418f795d503be5f34bf23ce4ebaa119e9ec7c9f667d8caeb111385b178f"
+source = "ITU-T X.690 (02/2021) text sha256 1678a1fb52b9f3919d54203e174f3c13114e425019518f096914cf3aeb515d54; ITU-T X.680 (02/2021) text sha256 f584f7d6fbd677318372aae753bbb8f5d1883b0590db62638532a3a756cb8dba; ITU-T X.501 (10/2019), Directory models specification (paraphrased title): PDF sha256 fa16c552c65a67ed0ab5be0291db368fc38ad94cb64df0bd90a9747586a3751b, extracted text sha256 274744507d7a2912823a6d4c1e6f06eec104fab1baa5c1e40ba5f8d496a3681e; X.501 Amendment 1 (10/2021) not checked because it is not available; X.501 Amendment 2 (10/2024), miscellaneous updates (paraphrased title): PDF sha256 084fbedc61083c3e5b2a0f6b6c5e44b62f6d1cf0ed1d93bb5ed59ac08fea5872, extracted text sha256 8a05da338a8dd60038e0138a70c1395c8fb6ea83715303a42dc13720111958d6; its changes to 9.2 and 9.3 are non-normative notes about moving types to UsefulDefinitions; carried rows from x690-der.clauses.toml sha256 512fcae2a6bf33725e21582b2bf3cd9e8ec1669ec7b7599d783ceeab6586b5ad. RFC 5280 (May 2008) sha256 a2f2628c0a83b873fc4786abd921f9b2c02395954b655d190bf16b831633345d; RFC 8017 (November 2016) sha256 1e72dc473d18df3fc5598cdc12795a9f18f36f1aef15abc23a55eb0d58151d11; RFC 5915 (June 2010) sha256 5c7b3b2eb449618a581a0ac89209d5d6acc7c375689b2e91304b5dcd866151dc; RFC 5208 (May 2008) sha256 89f7338cf546abaee1d14eef7357440f4fc45e579d47dd4b436c29533abafc2e; RFC 5958 (August 2010) sha256 82778b9ce7b34f02b5ae9777bfb9e42579744aebd2e1479f476513864525af67; RFC 3279 (April 2002) sha256 6d3f19f18e17fa1c68da5aaf4021327748fabca840d7300443b77357a1fc1614; RFC 5480 (March 2009) sha256 593bf29fd0da2ff8b903c3ebf1c9d189a770039159e2ba46a0c3b91355037f26; RFC 8410 (August 2018) sha256 90a0ff0b3dd661d3e26e1873f40f2ca8b41709a7bbd755a1ed3599c4746313d2; RFC 3629 (November 2003) sha256 a2a3a39457d30420c812f87a38cc2b9194832f6982ef17e619de7d816879d6a6; RFC 7468 (April 2015) sha256 0b2c3c2087cc0b099789c90e61c0208e87b25793f0ce40090979e8c734b3d989; RFC 4648 (October 2006) sha256 84e14418f795d503be5f34bf23ce4ebaa119e9ec7c9f667d8caeb111385b178f"
 numbering = "Leaves use <SRC>-<clause>, letter suffixes for source lists, and -a/-b for further sentences; crate contracts use SAFE-, CODEC-, PROF-, and API- prefixes. SEC.* ids are inventory-only section groups."
 
 [[group]]
@@ -64,14 +64,464 @@ title = "ITU-T X.680"
 parent = "STD"
 
 [[group]]
-id = "SEC.X680.carried"
-title = "X.680 carried selections"
+id = "SEC.X680.1"
+title = "X.680 Scope"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.2"
+title = "X.680 Normative references"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.3"
+title = "X.680 Definitions"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.4"
+title = "X.680 Abbreviations"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.5"
+title = "X.680 Notation"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.6"
+title = "X.680 Type extension model"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.7"
+title = "X.680 Encoding-rule extensibility"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.8"
+title = "X.680 Tags"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.9"
+title = "X.680 Encoding instructions"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.10"
+title = "X.680 ASN.1 notation use"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.11"
+title = "X.680 ASN.1 character set"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.12"
+title = "X.680 ASN.1 lexical items"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.13"
+title = "X.680 Module definition"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.14"
+title = "X.680 Type and value references"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.15"
+title = "X.680 Component references"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.16"
+title = "X.680 Type and value assignment"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.17"
+title = "X.680 Types and values"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.18"
+title = "X.680 BOOLEAN"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.19"
+title = "X.680 INTEGER"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.20"
+title = "X.680 ENUMERATED"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.21"
+title = "X.680 REAL"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.22"
+title = "X.680 BIT STRING"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.23"
+title = "X.680 OCTET STRING"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.24"
+title = "X.680 NULL"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.25"
+title = "X.680 SEQUENCE"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.26"
+title = "X.680 SEQUENCE OF"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.27"
+title = "X.680 SET"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.28"
+title = "X.680 SET OF"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.29"
+title = "X.680 CHOICE"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.30"
+title = "X.680 Selection types"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.31"
+title = "X.680 Prefixed types"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.32"
+title = "X.680 OBJECT IDENTIFIER"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.33"
+title = "X.680 Relative object identifier"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.34"
+title = "X.680 OID IRI"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.35"
+title = "X.680 Relative OID IRI"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.36"
+title = "X.680 EMBEDDED PDV"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.37"
+title = "X.680 EXTERNAL"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.38"
+title = "X.680 TIME"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.39"
+title = "X.680 Character string types"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.40"
+title = "X.680 Character string notation"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.41"
+title = "X.680 Restricted character strings"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.42"
+title = "X.680 Character names and collections"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.43"
+title = "X.680 Canonical character order"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.44"
+title = "X.680 Unrestricted character strings"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.45"
+title = "X.680 Useful-type notation"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.46"
+title = "X.680 GeneralizedTime"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.47"
+title = "X.680 UTCTime"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.48"
+title = "X.680 ObjectDescriptor"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.49"
+title = "X.680 Constrained types"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.50"
+title = "X.680 Element sets"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.51"
+title = "X.680 Subtype elements"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.52"
+title = "X.680 Extension marker"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.53"
+title = "X.680 Exception identifier"
+parent = "STD.X680"
+
+[[group]]
+id = "SEC.X680.54"
+title = "X.680 Encoding control"
 parent = "STD.X680"
 
 [[group]]
 id = "STD.X501"
 title = "ITU-T X.501"
 parent = "STD"
+
+[[group]]
+id = "SEC.X501.1"
+title = "X.501 scope"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.2"
+title = "X.501 references"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.3"
+title = "X.501 definitions"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.4"
+title = "X.501 abbreviations"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.5"
+title = "X.501 conventions"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.6"
+title = "X.501 Directory models"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.7"
+title = "X.501 Directory information base"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.8"
+title = "X.501 Directory entries"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.9"
+title = "X.501 names"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.9.1"
+title = "X.501 name definitions"
+parent = "SEC.X501.9"
+
+[[group]]
+id = "SEC.X501.9.2"
+title = "X.501 names in general"
+parent = "SEC.X501.9"
+
+[[group]]
+id = "SEC.X501.9.3"
+title = "X.501 relative distinguished names"
+parent = "SEC.X501.9"
+
+[[group]]
+id = "SEC.X501.9.4"
+title = "X.501 name matching"
+parent = "SEC.X501.9"
+
+[[group]]
+id = "SEC.X501.9.5"
+title = "X.501 distinguished names"
+parent = "SEC.X501.9"
+
+[[group]]
+id = "SEC.X501.9.6"
+title = "X.501 alias names"
+parent = "SEC.X501.9"
+
+[[group]]
+id = "SEC.X501.10"
+title = "X.501 hierarchical groups"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.11"
+title = "X.501 administrative authority model"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.12"
+title = "X.501 administrative information model"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.13"
+title = "X.501 Directory schema"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.14"
+title = "X.501 system schema"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.15"
+title = "X.501 schema administration"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.16"
+title = "X.501 service administration model"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.17"
+title = "X.501 security model"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.18"
+title = "X.501 basic access control"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.19"
+title = "X.501 rule-based access control"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.20"
+title = "X.501 stored-data integrity"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.21"
+title = "X.501 DSA models"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.22"
+title = "X.501 knowledge"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.23"
+title = "X.501 DSA information elements"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.24"
+title = "X.501 DSA information representation"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.25"
+title = "X.501 operational framework overview"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.26"
+title = "X.501 operational bindings"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.27"
+title = "X.501 binding management"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.28"
+title = "X.501 binding-management operations"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.29"
+title = "X.501 LDAP overview"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.30"
+title = "X.501 LDAP interworking model"
+parent = "STD.X501"
+
+[[group]]
+id = "SEC.X501.31"
+title = "X.501 LDAP system schema"
+parent = "STD.X501"
 
 [[group]]
 id = "STD.RFC5280"
@@ -290,36 +740,39 @@ parent = "STD.RFC4648"
 
 [[item]]
 id = "X690-8.1"
-ref = "8.1"
-title = "Encoding layout"
+ref = "8.1.1.1"
+title = "Encoding has four ordered components"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["tlv"]
+line = 456
 
 [[item]]
 id = "X690-8.1.2"
-ref = "8.1.2"
-title = "Identifier octets"
+ref = "8.1.2.1"
+title = "Identifier octets encode the tag class and number"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["tag", "identifier_form"]
+line = 493
 
 [[item]]
 id = "X690-8.1.3"
-ref = "8.1.3"
-title = "Length octets"
+ref = "8.1.3.1"
+title = "Length octets have definite and indefinite forms"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["length"]
+line = 552
 
 [[item]]
 id = "X690-8.1.3.6.1"
@@ -328,31 +781,34 @@ title = "Indefinite length uses the single octet 0x80"
 parent = "SEC.X690.8"
 force = "shall"
 side = "decoder"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["length"]
+line = 595
 
 [[item]]
 id = "X690-8.2"
-ref = "8.2"
-title = "BOOLEAN contents"
+ref = "8.2.1"
+title = "BOOLEAN is primitive with one content octet"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["boolean"]
+line = 620
 
 [[item]]
 id = "X690-8.3"
-ref = "8.3"
-title = "INTEGER contents"
+ref = "8.3.1"
+title = "INTEGER is primitive with nonempty contents"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["integer", "big_integer"]
+line = 638
 
 [[item]]
 id = "X690-8.3.2"
@@ -361,64 +817,70 @@ title = "INTEGER minimal sign representation"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["integer", "big_integer"]
+line = 639
 
 [[item]]
 id = "X690-8.6"
-ref = "8.6"
-title = "BIT STRING contents"
+ref = "8.6.1"
+title = "BIT STRING permits primitive or constructed form"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["bit_string"]
+line = 746
 
 [[item]]
 id = "X690-8.7"
-ref = "8.7"
-title = "OCTET STRING contents"
+ref = "8.7.1"
+title = "OCTET STRING permits primitive or constructed form"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["octet_string"]
+line = 805
 
 [[item]]
 id = "X690-8.8"
-ref = "8.8"
-title = "NULL contents"
+ref = "8.8.1"
+title = "NULL encoding is primitive"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["null"]
+line = 828
 
 [[item]]
 id = "X690-8.19"
-ref = "8.19"
-title = "Object identifier subidentifiers"
+ref = "8.19.2"
+title = "OID contents concatenate ordered subidentifier encodings"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["oid"]
+line = 1045
 
 [[item]]
 id = "X690-8.23"
-ref = "8.23"
-title = "Restricted string contents"
+ref = "8.23.1"
+title = "Restricted string values contain characters from their declared set"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["restricted_string", "utf8_string"]
+line = 1117
 
 [[item]]
 id = "X690-10.1"
@@ -427,9 +889,10 @@ title = "DER definite minimal lengths"
 parent = "SEC.X690.10"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["length"]
+line = 1347
 
 [[item]]
 id = "X690-10.2"
@@ -438,9 +901,10 @@ title = "DER primitive string forms"
 parent = "SEC.X690.10"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["tlv"]
+line = 1355
 
 [[item]]
 id = "X690-11.1"
@@ -449,20 +913,22 @@ title = "DER BOOLEAN true octet"
 parent = "SEC.X690.11"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["boolean"]
+line = 1371
 
 [[item]]
 id = "X690-11.2"
-ref = "11.2"
-title = "DER BIT STRING zero padding"
+ref = "11.2.1"
+title = "DER zeroes unused BIT STRING bits"
 parent = "SEC.X690.11"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["bit_string"]
+line = 1375
 
 [[item]]
 id = "X690-11.5"
@@ -471,9 +937,10 @@ title = "DER default values omitted"
 parent = "SEC.X690.11"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["x509_extension", "x509_tbs_certificate"]
+line = 1421
 
 [[item]]
 id = "X690-11.6"
@@ -482,31 +949,34 @@ title = "DER SET OF ordering"
 parent = "SEC.X690.11"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["set_of"]
+line = 1425
 
 [[item]]
 id = "X690-11.7"
-ref = "11.7"
-title = "DER GeneralizedTime syntax"
+ref = "11.7.1"
+title = "DER GeneralizedTime terminates with Z"
 parent = "SEC.X690.11"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["generalized_time"]
+line = 1431
 
 [[item]]
 id = "X690-11.8"
-ref = "11.8"
-title = "DER UTCTime syntax"
+ref = "11.8.1"
+title = "DER UTCTime terminates with Z"
 parent = "SEC.X690.11"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "in"
 modules = ["utc_time"]
+line = 1455
 
 [[item]]
 id = "RFC5280-4.1.2.5.1"
@@ -549,43 +1019,3592 @@ modules = []
 line = 175
 
 [[item]]
-id = "X680-census-pending"
-title = "Primary-text census pending"
-ref = "X.680"
-parent = "STD.X680"
+id = "X680-1"
+title = "ASN.1 document scope is outside codec behavior"
+ref = "1"
+parent = "SEC.X680.1"
 firmness = "draft"
 force = "declarative"
 side = "both"
-source = "secondary"
-disposition = "in"
-reason = "source text not yet on the box"
+source = "primary"
+disposition = "excluded"
+reason = "document scope, not a codec requirement"
 modules = []
+line = 564
 
 [[item]]
-id = "X501-census-pending"
-title = "Primary-text census pending"
-ref = "X.501"
-parent = "STD.X501"
+id = "X680-2"
+title = "Normative-reference catalogue is outside codec behavior"
+ref = "2"
+parent = "SEC.X680.2"
 firmness = "draft"
 force = "declarative"
 side = "both"
-source = "secondary"
-disposition = "in"
-reason = "source text not yet on the box"
+source = "primary"
+disposition = "excluded"
+reason = "reference catalogue, not a codec requirement"
 modules = []
+line = 578
 
 [[item]]
-id = "X690-declarative-census-pending"
-title = "Non-shall rule census pending"
-ref = "X.690"
-parent = "STD.X690"
+id = "X680-3"
+title = "Terminology catalogue is outside codec behavior"
+ref = "3"
+parent = "SEC.X680.3"
 firmness = "draft"
 force = "declarative"
 side = "both"
-source = "secondary"
-disposition = "in"
-reason = "primary text not yet on the box"
+source = "primary"
+disposition = "excluded"
+reason = "definitions catalogue, not a codec requirement"
 modules = []
+line = 647
+
+[[item]]
+id = "X680-4"
+title = "Abbreviations are outside codec behavior"
+ref = "4"
+parent = "SEC.X680.4"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "abbreviations, not a codec requirement"
+modules = []
+line = 1067
+
+[[item]]
+id = "X680-5"
+title = "ASN.1 grammar notation is outside codec behavior"
+ref = "5"
+parent = "SEC.X680.5"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "ASN.1 grammar metalanguage; a codec sees no notation"
+modules = []
+line = 1089
+
+[[item]]
+id = "X680-6"
+title = "Type-extension model is not implemented"
+ref = "6"
+parent = "SEC.X680.6"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no generic extensible-type model exists in der-verified/src"
+modules = []
+line = 1238
+
+[[item]]
+id = "X680-7"
+title = "Encoding-rule extensibility duties are outside this codec"
+ref = "7"
+parent = "SEC.X680.7"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "requirements on encoding-rule specifications, not individual codecs"
+modules = []
+line = 1258
+
+[[item]]
+id = "X680-9"
+title = "Encoding instructions are not implemented"
+ref = "9"
+parent = "SEC.X680.9"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no encoding-instruction parser exists in der-verified/src"
+modules = []
+line = 1363
+
+[[item]]
+id = "X680-10"
+title = "ASN.1 notation use is outside codec behavior"
+ref = "10"
+parent = "SEC.X680.10"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 1390
+
+[[item]]
+id = "X680-11"
+title = "ASN.1 source character set is outside codec behavior"
+ref = "11"
+parent = "SEC.X680.11"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 1404
+
+[[item]]
+id = "X680-12"
+title = "ASN.1 lexical items are outside codec behavior"
+ref = "12"
+parent = "SEC.X680.12"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 1474
+
+[[item]]
+id = "X680-13"
+title = "ASN.1 modules are outside codec behavior"
+ref = "13"
+parent = "SEC.X680.13"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2093
+
+[[item]]
+id = "X680-14"
+title = "ASN.1 symbolic references are outside codec behavior"
+ref = "14"
+parent = "SEC.X680.14"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2370
+
+[[item]]
+id = "X680-15"
+title = "ASN.1 component references are outside codec behavior"
+ref = "15"
+parent = "SEC.X680.15"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2443
+
+[[item]]
+id = "X680-16"
+title = "ASN.1 assignments are outside codec behavior"
+ref = "16"
+parent = "SEC.X680.16"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2503
+
+[[item]]
+id = "X680-17"
+title = "ASN.1 type-definition grammar is outside codec behavior"
+ref = "17"
+parent = "SEC.X680.17"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2581
+
+[[item]]
+id = "X680-21"
+title = "REAL is not implemented"
+ref = "21"
+parent = "SEC.X680.21"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no REAL module exists in der-verified/src"
+modules = []
+line = 2938
+
+[[item]]
+id = "X680-30"
+title = "Selection types are not implemented"
+ref = "30"
+parent = "SEC.X680.30"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no selection-type or schema compiler exists in der-verified/src"
+modules = []
+line = 3740
+
+[[item]]
+id = "X680-33"
+title = "Relative OID is not implemented"
+ref = "33"
+parent = "SEC.X680.33"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid.rs implements absolute OBJECT IDENTIFIER content only"
+modules = []
+line = 3989
+
+[[item]]
+id = "X680-34"
+title = "OID IRI is not implemented"
+ref = "34"
+parent = "SEC.X680.34"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no OID-IRI module exists in der-verified/src"
+modules = []
+line = 4054
+
+[[item]]
+id = "X680-35"
+title = "Relative OID IRI is not implemented"
+ref = "35"
+parent = "SEC.X680.35"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no relative OID-IRI module exists in der-verified/src"
+modules = []
+line = 4097
+
+[[item]]
+id = "X680-36"
+title = "EMBEDDED PDV is not implemented"
+ref = "36"
+parent = "SEC.X680.36"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no EMBEDDED PDV module exists in der-verified/src"
+modules = []
+line = 4133
+
+[[item]]
+id = "X680-37"
+title = "EXTERNAL is not implemented"
+ref = "37"
+parent = "SEC.X680.37"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no EXTERNAL module exists in der-verified/src"
+modules = []
+line = 4234
+
+[[item]]
+id = "X680-38"
+title = "Modern TIME types are not implemented"
+ref = "38"
+parent = "SEC.X680.38"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION module exists"
+modules = []
+line = 4321
+
+[[item]]
+id = "X680-42"
+title = "Character-name module is not implemented"
+ref = "42"
+parent = "SEC.X680.42"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no ASN1-CHARACTER-MODULE or schema compiler exists"
+modules = []
+line = 5205
+
+[[item]]
+id = "X680-43"
+title = "Canonical character ordering is not implemented"
+ref = "43"
+parent = "SEC.X680.43"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no character-range constraint engine exists"
+modules = []
+line = 5424
+
+[[item]]
+id = "X680-44"
+title = "Unrestricted character strings are not implemented"
+ref = "44"
+parent = "SEC.X680.44"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no CHARACTER STRING decoder exists"
+modules = []
+line = 5475
+
+[[item]]
+id = "X680-45"
+title = "Useful-type notation is outside codec behavior"
+ref = "45"
+parent = "SEC.X680.45"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5555
+
+[[item]]
+id = "X680-48"
+title = "ObjectDescriptor is not implemented"
+ref = "48"
+parent = "SEC.X680.48"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no ObjectDescriptor or GraphicString decoder exists"
+modules = []
+line = 5692
+
+[[item]]
+id = "X680-49"
+title = "Generic constrained types are not implemented"
+ref = "49"
+parent = "SEC.X680.49"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no generic constraint engine; the SIZE (1..MAX) constraints RFC 5280 imposes are decided as rows RFC5280-4.1-g and RFC5280-4.1.2.4-b"
+modules = []
+line = 5715
+
+[[item]]
+id = "X680-50"
+title = "Element-set constraints are not implemented"
+ref = "50"
+parent = "SEC.X680.50"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no generic constraint engine; the SIZE (1..MAX) constraints RFC 5280 imposes are decided as rows RFC5280-4.1-g and RFC5280-4.1.2.4-b"
+modules = []
+line = 5785
+
+[[item]]
+id = "X680-51"
+title = "Subtype elements including SIZE are not implemented"
+ref = "51"
+parent = "SEC.X680.51"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no generic constraint engine; the SIZE (1..MAX) constraints RFC 5280 imposes are decided as rows RFC5280-4.1-g and RFC5280-4.1.2.4-b"
+modules = []
+line = 5904
+
+[[item]]
+id = "X680-52"
+title = "Extension-marker semantics are not implemented"
+ref = "52"
+parent = "SEC.X680.52"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no generic extensible-type or schema engine exists"
+modules = []
+line = 6293
+
+[[item]]
+id = "X680-53"
+title = "Exception identifiers are not implemented"
+ref = "53"
+parent = "SEC.X680.53"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no constraint engine or exception-identifier parser exists"
+modules = []
+line = 6422
+
+[[item]]
+id = "X680-54"
+title = "Encoding-control sections are not implemented"
+ref = "54"
+parent = "SEC.X680.54"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no ASN.1 module or encoding-control parser exists"
+modules = []
+line = 6449
+
+[[item]]
+id = "X680-8a"
+title = "Tag numbers are nonnegative integers"
+ref = "8.2"
+parent = "SEC.X680.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+line = 1308
+
+[[item]]
+id = "X680-8b"
+title = "The universal tag table assigns built-in type tags"
+ref = "8.4"
+parent = "SEC.X680.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "identifier_form"]
+line = 1316
+
+[[item]]
+id = "X680-8c"
+title = "Canonical tag order sorts by class"
+ref = "8.6 a)"
+parent = "SEC.X680.8"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "set_of"]
+line = 1321
+
+[[item]]
+id = "X680-8d"
+title = "Canonical tag order sorts each class by number"
+ref = "8.6 b)"
+parent = "SEC.X680.8"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "set_of"]
+line = 1324
+
+[[item]]
+id = "X680-18a"
+title = "BOOLEAN type notation uses BOOLEAN"
+ref = "18.1"
+parent = "SEC.X680.18"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2776
+
+[[item]]
+id = "X680-18b"
+title = "BOOLEAN value notation names TRUE or FALSE"
+ref = "18.3"
+parent = "SEC.X680.18"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2779
+
+[[item]]
+id = "X680-18c"
+title = "XML BOOLEAN forms cannot be mixed"
+ref = "18.4"
+parent = "SEC.X680.18"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2791
+
+[[item]]
+id = "X680-18d"
+title = "BOOLEAN has exactly TRUE and FALSE values"
+ref = "18.3"
+parent = "SEC.X680.18"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["boolean"]
+line = 2781
+
+[[item]]
+id = "X680-19a"
+title = "INTEGER type notation uses INTEGER"
+ref = "19.1"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2796
+
+[[item]]
+id = "X680-19b"
+title = "INTEGER notation forbids negative zero"
+ref = "19.2"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2810
+
+[[item]]
+id = "X680-19c"
+title = "Named-number references have INTEGER type"
+ref = "19.4"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2820
+
+[[item]]
+id = "X680-19d"
+title = "INTEGER named numbers have distinct values"
+ref = "19.5"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2830
+
+[[item]]
+id = "X680-19e"
+title = "INTEGER named-number identifiers are distinct"
+ref = "19.6"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2832
+
+[[item]]
+id = "X680-19f"
+title = "INTEGER values use integer value notation"
+ref = "19.9"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2835
+
+[[item]]
+id = "X680-19g"
+title = "XML INTEGER forms cannot be mixed"
+ref = "19.10"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2851
+
+[[item]]
+id = "X680-19h"
+title = "INTEGER names denote their assigned numbers"
+ref = "19.11"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2853
+
+[[item]]
+id = "X680-19i"
+title = "Ambiguous INTEGER names resolve to named numbers"
+ref = "19.12"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2858
+
+[[item]]
+id = "X680-19j"
+title = "XML INTEGER notation forbids negative zero"
+ref = "19.13"
+parent = "SEC.X680.19"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2861
+
+[[item]]
+id = "X680-20a"
+title = "ENUMERATED type notation lists alternatives"
+ref = "20.1"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2865
+
+[[item]]
+id = "X680-20b"
+title = "ENUMERATED names and numbers are distinct"
+ref = "20.2"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2887
+
+[[item]]
+id = "X680-20c"
+title = "New extension values exceed earlier extension values"
+ref = "20.4"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2896
+
+[[item]]
+id = "X680-20d"
+title = "Named extension values differ from earlier values"
+ref = "20.5"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2898
+
+[[item]]
+id = "X680-20e"
+title = "Automatic extension values choose the smallest available number"
+ref = "20.6"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2906
+
+[[item]]
+id = "X680-20f"
+title = "ENUMERATED values use identifier notation"
+ref = "20.8"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2916
+
+[[item]]
+id = "X680-20g"
+title = "XML ENUMERATED forms cannot be mixed"
+ref = "20.9"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2924
+
+[[item]]
+id = "X680-20h"
+title = "ENUMERATED value names match declared alternatives"
+ref = "20.10"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2926
+
+[[item]]
+id = "X680-20i"
+title = "Ambiguous ENUMERATED names resolve to alternatives"
+ref = "20.11"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2928
+
+[[item]]
+id = "X680-20j"
+title = "Unnumbered ENUMERATED alternatives receive distinct integers"
+ref = "20.3"
+parent = "SEC.X680.20"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 2890
+
+[[item]]
+id = "X680-22a"
+title = "BIT STRING type notation may name bits"
+ref = "22.1"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3026
+
+[[item]]
+id = "X680-22b"
+title = "Named-bit references are nonnegative INTEGER values"
+ref = "22.3"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3040
+
+[[item]]
+id = "X680-22c"
+title = "Named-bit positions are distinct"
+ref = "22.4"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3041
+
+[[item]]
+id = "X680-22d"
+title = "Named-bit identifiers are distinct"
+ref = "22.5"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3044
+
+[[item]]
+id = "X680-22e"
+title = "BIT STRING values use bit-string notation"
+ref = "22.9"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3065
+
+[[item]]
+id = "X680-22f"
+title = "XML BIT STRING list forms cannot be mixed"
+ref = "22.10"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3091
+
+[[item]]
+id = "X680-22g"
+title = "Typed XML BIT STRING needs a compatible contents constraint"
+ref = "22.11"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3093
+
+[[item]]
+id = "X680-22h"
+title = "XML identifier lists require named bits"
+ref = "22.12"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3096
+
+[[item]]
+id = "X680-22i"
+title = "BIT STRING value names match declared bits"
+ref = "22.13"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3097
+
+[[item]]
+id = "X680-22j"
+title = "Hex BIT STRING notation requires four-bit multiples"
+ref = "22.18"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3112
+
+[[item]]
+id = "X680-22k"
+title = "Contained BIT STRING values use their constrained type notation"
+ref = "22.19"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3127
+
+[[item]]
+id = "X680-22l"
+title = "CONTAINING is required without ENCODED BY"
+ref = "22.20"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3134
+
+[[item]]
+id = "X680-22m"
+title = "BIT STRING distinguishes leading and trailing bits"
+ref = "22.2"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+line = 3037
+
+[[item]]
+id = "X680-22n"
+title = "Named bits do not restrict the BIT STRING value set"
+ref = "22.6"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["bit_string"]
+line = 3053
+
+[[item]]
+id = "X680-22o"
+title = "Empty BIT STRING notation denotes zero bits"
+ref = "22.14"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3099
+
+[[item]]
+id = "X680-22p"
+title = "Named BIT STRING notation sets only named positions"
+ref = "22.15"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3100
+
+[[item]]
+id = "X680-22q"
+title = "Binary BIT STRING notation is ordered left to right"
+ref = "22.16"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3106
+
+[[item]]
+id = "X680-22r"
+title = "Hex BIT STRING notation starts with its most significant bit"
+ref = "22.17"
+parent = "SEC.X680.22"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3108
+
+[[item]]
+id = "X680-23a"
+title = "OCTET STRING type notation uses OCTET STRING"
+ref = "23.1"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3139
+
+[[item]]
+id = "X680-23b"
+title = "OCTET STRING values use octet-string notation"
+ref = "23.3"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3142
+
+[[item]]
+id = "X680-23c"
+title = "Typed XML OCTET STRING needs a compatible constraint"
+ref = "23.4"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3152
+
+[[item]]
+id = "X680-23d"
+title = "Binary notation begins with the first octet high bit"
+ref = "23.6"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3157
+
+[[item]]
+id = "X680-23e"
+title = "Partial binary notation gains trailing zero bits"
+ref = "23.6"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3157
+
+[[item]]
+id = "X680-23f"
+title = "Hex notation begins with the first high semi-octet"
+ref = "23.7"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3160
+
+[[item]]
+id = "X680-23g"
+title = "Odd hex notation gains a trailing zero digit"
+ref = "23.8"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3162
+
+[[item]]
+id = "X680-23h"
+title = "XML hex notation requires an even digit count"
+ref = "23.8"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3163
+
+[[item]]
+id = "X680-23i"
+title = "Contained OCTET STRING values use constrained type notation"
+ref = "23.9"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3164
+
+[[item]]
+id = "X680-23j"
+title = "CONTAINING is required without ENCODED BY"
+ref = "23.10"
+parent = "SEC.X680.23"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3171
+
+[[item]]
+id = "X680-24a"
+title = "NULL type notation uses NULL"
+ref = "24.1"
+parent = "SEC.X680.24"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3176
+
+[[item]]
+id = "X680-24b"
+title = "NULL value notation uses NULL"
+ref = "24.3"
+parent = "SEC.X680.24"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3185
+
+[[item]]
+id = "X680-25a"
+title = "SEQUENCE type notation lists components"
+ref = "25.1"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3192
+
+[[item]]
+id = "X680-25b"
+title = "COMPONENTS OF references a SEQUENCE type"
+ref = "25.5"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3259
+
+[[item]]
+id = "X680-25c"
+title = "COMPONENTS OF includes all root components"
+ref = "25.5"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3259
+
+[[item]]
+id = "X680-25d"
+title = "Distinct-tag rules apply to each component series"
+ref = "25.6"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3266
+
+[[item]]
+id = "X680-25e"
+title = "Optional runs require distinct component tags"
+ref = "25.6.1"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3269
+
+[[item]]
+id = "X680-25f"
+title = "Root components use the optional-run tag rule"
+ref = "25.6.2"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3273
+
+[[item]]
+id = "X680-25g"
+title = "Root and extension components use the tag rule"
+ref = "25.6.3"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3274
+
+[[item]]
+id = "X680-25h"
+title = "Extension tags differ from following optional-run tags"
+ref = "25.7"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3277
+
+[[item]]
+id = "X680-25i"
+title = "Automatic tagging follows COMPONENTS OF expansion"
+ref = "25.8"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3281
+
+[[item]]
+id = "X680-25j"
+title = "Automatically tagged extensions forbid textual tags"
+ref = "25.9"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3286
+
+[[item]]
+id = "X680-25k"
+title = "Omitted DEFAULT equals insertion of its declared value"
+ref = "25.12"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3329
+
+[[item]]
+id = "X680-25l"
+title = "Required members of a present extension group are present"
+ref = "25.13"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3332
+
+[[item]]
+id = "X680-25m"
+title = "SEQUENCE component identifiers are distinct"
+ref = "25.14"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3335
+
+[[item]]
+id = "X680-25n"
+title = "Later extension values require intervening mandatory values"
+ref = "25.15"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3337
+
+[[item]]
+id = "X680-25o"
+title = "Version numbers require grouped and numbered extensions"
+ref = "25.16"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3354
+
+[[item]]
+id = "X680-25p"
+title = "Extension version numbers increase from at least two"
+ref = "25.16"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3356
+
+[[item]]
+id = "X680-25q"
+title = "SEQUENCE values use sequence value notation"
+ref = "25.18"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3372
+
+[[item]]
+id = "X680-25r"
+title = "Empty SEQUENCE notation requires no present components"
+ref = "25.19"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3386
+
+[[item]]
+id = "X680-25s"
+title = "SEQUENCE notation supplies mandatory values in component order"
+ref = "25.20"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3390
+
+[[item]]
+id = "X680-25t"
+title = "OPTIONAL and DEFAULT components may be omitted"
+ref = "25.11"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence", "x509_tbs_certificate"]
+line = 3328
+
+[[item]]
+id = "X680-25u"
+title = "DEFAULT omission equals the declared component value"
+ref = "25.12"
+parent = "SEC.X680.25"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["sequence", "x509_tbs_certificate"]
+line = 3329
+
+[[item]]
+id = "X680-26a"
+title = "SEQUENCE OF notation declares its component type"
+ref = "26.1"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3396
+
+[[item]]
+id = "X680-26b"
+title = "SEQUENCE OF values use list notation"
+ref = "26.3"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3404
+
+[[item]]
+id = "X680-26c"
+title = "Empty XML components use the empty-element alternative"
+ref = "26.4"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3443
+
+[[item]]
+id = "X680-26d"
+title = "XML list form follows the component type"
+ref = "26.5"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3447
+
+[[item]]
+id = "X680-26e"
+title = "BOOLEAN XML list form follows its empty-element choice"
+ref = "26.6"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3481
+
+[[item]]
+id = "X680-26f"
+title = "ENUMERATED XML list form follows its empty-element choice"
+ref = "26.7"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3483
+
+[[item]]
+id = "X680-26g"
+title = "Defined component types determine XML list notation"
+ref = "26.8"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3490
+
+[[item]]
+id = "X680-26h"
+title = "Named XML items reproduce their component identifier"
+ref = "26.9"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3492
+
+[[item]]
+id = "X680-26i"
+title = "XML item tags follow referenced or built-in type names"
+ref = "26.10"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3494
+
+[[item]]
+id = "X680-26j"
+title = "Prefixed components recurse to their underlying type"
+ref = "26.10.1"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3500
+
+[[item]]
+id = "X680-26k"
+title = "Constrained components recurse to their parent type"
+ref = "26.10.2"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3504
+
+[[item]]
+id = "X680-26l"
+title = "Selected components recurse to their selected type"
+ref = "26.10.3"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3508
+
+[[item]]
+id = "X680-26m"
+title = "Unnamed lists contain values of the component type"
+ref = "26.11"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3511
+
+[[item]]
+id = "X680-26n"
+title = "Named lists contain values and names of the component type"
+ref = "26.12"
+parent = "SEC.X680.26"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3514
+
+[[item]]
+id = "X680-28a"
+title = "SET OF notation declares its component type"
+ref = "28.1"
+parent = "SEC.X680.28"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3573
+
+[[item]]
+id = "X680-28b"
+title = "SET OF values use set-of value notation"
+ref = "28.3"
+parent = "SEC.X680.28"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3583
+
+[[item]]
+id = "X680-28c"
+title = "Unnamed SET OF values use the unnamed alternative"
+ref = "28.4"
+parent = "SEC.X680.28"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3601
+
+[[item]]
+id = "X680-28d"
+title = "Named SET OF values use the named alternative"
+ref = "28.5"
+parent = "SEC.X680.28"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3604
+
+[[item]]
+id = "X680-28e"
+title = "SET OF permits repeated component values"
+ref = "28.3"
+parent = "SEC.X680.28"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["set_of"]
+line = 3598
+
+[[item]]
+id = "X680-29"
+title = "CHOICE values carry the selected alternative tag"
+ref = "29.8"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_validity", "tag"]
+line = 3688
+
+[[item]]
+id = "X680-29a"
+title = "CHOICE notation lists named alternatives"
+ref = "29.1"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3616
+
+[[item]]
+id = "X680-29b"
+title = "CHOICE alternatives have distinct tags"
+ref = "29.3"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3644
+
+[[item]]
+id = "X680-29c"
+title = "Automatically tagged extensions forbid textual tags"
+ref = "29.4"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3647
+
+[[item]]
+id = "X680-29d"
+title = "CHOICE extension versions follow SEQUENCE restrictions"
+ref = "29.6"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3683
+
+[[item]]
+id = "X680-29e"
+title = "New extension alternatives have increasing canonical tags"
+ref = "29.7"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3685
+
+[[item]]
+id = "X680-29f"
+title = "CHOICE distinct-tag checks consider every possible tag"
+ref = "29.9"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3690
+
+[[item]]
+id = "X680-29g"
+title = "CHOICE alternative identifiers are distinct"
+ref = "29.10"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3725
+
+[[item]]
+id = "X680-29h"
+title = "CHOICE values name one alternative"
+ref = "29.11"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3727
+
+[[item]]
+id = "X680-29i"
+title = "CHOICE value notation matches the named alternative type"
+ref = "29.12"
+parent = "SEC.X680.29"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3731
+
+[[item]]
+id = "X680-31a"
+title = "Prefixed types use tagged or encoding-prefixed notation"
+ref = "31.1.5"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3768
+
+[[item]]
+id = "X680-31b"
+title = "Prefixed values use their underlying value notation"
+ref = "31.1.6"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3779
+
+[[item]]
+id = "X680-31c"
+title = "Tagged types use tag-prefix notation"
+ref = "31.2.1"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3796
+
+[[item]]
+id = "X680-31d"
+title = "Tag encoding references use TAG and module defaults"
+ref = "31.2.2"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3813
+
+[[item]]
+id = "X680-31e"
+title = "Tag numbers from references are nonnegative integers"
+ref = "31.2.3"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3815
+
+[[item]]
+id = "X680-31f"
+title = "User notation cannot assign universal tags"
+ref = "31.2.5"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3818
+
+[[item]]
+id = "X680-31g"
+title = "IMPLICIT cannot prefix untagged choices or open types"
+ref = "31.2.9"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3840
+
+[[item]]
+id = "X680-31h"
+title = "Encoding-prefixed types use encoding-prefix notation"
+ref = "31.3.1"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3844
+
+[[item]]
+id = "X680-31i"
+title = "A prefixed type changes tags without changing values"
+ref = "31.1.1"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag", "tag"]
+line = 3757
+
+[[item]]
+id = "X680-31j"
+title = "Prefixed types are tagged or encoding-prefixed"
+ref = "31.1.2"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag", "tag"]
+line = 3759
+
+[[item]]
+id = "X680-31k"
+title = "Encoding prefixes do not change abstract values"
+ref = "31.1.4"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+line = 3766
+
+[[item]]
+id = "X680-31l"
+title = "Tagging is either implicit or explicit"
+ref = "31.2.6"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag", "tag"]
+line = 3823
+
+[[item]]
+id = "X680-31m"
+title = "Explicit-tagging conditions determine wrapper semantics"
+ref = "31.2.7"
+parent = "SEC.X680.31"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["context_tag"]
+line = 3830
+
+[[item]]
+id = "X680-32a"
+title = "OBJECT IDENTIFIER type notation uses its keyword"
+ref = "32.1"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3875
+
+[[item]]
+id = "X680-32b"
+title = "OBJECT IDENTIFIER values use component-list notation"
+ref = "32.3"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3880
+
+[[item]]
+id = "X680-32c"
+title = "OID numeric references are nonnegative integers"
+ref = "32.4"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3916
+
+[[item]]
+id = "X680-32d"
+title = "OID leading defined values have OBJECT IDENTIFIER type"
+ref = "32.5"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3918
+
+[[item]]
+id = "X680-32e"
+title = "OID component references identify relative arc paths"
+ref = "32.6"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3919
+
+[[item]]
+id = "X680-32f"
+title = "OID name forms use registered root identifiers"
+ref = "32.7"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3927
+
+[[item]]
+id = "X680-32g"
+title = "Registered OID synonyms follow their registration conditions"
+ref = "32.8"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3934
+
+[[item]]
+id = "X680-32h"
+title = "OID number forms carry assigned arc numbers"
+ref = "32.9"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3939
+
+[[item]]
+id = "X680-32i"
+title = "OID abstract semantics come from the registration standard"
+ref = "32.11"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "oid.rs validates canonical content but does not materialize or decide registered arcs"
+modules = []
+line = 3949
+
+[[item]]
+id = "X680-32j"
+title = "OID component notation reduces to a numeric value"
+ref = "32.12"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3952
+
+[[item]]
+id = "X680-32k"
+title = "Leading defined OID components prefix explicit components"
+ref = "32.13"
+parent = "SEC.X680.32"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 3957
+
+[[item]]
+id = "X680-39"
+title = "Character string values are sequences from a specified repertoire"
+ref = "39"
+parent = "SEC.X680.39"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string", "utf8_string"]
+line = 4904
+
+[[item]]
+id = "X680-39a"
+title = "A repertoire cell normally denotes a distinct abstract character"
+ref = "39"
+parent = "SEC.X680.39"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string", "utf8_string"]
+line = 4914
+
+[[item]]
+id = "X680-40"
+title = "Character string type notation selects restricted or unrestricted strings"
+ref = "40.1"
+parent = "SEC.X680.40"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 4938
+
+[[item]]
+id = "X680-40a"
+title = "Character string values use character-string notation"
+ref = "40.3"
+parent = "SEC.X680.40"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 4946
+
+[[item]]
+id = "X680-40b"
+title = "Restricted string tags come from their type definitions"
+ref = "40.2"
+parent = "SEC.X680.40"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string", "utf8_string", "tag"]
+line = 4944
+
+[[item]]
+id = "X680-41a"
+title = "Restricted character string notation names a built-in type"
+ref = "41"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 4960
+
+[[item]]
+id = "X680-41b"
+title = "Restricted string values use character-string notation"
+ref = "41.8"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5099
+
+[[item]]
+id = "X680-41c"
+title = "XML restricted strings disallow surrounding whitespace"
+ref = "41.9"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5160
+
+[[item]]
+id = "X680-41d"
+title = "Unrepresentable XML string characters use escapes"
+ref = "41.10"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5163
+
+[[item]]
+id = "X680-41e"
+title = "Character-list references have the string type"
+ref = "41.11"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5169
+
+[[item]]
+id = "X680-41f"
+title = "Quadruple coordinates stay within their numeric ranges"
+ref = "41.12"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5170
+
+[[item]]
+id = "X680-41g"
+title = "Quadruples identify UCS group plane row and cell"
+ref = "41.13"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5172
+
+[[item]]
+id = "X680-41h"
+title = "IA5 table coordinates stay within column and row ranges"
+ref = "41.14"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5180
+
+[[item]]
+id = "X680-41i"
+title = "TeletexString and T61String have no decoder"
+ref = "41.1"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no TeletexString or T61String decoder exists"
+modules = []
+line = 5017
+
+[[item]]
+id = "X680-41j"
+title = "VideotexString has no decoder"
+ref = "41.1"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no VideotexString decoder exists"
+modules = []
+line = 5017
+
+[[item]]
+id = "X680-41k"
+title = "GraphicString has no decoder"
+ref = "41.1"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no GraphicString decoder exists"
+modules = []
+line = 5017
+
+[[item]]
+id = "X680-41l"
+title = "GeneralString has no decoder"
+ref = "41.1"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no GeneralString decoder exists"
+modules = []
+line = 5017
+
+[[item]]
+id = "X680-41m"
+title = "UniversalString has no decoder"
+ref = "41.1"
+parent = "SEC.X680.41"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no UniversalString decoder exists"
+modules = []
+line = 5017
+
+[[item]]
+id = "X680-46a"
+title = "GeneralizedTime is referenced by name"
+ref = "46.1"
+parent = "SEC.X680.46"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5566
+
+[[item]]
+id = "X680-46b"
+title = "GeneralizedTime is universal 24 over restricted VisibleString"
+ref = "46.3"
+parent = "SEC.X680.46"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["generalized_time", "restricted_string", "tag"]
+line = 5582
+
+[[item]]
+id = "X680-46c"
+title = "GeneralizedTime uses VisibleString value notation"
+ref = "46.5"
+parent = "SEC.X680.46"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5644
+
+[[item]]
+id = "X680-47a"
+title = "UTCTime is referenced by name"
+ref = "47.1"
+parent = "SEC.X680.47"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5653
+
+[[item]]
+id = "X680-47b"
+title = "UTCTime is universal 23 over restricted VisibleString"
+ref = "47.3"
+parent = "SEC.X680.47"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["utc_time", "restricted_string", "tag"]
+line = 5660
+
+[[item]]
+id = "X680-47c"
+title = "UTCTime uses VisibleString value notation"
+ref = "47.5"
+parent = "SEC.X680.47"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "ASN.1 notation rule; a codec sees no notation"
+modules = []
+line = 5688
+[[item]]
+id = "X501-1"
+title = "Specification scope is outside DER name encoding"
+ref = "X.501 §1"
+parent = "SEC.X501.1"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "document scope for Directory models, not an encoded-structure rule"
+modules = []
+line = 541
+
+[[item]]
+id = "X501-2"
+title = "References are outside DER name encoding"
+ref = "X.501 §2"
+parent = "SEC.X501.2"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "reference catalogue, not an encoded-structure rule"
+modules = []
+line = 587
+
+[[item]]
+id = "X501-3"
+title = "General definitions are outside DER name encoding"
+ref = "X.501 §3"
+parent = "SEC.X501.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory terminology, not an encoded-structure rule"
+modules = []
+line = 659
+
+[[item]]
+id = "X501-4"
+title = "Abbreviations are outside DER name encoding"
+ref = "X.501 §4"
+parent = "SEC.X501.4"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "terminology catalogue, not an encoded-structure rule"
+modules = []
+line = 708
+
+[[item]]
+id = "X501-5"
+title = "Document conventions are outside DER name encoding"
+ref = "X.501 §5"
+parent = "SEC.X501.5"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "specification-reading conventions, not wire-format constraints"
+modules = []
+line = 748
+
+[[item]]
+id = "X501-6"
+title = "Directory models are outside DER name encoding"
+ref = "X.501 §6"
+parent = "SEC.X501.6"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory user, service, and agent models are not encoded Name structure"
+modules = []
+line = 778
+
+[[item]]
+id = "X501-7"
+title = "Directory information trees are outside DER name encoding"
+ref = "X.501 §7"
+parent = "SEC.X501.7"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "DIB and DIT object models are Directory-layer behavior"
+modules = []
+line = 946
+
+[[item]]
+id = "X501-8"
+title = "Directory entry models are outside DER name encoding"
+ref = "X.501 §8"
+parent = "SEC.X501.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "entry and attribute models are outside DER framing; 9.3 depends on attribute type identifiers, governed value types, distinguished values, and context exclusion, which have separate 9.3 rows"
+modules = []
+line = 1075
+
+[[item]]
+id = "X501-9.1"
+title = "Name definitions include Directory-layer semantics"
+ref = "X.501 §9.1"
+parent = "SEC.X501.9.1"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "semantic name validity and object identity are outside structural decoding; see PROF-P-10"
+modules = []
+line = 1758
+
+[[item]]
+id = "X501-9.2"
+title = "Names identify no more than one object"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "semantic name-to-object identity is outside structural decoding; see PROF-P-10"
+modules = []
+line = 1778
+
+[[item]]
+id = "X501-9.2-a"
+title = "An object may have multiple unambiguous names"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "semantic name-to-object comparison is outside structural decoding; see PROF-P-10"
+modules = []
+line = 1779
+
+[[item]]
+id = "X501-9.2-b"
+title = "Directory names identify entries"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "object-entry and alias resolution is Directory-layer behavior"
+modules = []
+line = 1780
+
+[[item]]
+id = "X501-9.2-c"
+title = "Objects may receive names before Directory entry creation"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "declarative"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "name allocation without an entry is naming-authority behavior"
+modules = []
+line = 1786
+
+[[item]]
+id = "X501-9.2-d"
+title = "Name syntax is an ordered RDN sequence"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name", "sequence"]
+line = 1788
+
+[[item]]
+id = "X501-9.2-e"
+title = "Name selects the RDNSequence alternative"
+ref = "X.501 §9.2 Name"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name"]
+line = 1790
+
+[[item]]
+id = "X501-9.2-f"
+title = "RDNSequence is a sequence of RDNs"
+ref = "X.501 §9.2 RDNSequence"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name", "sequence"]
+line = 1792
+
+[[item]]
+id = "X501-9.2-g"
+title = "DistinguishedName aliases RDNSequence"
+ref = "X.501 §9.2 DistinguishedName"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name"]
+line = 1794
+
+[[item]]
+id = "X501-9.2-h"
+title = "Each initial name subsequence identifies an object"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "DIT object relationships are Directory-layer behavior"
+modules = []
+line = 1797
+
+[[item]]
+id = "X501-9.2-i"
+title = "Name order follows immediate-superior DIT relationships"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "DIT hierarchy consistency is Directory-layer behavior"
+modules = []
+line = 1797
+
+[[item]]
+id = "X501-9.2-j"
+title = "Purported names need not have semantic validity"
+ref = "X.501 §9.2"
+parent = "SEC.X501.9.2"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "the crate validates syntax but does not establish Directory name validity; see PROF-P-10"
+modules = ["x509_name"]
+line = 1800
+
+[[item]]
+id = "X501-9.3"
+title = "Each object and entry has an RDN"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "object and entry existence is Directory-layer state, not encoded Name structure"
+modules = []
+line = 1803
+
+[[item]]
+id = "X501-9.3-a"
+title = "RDN pairs equality-match distinguished entry values"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "attribute equality matching and distinguished-value comparison are outside scope; see PROF-P-10"
+modules = []
+line = 1803
+
+[[item]]
+id = "X501-9.3-b"
+title = "Sibling entries have distinct RDNs"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "sibling uniqueness is a DIT invariant, not a property of one encoding"
+modules = []
+line = 1815
+
+[[item]]
+id = "X501-9.3-c"
+title = "Naming authorities assign distinct sibling RDNs"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "rule is imposed on a naming authority, not a DER codec"
+modules = []
+line = 1815
+
+[[item]]
+id = "X501-9.3-d"
+title = "RDN is a nonempty set of ATVs"
+ref = "X.501 §9.3 RelativeDistinguishedName"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name", "set_of"]
+line = 1821
+
+[[item]]
+id = "X501-9.3-e"
+title = "ATV contains type and value fields"
+ref = "X.501 §9.3 AttributeTypeAndValue"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "structure"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name", "oid"]
+line = 1823
+
+[[item]]
+id = "X501-9.3-f"
+title = "ATV value syntax is selected by its type"
+ref = "X.501 §9.3 AttributeTypeAndValue"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "x509_name validates one raw value TLV but does not interpret OID-selected attribute syntax; see PROF-P-10"
+modules = ["restricted_string", "utf8_string"]
+line = 1823
+
+[[item]]
+id = "X501-9.3-g"
+title = "An RDN cannot repeat an attribute type"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["x509_name", "oid"]
+line = 1828
+
+[[item]]
+id = "X501-9.3-h"
+title = "Only distinguished values may appear in an RDN"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "distinguished-value designation is Directory name semantics; see PROF-P-10"
+modules = []
+line = 1830
+
+[[item]]
+id = "X501-9.3-i"
+title = "RDNs use one distinguished value per contributing attribute"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "mapping entry attributes to distinguished values requires Directory semantics; see PROF-P-10"
+modules = []
+line = 1832
+
+[[item]]
+id = "X501-9.3-j"
+title = "RDNs include every contributing attribute type"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "shall"
+side = "issuer"
+source = "primary"
+disposition = "not-applicable"
+reason = "rule governs construction from an entry's distinguished attributes, not standalone DER decoding"
+modules = []
+line = 1835
+
+[[item]]
+id = "X501-9.3-k"
+title = "Context marks the primary distinguished value"
+ref = "X.501 §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "context-list interpretation is outside structural Name decoding; see PROF-P-10"
+modules = []
+line = 1836
+
+[[item]]
+id = "X501-9.3-l"
+title = "Attribute contexts are outside distinguished values"
+ref = "X.501 §8.5 and §9.3"
+parent = "SEC.X501.9.3"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "context-list interpretation and name semantics are outside structural decoding; see PROF-P-10"
+modules = []
+line = 1357
+
+[[item]]
+id = "X501-9.4"
+title = "RDN matching compares corresponding attribute values"
+ref = "X.501 §9.4"
+parent = "SEC.X501.9.4"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "name matching and comparison are deliberately outside scope; see PROF-P-10"
+modules = []
+line = 1848
+
+[[item]]
+id = "X501-9.5"
+title = "Distinguished names follow superior-entry ancestry"
+ref = "X.501 §9.5"
+parent = "SEC.X501.9.5"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "distinguished-name meaning and comparison are outside structural decoding; see PROF-P-10"
+modules = []
+line = 1859
+
+[[item]]
+id = "X501-9.6"
+title = "Alias names and dereferencing are Directory behavior"
+ref = "X.501 §9.6"
+parent = "SEC.X501.9.6"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "alias entries, dereferencing, and alias-object-class rules are Directory-layer behavior"
+modules = []
+line = 1914
+
+[[item]]
+id = "X501-10"
+title = "Hierarchical groups are outside DER name encoding"
+ref = "X.501 §10"
+parent = "SEC.X501.10"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory hierarchical-group model, not encoded Name structure"
+modules = []
+line = 1933
+
+[[item]]
+id = "X501-11"
+title = "Administrative authority models are outside DER name encoding"
+ref = "X.501 §11"
+parent = "SEC.X501.11"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory administration model, not encoded Name structure"
+modules = []
+line = 2018
+
+[[item]]
+id = "X501-12"
+title = "Administrative information models are outside DER name encoding"
+ref = "X.501 §12"
+parent = "SEC.X501.12"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory administrative and operational information, not encoded Name structure"
+modules = []
+line = 2305
+
+[[item]]
+id = "X501-13"
+title = "Directory schema is outside DER name encoding"
+ref = "X.501 §13"
+parent = "SEC.X501.13"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "schema definition and administration are not standalone Name wire structure"
+modules = []
+line = 2718
+
+[[item]]
+id = "X501-14"
+title = "System schema is outside DER name encoding"
+ref = "X.501 §14"
+parent = "SEC.X501.14"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory operational schema, not encoded Name structure"
+modules = []
+line = 4128
+
+[[item]]
+id = "X501-15"
+title = "Schema administration is outside DER name encoding"
+ref = "X.501 §15"
+parent = "SEC.X501.15"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory policy and schema-modification procedures, not encoded Name structure"
+modules = []
+line = 4664
+
+[[item]]
+id = "X501-16"
+title = "Service administration is outside DER name encoding"
+ref = "X.501 §16"
+parent = "SEC.X501.16"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory search and service administration, not encoded Name structure"
+modules = []
+line = 5185
+
+[[item]]
+id = "X501-17"
+title = "Security models are outside DER name encoding"
+ref = "X.501 §17"
+parent = "SEC.X501.17"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory security policy and operation protection, not encoded Name structure"
+modules = []
+line = 6024
+
+[[item]]
+id = "X501-18"
+title = "Basic access control is outside DER name encoding"
+ref = "X.501 §18"
+parent = "SEC.X501.18"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory access-control decisions, not encoded Name structure"
+modules = []
+line = 6150
+
+[[item]]
+id = "X501-19"
+title = "Rule-based access control is outside name encoding"
+ref = "X.501 §19"
+parent = "SEC.X501.19"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory access-control policy, not encoded Name structure"
+modules = []
+line = 6982
+
+[[item]]
+id = "X501-20"
+title = "Stored-data integrity is outside DER name encoding"
+ref = "X.501 §20"
+parent = "SEC.X501.20"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory storage protection, not encoded Name structure"
+modules = []
+line = 7230
+
+[[item]]
+id = "X501-21"
+title = "DSA models are outside DER name encoding"
+ref = "X.501 §21"
+parent = "SEC.X501.21"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory system-agent functional and distribution models, not Name encoding"
+modules = []
+line = 7380
+
+[[item]]
+id = "X501-22"
+title = "DSA knowledge is outside DER name encoding"
+ref = "X.501 §22"
+parent = "SEC.X501.22"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "DSA knowledge references and routing information, not encoded Name structure"
+modules = []
+line = 7558
+
+[[item]]
+id = "X501-23"
+title = "DSA information elements are outside name encoding"
+ref = "X.501 §23"
+parent = "SEC.X501.23"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "DSA-specific entry and information model, not encoded Name structure"
+modules = []
+line = 7809
+
+[[item]]
+id = "X501-24"
+title = "DSA information representation is outside name encoding"
+ref = "X.501 §24"
+parent = "SEC.X501.24"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "DSA knowledge and naming-context representation, not standalone Name encoding"
+modules = []
+line = 8025
+
+[[item]]
+id = "X501-25"
+title = "Operational framework overview is outside name encoding"
+ref = "X.501 §25"
+parent = "SEC.X501.25"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory operational cooperation framework, not encoded Name structure"
+modules = []
+line = 8557
+
+[[item]]
+id = "X501-26"
+title = "Operational bindings are outside DER name encoding"
+ref = "X.501 §26"
+parent = "SEC.X501.26"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory operational-binding lifecycle, not encoded Name structure"
+modules = []
+line = 8595
+
+[[item]]
+id = "X501-27"
+title = "Binding specifications are outside DER name encoding"
+ref = "X.501 §27"
+parent = "SEC.X501.27"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "operational-binding specifications and management, not encoded Name structure"
+modules = []
+line = 8749
+
+[[item]]
+id = "X501-28"
+title = "Binding operations are outside DER name encoding"
+ref = "X.501 §28"
+parent = "SEC.X501.28"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "Directory binding-management protocol operations, not encoded Name structure"
+modules = []
+line = 8962
+
+[[item]]
+id = "X501-29"
+title = "LDAP overview is outside DER name encoding"
+ref = "X.501 §29"
+parent = "SEC.X501.29"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "LDAP interworking overview, not encoded Name structure"
+modules = []
+line = 9510
+
+[[item]]
+id = "X501-30"
+title = "LDAP interworking is outside DER name encoding"
+ref = "X.501 §30"
+parent = "SEC.X501.30"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "LDAP request handling and extensions, not encoded Name structure"
+modules = []
+line = 9536
+
+[[item]]
+id = "X501-31"
+title = "LDAP system schema is outside DER name encoding"
+ref = "X.501 §31"
+parent = "SEC.X501.31"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "LDAP-specific operational attributes, not encoded Name structure"
+modules = []
+line = 9650
+
+[[item]]
+id = "X690-8.1.2.6"
+title = "CHOICE uses the selected alternative tag"
+ref = "8.1.2.6"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tag", "x509_validity"]
+line = 544
+
+[[item]]
+id = "X690-8.1.3.1"
+title = "Length octets have definite and indefinite forms"
+ref = "8.1.3.1"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["length"]
+line = 552
+
+[[item]]
+id = "X690-8.19.2-a"
+title = "Each OID subidentifier uses one or more octets"
+ref = "8.19.2"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+line = 1047
+
+[[item]]
+id = "X690-8.6.2.4"
+title = "Named BIT STRING codecs may normalize trailing zero bits"
+ref = "8.6.2.4"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "NamedBitList semantics are above the generic BIT STRING codec; DECISIONS.md D1 and PROF-bit-string-preserve-zero-bits preserve trailing zero bits, and X.509 extension semantics are excluded"
+modules = []
+line = 758
+
+[[item]]
+id = "X690-8.19.2-b"
+title = "OID continuation bits mark all but the final octet"
+ref = "8.19.2"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+line = 1047
+
+[[item]]
+id = "X690-8.19.2-c"
+title = "OID low seven-bit groups encode each subidentifier"
+ref = "8.19.2"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+line = 1048
+
+[[item]]
+id = "X690-8.19.2-d"
+title = "OID groups form a big-endian unsigned number"
+ref = "8.19.2"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["oid"]
+line = 1049
+
+[[item]]
+id = "X690-8.23.3-a"
+title = "Restricted string identifiers use their universal tag number"
+ref = "8.23.3"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string", "utf8_string"]
+line = 1127
+
+[[item]]
+id = "X690-8.23.3-b"
+title = "Restricted string octet values follow their character mapping rules"
+ref = "8.23.3"
+parent = "SEC.X690.8"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["restricted_string", "utf8_string"]
+line = 1128
+
+[[item]]
+id = "X690-10"
+title = "DER combines basic encoding with clauses 10 and 11"
+ref = "10"
+parent = "SEC.X690.10"
+firmness = "draft"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["tlv"]
+line = 1343
 
 [[item]]
 id = "RFC5280-4.1"
@@ -2487,10 +6506,11 @@ title = "CER rules"
 parent = "SEC.X690.9"
 force = "shall"
 side = "both"
-source = "secondary"
+source = "primary"
 disposition = "excluded"
 reason = "CER is not DER; der-verified implements DER only"
 modules = []
+line = 1295
 
 [[item]]
 id = "X690-8.1.1.1"
@@ -2502,28 +6522,32 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tlv"]
+line = 456
 
 [[item]]
 id = "X690-8.1.1.2"
 ref = "8.1.1.2"
-title = "Primitive encoding layout"
+title = "End-of-contents appears only with an indefinite length"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tlv"]
+line = 461
 
 [[item]]
 id = "X690-8.1.1.3"
 ref = "8.1.1.3"
-title = "Constructed encoding layout"
+title = "Figures illustrate primitive and constructed layouts"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["tlv"]
+disposition = "not-applicable"
+reason = "illustrative figure description, not a normative encoding rule"
+modules = []
+line = 470
 
 [[item]]
 id = "X690-8.1.2.1"
@@ -2535,6 +6559,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tag", "identifier_form"]
+line = 493
 
 [[item]]
 id = "X690-8.1.2.2"
@@ -2546,6 +6571,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tag", "identifier_form"]
+line = 494
 
 [[item]]
 id = "X690-8.1.2.4"
@@ -2557,6 +6583,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tag", "identifier_form"]
+line = 522
 
 [[item]]
 id = "X690-8.1.2.4.1"
@@ -2568,6 +6595,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tag", "identifier_form"]
+line = 524
 
 [[item]]
 id = "X690-8.1.2.4.2"
@@ -2579,6 +6607,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tag", "identifier_form"]
+line = 528
 
 [[item]]
 id = "X690-8.1.2.5"
@@ -2590,6 +6619,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tag", "identifier_form"]
+line = 541
 
 [[item]]
 id = "X690-8.1.3.2"
@@ -2601,6 +6631,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["length"]
+line = 555
 
 [[item]]
 id = "X690-8.1.3.3"
@@ -2612,6 +6643,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["length"]
+line = 565
 
 [[item]]
 id = "X690-8.1.3.4"
@@ -2623,6 +6655,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["length"]
+line = 569
 
 [[item]]
 id = "X690-8.1.3.5"
@@ -2634,6 +6667,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["length"]
+line = 575
 
 [[item]]
 id = "X690-8.1.4"
@@ -2645,6 +6679,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tlv"]
+line = 600
 
 [[item]]
 id = "X690-8.2.1"
@@ -2656,6 +6691,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["boolean"]
+line = 620
 
 [[item]]
 id = "X690-8.2.2"
@@ -2667,6 +6703,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["boolean"]
+line = 621
 
 [[item]]
 id = "X690-8.3.1"
@@ -2678,6 +6715,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["integer", "big_integer"]
+line = 638
 
 [[item]]
 id = "X690-8.3.3"
@@ -2689,6 +6727,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["integer", "big_integer"]
+line = 645
 
 [[item]]
 id = "X690-8.4"
@@ -2700,6 +6739,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["enumerated"]
+line = 656
 
 [[item]]
 id = "X690-8.6.2"
@@ -2711,6 +6751,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["bit_string"]
+line = 748
 
 [[item]]
 id = "X690-8.6.2.1"
@@ -2722,6 +6763,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["bit_string"]
+line = 750
 
 [[item]]
 id = "X690-8.6.2.2"
@@ -2733,6 +6775,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["bit_string"]
+line = 755
 
 [[item]]
 id = "X690-8.6.2.3"
@@ -2744,6 +6787,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["bit_string"]
+line = 757
 
 [[item]]
 id = "X690-8.7.1"
@@ -2755,17 +6799,19 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["octet_string"]
+line = 805
 
 [[item]]
 id = "X690-8.7.2"
 ref = "8.7.2"
 title = "Primitive OCTET STRING contents"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["octet_string"]
+line = 809
 
 [[item]]
 id = "X690-8.8.1"
@@ -2777,6 +6823,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["null"]
+line = 828
 
 [[item]]
 id = "X690-8.8.2"
@@ -2788,17 +6835,19 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["null"]
+line = 829
 
 [[item]]
 id = "X690-8.9"
-ref = "8.9"
-title = "SEQUENCE encoding"
+ref = "8.9.1"
+title = "SEQUENCE encoding is constructed"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["sequence"]
+line = 838
 
 [[item]]
 id = "X690-8.9.1"
@@ -2810,6 +6859,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["sequence"]
+line = 838
 
 [[item]]
 id = "X690-8.9.2"
@@ -2821,6 +6871,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["sequence"]
+line = 839
 
 [[item]]
 id = "X690-8.9.3"
@@ -2832,17 +6883,19 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["sequence"]
+line = 849
 
 [[item]]
 id = "X690-8.10"
-ref = "8.10"
-title = "SEQUENCE OF encoding"
+ref = "8.10.1"
+title = "SEQUENCE OF encoding is constructed"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["set_of"]
+line = 868
 
 [[item]]
 id = "X690-8.10.1"
@@ -2854,6 +6907,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["set_of"]
+line = 868
 
 [[item]]
 id = "X690-8.10.2"
@@ -2865,6 +6919,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["set_of"]
+line = 869
 
 [[item]]
 id = "X690-8.10.3"
@@ -2876,11 +6931,12 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["set_of"]
+line = 871
 
 [[item]]
 id = "X690-8.11"
-ref = "8.11"
-title = "SET encoding"
+ref = "8.11.1"
+title = "SET encoding is constructed"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
@@ -2888,6 +6944,7 @@ source = "primary"
 disposition = "excluded"
 reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
 modules = []
+line = 875
 
 [[item]]
 id = "X690-8.11.1"
@@ -2900,6 +6957,7 @@ source = "primary"
 disposition = "excluded"
 reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
 modules = []
+line = 875
 
 [[item]]
 id = "X690-8.11.2"
@@ -2912,6 +6970,7 @@ source = "primary"
 disposition = "excluded"
 reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
 modules = []
+line = 876
 
 [[item]]
 id = "X690-8.11.3"
@@ -2924,17 +6983,19 @@ source = "primary"
 disposition = "excluded"
 reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
 modules = []
+line = 879
 
 [[item]]
 id = "X690-8.12"
-ref = "8.12"
-title = "SET OF encoding"
+ref = "8.12.1"
+title = "SET OF encoding is constructed"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["set_of", "x509_name"]
+line = 885
 
 [[item]]
 id = "X690-8.12.1"
@@ -2946,40 +7007,44 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["set_of", "x509_name"]
+line = 885
 
 [[item]]
 id = "X690-8.12.2"
 ref = "8.12.2"
 title = "SET OF homogeneous encodings"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["set_of", "x509_name"]
+line = 886
 
 [[item]]
 id = "X690-8.12.3"
 ref = "8.12.3"
 title = "SET OF order not abstractly significant"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "excluded"
 reason = "set_of validates DER wire ordering but exposes no abstract unordered collection semantics; DECISIONS.md D13"
 modules = ["set_of", "x509_name"]
+line = 887
 
 [[item]]
 id = "X690-8.14"
-ref = "8.14"
-title = "Tagged value encoding"
+ref = "8.14.2"
+title = "Tagged encodings derive from the base encoding"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["context_tag"]
+line = 903
 
 [[item]]
 id = "X690-8.14.2"
@@ -2991,6 +7056,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["context_tag"]
+line = 903
 
 [[item]]
 id = "X690-8.14.3"
@@ -3002,17 +7068,19 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["context_tag"]
+line = 905
 
 [[item]]
 id = "X690-8.14.4"
 ref = "8.14.4"
-title = "IMPLICIT replaces identifier"
+title = "IMPLICIT tagging preserves base contents and encoding form"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["context_tag"]
+line = 907
 
 [[item]]
 id = "X690-8.19.1"
@@ -3024,6 +7092,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["oid"]
+line = 1044
 
 [[item]]
 id = "X690-8.19.2"
@@ -3035,6 +7104,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["oid"]
+line = 1050
 
 [[item]]
 id = "X690-8.19.3"
@@ -3046,39 +7116,43 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["oid"]
+line = 1052
 
 [[item]]
 id = "X690-8.19.4"
 ref = "8.19.4"
 title = "First two OID arcs combine"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["oid"]
+line = 1054
 
 [[item]]
 id = "X690-8.19.5"
 ref = "8.19.5"
 title = "Subsequent OID arcs"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["oid"]
+line = 1062
 
 [[item]]
 id = "X690-8.23.1"
 ref = "8.23.1"
 title = "Restricted string characters"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["restricted_string", "utf8_string"]
+line = 1117
 
 [[item]]
 id = "X690-8.23.2"
@@ -3089,7 +7163,8 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["restricted_string", "utf8_string"]
+line = 1118
 
 [[item]]
 id = "X690-8.23.3"
@@ -3100,7 +7175,8 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["restricted_string", "utf8_string"]
+line = 1124
 
 [[item]]
 id = "X690-8.23.4"
@@ -3111,7 +7187,8 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["restricted_string"]
+line = 1129
 
 [[item]]
 id = "X690-8.23.5"
@@ -3121,8 +7198,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for TeletexString, VideotexString, GraphicString, or GeneralString in der-verified/src"
+modules = []
+line = 1132
 
 [[item]]
 id = "X690-8.23.5.1"
@@ -3132,8 +7211,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for TeletexString, VideotexString, GraphicString, or GeneralString in der-verified/src"
+modules = []
+line = 1135
 
 [[item]]
 id = "X690-8.23.5.2"
@@ -3143,8 +7224,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for TeletexString, VideotexString, GraphicString, or GeneralString in der-verified/src"
+modules = []
+line = 1137
 
 [[item]]
 id = "X690-8.23.5.3"
@@ -3154,8 +7237,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for TeletexString, VideotexString, GraphicString, or GeneralString in der-verified/src"
+modules = []
+line = 1170
 
 [[item]]
 id = "X690-8.23.5.4"
@@ -3165,8 +7250,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for TeletexString, VideotexString, GraphicString, or GeneralString in der-verified/src"
+modules = []
+line = 1173
 
 [[item]]
 id = "X690-8.23.8"
@@ -3176,19 +7263,23 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1213
 
 [[item]]
 id = "X690-8.23.9"
 ref = "8.23.9"
-title = "String control functions"
+title = "UTF8String permits most C0 and C1 controls"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+note = "gap: decoder does not reject escape sequences; design decision pending"
+line = 1216
 
 [[item]]
 id = "X690-8.23.10"
@@ -3199,18 +7290,20 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+line = 1241
 
 [[item]]
 id = "X690-8.25"
 ref = "8.25"
-title = "Useful times encoded as restricted strings"
+title = "Useful types use their X.680 definitions"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utc_time", "generalized_time"]
+line = 1253
 
 [[item]]
 id = "X690-10.3"
@@ -3223,6 +7316,7 @@ source = "primary"
 disposition = "excluded"
 reason = "general SET is outside scope; DECISIONS.md D6 and D13 cover SET OF but exclude schema-dependent SET"
 modules = []
+line = 1359
 
 [[item]]
 id = "X690-11.2.1"
@@ -3234,6 +7328,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["bit_string"]
+line = 1375
 
 [[item]]
 id = "X690-11.2.2"
@@ -3243,8 +7338,10 @@ parent = "SEC.X690.11"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["bit_string"]
+disposition = "excluded"
+reason = "NamedBitList semantics are above the generic BIT STRING codec; DECISIONS.md D1 and PROF-bit-string-preserve-zero-bits preserve trailing zero bits, and X.509 extension semantics are excluded"
+modules = []
+line = 1376
 
 [[item]]
 id = "X690-11.4"
@@ -3254,8 +7351,10 @@ parent = "SEC.X690.11"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["restricted_string", "utf8_string"]
+disposition = "excluded"
+reason = "no decoder for GeneralString in der-verified/src"
+modules = []
+line = 1409
 
 [[item]]
 id = "X690-11.7.1"
@@ -3267,6 +7366,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["generalized_time"]
+line = 1431
 
 [[item]]
 id = "X690-11.7.2"
@@ -3278,6 +7378,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["generalized_time"]
+line = 1434
 
 [[item]]
 id = "X690-11.7.3"
@@ -3289,6 +7390,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["generalized_time"]
+line = 1435
 
 [[item]]
 id = "X690-11.7.4"
@@ -3300,6 +7402,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["generalized_time"]
+line = 1439
 
 [[item]]
 id = "X690-11.7.5"
@@ -3311,6 +7414,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["generalized_time"]
+line = 1440
 
 [[item]]
 id = "X690-11.8.1"
@@ -3322,6 +7426,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utc_time"]
+line = 1455
 
 [[item]]
 id = "X690-11.8.2"
@@ -3333,6 +7438,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utc_time"]
+line = 1461
 
 [[item]]
 id = "X690-11.8.3"
@@ -3344,282 +7450,309 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utc_time"]
+line = 1462
 
 [[item]]
 id = "X680-8"
-ref = "8"
-title = "Universal and user tags"
-parent = "SEC.X680.carried"
+ref = "8.1"
+title = "Tags pair a class with a nonnegative number"
+parent = "SEC.X680.8"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["tag", "identifier_form"]
+line = 1302
 
 [[item]]
 id = "X680-18"
-ref = "18"
-title = "BOOLEAN values and tag"
-parent = "SEC.X680.carried"
+ref = "18.2"
+title = "BOOLEAN has universal tag 1"
+parent = "SEC.X680.18"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["boolean", "tag"]
+line = 2778
 
 [[item]]
 id = "X680-19"
-ref = "19"
-title = "INTEGER values and tag"
-parent = "SEC.X680.carried"
+ref = "19.8"
+title = "INTEGER has universal tag 2"
+parent = "SEC.X680.19"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["integer", "big_integer", "tag"]
+line = 2834
 
 [[item]]
 id = "X680-20"
-ref = "20"
-title = "ENUMERATED values and tag"
-parent = "SEC.X680.carried"
+ref = "20.7"
+title = "ENUMERATED has universal tag 10"
+parent = "SEC.X680.20"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["enumerated", "tag"]
+line = 2915
 
 [[item]]
 id = "X680-22"
-ref = "22"
-title = "BIT STRING values and tag"
-parent = "SEC.X680.carried"
+ref = "22.8"
+title = "BIT STRING has universal tag 3"
+parent = "SEC.X680.22"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["bit_string", "tag"]
+line = 3064
 
 [[item]]
 id = "X680-22.7"
 ref = "22.7"
-title = "Named BIT STRING value semantics"
-parent = "SEC.X680.carried"
+title = "Named BIT STRINGs permit trailing-zero normalization"
+parent = "SEC.X680.22"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["identifier_form"]
+disposition = "excluded"
+reason = "NamedBitList semantics are above the generic BIT STRING codec; DECISIONS.md D1 and PROF-bit-string-preserve-zero-bits preserve trailing zero bits, and X.509 extension semantics are excluded"
+modules = []
+line = 3055
 
 [[item]]
 id = "X680-23"
-ref = "23"
-title = "OCTET STRING values and tag"
-parent = "SEC.X680.carried"
+ref = "23.2"
+title = "OCTET STRING has universal tag 4"
+parent = "SEC.X680.23"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["octet_string", "tag"]
+line = 3141
 
 [[item]]
 id = "X680-24"
-ref = "24"
-title = "NULL value and tag"
-parent = "SEC.X680.carried"
+ref = "24.2"
+title = "NULL has universal tag 5"
+parent = "SEC.X680.24"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["null", "tag"]
+line = 3184
 
 [[item]]
 id = "X680-25"
-ref = "25"
-title = "SEQUENCE fields and tag"
-parent = "SEC.X680.carried"
+ref = "25.17"
+title = "SEQUENCE has universal tag 16"
+parent = "SEC.X680.25"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["sequence", "tag"]
+line = 3364
 
 [[item]]
 id = "X680-26"
-ref = "26"
-title = "SEQUENCE OF values and tag"
-parent = "SEC.X680.carried"
+ref = "26.2"
+title = "SEQUENCE OF has universal tag 16"
+parent = "SEC.X680.26"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["sequence", "tag"]
+line = 3401
 
 [[item]]
 id = "X680-27"
 ref = "27"
-title = "SET fields and tag"
-parent = "SEC.X680.carried"
+title = "SET is outside the implemented type surface"
+parent = "SEC.X680.27"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["identifier_form"]
+disposition = "excluded"
+reason = "sequence.rs recognizes but does not decode SET; DECISIONS.md D6"
+modules = []
+line = 3521
 
 [[item]]
 id = "X680-28"
-ref = "28"
-title = "SET OF values and tag"
-parent = "SEC.X680.carried"
+ref = "28.2"
+title = "SET OF has universal tag 17"
+parent = "SEC.X680.28"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["set_of", "tag"]
+line = 3580
 
 [[item]]
 id = "X680-31.2"
-ref = "31.2"
-title = "Tagged types"
-parent = "SEC.X680.carried"
+ref = "31.2.4"
+title = "Tagged types replace the tag class and number"
+parent = "SEC.X680.31"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["tag", "context_tag"]
+line = 3816
 
 [[item]]
 id = "X680-32"
-ref = "32"
-title = "OBJECT IDENTIFIER values and arcs"
-parent = "SEC.X680.carried"
+ref = "32.2"
+title = "OBJECT IDENTIFIER has universal tag 6"
+parent = "SEC.X680.32"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["oid", "tag"]
+line = 3879
 
 [[item]]
 id = "X680-41.1"
 ref = "41.1"
-title = "Restricted string tags and repertoires"
-parent = "SEC.X680.carried"
+title = "Restricted string table assigns tags and repertoires"
+parent = "SEC.X680.41"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["restricted_string", "utf8_string", "tag"]
+line = 5017
 
 [[item]]
 id = "X680-41.2"
 ref = "41.2"
-title = "NumericString character set"
-parent = "SEC.X680.carried"
+title = "NumericString permits only digits and space"
+parent = "SEC.X680.41"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["restricted_string"]
+line = 5021
 
 [[item]]
 id = "X680-41.4"
 ref = "41.4"
-title = "PrintableString character set"
-parent = "SEC.X680.carried"
+title = "PrintableString has its listed 74-character repertoire"
+parent = "SEC.X680.41"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["restricted_string"]
+line = 5050
 
 [[item]]
 id = "X680-41.15"
 ref = "41.15"
-title = "BMPString repertoire"
-parent = "SEC.X680.carried"
+title = "BMPString has no decoder"
+parent = "SEC.X680.41"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["identifier_form"]
+disposition = "excluded"
+reason = "no BMPString decoder exists in der-verified/src"
+modules = []
+line = 5185
 
 [[item]]
 id = "X680-41.16"
 ref = "41.16"
-title = "UTF8String repertoire"
-parent = "SEC.X680.carried"
+title = "UTF8String shares UniversalString abstract values but has its own tag"
+parent = "SEC.X680.41"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["utf8_string"]
+line = 5197
 
 [[item]]
 id = "X680-46.2"
 ref = "46.2"
-title = "GeneralizedTime value"
-parent = "SEC.X680.carried"
+title = "GeneralizedTime combines a date with local or UTC time"
+parent = "SEC.X680.46"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["generalized_time"]
+line = 5569
 
 [[item]]
 id = "X680-46.3"
-ref = "46.3"
-title = "GeneralizedTime tag and syntax"
-parent = "SEC.X680.carried"
+ref = "46.4"
+title = "GeneralizedTime uses universal tag 24"
+parent = "SEC.X680.46"
 firmness = "draft"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["generalized_time", "tag"]
+line = 5643
 
 [[item]]
 id = "X680-47.2"
 ref = "47.2"
-title = "UTCTime value"
-parent = "SEC.X680.carried"
+title = "UTCTime represents date time and an optional UTC offset"
+parent = "SEC.X680.47"
 firmness = "draft"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["utc_time"]
+line = 5656
 
 [[item]]
 id = "X680-47.3"
-ref = "47.3"
-title = "UTCTime tag and syntax"
-parent = "SEC.X680.carried"
+ref = "47.4"
+title = "UTCTime uses universal tag 23"
+parent = "SEC.X680.47"
 firmness = "draft"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["identifier_form"]
+modules = ["utc_time", "tag"]
+line = 5687
 
 [[item]]
 id = "X690-8.1.5"
@@ -3631,6 +7764,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tlv"]
+line = 605
 
 [[item]]
 id = "X690-8.3.1-a"
@@ -3642,6 +7776,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["integer", "big_integer"]
+line = 638
 
 [[item]]
 id = "X690-8.5.1"
@@ -3654,6 +7789,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 661
 
 [[item]]
 id = "X690-8.5.2"
@@ -3666,6 +7802,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 662
 
 [[item]]
 id = "X690-8.5.3"
@@ -3678,6 +7815,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 663
 
 [[item]]
 id = "X690-8.5.4"
@@ -3690,6 +7828,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 664
 
 [[item]]
 id = "X690-8.5.5"
@@ -3702,6 +7841,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 666
 
 [[item]]
 id = "X690-8.5.5-a"
@@ -3714,6 +7854,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 666
 
 [[item]]
 id = "X690-8.5.5-b"
@@ -3726,6 +7867,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 666
 
 [[item]]
 id = "X690-8.5.6"
@@ -3738,6 +7880,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 668
 
 [[item]]
 id = "X690-8.5.7"
@@ -3750,6 +7893,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 679
 
 [[item]]
 id = "X690-8.5.7.1"
@@ -3762,6 +7906,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 690
 
 [[item]]
 id = "X690-8.5.7.2"
@@ -3774,6 +7919,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 691
 
 [[item]]
 id = "X690-8.5.7.3"
@@ -3786,6 +7932,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 697
 
 [[item]]
 id = "X690-8.5.7.4"
@@ -3798,6 +7945,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 699
 
 [[item]]
 id = "X690-8.5.8"
@@ -3810,6 +7958,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 731
 
 [[item]]
 id = "X690-8.5.9"
@@ -3822,6 +7971,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 736
 
 [[item]]
 id = "X690-8.13"
@@ -3833,6 +7983,7 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["x509_validity"]
+line = 890
 
 [[item]]
 id = "X690-8.15"
@@ -3845,6 +7996,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 942
 
 [[item]]
 id = "X690-8.16.1"
@@ -3857,6 +8009,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 947
 
 [[item]]
 id = "X690-8.16.2"
@@ -3869,6 +8022,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 961
 
 [[item]]
 id = "X690-8.17.1"
@@ -3881,6 +8035,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 965
 
 [[item]]
 id = "X690-8.17.2"
@@ -3893,6 +8048,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 967
 
 [[item]]
 id = "X690-8.18.1"
@@ -3905,6 +8061,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 972
 
 [[item]]
 id = "X690-8.18.3"
@@ -3917,6 +8074,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 986
 
 [[item]]
 id = "X690-8.18.4"
@@ -3929,6 +8087,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 988
 
 [[item]]
 id = "X690-8.18.5"
@@ -3941,6 +8100,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1003
 
 [[item]]
 id = "X690-8.18.6"
@@ -3953,6 +8113,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1012
 
 [[item]]
 id = "X690-8.18.7"
@@ -3965,6 +8126,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1020
 
 [[item]]
 id = "X690-8.18.8"
@@ -3977,6 +8139,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1029
 
 [[item]]
 id = "X690-8.18.9"
@@ -3989,6 +8152,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1033
 
 [[item]]
 id = "X690-8.18.10"
@@ -4001,6 +8165,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1038
 
 [[item]]
 id = "X690-8.18.11"
@@ -4013,6 +8178,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1040
 
 [[item]]
 id = "X690-8.20.1"
@@ -4025,6 +8191,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1085
 
 [[item]]
 id = "X690-8.20.2"
@@ -4037,6 +8204,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1086
 
 [[item]]
 id = "X690-8.20.2-a"
@@ -4049,6 +8217,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1090
 
 [[item]]
 id = "X690-8.20.3"
@@ -4061,6 +8230,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1092
 
 [[item]]
 id = "X690-8.21.1"
@@ -4073,6 +8243,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1104
 
 [[item]]
 id = "X690-8.21.2"
@@ -4085,6 +8256,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1105
 
 [[item]]
 id = "X690-8.21.2-a"
@@ -4097,6 +8269,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1107
 
 [[item]]
 id = "X690-8.22.1"
@@ -4109,6 +8282,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1111
 
 [[item]]
 id = "X690-8.22.2"
@@ -4121,6 +8295,7 @@ source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1112
 
 [[item]]
 id = "X690-8.23.7"
@@ -4130,8 +8305,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1210
 
 [[item]]
 id = "X690-8.23.7-a"
@@ -4141,8 +8318,10 @@ parent = "SEC.X690.8"
 force = "shall-not"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1211
 
 [[item]]
 id = "X690-8.23.8-a"
@@ -4152,74 +8331,88 @@ parent = "SEC.X690.8"
 force = "shall-not"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1214
 
 [[item]]
 id = "X690-8.23.9a"
 ref = "8.23.9 a)"
-title = "Unicode strings exclude ISO 2022 announcers"
+title = "UTF8String excludes ISO 2022 announcer escapes"
 parent = "SEC.X690.8"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+note = "gap: decoder does not reject escape sequences; design decision pending"
+line = 1220
 
 [[item]]
 id = "X690-8.23.9b"
 ref = "8.23.9 b)"
-title = "Unicode strings exclude code-set designation and identification escapes"
+title = "UTF8String excludes code-set designation and identification escapes"
 parent = "SEC.X690.8"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+note = "gap: decoder does not reject escape sequences; design decision pending"
+line = 1222
 
 [[item]]
 id = "X690-8.23.9c"
 ref = "8.23.9 c)"
-title = "Unicode strings exclude ISO 2022 invocation controls"
+title = "UTF8String excludes ISO 2022 invocation controls"
 parent = "SEC.X690.8"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+note = "gap: decoder does not reject escape sequences; design decision pending"
+line = 1227
 
 [[item]]
 id = "X690-8.23.9d"
 ref = "8.23.9 d)"
-title = "Unicode string coding stays within ISO 10646"
+title = "UTF8String coding stays within ISO 10646"
 parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+note = "gap: decoder does not reject escape sequences; design decision pending"
+line = 1229
 
 [[item]]
 id = "X690-8.23.9e"
 ref = "8.23.9 e)"
-title = "Unicode strings exclude graphic-subset identification controls"
+title = "UTF8String excludes graphic-subset identification controls"
 parent = "SEC.X690.8"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+note = "gap: decoder does not reject escape sequences; design decision pending"
+line = 1230
 
 [[item]]
 id = "X690-8.23.9f"
 ref = "8.23.9 f)"
-title = "Unicode strings exclude switches into ISO 2022 coding"
+title = "UTF8String excludes switches into ISO 2022 coding"
 parent = "SEC.X690.8"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+note = "gap: decoder does not reject escape sequences; design decision pending"
+line = 1233
 
 [[item]]
 id = "X690-8.23.10-a"
@@ -4230,7 +8423,8 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["boolean"]
+modules = ["utf8_string"]
+line = 1241
 
 [[item]]
 id = "X690-8.24.1"
@@ -4243,6 +8437,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1246
 
 [[item]]
 id = "X690-8.24.2"
@@ -4255,6 +8450,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements EXTERNAL, EMBEDDED PDV, INSTANCE OF, or unrestricted strings"
 modules = []
+line = 1248
 
 [[item]]
 id = "X690-8.25-a"
@@ -4264,8 +8460,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["boolean"]
+disposition = "excluded"
+reason = "no decoder for ObjectDescriptor in der-verified/src"
+modules = []
+line = 1253
 
 [[item]]
 id = "X690-8.26.1.1"
@@ -4278,6 +8476,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1263
 
 [[item]]
 id = "X690-8.26.1.2"
@@ -4290,6 +8489,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1264
 
 [[item]]
 id = "X690-8.26.2.1"
@@ -4302,6 +8502,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1268
 
 [[item]]
 id = "X690-8.26.2.2"
@@ -4314,6 +8515,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1269
 
 [[item]]
 id = "X690-8.26.3.1"
@@ -4326,6 +8528,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1273
 
 [[item]]
 id = "X690-8.26.3.2"
@@ -4338,6 +8541,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1274
 
 [[item]]
 id = "X690-8.26.4.1"
@@ -4350,6 +8554,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1278
 
 [[item]]
 id = "X690-8.26.4.2"
@@ -4362,6 +8567,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1279
 
 [[item]]
 id = "X690-8.26.5.1"
@@ -4374,6 +8580,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1284
 
 [[item]]
 id = "X690-8.26.5.2"
@@ -4386,6 +8593,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1285
 
 [[item]]
 id = "X690-11.3.1"
@@ -4398,6 +8606,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1384
 
 [[item]]
 id = "X690-11.3.1-a"
@@ -4410,6 +8619,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1390
 
 [[item]]
 id = "X690-11.3.2"
@@ -4422,6 +8632,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1392
 
 [[item]]
 id = "X690-11.3.2.1"
@@ -4434,6 +8645,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1394
 
 [[item]]
 id = "X690-11.3.2.2"
@@ -4446,6 +8658,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1395
 
 [[item]]
 id = "X690-11.3.2.3"
@@ -4458,6 +8671,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1396
 
 [[item]]
 id = "X690-11.3.2.5"
@@ -4470,6 +8684,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1398
 
 [[item]]
 id = "X690-11.3.2.6"
@@ -4482,6 +8697,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1399
 
 [[item]]
 id = "X690-11.4-a"
@@ -4491,8 +8707,10 @@ parent = "SEC.X690.11"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
-modules = ["restricted_string", "utf8_string"]
+disposition = "excluded"
+reason = "no decoder for GeneralString in der-verified/src"
+modules = []
+line = 1411
 
 [[item]]
 id = "X690-11.9.1a"
@@ -4505,6 +8723,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1478
 
 [[item]]
 id = "X690-11.9.1b"
@@ -4517,6 +8736,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1479
 
 [[item]]
 id = "X690-11.9.1c"
@@ -4529,6 +8749,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1480
 
 [[item]]
 id = "X690-11.9.1d"
@@ -4541,6 +8762,7 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1482
 
 [[item]]
 id = "X690-11.9.2"
@@ -4553,76 +8775,447 @@ source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements the X.680:2021 TIME, DATE, TIME-OF-DAY, DATE-TIME, or DURATION types"
 modules = []
+line = 1486
 
 [[item]]
 id = "X690-8.1.1.4"
 ref = "8.1.1.4"
 title = "Subtype constraints and extension markers do not alter encodings"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["tlv"]
+line = 484
 
 [[item]]
 id = "X690-8.5.7.5"
 ref = "8.5.7.5"
 title = "Binary REAL stores N as an unsigned integer"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 710
 
 [[item]]
 id = "X690-8.5.8-a"
 ref = "8.5.8"
 title = "Decimal REAL payload encodes its value using ISO 6093"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 718
 
 [[item]]
 id = "X690-8.14.1"
 ref = "8.14.1"
 title = "Encoding-prefixed types retain the underlying type encoding"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["context_tag"]
+line = 896
 
 [[item]]
 id = "X690-8.20.4"
 ref = "8.20.4"
 title = "Relative OID subidentifiers preserve each arc value"
 parent = "SEC.X690.8"
-force = "shall"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "excluded"
 reason = "oid implements absolute OBJECT IDENTIFIER only; no module implements relative OID or OID-IRI types"
 modules = []
+line = 1094
 
 [[item]]
 id = "X690-11.3.2.4"
 ref = "11.3.2.4"
 title = "Decimal REAL mantissas exclude leading and trailing zero digits"
 parent = "SEC.X690.11"
-force = "shall-not"
+force = "declarative"
 side = "both"
 source = "primary"
 disposition = "excluded"
 reason = "no module in der-verified/src implements REAL"
 modules = []
+line = 1397
+
+[[item]]
+id = "X690-8.6.3"
+ref = "8.6.3"
+title = "Constructed BIT STRING contains nested encodings"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 763
+
+[[item]]
+id = "X690-8.6.4"
+ref = "8.6.4"
+title = "Constructed BIT STRING encoding segments the value"
+parent = "SEC.X690.8"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 766
+
+[[item]]
+id = "X690-8.6.4-a"
+ref = "8.6.4"
+title = "BIT STRING segments preserve consecutive bits and pre-final byte alignment"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 766
+
+[[item]]
+id = "X690-8.6.4-b"
+ref = "8.6.4"
+title = "BIT STRING segmentation covers each bit once without boundary meaning"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 768
+
+[[item]]
+id = "X690-8.6.4.1"
+ref = "8.6.4.1"
+title = "Each nested encoding carries one BIT STRING segment"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 771
+
+[[item]]
+id = "X690-8.6.4.1-a"
+ref = "8.6.4.1"
+title = "Recursive encoding treats every segment as a BIT STRING value"
+parent = "SEC.X690.8"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 772
+
+[[item]]
+id = "X690-8.6.4.1-b"
+ref = "8.6.4.1"
+title = "Nested BIT STRING encodings retain segment order"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 773
+
+[[item]]
+id = "X690-8.7.3.1"
+ref = "8.7.3.1"
+title = "Constructed OCTET STRING encoding segments the value"
+parent = "SEC.X690.8"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 815
+
+[[item]]
+id = "X690-8.7.3.1-a"
+ref = "8.7.3.1"
+title = "Each OCTET STRING segment preserves consecutive value octets"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 815
+
+[[item]]
+id = "X690-8.7.3.1-b"
+ref = "8.7.3.1"
+title = "OCTET STRING segment boundaries carry no meaning"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 816
+
+[[item]]
+id = "X690-8.7.3.2"
+ref = "8.7.3.2"
+title = "Each nested encoding carries one OCTET STRING segment"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 819
+
+[[item]]
+id = "X690-8.7.3.2-a"
+ref = "8.7.3.2"
+title = "Recursive encoding treats every segment as an OCTET STRING value"
+parent = "SEC.X690.8"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 820
+
+[[item]]
+id = "X690-8.7.3.2-b"
+ref = "8.7.3.2"
+title = "Nested OCTET STRING encodings retain segment order"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "constructed string forms are not DER (X.690 §10.2; row X690-10.2)"
+modules = []
+line = 821
+
+[[item]]
+id = "X690-11"
+ref = "11"
+title = "Clause 8 BER references mean the selected canonical encoding"
+parent = "SEC.X690.11"
+force = "declarative"
+side = "both"
+source = "primary"
+disposition = "not-applicable"
+reason = "editorial reading rule"
+modules = []
+line = 1367
+
+[[item]]
+id = "X690-8.23.9-a"
+ref = "8.23.9"
+title = "UniversalString permits most C0 and C1 controls"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1216
+
+[[item]]
+id = "X690-8.23.9-b"
+ref = "8.23.9"
+title = "BMPString permits most C0 and C1 controls"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1216
+
+[[item]]
+id = "X690-8.23.9a-a"
+ref = "8.23.9 a)"
+title = "UniversalString excludes ISO 2022 announcer escapes"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1220
+
+[[item]]
+id = "X690-8.23.9a-b"
+ref = "8.23.9 a)"
+title = "BMPString excludes ISO 2022 announcer escapes"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1220
+
+[[item]]
+id = "X690-8.23.9b-a"
+ref = "8.23.9 b)"
+title = "UniversalString excludes code-set designation and identification escapes"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1222
+
+[[item]]
+id = "X690-8.23.9b-b"
+ref = "8.23.9 b)"
+title = "BMPString excludes code-set designation and identification escapes"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1222
+
+[[item]]
+id = "X690-8.23.9c-a"
+ref = "8.23.9 c)"
+title = "UniversalString excludes ISO 2022 invocation controls"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1227
+
+[[item]]
+id = "X690-8.23.9c-b"
+ref = "8.23.9 c)"
+title = "BMPString excludes ISO 2022 invocation controls"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1227
+
+[[item]]
+id = "X690-8.23.9d-a"
+ref = "8.23.9 d)"
+title = "UniversalString coding stays within ISO 10646"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1229
+
+[[item]]
+id = "X690-8.23.9d-b"
+ref = "8.23.9 d)"
+title = "BMPString coding stays within ISO 10646"
+parent = "SEC.X690.8"
+force = "shall"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1229
+
+[[item]]
+id = "X690-8.23.9e-a"
+ref = "8.23.9 e)"
+title = "UniversalString excludes graphic-subset identification controls"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1230
+
+[[item]]
+id = "X690-8.23.9e-b"
+ref = "8.23.9 e)"
+title = "BMPString excludes graphic-subset identification controls"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1230
+
+[[item]]
+id = "X690-8.23.9f-a"
+ref = "8.23.9 f)"
+title = "UniversalString excludes switches into ISO 2022 coding"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for UniversalString in der-verified/src"
+modules = []
+line = 1233
+
+[[item]]
+id = "X690-8.23.9f-b"
+ref = "8.23.9 f)"
+title = "BMPString excludes switches into ISO 2022 coding"
+parent = "SEC.X690.8"
+force = "shall-not"
+side = "both"
+source = "primary"
+disposition = "excluded"
+reason = "no decoder for BMPString in der-verified/src"
+modules = []
+line = 1233
 
 [[item]]
 id = "SAFE-unsafe-1"
