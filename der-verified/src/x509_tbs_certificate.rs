@@ -1202,4 +1202,107 @@ mod tests {
         let bytes = wrap(0x30, &content);
         assert_eq!(parse_tbs_certificate(&bytes), Err(TbsCertificateError::TrailingInTbs));
     }
+
+    // --- S4a group 4: unique identifiers, optional-component positions ---
+
+    /// `SEQUENCE { parts... }` around ready field encodings.
+    fn tbs_of(parts: &[&[u8]]) -> Vec<u8> {
+        let content: Vec<u8> = parts.iter().flat_map(|p| p.iter().copied()).collect();
+        wrap(0x30, &content)
+    }
+
+    /// `[3] EXPLICIT Extensions { basicConstraints }`.
+    fn extensions_field() -> Vec<u8> {
+        wrap(0xA3, &wrap(0x30, &EXT_BASIC_CONSTRAINTS_DEFAULT))
+    }
+
+    /// RFC5280-4.1.2.8-b, PROF-unique-identifiers-rejected: a v3 TBSCertificate that omits both
+    /// unique identifiers (what a conforming CA issues) is accepted, with its extensions.
+    #[test]
+    fn accepts_v3_tbs_without_unique_identifiers() {
+        let ext = extensions_field();
+        let bytes = tbs_of(&[
+            &VERSION_V3,
+            &SERIAL_1,
+            &SIGNATURE_ED25519,
+            &NAME_CN_EXAMPLE_CA,
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &SPKI_ED25519,
+            &ext,
+        ]);
+        let tbs = parse_tbs_certificate(&bytes).unwrap();
+        assert_eq!(tbs.version, 2);
+        assert!(tbs.extensions.is_some());
+    }
+
+    /// RFC5280-4.1.2.8-b, PROF-unique-identifiers-rejected: in a v3 TBSCertificate, an
+    /// issuerUniqueID `[1]` or a subjectUniqueID `[2]` (alone, together, and before extensions) is
+    /// rejected.
+    #[test]
+    fn rejects_issuer_and_subject_unique_identifiers_in_v3() {
+        // IMPLICIT BIT STRING bodies: unused-bits octet 0x00 and one data octet.
+        let issuer_uid = [0x81u8, 0x02, 0x00, 0xAA];
+        let subject_uid = [0x82u8, 0x02, 0x00, 0xBB];
+        let ext = extensions_field();
+        let fixed: [&[u8]; 7] = [
+            &VERSION_V3,
+            &SERIAL_1,
+            &SIGNATURE_ED25519,
+            &NAME_CN_EXAMPLE_CA,
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &SPKI_ED25519,
+        ];
+        let cases: [Vec<&[u8]>; 4] = [
+            vec![&issuer_uid],
+            vec![&subject_uid],
+            vec![&issuer_uid, &subject_uid],
+            vec![&issuer_uid, &subject_uid, &ext],
+        ];
+        for tail in cases {
+            let mut parts: Vec<&[u8]> = fixed.to_vec();
+            parts.extend(tail.iter());
+            let bytes = tbs_of(&parts);
+            assert_eq!(
+                parse_tbs_certificate(&bytes),
+                Err(TbsCertificateError::UnsupportedUniqueId),
+                "tail of {} fields",
+                tail.len()
+            );
+        }
+    }
+
+    /// X690-8.9.3: an OPTIONAL component that is present must sit at its position in the
+    /// definition; the `[3]` extensions before the subjectPublicKeyInfo, and the `[0]` version
+    /// after the serialNumber, are rejected.
+    #[test]
+    fn rejects_optional_components_out_of_position() {
+        let ext = extensions_field();
+        // extensions [3] between subject and subjectPublicKeyInfo.
+        let bytes = tbs_of(&[
+            &VERSION_V3,
+            &SERIAL_1,
+            &SIGNATURE_ED25519,
+            &NAME_CN_EXAMPLE_CA,
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &ext,
+            &SPKI_ED25519,
+        ]);
+        let got = parse_tbs_certificate(&bytes);
+        assert_eq!(got, Err(TbsCertificateError::BadSpki(SpkiError::BadOuterSeq(SequenceError::WrongTag))));
+        // version [0] after the serialNumber, where the signature AlgorithmIdentifier belongs.
+        let bytes = tbs_of(&[
+            &SERIAL_1,
+            &VERSION_V3,
+            &SIGNATURE_ED25519,
+            &NAME_CN_EXAMPLE_CA,
+            &VALIDITY_UTC_UTC,
+            &NAME_CN_EXAMPLE_CA,
+            &SPKI_ED25519,
+        ]);
+        let got = parse_tbs_certificate(&bytes);
+        assert_eq!(got, Err(TbsCertificateError::BadSignature(AlgIdError::BadSeq(SequenceError::WrongTag))));
+    }
 }

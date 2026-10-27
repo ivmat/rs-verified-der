@@ -334,4 +334,56 @@ mod tests {
             Err(ContextTagError::BadTlv(TlvError::Length(LengthError::NonMinimal)))
         );
     }
+
+    // --- S4a additions: tests for rows that had no test in the role named ---
+
+    /// X680-31j: a tagged type is a kind of prefixed type, and the underlying type can be any type.
+    /// The EXPLICIT `[n]` wrapper is accepted around a primitive INTEGER, an empty constructed
+    /// SEQUENCE, a NULL, and for a high-tag number (`[31]`), and each time the inner octets are the
+    /// whole underlying TLV.
+    #[test]
+    fn accepts_explicit_wrapper_around_any_underlying_type() {
+        let cases: [(u32, &[u8], &[u8]); 4] = [
+            (0, &[0xA0, 0x03, 0x02, 0x01, 0x05], &[0x02, 0x01, 0x05]),
+            (1, &[0xA1, 0x02, 0x30, 0x00], &[0x30, 0x00]),
+            (2, &[0xA2, 0x02, 0x05, 0x00], &[0x05, 0x00]),
+            (31, &[0xBF, 0x1F, 0x03, 0x02, 0x01, 0x05], &[0x02, 0x01, 0x05]),
+        ];
+        for (n, bytes, inner) in cases {
+            assert_eq!(decode_explicit_context(n, bytes), Ok((inner, bytes.len())), "[{n}]");
+        }
+    }
+
+    /// X680-31j: a value with no tag prefix is not a tagged type. The bare base encodings of INTEGER,
+    /// SEQUENCE and NULL are rejected as `WrongClass`, where the prefixed `[0]` form of the same
+    /// value is accepted.
+    #[test]
+    fn rejects_untagged_base_encoding_as_tagged_type() {
+        for bare in [&[0x02u8, 0x01, 0x05][..], &[0x30, 0x00][..], &[0x05, 0x00][..]] {
+            assert_eq!(
+                decode_explicit_context(0, bare),
+                Err(ContextTagError::WrongClass),
+                "{bare:02x?}"
+            );
+        }
+        assert!(decode_explicit_context(0, &EXPLICIT_0_INT_5).is_ok());
+    }
+
+    /// X680-31k (the tag-prefix case of "a prefix does not change the abstract value"): the inner
+    /// octets of an EXPLICIT wrapper decode to the same tag and the same value as the untagged
+    /// encoding, whatever the wrapper's number.
+    #[test]
+    fn accepts_tagging_leaves_inner_value_unchanged() {
+        use crate::tlv::decode_tlv;
+        let untagged = [0x02u8, 0x01, 0x05];
+        let (base, base_used) = decode_tlv(&untagged).unwrap();
+        for (n, wrapped) in [(0u32, &EXPLICIT_0_INT_5), (3u32, &EXPLICIT_3_INT_5)] {
+            let (inner, used) = decode_explicit_context(n, wrapped).unwrap();
+            assert_eq!(used, wrapped.len());
+            let (tlv, inner_used) = decode_tlv(inner).unwrap();
+            assert_eq!(inner_used, inner.len());
+            assert_eq!(inner_used, base_used);
+            assert_eq!(tlv, base, "[{n}] changed the underlying value");
+        }
+    }
 }

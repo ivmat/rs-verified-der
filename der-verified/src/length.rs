@@ -293,4 +293,81 @@ mod tests {
     fn rejects_empty_input() {
         assert_eq!(decode_length(&[]), Err(LengthError::Truncated));
     }
+
+    // --- S4a additions: tests for rows that had no test in the role named ---
+
+    /// X690-8.1.3.1: the definite form of the length octets is accepted. Short form and long form
+    /// both decode to the declared value.
+    #[test]
+    fn accepts_definite_length_forms() {
+        assert_eq!(decode_length(&[0x00]), Ok((0, 1)));
+        assert_eq!(decode_length(&[0x7F]), Ok((0x7F, 1)));
+        assert_eq!(decode_length(&[0x81, 0xC8]), Ok((200, 2)));
+        assert_eq!(decode_length(&[0x83, 0x01, 0x00, 0x00]), Ok((0x1_0000, 4)));
+    }
+
+    /// X690-8.1.3.6.1: the indefinite form is the single octet 0x80 exactly (bit 8 set, bits 7 to 1
+    /// clear). A first octet that has bit 8 set but is not 0x80 is a definite long form and is
+    /// accepted. Octets after the first are not part of the length field.
+    #[test]
+    fn accepts_long_form_first_octets_other_than_0x80() {
+        assert_eq!(decode_length(&[0x81, 0x80]), Ok((128, 2)));
+        assert_eq!(decode_length(&[0x82, 0x80, 0x00]), Ok((0x8000, 3)));
+        assert_eq!(decode_length(&[0x84, 0x80, 0x00, 0x00, 0x00]), Ok((0x8000_0000, 5)));
+        assert_eq!(decode_length(&[0x81, 0x80, 0x00, 0x00]), Ok((128, 2)));
+    }
+
+    /// X690-8.1.3.1, X690-8.1.3.6.1: the indefinite form (the octet 0x80), here followed by content
+    /// and a terminating end-of-contents pair as BER would send it, is rejected as `Indefinite`. The
+    /// decision depends on the first octet only.
+    #[test]
+    fn rejects_indefinite_form_followed_by_content_and_eoc() {
+        assert_eq!(decode_length(&[0x80, 0x01, 0x02, 0x00, 0x00]), Err(LengthError::Indefinite));
+        assert_eq!(decode_length(&[0x80, 0x00, 0x00]), Err(LengthError::Indefinite));
+    }
+
+    /// CODEC-length-encode-decode: for each accepted length field, re-encoding the decoded value
+    /// reproduces exactly the same octets.
+    #[test]
+    fn roundtrips_accepted_length_bytes_through_encoder() {
+        let specimens: [&[u8]; 9] = [
+            &[0x00],
+            &[0x05],
+            &[0x7F],
+            &[0x81, 0x80],
+            &[0x81, 0xFF],
+            &[0x82, 0x01, 0x00],
+            &[0x83, 0x01, 0x00, 0x00],
+            &[0x84, 0x01, 0x00, 0x00, 0x00],
+            &[0x84, 0xFF, 0xFF, 0xFF, 0xFF],
+        ];
+        for bytes in specimens {
+            let (value, used) = decode_length(bytes).unwrap();
+            assert_eq!(used, bytes.len());
+            let (buf, n) = encode_length(value);
+            assert_eq!(&buf[..n], bytes, "decode then encode must reproduce {bytes:02x?}");
+            assert_eq!(decode_length(&buf[..n]), Ok((value, n)), "encode then decode");
+        }
+    }
+
+    /// CODEC-length-unique, CODEC-length-reject-nonder, X690-7.4: these are complete, BER-valid
+    /// alternate spellings of a length value that has a canonical DER spelling. Each is rejected
+    /// as `NonMinimal`; the canonical spelling of the same value is accepted.
+    #[test]
+    fn rejects_alternate_spellings_of_one_length_value() {
+        let cases: [(&[u8], &[u8]); 5] = [
+            (&[0x81, 0x05], &[0x05]),
+            (&[0x82, 0x00, 0x05], &[0x05]),
+            (&[0x82, 0x00, 0x80], &[0x81, 0x80]),
+            (&[0x83, 0x00, 0x01, 0x00], &[0x82, 0x01, 0x00]),
+            (&[0x84, 0x00, 0x00, 0x00, 0x05], &[0x05]),
+        ];
+        for (alternate, canonical) in cases {
+            assert_eq!(decode_length(alternate), Err(LengthError::NonMinimal), "{alternate:02x?}");
+            let (value, used) = decode_length(canonical).unwrap();
+            assert_eq!(used, canonical.len());
+            let (buf, n) = encode_length(value);
+            assert_eq!(&buf[..n], canonical);
+        }
+    }
 }

@@ -1479,4 +1479,38 @@ mod tests {
         let cert = parse_certificate(&bytes).unwrap();
         assert_eq!(validate_profile(&cert), Err(ProfileError::SignatureAlgorithmMismatch));
     }
+
+    // --- S4a group 4: the precedence ladder ---
+
+    /// PROF-P-4: with every rule violated at once, repairing the reported violation moves the report
+    /// to the next rule in declaration order; the fully repaired certificate is accepted.
+    #[test]
+    fn repairing_violations_in_declaration_order_ends_in_acceptance() {
+        // (outer signatureAlgorithm, version bytes, notBefore, notAfter) at each stage; extensions
+        // are always present, so a DEFAULT v1 certificate violates rule 2.
+        let nb_gen_2049_frac = time_tlv(true, b"20490101000000.5Z");
+        let na_gen_2049_frac = time_tlv(true, b"20491231235959.5Z");
+        let nb_gen_2050_frac = time_tlv(true, b"20500101000000.5Z");
+        let na_gen_2060_frac = time_tlv(true, b"20601231235959.5Z");
+        let nb_gen_2050 = time_tlv(true, b"20500101000000Z");
+        let na_gen_2060 = time_tlv(true, b"20601231235959Z");
+        let nb_utc = time_tlv(false, b"490101000000Z");
+        type Stage<'a> = (&'a [u8], &'a [u8], &'a Vec<u8>, &'a Vec<u8>, Result<(), ProfileError>);
+        let stages: [Stage<'_>; 7] = [
+            (&SIGNATURE_RSA_SHA256, &[], &nb_gen_2049_frac, &na_gen_2049_frac, Err(ProfileError::SignatureAlgorithmMismatch)),
+            (&SIGNATURE_ED25519, &[], &nb_gen_2049_frac, &na_gen_2049_frac, Err(ProfileError::ExtensionsRequireV3)),
+            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2049_frac, &na_gen_2049_frac, Err(ProfileError::NotBeforeGeneralizedTimeYearTooEarly)),
+            (&SIGNATURE_ED25519, &VERSION_V3, &nb_utc, &na_gen_2049_frac, Err(ProfileError::NotAfterGeneralizedTimeYearTooEarly)),
+            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050_frac, &na_gen_2060_frac, Err(ProfileError::NotBeforeGeneralizedTimeHasFraction)),
+            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060_frac, Err(ProfileError::NotAfterGeneralizedTimeHasFraction)),
+            (&SIGNATURE_ED25519, &VERSION_V3, &nb_gen_2050, &na_gen_2060, Ok(())),
+        ];
+        for (index, (sig_alg, version, nb, na, expected)) in stages.iter().enumerate() {
+            let v = validity_of(nb, na);
+            let tbs = build_tbs_with_validity(version, Some(&EXT_BASIC_CONSTRAINTS_DEFAULT), &v);
+            let bytes = build_certificate(&tbs, sig_alg);
+            let cert = parse_certificate(&bytes).expect("fixture must be structurally valid");
+            assert_eq!(validate_profile(&cert), *expected, "stage {index}");
+        }
+    }
 }

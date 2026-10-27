@@ -163,6 +163,26 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_name.rs"
+name = "accepts_additional_issuer_attribute_types"
+accept = ["RFC5280-4.1.2.4-g"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
+name = "accepts_domain_component_attributes"
+accept = ["RFC5280-4.1.2.4-h"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
 name = "accepts_multi_atv_rdn_dn"
 accept = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.12.2", "X690-11.6", "RFC5280-4.1.2.4-e", "RFC5280-4.1.2.4-f", "RFC5280-4.1.2.6-d", "RFC5280-4.1.2.6-e", "RFC5280-4.1.2.6-b"]
 reject = []
@@ -276,6 +296,16 @@ file = "der-verified/src/x509_name.rs"
 name = "rejects_non_canonical_oid"
 accept = []
 reject = ["X690-8.19.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
+name = "rejects_nonempty_name_that_is_not_a_distinguished_name"
+accept = []
+reject = ["RFC5280-4.1.2.6-b"]
 prove = []
 bounded = ""
 none = ""

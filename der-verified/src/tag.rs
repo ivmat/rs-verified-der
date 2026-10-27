@@ -333,4 +333,127 @@ mod tests {
     fn rejects_empty_input() {
         assert_eq!(decode_tag(&[]), Err(TagError::Truncated));
     }
+
+    // --- S4a additions: tests for rows that had no test in the role named ---
+
+    /// X690-8.1.2.6: a CHOICE value carries the tag of the alternative actually chosen. The three
+    /// alternatives here are INTEGER, UTF8String and a context `[0]`; each one's encoded identifier is
+    /// its own literal octet, and the decoded tag tells the alternatives apart.
+    #[test]
+    fn roundtrips_choice_alternative_tag_selects_alternative() {
+        let alternatives = [
+            (Tag { class: Class::Universal, constructed: false, number: 2 }, 0x02u8),
+            (Tag { class: Class::Universal, constructed: false, number: 12 }, 0x0C),
+            (Tag { class: Class::ContextSpecific, constructed: false, number: 0 }, 0x80),
+        ];
+        for (chosen, octet) in alternatives {
+            let (buf, used) = encode_tag(chosen);
+            assert_eq!(&buf[..used], &[octet]);
+            let (decoded, n) = decode_tag(&buf[..used]).unwrap();
+            assert_eq!(n, 1);
+            assert_eq!(decoded, chosen);
+            for (other, _) in alternatives {
+                assert_eq!(decoded == other, other == chosen, "decoded tag {decoded:?} vs {other:?}");
+            }
+        }
+    }
+
+    /// CODEC-tag-encode-decode, X690-7.4: for each accepted identifier, re-encoding the decoded tag
+    /// gives back exactly the same octets (decode then encode), and encoding a tag then decoding it
+    /// gives back that tag (encode then decode).
+    #[test]
+    fn roundtrips_accepted_identifier_bytes_through_encoder() {
+        let specimens: [&[u8]; 9] = [
+            &[0x02],
+            &[0x30],
+            &[0xA0],
+            &[0xDE],
+            &[0x1F, 0x1F],
+            &[0x5F, 0x7F],
+            &[0x5F, 0x81, 0x00],
+            &[0xBF, 0x82, 0x80, 0x00],
+            &[0xFF, 0x8F, 0xFF, 0xFF, 0xFF, 0x7F],
+        ];
+        for bytes in specimens {
+            let (tag, used) = decode_tag(bytes).unwrap();
+            assert_eq!(used, bytes.len());
+            let (buf, n) = encode_tag(tag);
+            assert_eq!(&buf[..n], bytes, "decode then encode must reproduce {bytes:02x?}");
+            assert_eq!(decode_tag(&buf[..n]), Ok((tag, n)));
+        }
+    }
+
+    /// CODEC-tag-unique, CODEC-tag-reject-nonder, X690-7.4: each of these is a complete, BER-valid
+    /// alternate spelling of a tag number that has a canonical DER spelling; all are rejected as
+    /// `NonMinimal`, while the canonical spelling of the same tag is accepted.
+    #[test]
+    fn rejects_alternate_spellings_of_one_tag_number() {
+        let cases: [(&[u8], &[u8]); 5] = [
+            (&[0x1F, 0x05], &[0x05]),
+            (&[0xBF, 0x00], &[0xA0]),
+            (&[0x1F, 0x80, 0x1F], &[0x1F, 0x1F]),
+            (&[0x1F, 0x80, 0x81, 0x00], &[0x1F, 0x81, 0x00]),
+            (&[0x5F, 0x80, 0x80, 0x1F], &[0x5F, 0x1F]),
+        ];
+        for (alternate, canonical) in cases {
+            assert_eq!(decode_tag(alternate), Err(TagError::NonMinimal), "{alternate:02x?}");
+            let (tag, used) = decode_tag(canonical).unwrap();
+            assert_eq!(used, canonical.len());
+            let (buf, n) = encode_tag(tag);
+            assert_eq!(&buf[..n], canonical);
+        }
+    }
+
+    /// X690-8.1.2.1, X680-8: an identifier must carry a tag number as well as a class. A high-tag
+    /// marker with no number octets, or with a number that stops mid-way (continuation bit set on
+    /// the last octet), has no tag number and is rejected as `Truncated`, whatever the class.
+    #[test]
+    fn rejects_identifier_without_a_complete_tag_number() {
+        assert_eq!(decode_tag(&[0x1F]), Err(TagError::Truncated));
+        assert_eq!(decode_tag(&[0x7F]), Err(TagError::Truncated));
+        assert_eq!(decode_tag(&[0x5F, 0x81]), Err(TagError::Truncated));
+        assert_eq!(decode_tag(&[0xBF, 0x81, 0x80]), Err(TagError::Truncated));
+    }
+
+    /// PROF-tag-u32-cap: a tag number above `u32::MAX` is rejected as `TooLarge`, at the first
+    /// value past the cap (2^32) and with more groups than a `u32` can hold.
+    #[test]
+    fn rejects_tag_number_above_u32_cap() {
+        // 2^32 = 0x10 << 28: groups 90 80 80 80 00.
+        assert_eq!(
+            decode_tag(&[0x1F, 0x90, 0x80, 0x80, 0x80, 0x00]),
+            Err(TagError::TooLarge)
+        );
+        // Six groups.
+        assert_eq!(
+            decode_tag(&[0x5F, 0x81, 0x80, 0x80, 0x80, 0x80, 0x00]),
+            Err(TagError::TooLarge)
+        );
+        // The largest legal number, u32::MAX, is accepted.
+        assert_eq!(
+            decode_tag(&[0x1F, 0x8F, 0xFF, 0xFF, 0xFF, 0x7F]),
+            Ok((Tag { class: Class::Universal, constructed: false, number: u32::MAX }, 6))
+        );
+    }
+
+    /// X680-31j: a tagged type is a prefixed type whose own tag (class and number) is the prefix.
+    /// The prefix tags `[5]`, `[APPLICATION 3]` and `[PRIVATE 30]` encode to their own literal
+    /// identifier octets, distinct from the octet of the type they prefix (INTEGER, `0x02`), and
+    /// decode back to the prefix class and number.
+    #[test]
+    fn roundtrips_tagged_type_prefix_tag_differs_from_underlying_tag() {
+        let underlying = Tag { class: Class::Universal, constructed: false, number: 2 };
+        assert_eq!(encode_tag(underlying).0[0], 0x02);
+        let prefixes = [
+            (Tag { class: Class::ContextSpecific, constructed: true, number: 5 }, 0xA5u8),
+            (Tag { class: Class::Application, constructed: false, number: 3 }, 0x43),
+            (Tag { class: Class::Private, constructed: true, number: 30 }, 0xFE),
+        ];
+        for (prefix, octet) in prefixes {
+            let (buf, used) = encode_tag(prefix);
+            assert_eq!(&buf[..used], &[octet]);
+            assert_ne!(octet, 0x02);
+            assert_eq!(decode_tag(&buf[..used]), Ok((prefix, 1)));
+        }
+    }
 }

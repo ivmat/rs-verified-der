@@ -349,3 +349,73 @@ reject = []
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "rejects_five_and_six_octet_sequences"
+accept = []
+reject = ["RFC3629-3", "RFC3629-3-c", "RFC3629-4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "accepts_code_points_adjacent_to_the_surrogate_range"
+accept = ["RFC3629-3-b"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "accepts_valid_sequences_at_every_rejection_boundary"
+accept = ["RFC3629-3-c", "RFC3629-4"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "rejects_latin1_and_utf16_octets_as_not_annex_d"
+accept = []
+reject = ["X690-8.23.10", "RFC3629-3-c"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "rejects_cesu8_surrogate_pair_spelling"
+accept = []
+reject = ["X690-8.23.10", "RFC3629-3-b", "RFC3629-3-c"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "roundtrips_accepted_bytes_through_decode_then_encode"
+accept = ["CODEC-utf8-string-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "rejects_alternate_spellings_of_one_utf8_string_value"
+accept = []
+reject = ["CODEC-utf8-string-unique", "CODEC-utf8-string-reject-nonder", "X690-7.4", "X690-10.1", "X690-10.2", "RFC3629-3-a", "X690-8.23.10-a"]
+prove = []
+bounded = ""
+none = ""

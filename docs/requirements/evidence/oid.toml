@@ -89,3 +89,53 @@ reject = ["X690-8.19.2-a", "X690-8.19.2-b"]
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/oid.rs"
+name = "accepts_oid_universal_6_identifier_octet"
+accept = ["X680-32"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/oid.rs"
+name = "rejects_content_that_is_not_a_list_of_complete_subidentifiers"
+accept = []
+reject = ["X690-8.19", "X690-8.19.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/oid.rs"
+name = "accepts_first_subidentifier_packed_from_arc_two_and_a_large_second_arc"
+accept = ["X690-8.19.4"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/oid.rs"
+name = "accepts_subsequent_subidentifiers_after_a_multi_octet_one"
+accept = ["X690-8.19.5"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/oid.rs"
+name = "rejects_every_alternate_spelling_of_a_subidentifier"
+accept = []
+reject = ["CODEC-oid-unique", "CODEC-oid-reject-nonder", "X690-8.19.2", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""

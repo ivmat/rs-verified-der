@@ -861,4 +861,154 @@ mod tests {
             Err(Utf8Error::Tlv(TlvError::Length(LengthError::NonMinimal)))
         );
     }
+
+    // --- S4a: tests for rows that had no accept or reject test ---
+
+    /// Rows RFC3629-3, RFC3629-3-c (reject): UTF-8 uses one to four octets. The legacy five- and
+    /// six-octet forms (RFC 2279) are rejected even when they encode a value inside the Unicode
+    /// range: `F8 84 80 80 80` and `FC 80 84 80 80 80` both spell U+100000.
+    #[test]
+    fn rejects_five_and_six_octet_sequences() {
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x05, 0xF8, 0x84, 0x80, 0x80, 0x80]),
+            Err(Utf8Error::IllFormed { position: 0 })
+        );
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x06, 0xFC, 0x80, 0x84, 0x80, 0x80, 0x80]),
+            Err(Utf8Error::IllFormed { position: 0 })
+        );
+        // after a valid prefix the position is the start of the long sequence
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x06, b'A', 0xF8, 0x84, 0x80, 0x80, 0x80]),
+            Err(Utf8Error::IllFormed { position: 1 })
+        );
+        // the four-octet spelling of the same code point U+100000 is accepted
+        assert_eq!(
+            decode_utf8_str(&[0x0C, 0x04, 0xF4, 0x80, 0x80, 0x80]),
+            Ok(("\u{100000}", 6))
+        );
+    }
+
+    /// Rows RFC3629-3-b (accept): the code points just outside the surrogate range are valid:
+    /// U+D7FF (`ED 9F BF`) and U+E000 (`EE 80 80`).
+    #[test]
+    fn accepts_code_points_adjacent_to_the_surrogate_range() {
+        assert_eq!(decode_utf8_str(&[0x0C, 0x03, 0xED, 0x9F, 0xBF]), Ok(("\u{D7FF}", 5)));
+        assert_eq!(decode_utf8_str(&[0x0C, 0x03, 0xEE, 0x80, 0x80]), Ok(("\u{E000}", 5)));
+    }
+
+    /// Rows RFC3629-3-c (accept): well-formed sequences at the edge of every rejection rule are
+    /// not rejected (smallest and largest value of each length, and noncharacters).
+    #[test]
+    fn accepts_valid_sequences_at_every_rejection_boundary() {
+        let cases: [(&[u8], &str); 9] = [
+            (&[0xC2, 0x80], "\u{80}"),
+            (&[0xDF, 0xBF], "\u{7FF}"),
+            (&[0xE0, 0xA0, 0x80], "\u{800}"),
+            (&[0xEF, 0xBF, 0xBF], "\u{FFFF}"),
+            (&[0xEF, 0xBF, 0xBE], "\u{FFFE}"),
+            (&[0xF0, 0x90, 0x80, 0x80], "\u{10000}"),
+            (&[0xF4, 0x8F, 0xBF, 0xBF], "\u{10FFFF}"),
+            (&[0x7F], "\u{7F}"),
+            (&[0x00], "\u{0}"),
+        ];
+        for (content, expected) in cases {
+            let mut input = [0u8; 8];
+            input[0] = 0x0C;
+            input[1] = content.len() as u8;
+            input[2..2 + content.len()].copy_from_slice(content);
+            let n = 2 + content.len();
+            assert_eq!(decode_utf8_str(&input[..n]), Ok((expected, n)), "{:x?}", content);
+        }
+    }
+
+    /// Rows X690-8.23.10, RFC3629-3-c (reject): the content octets must be those of ISO/IEC
+    /// 10646 Annex D (UTF-8). Latin-1 text, where an accented letter is one octet, is rejected,
+    /// and so is a UTF-16 byte-order mark.
+    #[test]
+    fn rejects_latin1_and_utf16_octets_as_not_annex_d() {
+        // "Caf" + Latin-1 e-acute at the end: a three-octet lead with no continuation octets
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x04, 0x43, 0x61, 0x66, 0xE9]),
+            Err(Utf8Error::IllFormed { position: 3 })
+        );
+        // Latin-1 e-acute followed by ASCII text: the following octets are not continuation octets
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x03, 0xE9, 0x41, 0x41]),
+            Err(Utf8Error::IllFormed { position: 0 })
+        );
+        // UTF-16 big-endian byte-order mark
+        assert_eq!(decode_utf8_string(&[0x0C, 0x02, 0xFE, 0xFF]), Err(Utf8Error::IllFormed { position: 0 }));
+        // the Annex D spelling of the same text is accepted
+        assert_eq!(decode_utf8_str(&[0x0C, 0x05, 0x43, 0x61, 0x66, 0xC3, 0xA9]), Ok(("Caf\u{e9}", 7)));
+    }
+
+    /// Rows X690-8.23.10, RFC3629-3-b, RFC3629-3-c (reject): CESU-8, which spells a
+    /// supplementary character as two UTF-16 surrogates encoded separately, is not Annex D
+    /// UTF-8 and is rejected. `ED A0 BD ED B8 80` is CESU-8 for U+1F600.
+    #[test]
+    fn rejects_cesu8_surrogate_pair_spelling() {
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x06, 0xED, 0xA0, 0xBD, 0xED, 0xB8, 0x80]),
+            Err(Utf8Error::IllFormed { position: 0 })
+        );
+        // the UTF-8 spelling of U+1F600 is accepted
+        assert_eq!(decode_utf8_str(&[0x0C, 0x04, 0xF0, 0x9F, 0x98, 0x80]), Ok(("\u{1F600}", 6)));
+    }
+
+    /// Rows CODEC-utf8-string-encode-decode (accept): bytes the decoder accepts are re-encoded
+    /// to the identical octets.
+    #[test]
+    fn roundtrips_accepted_bytes_through_decode_then_encode() {
+        let specimens: [&[u8]; 5] = [
+            &[0x0C, 0x00],
+            &[0x0C, 0x02, b'H', b'i'],
+            &[0x0C, 0x05, 0x43, 0x61, 0x66, 0xC3, 0xA9],
+            &[0x0C, 0x07, 0xE2, 0x82, 0xAC, 0xF0, 0x9F, 0x98, 0x80],
+            &[0x0C, 0x04, 0xF4, 0x8F, 0xBF, 0xBF],
+        ];
+        for bytes in specimens {
+            let (content, used) = decode_utf8_string(bytes).unwrap();
+            assert_eq!(used, bytes.len());
+            let mut out = [0u8; 16];
+            let n = encode_utf8_string_into(content, &mut out).unwrap();
+            assert_eq!(&out[..n], bytes);
+        }
+    }
+
+    /// Rows CODEC-utf8-string-unique, CODEC-utf8-string-reject-nonder, X690-7.4, X690-10.2
+    /// (reject): the value "A" has one accepted spelling, `0C 01 41`. Every alternate spelling
+    /// is rejected: a constructed string with a valid segment, long-form lengths, a high-tag
+    /// identifier, an indefinite-length constructed string, and the overlong UTF-8 spelling of
+    /// the character itself (`C1 81`).
+    #[test]
+    fn rejects_alternate_spellings_of_one_utf8_string_value() {
+        use crate::length::LengthError;
+        use crate::tag::TagError;
+        assert_eq!(decode_utf8_string(&[0x0C, 0x01, b'A']), Ok((&b"A"[..], 3)));
+        assert_eq!(
+            decode_utf8_string(&[0x2C, 0x03, 0x0C, 0x01, b'A']),
+            Err(Utf8Error::Constructed)
+        );
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x81, 0x01, b'A']),
+            Err(Utf8Error::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x82, 0x00, 0x01, b'A']),
+            Err(Utf8Error::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+        assert_eq!(
+            decode_utf8_string(&[0x1F, 0x0C, 0x01, b'A']),
+            Err(Utf8Error::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+        assert_eq!(
+            decode_utf8_string(&[0x2C, 0x80, 0x0C, 0x01, b'A', 0x00, 0x00]),
+            Err(Utf8Error::Tlv(TlvError::Length(LengthError::Indefinite)))
+        );
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x02, 0xC1, 0x81]),
+            Err(Utf8Error::IllFormed { position: 0 })
+        );
+    }
 }

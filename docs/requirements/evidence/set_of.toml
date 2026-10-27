@@ -183,6 +183,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/set_of.rs"
+name = "accepts_rdn_as_nonempty_set_of_atvs"
+accept = ["X501-9.3-d"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/set_of.rs"
 name = "cmp_padded_equates_prefix_with_zero_tail"
 accept = []
 reject = []
@@ -293,6 +303,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/set_of.rs"
+name = "rejects_noncanonical_spellings_of_an_accepted_set_of"
+accept = []
+reject = ["CODEC-set-of-unique", "CODEC-set-of-reject-nonder", "X690-11.6", "X690-10.1", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/set_of.rs"
 name = "rejects_primitive_set_identifier"
 accept = []
 reject = ["X690-8.12.1"]
@@ -336,6 +356,16 @@ file = "der-verified/src/set_of.rs"
 name = "rejects_violation_only_at_third_pair"
 accept = []
 reject = ["X690-11.6", "X690-7.4", "CODEC-set-of-reject-nonder"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/set_of.rs"
+name = "roundtrips_accepted_bytes_through_reencode"
+accept = ["CODEC-set-of-encode-decode"]
+reject = []
 prove = []
 bounded = ""
 none = ""

@@ -73,6 +73,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
+name = "rejects_ber_spellings_of_minimal_epki"
+accept = []
+reject = ["CODEC-encrypted-pkcs8-reject-nonder", "X690-10.1", "X690-10.2", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_encrypted_data_wrong_tag"
 accept = []
 reject = ["RFC5208-6-a", "RFC5958-3-a", "X690-8.9.2"]

@@ -1076,4 +1076,78 @@ mod tests {
             Err(SetOfError::TrailingData)
         );
     }
+
+    // --- S4a group 4: CODEC-law specimens ---
+
+    /// CODEC-set-of-encode-decode: re-encoding an accepted SET OF reproduces its bytes, in the
+    /// short length form and in the long length form.
+    #[test]
+    fn roundtrips_accepted_bytes_through_reencode() {
+        // 64 identical NULL elements (ties are legal): 128 content octets need the length form 81 80.
+        let mut long = vec![0x31u8, 0x81, 0x80];
+        for _ in 0..64 {
+            long.extend_from_slice(&[0x05, 0x00]);
+        }
+        let sorted = [0x31u8, 0x09, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01, 0x03];
+        for der in [&[0x31u8, 0x00][..], &sorted[..], &long[..]] {
+            let content = decode_set_of_tlv_strict(der).unwrap();
+            let mut out = [0u8; 160];
+            let n = encode_set_of_into(content, &mut out).unwrap();
+            assert_eq!(&out[..n], der);
+        }
+    }
+
+    /// CODEC-set-of-unique: each of these is a complete BER spelling of the value
+    /// `SET OF { INTEGER 1, INTEGER 2 }`; DER accepts only the sorted `31 06 ...`.
+    #[test]
+    fn rejects_noncanonical_spellings_of_an_accepted_set_of() {
+        use crate::length::LengthError;
+        use crate::tag::TagError;
+        let canonical = [0x31u8, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02];
+        assert_eq!(decode_set_of_tlv_strict(&canonical), Ok(&canonical[2..]));
+        // The same members in the other order.
+        let reordered = [0x31u8, 0x06, 0x02, 0x01, 0x02, 0x02, 0x01, 0x01];
+        assert_eq!(decode_set_of_tlv_strict(&reordered), Err(SetOfError::Unsorted { index: 0 }));
+        // Long-form length 81 06 for length 6.
+        let long_len = [0x31u8, 0x81, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02];
+        assert_eq!(
+            decode_set_of_tlv_strict(&long_len),
+            Err(SetOfError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+        );
+        // Indefinite length with an end-of-contents terminator.
+        let indefinite = [0x31u8, 0x80, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x00, 0x00];
+        assert_eq!(
+            decode_set_of_tlv_strict(&indefinite),
+            Err(SetOfError::Tlv(TlvError::Length(LengthError::Indefinite)))
+        );
+        // High-tag-number form 3F 11 for number 17.
+        let high_tag = [0x3Fu8, 0x11, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02];
+        assert_eq!(
+            decode_set_of_tlv_strict(&high_tag),
+            Err(SetOfError::Tlv(TlvError::Tag(TagError::NonMinimal)))
+        );
+    }
+
+    /// X501-9.3-d: an RDN is a non-empty SET OF AttributeTypeAndValue: identifier 0x31, one or more
+    /// ATVs in ascending order, accepted inside a Name.
+    #[test]
+    fn accepts_rdn_as_nonempty_set_of_atvs() {
+        // C=US and CN=Example CA, the ascending order (0x09 < 0x11 at the ATV length octet).
+        let atv_c: [u8; 11] = [0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13, 0x02, 0x55, 0x53];
+        let atv_cn: [u8; 19] = [
+            0x30, 0x11, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c, 0x0a, 0x45, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65,
+            0x20, 0x43, 0x41,
+        ];
+        let mut two = atv_c.to_vec();
+        two.extend_from_slice(&atv_cn);
+        for atvs in [&atv_c[..], &atv_cn[..], &two[..]] {
+            let mut rdn = [0u8; 48];
+            let n = encode_set_of_into(atvs, &mut rdn).unwrap();
+            assert_eq!(rdn[0], 0x31);
+            assert_eq!(decode_set_of_tlv_strict(&rdn[..n]), Ok(atvs));
+            let mut name = [0u8; 64];
+            let m = crate::sequence::encode_sequence_into(&rdn[..n], &mut name).unwrap();
+            assert_eq!(crate::x509_name::validate_name(&name[..m]), Ok(()));
+        }
+    }
 }

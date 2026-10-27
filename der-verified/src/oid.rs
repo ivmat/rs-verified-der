@@ -172,4 +172,76 @@ mod tests {
         // 0x86 has the continuation bit set but no following octet
         assert_eq!(validate_oid(&[0x2A, 0x86]), Err(OidError::Truncated));
     }
+
+    // --- S4a (group 3): per-requirement tests ---
+
+    /// X680-32: an OBJECT IDENTIFIER TLV carries the literal identifier octet 0x06 (UNIVERSAL 6, decoded and encoded).
+    #[test]
+    fn accepts_oid_universal_6_identifier_octet() {
+        use crate::tag::{Class, Tag};
+        use crate::tlv::{decode_tlv_strict, encode_tlv_into};
+        // literal specimen: 06 06 2A 86 48 86 F7 0D (1.2.840.113549)
+        let tlv = decode_tlv_strict(&[0x06, 0x06, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D]).unwrap();
+        assert_eq!(tlv.tag, Tag { class: Class::Universal, constructed: false, number: TAG });
+        assert_eq!(validate_oid(tlv.value), Ok(()));
+        // encoder direction: the first output octet is 0x06
+        let mut out = [0u8; 8];
+        let used = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: TAG },
+            &[0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D],
+            &mut out,
+        )
+        .unwrap();
+        assert_eq!(out[0], 0x06);
+        assert_eq!(&out[..used], &[0x06, 0x06, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D]);
+    }
+
+    /// X690-8.19: content whose last subidentifier is cut off after complete ones is not a list of subidentifier encodings.
+    #[test]
+    fn rejects_content_that_is_not_a_list_of_complete_subidentifiers() {
+        // 2A and 86 48 are two complete subidentifiers (42 and 840); the trailing 86 starts a
+        // third one that never terminates
+        assert_eq!(validate_oid(&[0x2A, 0x86, 0x48]), Ok(()));
+        assert_eq!(validate_oid(&[0x2A, 0x86, 0x48, 0x86]), Err(OidError::Truncated));
+        assert_eq!(validate_oid(&[0x2A, 0x86, 0x48, 0x86, 0xF7]), Err(OidError::Truncated));
+        // a redundant 0x80 group in the middle of the list is not a subidentifier encoding either
+        assert_eq!(
+            validate_oid(&[0x2A, 0x86, 0x48, 0x80, 0x01]),
+            Err(OidError::NonMinimalSubid)
+        );
+    }
+
+    /// X690-8.19.4: the standard's own {2 999 3} first subidentifier 1079 (88 37) is accepted although it exceeds 79.
+    #[test]
+    fn accepts_first_subidentifier_packed_from_arc_two_and_a_large_second_arc() {
+        // 2.999.3 = 88 37 03: first subidentifier 40*2 + 999 = 1079 = 88 37; second subidentifier 3
+        assert_eq!(validate_oid(&[0x88, 0x37, 0x03]), Ok(()));
+        // 2.46 packs into the single-octet first subidentifier 126 = 7E
+        assert_eq!(validate_oid(&[0x7E]), Ok(()));
+    }
+
+    /// X690-8.19.5: subidentifiers after the first are separate entries; a multi-octet one followed by another is accepted.
+    #[test]
+    fn accepts_subsequent_subidentifiers_after_a_multi_octet_one() {
+        // 1.2.840.113549.1.1.11: 2A 86 48 86 F7 0D 01 01 0B (sha256WithRSAEncryption)
+        assert_eq!(
+            validate_oid(&[0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B]),
+            Ok(())
+        );
+    }
+
+    /// CODEC-oid-unique: every padded alternate spelling of a subidentifier is rejected as NonMinimalSubid; only the minimal form is accepted.
+    #[test]
+    fn rejects_every_alternate_spelling_of_a_subidentifier() {
+        // subidentifier value 1: minimal 01 accepted; 80 01 and 80 80 01 rejected
+        assert_eq!(validate_oid(&[0x2A, 0x01]), Ok(()));
+        assert_eq!(validate_oid(&[0x2A, 0x80, 0x01]), Err(OidError::NonMinimalSubid));
+        assert_eq!(validate_oid(&[0x2A, 0x80, 0x80, 0x01]), Err(OidError::NonMinimalSubid));
+        // subidentifier value 0: minimal 00 accepted; 80 00 rejected
+        assert_eq!(validate_oid(&[0x2A, 0x00]), Ok(()));
+        assert_eq!(validate_oid(&[0x2A, 0x80, 0x00]), Err(OidError::NonMinimalSubid));
+        // subidentifier value 128: minimal 81 00 accepted; 80 81 00 rejected
+        assert_eq!(validate_oid(&[0x2A, 0x81, 0x00]), Ok(()));
+        assert_eq!(validate_oid(&[0x2A, 0x80, 0x81, 0x00]), Err(OidError::NonMinimalSubid));
+    }
 }

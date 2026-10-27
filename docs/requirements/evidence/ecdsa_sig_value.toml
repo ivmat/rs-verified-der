@@ -43,6 +43,16 @@ none = "positive witness harness; cover does not assert acceptance"
 [[entry]]
 kind = "test"
 file = "der-verified/src/ecdsa_sig_value.rs"
+name = "accepts_dss_sig_value_as_two_integers"
+accept = ["RFC3279-2.2.2"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/ecdsa_sig_value.rs"
 name = "accepts_negative_r_der_permits_it_range_is_out_of_scope"
 accept = ["PROF-big-integer-comparison-only"]
 reject = []
@@ -96,6 +106,16 @@ file = "der-verified/src/ecdsa_sig_value.rs"
 name = "rejects_ber_long_form_length_where_short_form_fits"
 accept = []
 reject = ["X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-ecdsa-sig-value-reject-nonder", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/ecdsa_sig_value.rs"
+name = "rejects_dss_sig_value_that_is_not_two_integers"
+accept = []
+reject = ["RFC3279-2.2.2", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""

@@ -545,4 +545,70 @@ mod tests {
         let mut out = [0u8; 1];
         assert_eq!(encode_minimal_integer_into(&[0x01, 0x02], &mut out), None);
     }
+
+    // --- S4a (group 3): per-requirement tests ---
+
+    /// CODEC-big-integer-encode-decode: accepted content validates, then re-encodes to exactly the same octets.
+    #[test]
+    fn roundtrips_accepted_content_through_validate_then_encode() {
+        let mut twenty = [0u8; 20];
+        for (i, b) in twenty.iter_mut().enumerate() {
+            *b = (i as u8).wrapping_mul(53).wrapping_add(7);
+        }
+        twenty[0] = 0x7B; // leading octet neither 00 nor FF: minimal at any length
+        let mut padded_guard = [0x55u8; 21];
+        padded_guard[0] = 0x00;
+        padded_guard[1] = 0x80; // a 00 guard in front of a high-bit octet is needed, so minimal
+        let samples: [&[u8]; 8] = [
+            &[0x00],
+            &[0xFF],
+            &[0x7F],
+            &[0x80],
+            &[0x00, 0x80],
+            &[0xFF, 0x7F],
+            &twenty,
+            &padded_guard,
+        ];
+        for content in samples {
+            assert_eq!(validate_integer_content(content), Ok(()), "content {content:02X?}");
+            let mut out = [0u8; 32];
+            let n = encode_minimal_integer_into(content, &mut out).unwrap();
+            assert_eq!(&out[..n], content, "content {content:02X?}");
+        }
+    }
+
+    /// CODEC-big-integer-unique: every padded alternate spelling of a value is rejected as NonMinimal, and the minimizer maps it to the one accepted form.
+    #[test]
+    fn rejects_every_alternate_spelling_of_a_value() {
+        // value 1: minimal 01; padded 00 01, 00 00 01 and a 20-octet zero-padded form; the last
+        // alternate is a padded spelling of 32767 (7F FF)
+        let mut padded = [0u8; 20];
+        padded[19] = 0x01;
+        let alternates: [&[u8]; 4] = [&[0x00, 0x01], &[0x00, 0x00, 0x01], &padded, &[0x00, 0x7F, 0xFF]];
+        assert_eq!(validate_integer_content(&[0x01]), Ok(()));
+        for alt in alternates {
+            assert_eq!(
+                validate_integer_content(alt),
+                Err(BigIntError::NonMinimal),
+                "content {alt:02X?}"
+            );
+        }
+        // value -1: minimal FF; padded FF FF, FF FF FF and a 20-octet 0xFF-padded form
+        let ones = [0xFFu8; 20];
+        let neg_alternates: [&[u8]; 3] = [&[0xFF, 0xFF], &[0xFF, 0xFF, 0xFF], &ones];
+        assert_eq!(validate_integer_content(&[0xFF]), Ok(()));
+        for alt in neg_alternates {
+            assert_eq!(
+                validate_integer_content(alt),
+                Err(BigIntError::NonMinimal),
+                "content {alt:02X?}"
+            );
+        }
+        // each rejected spelling minimizes to the single accepted form
+        let mut out = [0u8; 32];
+        let n = encode_minimal_integer_into(&padded, &mut out).unwrap();
+        assert_eq!(&out[..n], &[0x01]);
+        let n = encode_minimal_integer_into(&ones, &mut out).unwrap();
+        assert_eq!(&out[..n], &[0xFF]);
+    }
 }

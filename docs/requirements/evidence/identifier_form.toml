@@ -123,6 +123,36 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/identifier_form.rs"
+name = "accepts_primitive_real_identifier"
+accept = ["X690-8.5.1"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/identifier_form.rs"
+name = "accepts_primitive_relative_oid_identifier"
+accept = ["X690-8.20.1"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/identifier_form.rs"
+name = "accepts_primitive_time_identifier"
+accept = ["X690-8.26.1.1"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/identifier_form.rs"
 name = "ber_constructed_string_forms_are_rejected"
 accept = []
 reject = ["X690-10.2", "PROF-identifier-form-opt-in"]
@@ -226,6 +256,36 @@ file = "der-verified/src/identifier_form.rs"
 name = "real_world_identifier_octets_are_accepted"
 accept = ["X680-8", "X680-8a", "X680-8b", "X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.8.1", "X690-8.9.1", "X690-8.12.1", "X690-8.19.1"]
 reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/identifier_form.rs"
+name = "rejects_constructed_real_identifier"
+accept = []
+reject = ["X690-8.5.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/identifier_form.rs"
+name = "rejects_constructed_relative_oid_identifier"
+accept = []
+reject = ["X690-8.20.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/identifier_form.rs"
+name = "rejects_constructed_time_identifier"
+accept = []
+reject = ["X690-8.26.1.1"]
 prove = []
 bounded = ""
 none = ""

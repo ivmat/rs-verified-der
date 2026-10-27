@@ -23,6 +23,16 @@ none = "positive concrete witness harness with three stubs; cover does not prove
 [[entry]]
 kind = "test"
 file = "der-verified/src/x509_tbs_certificate.rs"
+name = "accepts_v3_tbs_without_unique_identifiers"
+accept = ["RFC5280-4.1.2.8-b", "PROF-unique-identifiers-rejected"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
 name = "parses_complete_v3_certificate"
 accept = ["RFC5280-4.1-a", "RFC5280-4.1-b", "RFC5280-4.1-c", "RFC5280-4.1.2.1-d", "RFC5280-4.1.2.6-b", "X690-8.9.2"]
 reject = []
@@ -36,6 +46,16 @@ file = "der-verified/src/x509_tbs_certificate.rs"
 name = "parses_minimal_v1_certificate"
 accept = ["RFC5280-4.1-a", "RFC5280-4.1-b", "RFC5280-4.1-c", "RFC5280-4.1.2.6-b", "X690-11.5", "X680-25t", "X690-8.9.3"]
 reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_issuer_and_subject_unique_identifiers_in_v3"
+accept = []
+reject = ["RFC5280-4.1.2.8-b", "PROF-unique-identifiers-rejected"]
 prove = []
 bounded = ""
 none = ""
@@ -106,6 +126,16 @@ file = "der-verified/src/x509_tbs_certificate.rs"
 name = "rejects_missing_validity_exact_boundary"
 accept = []
 reject = ["RFC5280-4.1-a", "X690-8.9.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_tbs_certificate.rs"
+name = "rejects_optional_components_out_of_position"
+accept = []
+reject = ["X690-8.9.3"]
 prove = []
 bounded = ""
 none = ""

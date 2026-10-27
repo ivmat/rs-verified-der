@@ -309,3 +309,33 @@ reject = []
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/bit_string.rs"
+name = "rejects_value_bits_placed_in_the_low_order_positions"
+accept = ["X690-8.6.2.1"]
+reject = ["X690-8.6.2.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/bit_string.rs"
+name = "roundtrips_accepted_content_through_decode_then_encode"
+accept = ["CODEC-bit-string-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/bit_string.rs"
+name = "rejects_padding_bit_spellings_of_one_value"
+accept = []
+reject = ["CODEC-bit-string-unique", "CODEC-bit-string-reject-nonder", "X690-7.4", "X690-11.2.1"]
+prove = []
+bounded = ""
+none = ""

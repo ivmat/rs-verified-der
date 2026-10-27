@@ -1164,4 +1164,213 @@ mod tests {
             Err(StringError::Tlv(TlvError::Length(LengthError::NonMinimal)))
         );
     }
+
+    // --- S4a: tests for rows that had no accept or reject test ---
+
+    /// Rows X690-8.23.3, X690-8.23.3-a, X680-40b (reject): a restricted string is tagged
+    /// [UNIVERSAL x]. The same tag number in the APPLICATION, context-specific or PRIVATE class
+    /// is a different tag and is rejected. Identifier octets are literal.
+    #[test]
+    fn rejects_own_tag_number_in_a_non_universal_class() {
+        // (charset, universal identifier, [application, context-specific, private] identifiers)
+        let table: [(Charset, u8, [u8; 3]); 4] = [
+            (Charset::Printable, 0x13, [0x53, 0x93, 0xD3]),
+            (Charset::Ia5, 0x16, [0x56, 0x96, 0xD6]),
+            (Charset::Numeric, 0x12, [0x52, 0x92, 0xD2]),
+            (Charset::Visible, 0x1A, [0x5A, 0x9A, 0xDA]),
+        ];
+        for (charset, universal, others) in table {
+            // '1' is in all four character sets, so only the identifier class is wrong
+            assert_eq!(decode_restricted_string(&[universal, 0x01, b'1'], charset), Ok((&b"1"[..], 3)));
+            for id in others {
+                assert_eq!(
+                    decode_restricted_string(&[id, 0x01, b'1'], charset),
+                    Err(StringError::WrongTag),
+                    "identifier {:#04x} for {:?}",
+                    id,
+                    charset
+                );
+            }
+        }
+    }
+
+    /// Rows X690-8.23.5, X690-8.23.5.2 (accept): IA5String starts with ISO 646 G0 (registration
+    /// 6) and the C0 controls (registration 1) assigned, so every octet 0x00..=0x7F is its own
+    /// ISO 2022 code and is accepted unchanged.
+    #[test]
+    fn accepts_ia5_c0_and_g0_octets_as_their_iso2022_codes() {
+        let mut input = [0u8; 3 + 128];
+        input[..3].copy_from_slice(&[0x16, 0x81, 0x80]);
+        for i in 0..128u8 {
+            input[3 + i as usize] = i;
+        }
+        let (content, used) = decode_restricted_string(&input, Charset::Ia5).unwrap();
+        assert_eq!(used, input.len());
+        assert_eq!(content, &input[3..]);
+    }
+
+    /// Rows X690-8.23.5, X690-8.23.5.2 (accept): VisibleString starts with G0 (registration 6)
+    /// only, so every graphic octet 0x20..=0x7E is its own ISO 2022 code and is accepted
+    /// unchanged.
+    #[test]
+    fn accepts_visible_g0_octets_as_their_iso2022_codes() {
+        let mut input = [0u8; 2 + 95];
+        input[..2].copy_from_slice(&[0x1A, 95]);
+        for (i, b) in (0x20u8..=0x7E).enumerate() {
+            input[2 + i] = b;
+        }
+        let (content, used) = decode_restricted_string(&input, Charset::Visible).unwrap();
+        assert_eq!(used, input.len());
+        assert_eq!(content, &input[2..]);
+    }
+
+    /// Rows X690-8.23.5, X690-8.23.5.2 (reject): an octet outside the sets assigned at the start
+    /// of the string is rejected. IA5String has no C1 set (0x80..=0x9F) and no designated G1
+    /// set (0xA0..=0xFF). PrintableString, NumericString and VisibleString have no C0 or C1
+    /// set at all, so the control octets, DEL and every high octet are rejected.
+    #[test]
+    fn rejects_octets_outside_the_assigned_iso2022_sets() {
+        let identifier = |c: Charset| c.identifier();
+        for b in 0x80u8..=0xFF {
+            assert_eq!(
+                decode_restricted_string(&[identifier(Charset::Ia5), 0x02, b'A', b], Charset::Ia5),
+                Err(StringError::OutOfCharset { position: 1, byte: b })
+            );
+        }
+        for charset in [Charset::Printable, Charset::Numeric, Charset::Visible] {
+            let id = identifier(charset);
+            // C0 controls, DEL, C1 controls and the G1 area
+            for b in (0x00u8..=0x1F).chain([0x7F]).chain(0x80..=0xFF) {
+                assert_eq!(
+                    decode_restricted_string(&[id, 0x02, b'1', b], charset),
+                    Err(StringError::OutOfCharset { position: 1, byte: b }),
+                    "{:?} byte {:#04x}",
+                    charset,
+                    b
+                );
+            }
+        }
+    }
+
+    /// Rows X690-8.23.5.4 (accept): an announcer is ESC SP F (0x1B 0x20 0x46 ...). Without the
+    /// ESC introducer the same SP and F octets are ordinary text and are accepted.
+    #[test]
+    fn accepts_announcer_tail_octets_without_the_escape_introducer() {
+        for charset in [Charset::Printable, Charset::Visible, Charset::Ia5] {
+            let input = [charset.identifier(), 0x03, b'A', 0x20, 0x46];
+            let (content, used) = decode_restricted_string(&input, charset).unwrap();
+            assert_eq!((content, used), (&[b'A', 0x20, 0x46][..], 5), "{:?}", charset);
+        }
+    }
+
+    /// Rows X690-8.23.5.4 (reject): an announcer (ESC SP F) in PrintableString, NumericString
+    /// or VisibleString is rejected at the ESC octet. These types never permit announcers.
+    #[test]
+    fn rejects_announcer_escape_sequence_in_printable_numeric_visible() {
+        for charset in [Charset::Printable, Charset::Numeric, Charset::Visible] {
+            let input = [charset.identifier(), 0x04, b'1', 0x1B, 0x20, 0x46];
+            assert_eq!(
+                decode_restricted_string(&input, charset),
+                Err(StringError::OutOfCharset { position: 1, byte: 0x1B }),
+                "{:?}",
+                charset
+            );
+        }
+    }
+
+    /// Rows RFC5280-B-printable-specials, X680-41.4 (accept): the whole 74-character
+    /// PrintableString repertoire is accepted, including the characters next to the two
+    /// excluded ones (`?` and `A` around `@`; `Z` and `a` around `_`). The excluded `@` and
+    /// `_` are rejected in the same context.
+    #[test]
+    fn accepts_the_full_printable_repertoire_next_to_at_and_underscore() {
+        let repertoire: &[u8] =
+            b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 '()+,-./:=?";
+        assert_eq!(repertoire.len(), 74);
+        let mut input = [0u8; 2 + 74];
+        input[..2].copy_from_slice(&[0x13, 74]);
+        input[2..].copy_from_slice(repertoire);
+        let (content, used) = decode_printable_string(&input).unwrap();
+        assert_eq!((content, used), (repertoire, input.len()));
+        // neighbours of the excluded characters in code order
+        assert_eq!(decode_printable_string(&[0x13, 0x02, b'?', b'A']), Ok((&b"?A"[..], 4)));
+        assert_eq!(decode_printable_string(&[0x13, 0x02, b'Z', b'a']), Ok((&b"Za"[..], 4)));
+        // the excluded characters themselves
+        assert_eq!(
+            decode_printable_string(&[0x13, 0x02, b'?', b'@']),
+            Err(StringError::OutOfCharset { position: 1, byte: b'@' })
+        );
+        assert_eq!(
+            decode_printable_string(&[0x13, 0x02, b'Z', b'_']),
+            Err(StringError::OutOfCharset { position: 1, byte: b'_' })
+        );
+    }
+
+    /// Rows CODEC-restricted-string-encode-decode (accept): bytes the decoder accepts are
+    /// re-encoded to the identical octets, for every character set.
+    #[test]
+    fn roundtrips_accepted_bytes_through_decode_then_encode() {
+        let specimens: [(Charset, &[u8]); 6] = [
+            (Charset::Printable, &[0x13, 0x05, b'H', b'e', b'l', b'l', b'o']),
+            (Charset::Ia5, &[0x16, 0x0B, b'a', b'@', b'b', b'.', b'c', b'o', b'm', 0x00, 0x7F, b'~', b'!']),
+            (Charset::Numeric, &[0x12, 0x04, b'1', b' ', b'2', b'3']),
+            (Charset::Visible, &[0x1A, 0x03, b'~', b' ', b'!']),
+            (Charset::Printable, &[0x13, 0x00]),
+            (Charset::Visible, &[0x1A, 0x00]),
+        ];
+        for (charset, bytes) in specimens {
+            let (content, used) = decode_restricted_string(bytes, charset).unwrap();
+            assert_eq!(used, bytes.len());
+            let mut out = [0u8; 32];
+            let n = encode_restricted_string_into(content, charset, &mut out).unwrap();
+            assert_eq!(&out[..n], bytes, "{:?}", charset);
+        }
+    }
+
+    /// Rows CODEC-restricted-string-unique, CODEC-restricted-string-reject-nonder, X690-7.4,
+    /// X690-10.2 (reject): the value "A" (or "1" for NumericString) has one accepted spelling.
+    /// Every BER-valid alternate spelling is rejected: a constructed string with a valid
+    /// segment, long-form lengths, a high-tag identifier, and an indefinite-length constructed
+    /// string. Identifier octets are literal.
+    #[test]
+    fn rejects_alternate_spellings_of_one_restricted_string_value() {
+        use crate::length::LengthError;
+        use crate::tag::TagError;
+        // (charset, primitive identifier, constructed identifier, tag number, character)
+        let table: [(Charset, u8, u8, u8, u8); 4] = [
+            (Charset::Printable, 0x13, 0x33, 19, b'A'),
+            (Charset::Ia5, 0x16, 0x36, 22, b'A'),
+            (Charset::Numeric, 0x12, 0x32, 18, b'1'),
+            (Charset::Visible, 0x1A, 0x3A, 26, b'A'),
+        ];
+        for (charset, prim, cons, number, c) in table {
+            assert_eq!(decode_restricted_string(&[prim, 0x01, c], charset), Ok((&[c][..], 3)));
+            // constructed, one valid segment [UNIVERSAL x] holding the character
+            assert_eq!(
+                decode_restricted_string(&[cons, 0x03, prim, 0x01, c], charset),
+                Err(StringError::Constructed),
+                "{:?}",
+                charset
+            );
+            // long-form lengths for length 1
+            assert_eq!(
+                decode_restricted_string(&[prim, 0x81, 0x01, c], charset),
+                Err(StringError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+            );
+            assert_eq!(
+                decode_restricted_string(&[prim, 0x82, 0x00, 0x01, c], charset),
+                Err(StringError::Tlv(TlvError::Length(LengthError::NonMinimal)))
+            );
+            // high-tag form of the tag number
+            assert_eq!(
+                decode_restricted_string(&[0x1F, number, 0x01, c], charset),
+                Err(StringError::Tlv(TlvError::Tag(TagError::NonMinimal)))
+            );
+            // BER indefinite-length constructed form with a valid segment and end-of-contents
+            assert_eq!(
+                decode_restricted_string(&[cons, 0x80, prim, 0x01, c, 0x00, 0x00], charset),
+                Err(StringError::Tlv(TlvError::Length(LengthError::Indefinite)))
+            );
+        }
+    }
 }

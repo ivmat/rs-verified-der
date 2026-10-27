@@ -63,4 +63,62 @@ mod tests {
     fn rejects_non_empty() {
         assert_eq!(decode_null(&[0x00]), Err(NullError::NonEmpty));
     }
+
+    // --- S4a (group 3): per-requirement tests ---
+
+    /// X680-24: a NULL TLV carries the literal identifier octet 0x05 (UNIVERSAL 5, decoded and encoded).
+    #[test]
+    fn accepts_null_universal_5_identifier_octet() {
+        use crate::tag::{Class, Tag};
+        use crate::tlv::{decode_tlv_strict, encode_tlv_into};
+        // literal specimen: 05 00
+        let tlv = decode_tlv_strict(&[0x05, 0x00]).unwrap();
+        assert_eq!(tlv.tag, Tag { class: Class::Universal, constructed: false, number: TAG });
+        assert_eq!(decode_null(tlv.value), Ok(()));
+        // encoder direction: the first output octet is 0x05
+        let mut out = [0u8; 4];
+        let used = encode_tlv_into(
+            Tag { class: Class::Universal, constructed: false, number: TAG },
+            &[],
+            &mut out,
+        )
+        .unwrap();
+        assert_eq!(out[0], 0x05);
+        assert_eq!(&out[..used], &[0x05, 0x00]);
+    }
+
+    /// CODEC-null-unique: NULL has exactly one accepted content (empty); content of any length or value is NonEmpty.
+    #[test]
+    fn rejects_every_non_empty_content() {
+        assert_eq!(decode_null(&[]), Ok(()));
+        for len in 1usize..=4 {
+            for fill in [0x00u8, 0x01, 0x7F, 0x80, 0xFF] {
+                let buf = [fill; 4];
+                assert_eq!(
+                    decode_null(&buf[..len]),
+                    Err(NullError::NonEmpty),
+                    "len {len} fill {fill:#04x}"
+                );
+            }
+        }
+    }
+
+    /// CODEC-null-reject-nonder: a BER long-form spelling of the NULL length (05 81 00, 05 82 00 00) is rejected as a NonMinimal length.
+    #[test]
+    fn rejects_long_form_length_spelling_of_null() {
+        use crate::length::LengthError;
+        use crate::tlv::{decode_tlv_strict, TlvError};
+        // the DER spelling is accepted
+        let tlv = decode_tlv_strict(&[0x05, 0x00]).unwrap();
+        assert_eq!(decode_null(tlv.value), Ok(()));
+        // BER-valid alternate spellings of the same value (length 0 in long form)
+        assert_eq!(
+            decode_tlv_strict(&[0x05, 0x81, 0x00]),
+            Err(TlvError::Length(LengthError::NonMinimal))
+        );
+        assert_eq!(
+            decode_tlv_strict(&[0x05, 0x82, 0x00, 0x00]),
+            Err(TlvError::Length(LengthError::NonMinimal))
+        );
+    }
 }

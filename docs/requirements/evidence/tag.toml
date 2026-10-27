@@ -93,6 +93,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
+name = "rejects_alternate_spellings_of_one_tag_number"
+accept = []
+reject = ["CODEC-tag-unique", "CODEC-tag-reject-nonder", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/tag.rs"
 name = "rejects_empty_input"
 accept = []
 reject = []
@@ -123,6 +133,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
+name = "rejects_identifier_without_a_complete_tag_number"
+accept = []
+reject = ["X680-8", "X690-8.1.2.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/tag.rs"
 name = "rejects_leading_zero_continuation"
 accept = []
 reject = ["X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
@@ -133,9 +153,49 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/tag.rs"
+name = "rejects_tag_number_above_u32_cap"
+accept = ["PROF-tag-u32-cap"]
+reject = ["PROF-tag-u32-cap"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/tag.rs"
 name = "rejects_truncated_high_tag"
 accept = []
 reject = ["X690-8.1.2.4", "X690-8.1.2.4.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/tag.rs"
+name = "roundtrips_accepted_identifier_bytes_through_encoder"
+accept = ["CODEC-tag-encode-decode", "CODEC-tag-decode-encode", "X690-7.4"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/tag.rs"
+name = "roundtrips_choice_alternative_tag_selects_alternative"
+accept = ["X690-8.1.2.6"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/tag.rs"
+name = "roundtrips_tagged_type_prefix_tag_differs_from_underlying_tag"
+accept = ["X680-31j"]
+reject = []
 prove = []
 bounded = ""
 none = ""

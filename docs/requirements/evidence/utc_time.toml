@@ -163,6 +163,26 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/utc_time.rs"
+name = "accepts_second_59_next_to_rejected_leap_second"
+accept = ["PROF-time-no-leap-second"]
+reject = ["PROF-time-no-leap-second"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
+name = "accepts_utc_time_under_universal_tag_23"
+accept = ["X680-47.3", "X680-47b", "X680-29"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
 name = "decodes_canonical"
 accept = ["RFC5280-4.1.2.5.1", "X690-11.8.1", "X690-11.8.2", "X690-11.8.3", "PROF-time-field-ranges"]
 reject = []
@@ -263,6 +283,16 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/utc_time.rs"
+name = "rejects_minute_precision_and_local_difference_forms"
+accept = []
+reject = ["X680-47.2", "CODEC-utc-time-reject-nonder"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
 name = "rejects_missing_seconds"
 accept = []
 reject = ["X690-11.8.2", "RFC5280-4.1.2.5.1", "CODEC-utc-time-reject-nonder"]
@@ -293,6 +323,26 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/utc_time.rs"
+name = "rejects_non_visible_string_octet"
+accept = []
+reject = ["X680-47b"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
+name = "rejects_noncanonical_spellings_of_an_accepted_value"
+accept = []
+reject = ["CODEC-utc-time-unique", "X690-11.8.1", "X690-11.8.2", "CODEC-utc-time-reject-nonder"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
 name = "rejects_offset_form"
 accept = []
 reject = ["X690-11.8.1", "RFC5280-4.1.2.5.1", "CODEC-utc-time-reject-nonder"]
@@ -303,8 +353,38 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/utc_time.rs"
+name = "rejects_utc_time_content_under_other_tag"
+accept = []
+reject = ["X680-47.3", "X680-29"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
 name = "rfc5280_century_mapping"
 accept = ["RFC5280-4.1.2.5", "RFC5280-4.1.2.5.1-b", "RFC5280-4.1.2.5.1c", "RFC5280-4.1.2.5.1d"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
+name = "roundtrips_accepted_bytes_through_reencode"
+accept = ["CODEC-utc-time-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utc_time.rs"
+name = "roundtrips_date_with_second_precision"
+accept = ["X680-47.2"]
 reject = []
 prove = []
 bounded = ""

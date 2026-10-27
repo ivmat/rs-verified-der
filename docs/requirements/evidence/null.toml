@@ -29,3 +29,33 @@ reject = ["X690-8.8.2"]
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/null.rs"
+name = "accepts_null_universal_5_identifier_octet"
+accept = ["X680-24"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/null.rs"
+name = "rejects_every_non_empty_content"
+accept = []
+reject = ["CODEC-null-unique", "X690-8.8.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/null.rs"
+name = "rejects_long_form_length_spelling_of_null"
+accept = []
+reject = ["CODEC-null-reject-nonder", "X690-7.4", "X690-10.1"]
+prove = []
+bounded = ""
+none = ""

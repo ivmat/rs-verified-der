@@ -787,4 +787,140 @@ mod tests {
         let mut out = [0u8; 12];
         assert_eq!(encode_utc_time(&t, &mut out), None);
     }
+
+    // --- S4a group 4: tag, CHOICE, CODEC-law and X.680 §47 specimens ---
+
+    /// Wrap `inner` content under `tag` with a DER TLV and return the buffer and used length.
+    fn tlv_of(class: crate::tag::Class, number: u32, inner: &[u8]) -> ([u8; 64], usize) {
+        let mut buf = [0u8; 64];
+        let tag = crate::tag::Tag { class, constructed: false, number };
+        let n = crate::tlv::encode_tlv_into(tag, inner, &mut buf).unwrap();
+        (buf, n)
+    }
+
+    /// `SEQUENCE { a, b }` around two ready TLVs.
+    fn validity_of(a: &[u8], b: &[u8]) -> ([u8; 128], usize) {
+        let mut content = [0u8; 100];
+        content[..a.len()].copy_from_slice(a);
+        content[a.len()..a.len() + b.len()].copy_from_slice(b);
+        let mut out = [0u8; 128];
+        let tag = crate::tag::Tag { class: crate::tag::Class::Universal, constructed: true, number: 16 };
+        let n = crate::tlv::encode_tlv_into(tag, &content[..a.len() + b.len()], &mut out).unwrap();
+        (out, n)
+    }
+
+    /// X680-47.3, X680-47b, X680-29: an encoded UTCTime carries identifier 0x17, its content is
+    /// VisibleString characters, and the Time CHOICE selects the utcTime arm from it.
+    #[test]
+    fn accepts_utc_time_under_universal_tag_23() {
+        let t = UtcTime { year2: 49, month: 12, day: 31, hour: 23, minute: 59, second: 59 };
+        let mut content = [0u8; 13];
+        let n = encode_utc_time(&t, &mut content).unwrap();
+        // VisibleString is the printable ASCII range 0x20..=0x7E.
+        assert!(content[..n].iter().all(|b| (0x20..=0x7E).contains(b)));
+        let (tlv, m) = tlv_of(crate::tag::Class::Universal, TAG, &content[..n]);
+        assert_eq!(tlv[0], 0x17);
+        assert_eq!(&tlv[2..m], b"491231235959Z");
+        let (v, k) = validity_of(&tlv[..m], &tlv[..m]);
+        let parsed = crate::x509_validity::parse_validity(&v[..k]).unwrap();
+        assert_eq!(parsed.not_before, crate::x509_validity::Time::Utc(t));
+        assert_eq!(parsed.not_after, crate::x509_validity::Time::Utc(t));
+    }
+
+    /// X680-47.3, X680-29: UTCTime content under any identifier other than UNIVERSAL 23 is rejected
+    /// by the Time CHOICE (VisibleString 0x1A, APPLICATION 23 0x57).
+    #[test]
+    fn rejects_utc_time_content_under_other_tag() {
+        use crate::tag::Class;
+        use crate::x509_validity::{parse_validity, TimeError, ValidityError};
+        let body = b"230615120000Z";
+        let (good, g) = tlv_of(Class::Universal, TAG, body);
+        // UNIVERSAL 26 (VisibleString), identifier octet 0x1A.
+        let (vs, v) = tlv_of(Class::Universal, 26, body);
+        assert_eq!(vs[0], 0x1A);
+        let (seq, n) = validity_of(&vs[..v], &good[..g]);
+        assert_eq!(parse_validity(&seq[..n]), Err(ValidityError::NotBefore(TimeError::WrongTag)));
+        // APPLICATION 23, identifier octet 0x57: right number, wrong class.
+        let (app, a) = tlv_of(Class::Application, TAG, body);
+        assert_eq!(app[0], 0x57);
+        let (seq, n) = validity_of(&good[..g], &app[..a]);
+        assert_eq!(parse_validity(&seq[..n]), Err(ValidityError::NotAfter(TimeError::WrongTag)));
+    }
+
+    /// X680-47b: a character outside the VisibleString range inside the value is rejected.
+    #[test]
+    fn rejects_non_visible_string_octet() {
+        // 0x80 is not a VisibleString character; it sits in the last digit position.
+        assert_eq!(decode_utc_time(b"99123123595\x80Z"), Err(UtcTimeError::NonDigit));
+        // A control character (US, 0x1F) in the middle of the date.
+        assert_eq!(decode_utc_time(b"9912\x1f1235959Z"), Err(UtcTimeError::NonDigit));
+    }
+
+    /// X680-47.2: the minute-precision and local-time-with-difference spellings (all BER values of
+    /// the type, including the X.680 §47.3 examples) are not accepted in DER.
+    #[test]
+    fn rejects_minute_precision_and_local_difference_forms() {
+        // X.680 EXAMPLE 1: both spellings of 12:00 UTC on 2 January 1982.
+        assert_eq!(decode_utc_time(b"8201021200Z"), Err(UtcTimeError::BadLength));
+        assert_eq!(decode_utc_time(b"8201020700-0500"), Err(UtcTimeError::BadLength));
+        // Seconds present, difference present (17 octets), with either sign.
+        assert_eq!(decode_utc_time(b"820102070000-0500"), Err(UtcTimeError::BadLength));
+        assert_eq!(decode_utc_time(b"820102070000+0530"), Err(UtcTimeError::BadLength));
+        // The same instant in DER: seconds present, Z terminator.
+        assert_eq!(
+            decode_utc_time(b"820102120000Z"),
+            Ok(UtcTime { year2: 82, month: 1, day: 2, hour: 12, minute: 0, second: 0 })
+        );
+    }
+
+    /// X680-47.2: a calendar date with a time to the precision of one second encodes and decodes
+    /// (the DER spelling of a time on 2 January 1982, the date of X.680 §47.3 EXAMPLE 1).
+    #[test]
+    fn roundtrips_date_with_second_precision() {
+        let t = UtcTime { year2: 82, month: 1, day: 2, hour: 12, minute: 34, second: 56 };
+        let mut out = [0u8; 13];
+        let n = encode_utc_time(&t, &mut out).unwrap();
+        assert_eq!(&out[..n], b"820102123456Z");
+        assert_eq!(decode_utc_time(&out[..n]), Ok(t));
+    }
+
+    /// PROF-time-no-leap-second: second 59 is the last accepted value and encodes; 60 is not.
+    #[test]
+    fn accepts_second_59_next_to_rejected_leap_second() {
+        let t = decode_utc_time(b"161231235959Z").unwrap();
+        assert_eq!(t.second, 59);
+        let mut out = [0u8; 13];
+        let n = encode_utc_time(&t, &mut out).unwrap();
+        assert_eq!(&out[..n], b"161231235959Z");
+        assert_eq!(decode_utc_time(b"161231235960Z"), Err(UtcTimeError::SecondRange));
+    }
+
+    /// CODEC-utc-time-encode-decode: re-encoding an accepted value reproduces its bytes.
+    #[test]
+    fn roundtrips_accepted_bytes_through_reencode() {
+        let specimens: [&[u8]; 4] = [b"230615120000Z", b"000101000000Z", b"991231235959Z", b"490229083015Z"];
+        for bytes in specimens {
+            let t = decode_utc_time(bytes).unwrap();
+            let mut out = [0u8; 13];
+            let n = encode_utc_time(&t, &mut out).unwrap();
+            assert_eq!(&out[..n], bytes);
+        }
+    }
+
+    /// CODEC-utc-time-unique: one value, one accepted spelling; the other spellings of the same
+    /// instant are rejected with their own error.
+    #[test]
+    fn rejects_noncanonical_spellings_of_an_accepted_value() {
+        let t = decode_utc_time(b"991231235959Z").unwrap();
+        assert_eq!(t, UtcTime { year2: 99, month: 12, day: 31, hour: 23, minute: 59, second: 59 });
+        // Minute precision.
+        assert_eq!(decode_utc_time(b"9912312359Z"), Err(UtcTimeError::BadLength));
+        // Zero offset in place of Z.
+        assert_eq!(decode_utc_time(b"991231235959+0000"), Err(UtcTimeError::BadLength));
+        assert_eq!(decode_utc_time(b"991231235959-0000"), Err(UtcTimeError::BadLength));
+        // Lowercase terminator.
+        assert_eq!(decode_utc_time(b"991231235959z"), Err(UtcTimeError::NotZulu));
+        // No terminator at all.
+        assert_eq!(decode_utc_time(b"991231235959"), Err(UtcTimeError::BadLength));
+    }
 }

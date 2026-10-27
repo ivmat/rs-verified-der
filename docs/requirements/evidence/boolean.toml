@@ -59,3 +59,53 @@ reject = ["X690-8.2.1"]
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/boolean.rs"
+name = "accepts_boolean_universal_1_identifier_octet"
+accept = ["X680-18"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/boolean.rs"
+name = "rejects_every_octet_that_is_neither_true_nor_false"
+accept = ["X680-18d"]
+reject = ["X680-18d", "X690-11.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/boolean.rs"
+name = "rejects_non_zero_octet_as_false"
+accept = []
+reject = ["X690-8.2.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/boolean.rs"
+name = "roundtrips_accepted_content_through_decode_then_encode"
+accept = ["CODEC-boolean-encode-decode"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/boolean.rs"
+name = "rejects_every_alternate_spelling_of_true"
+accept = []
+reject = ["CODEC-boolean-unique", "CODEC-boolean-reject-nonder", "X690-7.4"]
+prove = []
+bounded = ""
+none = ""

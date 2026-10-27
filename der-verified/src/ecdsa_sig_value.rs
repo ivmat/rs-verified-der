@@ -781,4 +781,48 @@ mod tests {
             ))))
         );
     }
+
+    // --- S4a group 4: Dss-Sig-Value shape (RFC 3279 §2.2.2) ---
+
+    /// RFC3279-2.2.2: a Dss-Sig-Value is `SEQUENCE { r INTEGER, s INTEGER }`; the 160-bit DSA shape
+    /// (r with its top bit set, so a sign-guard octet; s without) parses to exactly two INTEGERs.
+    #[test]
+    fn accepts_dss_sig_value_as_two_integers() {
+        let mut der = vec![0x30u8, 0x2d, 0x02, 0x15, 0x00, 0x81];
+        der.extend_from_slice(&[0x11; 19]); // r: 00 81 11*19 = 21 octets
+        der.extend_from_slice(&[0x02, 0x14, 0x42]);
+        der.extend_from_slice(&[0x22; 19]); // s: 42 22*19 = 20 octets
+        assert_eq!(der.len(), 2 + 0x2d);
+        let sig = parse_ecdsa_sig_value_strict(&der).unwrap();
+        assert_eq!(sig.r.len(), 21);
+        assert_eq!(&sig.r[..3], &[0x00, 0x81, 0x11]);
+        assert_eq!(sig.s.len(), 20);
+        assert_eq!(&sig.s[..2], &[0x42, 0x22]);
+    }
+
+    /// RFC3279-2.2.2: anything but exactly two INTEGER fields is not a Dss-Sig-Value: one field, three
+    /// fields, and a non-INTEGER field are each rejected with their own error.
+    #[test]
+    fn rejects_dss_sig_value_that_is_not_two_integers() {
+        // r only.
+        assert_eq!(
+            parse_ecdsa_sig_value_strict(&[0x30, 0x03, 0x02, 0x01, 0x07]),
+            Err(EcdsaSigValueError::MissingS)
+        );
+        // r, s and a third INTEGER.
+        assert_eq!(
+            parse_ecdsa_sig_value_strict(&[0x30, 0x09, 0x02, 0x01, 0x07, 0x02, 0x01, 0x2a, 0x02, 0x01, 0x01]),
+            Err(EcdsaSigValueError::TrailingElements)
+        );
+        // s is an OCTET STRING.
+        assert_eq!(
+            parse_ecdsa_sig_value_strict(&[0x30, 0x06, 0x02, 0x01, 0x07, 0x04, 0x01, 0x2a]),
+            Err(EcdsaSigValueError::S(IntegerFieldError::WrongTag))
+        );
+        // r is an OCTET STRING.
+        assert_eq!(
+            parse_ecdsa_sig_value_strict(&[0x30, 0x06, 0x04, 0x01, 0x07, 0x02, 0x01, 0x2a]),
+            Err(EcdsaSigValueError::R(IntegerFieldError::WrongTag))
+        );
+    }
 }

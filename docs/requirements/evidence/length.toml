@@ -93,9 +93,39 @@ none = ""
 [[entry]]
 kind = "test"
 file = "der-verified/src/length.rs"
+name = "accepts_definite_length_forms"
+accept = ["X690-8.1.3.1"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/length.rs"
+name = "accepts_long_form_first_octets_other_than_0x80"
+accept = ["X690-8.1.3.6.1"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/length.rs"
 name = "long_form_canonical_examples"
 accept = ["X690-8.1.3.2", "X690-8.1.3.3", "X690-8.1.3.5", "X690-10.1", "CODEC-length-decode-encode", "PROF-length-u32-cap"]
 reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/length.rs"
+name = "rejects_alternate_spellings_of_one_length_value"
+accept = []
+reject = ["CODEC-length-unique", "CODEC-length-reject-nonder", "X690-7.4", "X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1"]
 prove = []
 bounded = ""
 none = ""
@@ -109,6 +139,16 @@ reject = []
 prove = []
 bounded = ""
 none = "empty length field is malformed, not a promised non-DER variant"
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/length.rs"
+name = "rejects_indefinite_form_followed_by_content_and_eoc"
+accept = []
+reject = ["X690-8.1.3.1", "X690-8.1.3.6.1", "X690-10.1"]
+prove = []
+bounded = ""
+none = ""
 
 [[entry]]
 kind = "test"
@@ -176,6 +216,16 @@ file = "der-verified/src/length.rs"
 name = "rejects_truncated_long_form"
 accept = []
 reject = ["X690-8.1.3.5"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/length.rs"
+name = "roundtrips_accepted_length_bytes_through_encoder"
+accept = ["CODEC-length-encode-decode", "CODEC-length-decode-encode", "X690-7.4"]
+reject = []
 prove = []
 bounded = ""
 none = ""

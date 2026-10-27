@@ -881,4 +881,76 @@ mod tests {
             );
         }
     }
+
+    // --- S4a additions: tests for rows that had no test in the role named ---
+
+    /// X690-8.5.1: REAL (UNIVERSAL 9) is encoded primitive. `09 00` is plus zero (no contents octets,
+    /// X690-8.5.2) and `09 03 80 FB 05` is a binary-encoded value; the primitive identifier `09` is
+    /// accepted and the contents are returned as they are.
+    #[test]
+    fn accepts_primitive_real_identifier() {
+        assert_eq!(validate_identifier_form(universal(9, false)), Ok(()));
+        let (tlv, used) = decode_tlv_form_checked(&[0x09, 0x00]).unwrap();
+        assert_eq!((tlv.tag, used), (universal(9, false), 2));
+        assert_eq!(tlv.value, &[] as &[u8]);
+        let (tlv, used) = decode_tlv_form_checked(&[0x09, 0x03, 0x80, 0xFB, 0x05]).unwrap();
+        assert_eq!((tlv.tag, used), (universal(9, false), 5));
+        assert_eq!(tlv.value, &[0x80, 0xFB, 0x05]);
+    }
+
+    /// X690-8.5.1: a constructed REAL identifier (`29`) is rejected as `MustBePrimitive`, with or
+    /// without contents.
+    #[test]
+    fn rejects_constructed_real_identifier() {
+        assert_eq!(validate_identifier_form(universal(9, true)), Err(FormError::MustBePrimitive));
+        assert_eq!(
+            decode_tlv_form_checked(&[0x29, 0x00]),
+            Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        );
+        assert_eq!(
+            decode_tlv_form_checked(&[0x29, 0x03, 0x80, 0xFB, 0x05]),
+            Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        );
+    }
+
+    /// X690-8.20.1: RELATIVE-OID (UNIVERSAL 13) is encoded primitive. `0D 03 01 02 03` is accepted.
+    #[test]
+    fn accepts_primitive_relative_oid_identifier() {
+        assert_eq!(validate_identifier_form(universal(13, false)), Ok(()));
+        let (tlv, used) = decode_tlv_form_checked(&[0x0D, 0x03, 0x01, 0x02, 0x03]).unwrap();
+        assert_eq!((tlv.tag, used), (universal(13, false), 5));
+        assert_eq!(tlv.value, &[0x01, 0x02, 0x03]);
+    }
+
+    /// X690-8.20.1: a constructed RELATIVE-OID identifier (`2D`) is rejected as `MustBePrimitive`.
+    #[test]
+    fn rejects_constructed_relative_oid_identifier() {
+        assert_eq!(validate_identifier_form(universal(13, true)), Err(FormError::MustBePrimitive));
+        assert_eq!(
+            decode_tlv_form_checked(&[0x2D, 0x03, 0x01, 0x02, 0x03]),
+            Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        );
+    }
+
+    /// X690-8.26.1.1: TIME (UNIVERSAL 14) is encoded primitive. `0E 0A` and ten UTF-8 octets of the
+    /// value notation are accepted; the contents are opaque to this module.
+    #[test]
+    fn accepts_primitive_time_identifier() {
+        assert_eq!(validate_identifier_form(universal(14, false)), Ok(()));
+        let input = [0x0Eu8, 0x0A, 0x32, 0x30, 0x32, 0x36, 0x2D, 0x31, 0x30, 0x2D, 0x32, 0x37];
+        let (tlv, used) = decode_tlv_form_checked(&input).unwrap();
+        assert_eq!((tlv.tag, used), (universal(14, false), 12));
+        assert_eq!(tlv.value, &input[2..]);
+    }
+
+    /// X690-8.26.1.1: a constructed TIME identifier (`2E`) is rejected as `MustBePrimitive`.
+    #[test]
+    fn rejects_constructed_time_identifier() {
+        assert_eq!(validate_identifier_form(universal(14, true)), Err(FormError::MustBePrimitive));
+        let input = [0x2Eu8, 0x0A, 0x32, 0x30, 0x32, 0x36, 0x2D, 0x31, 0x30, 0x2D, 0x32, 0x37];
+        assert_eq!(
+            decode_tlv_form_checked(&input),
+            Err(CheckedTlvError::Form(FormError::MustBePrimitive))
+        );
+    }
 }
