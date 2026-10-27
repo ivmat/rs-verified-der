@@ -688,11 +688,26 @@ mod proofs {
         }
     }
 
+    /// The in-repertoire-but-refused branch for IA5String (its ESC octet): a cover that the branch is
+    /// reached. Passed ONLY by the IA5 harness, so the cover is reachable in that harness alone (an
+    /// unreachable cover would count as unsatisfied in the other three).
+    fn esc_branch_ia5(_cs: Charset) {
+        kani::cover(true, "IA5String ESC content reached");
+    }
+
+    /// The same branch for the other three charsets: it must be impossible, so it is asserted (dead
+    /// but still checked); no cover is placed here.
+    fn esc_branch_other(cs: Charset) {
+        assert!(matches!(cs, Charset::Ia5), "only IA5String refuses an in-repertoire octet");
+    }
+
     /// Shared body: classify `decode_restricted_string(buf[..len], cs)` exactly.
     /// Expected result, in the documented check order: envelope error (reference `decode_tlv`) ->
     /// `WrongTag` (class != UNIVERSAL or number != charset's) -> `Constructed` -> first
     /// out-of-charset content octet (position + byte) -> `Ok((tlv.value, used))`.
-    fn check_decode_faithful(cs: Charset) {
+    /// `on_esc` is the in-repertoire-but-refused branch hook, chosen per harness (IA5 passes the
+    /// cover, the others pass the impossibility assertion); every other check is shared.
+    fn check_decode_faithful(cs: Charset, on_esc: fn(Charset)) {
         let buf: [u8; 6] = kani::any();
         let len: usize = kani::any();
         kani::assume(len <= 6);
@@ -725,7 +740,7 @@ mod proofs {
                         Some(p) => {
                             if oracle_of(cs, v[p]) {
                                 // only IA5String's ESC octet is in the repertoire yet refused
-                                kani::cover(true, "IA5String ESC content reached");
+                                on_esc(cs);
                                 assert!(r == Err(StringError::Ia5Escape { position: p }));
                             } else {
                                 kani::cover(true, "out-of-charset content reached");
@@ -753,25 +768,25 @@ mod proofs {
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_is_faithful_printable() {
-        check_decode_faithful(Charset::Printable);
+        check_decode_faithful(Charset::Printable, esc_branch_other);
     }
 
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_is_faithful_ia5() {
-        check_decode_faithful(Charset::Ia5);
+        check_decode_faithful(Charset::Ia5, esc_branch_ia5);
     }
 
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_is_faithful_numeric() {
-        check_decode_faithful(Charset::Numeric);
+        check_decode_faithful(Charset::Numeric, esc_branch_other);
     }
 
     #[kani::proof]
     #[kani::unwind(16)]
     fn decode_is_faithful_visible() {
-        check_decode_faithful(Charset::Visible);
+        check_decode_faithful(Charset::Visible, esc_branch_other);
     }
 
     // -----------------------------------------------------------------------
