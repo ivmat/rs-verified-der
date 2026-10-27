@@ -1210,6 +1210,76 @@ mod tests {
         );
     }
 
+    // --- S4b-B4: an EXPLICIT wrapper holds exactly one complete inner value (X690-8.14.2/8.14.3).
+    //     `decode_explicit_context` does not check this; `validate_parameters_inner` and
+    //     `decode_public_key_tlv` do.
+
+    #[test]
+    fn rejects_parameters_wrapper_truncated_inner_tlv() {
+        // The [0] wrapper (`A0 02`) is itself well-formed, but its inner OID declares 5 content
+        // octets and none follow (`06 05`). Outer content: 3 + 2 + 4 = 9 (0x09).
+        let bytes = [
+            0x30, 0x09,
+                0x02, 0x01, 0x01,
+                0x04, 0x00,
+                0xA0, 0x02, 0x06, 0x05,
+        ];
+        assert_eq!(
+            parse_ec_private_key(&bytes),
+            Err(EcPrivateKeyError::Parameters(ParametersError::InnerTlv(TlvError::Truncated)))
+        );
+    }
+
+    #[test]
+    fn rejects_public_key_wrapper_empty() {
+        // A well-formed, EMPTY [1] EXPLICIT wrapper (`A1 00`): the wrapper holds no inner TLV.
+        // Outer content: 3 + 2 + 2 = 7 (0x07).
+        let bytes = [
+            0x30, 0x07,
+                0x02, 0x01, 0x01,
+                0x04, 0x00,
+                0xA1, 0x00,
+        ];
+        assert_eq!(
+            parse_ec_private_key(&bytes),
+            Err(EcPrivateKeyError::PublicKey(PublicKeyError::InnerTlv(TlvError::Tag(
+                crate::tag::TagError::Truncated
+            ))))
+        );
+    }
+
+    #[test]
+    fn rejects_public_key_wrapper_truncated_inner_tlv() {
+        // The [1] wrapper (`A1 02`) is well-formed, but its inner BIT STRING declares 5 content
+        // octets and none follow (`03 05`). Outer content: 3 + 2 + 4 = 9 (0x09).
+        let bytes = [
+            0x30, 0x09,
+                0x02, 0x01, 0x01,
+                0x04, 0x00,
+                0xA1, 0x02, 0x03, 0x05,
+        ];
+        assert_eq!(
+            parse_ec_private_key(&bytes),
+            Err(EcPrivateKeyError::PublicKey(PublicKeyError::InnerTlv(TlvError::Truncated)))
+        );
+    }
+
+    #[test]
+    fn rejects_parameters_wrapper_integer_plus_trailing_octet() {
+        // The [0] wrapper holds a complete INTEGER (`02 01 05`) plus one trailing octet (`AA`)
+        // inside the wrapper: `A0 04 02 01 05 AA`. Outer content: 3 + 2 + 6 = 11 (0x0b).
+        let bytes = [
+            0x30, 0x0B,
+                0x02, 0x01, 0x01,
+                0x04, 0x00,
+                0xA0, 0x04, 0x02, 0x01, 0x05, 0xAA,
+        ];
+        assert_eq!(
+            parse_ec_private_key(&bytes),
+            Err(EcPrivateKeyError::Parameters(ParametersError::InnerTrailing))
+        );
+    }
+
     #[test]
     fn rejects_wrong_order_public_key_then_parameters() {
         // [1] publicKey appears BEFORE [0] parameters -- the schema requires [0] then [1] in order.
