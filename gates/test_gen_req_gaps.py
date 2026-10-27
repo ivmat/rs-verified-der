@@ -92,9 +92,13 @@ class Tree:
     """A small temporary requirements tree."""
 
     def __init__(self, items: str, entries: dict[str, str] | None = None, overrides: str = "",
-                 sources: dict[str, str] | None = None):
+                 sources: dict[str, str] | None = None, files: dict[str, str] | None = None):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
+        for rel, text in (files or {}).items():  # extra files under the root, e.g. a gate script
+            target = self.root / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text)
         src = self.root / "der-verified" / "src"
         src.mkdir(parents=True)
         for name, text in (sources or {"enc": ENC_RS, "dec": DEC_RS}).items():
@@ -276,6 +280,102 @@ class RuleTests(unittest.TestCase):
         self.assertEqual(r.overall, "COVERED")
 
 
+GATE_OVERRIDE = '[[override]]\nid = "SAFE-a-1"\nneeds = ["gate"]\ngate = "gates/check_x.py"\nreason = "static source gate"\n'
+RUNS_GATE = '#!/usr/bin/env sh\necho "== x =="\npython3 "$ROOT/gates/check_x.py"\n'
+
+
+class GateRoleTests(unittest.TestCase):
+    def tree(self, files, overrides=GATE_OVERRIDE):
+        t = Tree(item("SAFE-a-1", parent="SAFE", modules=("dec",)), overrides=overrides, files=files)
+        self.addCleanup(t.close)
+        return t
+
+    def row(self, files, overrides=GATE_OVERRIDE):
+        return self.tree(files, overrides).by_id()["SAFE-a-1"]
+
+    def test_gate_met_when_file_exists_and_check_fast_runs_it(self):
+        r = self.row({"gates/check_x.py": "", "check_fast.sh": RUNS_GATE})
+        self.assertEqual(r.obligation.needs, ("gate",))
+        self.assertEqual(r.obligation.gate, "gates/check_x.py")
+        self.assertEqual(r.role_status, {"gate": "MET"})
+        self.assertEqual(r.overall, "COVERED")
+        self.assertEqual(r.missing, [])
+
+    def test_gate_missing_when_file_absent(self):
+        r = self.row({"check_fast.sh": RUNS_GATE})
+        self.assertEqual(r.role_status, {"gate": "MISSING"})
+        self.assertEqual(r.overall, "NONE")
+        self.assertEqual(r.missing, ["gate gates/check_x.py (file present and run by check_fast.sh)"])
+
+    def test_gate_missing_when_not_run_by_check_fast(self):
+        r = self.row({"gates/check_x.py": "", "check_fast.sh": '#!/usr/bin/env sh\npython3 "$ROOT/gates/other.py"\n'})
+        self.assertEqual(r.role_status, {"gate": "MISSING"})
+
+    def test_gate_missing_when_only_a_comment_or_a_longer_name_mentions_it(self):
+        for script in (
+            '# python3 "$ROOT/gates/check_x.py"\n',
+            'python3 "$ROOT/gates/test_check_x.py"\n',
+            'python3 "$ROOT/gates/check_x.py.bak"\n',
+            'python3 "$ROOT/gates/check_xy.py"\n',
+        ):
+            with self.subTest(script=script):
+                r = self.row({"gates/check_x.py": "", "check_fast.sh": "#!/usr/bin/env sh\n" + script})
+                self.assertEqual(r.role_status, {"gate": "MISSING"})
+
+    def test_gate_missing_when_check_fast_is_absent(self):
+        r = self.row({"gates/check_x.py": ""})
+        self.assertEqual(r.role_status, {"gate": "MISSING"})
+
+    def test_report_names_the_gate_in_the_header_and_the_work_list(self):
+        t = self.tree({"check_fast.sh": RUNS_GATE})
+        self.assertEqual(t.run()[0], 0)
+        text = t.out.read_text()
+        self.assertIn("role `gate`", text)
+        self.assertIn("- SAFE-a-1 [NONE]: missing gate gates/check_x.py", text)
+        self.assertIn("| SAFE-a-1 | title SAFE-a-1 | gate | gate:MISSING | NONE |", text)
+
+    def assertRed(self, overrides: str, fragment: str):
+        t = self.tree({}, overrides)
+        code, out = t.run()
+        self.assertEqual(code, 1, out)
+        self.assertIn(fragment, out)
+
+    def test_error_when_gate_key_is_missing(self):
+        self.assertRed('[[override]]\nid = "SAFE-a-1"\nneeds = ["gate"]\nreason = "r"\n', "needs a non-empty `gate` key")
+
+    def test_error_when_gate_key_is_empty(self):
+        self.assertRed('[[override]]\nid = "SAFE-a-1"\nneeds = ["gate"]\ngate = " "\nreason = "r"\n', "needs a non-empty `gate` key")
+
+    def test_error_when_gate_key_is_not_a_string(self):
+        self.assertRed('[[override]]\nid = "SAFE-a-1"\nneeds = ["gate"]\ngate = 3\nreason = "r"\n', "needs a non-empty `gate` key")
+
+    def test_error_when_gate_path_has_the_wrong_form(self):
+        for bad in ("tools/check_x.py", "gates/../check_x.py", "gates/check_x.sh", "check_x.py", "gates/sub/check_x.py"):
+            with self.subTest(gate=bad):
+                self.assertRed(
+                    f'[[override]]\nid = "SAFE-a-1"\nneeds = ["gate"]\ngate = "{bad}"\nreason = "r"\n',
+                    "must have the form gates/<file>.py",
+                )
+
+    def test_error_when_gate_key_is_set_without_the_role(self):
+        self.assertRed(
+            '[[override]]\nid = "SAFE-a-1"\nneeds = ["prove"]\ngate = "gates/check_x.py"\nreason = "r"\n',
+            "`gate` is not in needs",
+        )
+
+    def test_gate_can_sit_next_to_another_role(self):
+        t = Tree(
+            item("SAFE-a-1", parent="SAFE", modules=("dec",)),
+            {"dec": entry("kani", "dec", "k", prove=["SAFE-a-1"])},
+            overrides='[[override]]\nid = "SAFE-a-1"\nneeds = ["prove", "gate"]\ngate = "gates/check_x.py"\nreason = "r"\n',
+            files={"gates/check_x.py": "", "check_fast.sh": RUNS_GATE},
+        )
+        self.addCleanup(t.close)
+        r = t.by_id()["SAFE-a-1"]
+        self.assertEqual(r.role_status, {"prove": "MET", "gate": "MET"})
+        self.assertEqual(r.overall, "COVERED")
+
+
 class OverrideErrorTests(unittest.TestCase):
     def errors(self, overrides: str, items: str | None = None) -> tuple[int, str]:
         t = Tree(
@@ -376,6 +476,23 @@ class RealFilesTest(unittest.TestCase):
     def test_committed_report_is_current(self):
         done = self.run_gen("--check")
         self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+
+    def test_real_safe_resource_rows_are_covered_by_their_gates(self):
+        req = ROOT / "docs" / "requirements"
+        results, _, errors, status = gen_req_gaps.build(
+            ROOT, req / "der.inventory.toml", req / "evidence", req / "obligations.toml"
+        )
+        self.assertIsNotNone(results, (errors, status))
+        rows = {r.row["id"]: r for r in results}
+        for ident, gate in (
+            ("SAFE-resource-1", "gates/check_no_alloc.py"),
+            ("SAFE-resource-2", "gates/check_no_recursion.py"),
+        ):
+            with self.subTest(row=ident):
+                self.assertEqual(rows[ident].obligation.needs, ("gate",))
+                self.assertEqual(rows[ident].obligation.gate, gate)
+                self.assertEqual(rows[ident].role_status, {"gate": "MET"})
+                self.assertEqual(rows[ident].overall, "COVERED")
 
     def test_real_overrides_all_have_reasons(self):
         rows, status = gen_req_gaps.load_overrides(ROOT / "docs" / "requirements" / "obligations.toml")

@@ -11949,7 +11949,7 @@ force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = []
+modules = ["x509_name", "x509_extension"]
 note = "covers SIZE (1..MAX) element counts only"
 line = 7429
 

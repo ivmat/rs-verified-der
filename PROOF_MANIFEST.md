@@ -11,7 +11,7 @@ generated header.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "298 Kani harnesses, 6 Lean lids, 651 tests" describes how
+> **Counts are inventory, not coverage.** "298 Kani harnesses, 6 Lean lids, 662 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -90,7 +90,7 @@ deviations. Read the two differently.
 | `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 504 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 23 / 20 |
-| `#[test]` unit + regression tests | 651 |
+| `#[test]` unit + regression tests | 662 |
 | crate-doc examples run as doc-tests | 34 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
@@ -240,7 +240,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 651 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 662 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.

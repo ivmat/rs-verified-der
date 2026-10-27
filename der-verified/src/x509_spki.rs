@@ -596,4 +596,56 @@ mod tests {
             Err(SpkiError::BadParametersTlv(TlvError::Truncated))
         );
     }
+
+    // --- BIT STRING identifier at the subjectPublicKey position (X.690 8.6, X.680 22): the BIT
+    //     STRING codec sees content octets only, so the identifier octet is decided here. Each
+    //     input below spells the identifier as a literal octet. ---
+
+    /// A minimal SPKI with the given literal identifier octet for `subjectPublicKey`:
+    /// `30 0b` SEQUENCE { `30 05 06 03 2b 65 70` AlgorithmIdentifier, `<id> 02 00 aa` key }.
+    fn spki_with_key_identifier(id: u8) -> [u8; 13] {
+        [0x30, 0x0b, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, id, 0x02, 0x00, 0xaa]
+    }
+
+    #[test]
+    fn accepts_public_key_identifier_03_primitive() {
+        // Identifier 0x03 = UNIVERSAL class, primitive, number 3 (BIT STRING).
+        let bytes = [0x30, 0x0b, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x03, 0x02, 0x00, 0xaa];
+        let spki = parse_subject_public_key_info(&bytes).unwrap();
+        assert_eq!(spki.subject_public_key.unused, 0);
+        assert_eq!(spki.subject_public_key.data, &[0xaa]);
+        assert_eq!(spki.algorithm_oid, &[0x2b, 0x65, 0x70]);
+    }
+
+    #[test]
+    fn rejects_public_key_identifier_04() {
+        // 0x04 = UNIVERSAL OCTET STRING, primitive: a well-framed TLV that is not a BIT STRING.
+        assert_eq!(
+            parse_subject_public_key_info(&spki_with_key_identifier(0x04)),
+            Err(SpkiError::PublicKeyWrongTag)
+        );
+    }
+
+    #[test]
+    fn rejects_public_key_identifier_application_class_3() {
+        // 0x43 = APPLICATION class, primitive, number 3: the number matches but the class does not.
+        assert_eq!(
+            parse_subject_public_key_info(&spki_with_key_identifier(0x43)),
+            Err(SpkiError::PublicKeyWrongTag)
+        );
+        // 0x83 = context-specific class, number 3: same defect.
+        assert_eq!(
+            parse_subject_public_key_info(&spki_with_key_identifier(0x83)),
+            Err(SpkiError::PublicKeyWrongTag)
+        );
+    }
+
+    #[test]
+    fn rejects_public_key_identifier_23_constructed() {
+        // 0x23 = UNIVERSAL class, constructed, number 3: the BER segmented form, never DER.
+        assert_eq!(
+            parse_subject_public_key_info(&spki_with_key_identifier(0x23)),
+            Err(SpkiError::PublicKeyConstructed)
+        );
+    }
 }

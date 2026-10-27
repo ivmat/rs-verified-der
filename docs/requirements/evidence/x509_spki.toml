@@ -209,3 +209,43 @@ reject = ["RFC5280-4.1-f", "RFC5480-2", "RFC8410-4"]
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_spki.rs"
+name = "accepts_public_key_identifier_03_primitive"
+accept = ["X690-8.6", "X680-22"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_spki.rs"
+name = "rejects_public_key_identifier_04"
+accept = []
+reject = ["X690-8.6", "X680-22", "RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "X690-8.9.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_spki.rs"
+name = "rejects_public_key_identifier_application_class_3"
+accept = []
+reject = ["X690-8.6", "X680-22", "RFC5280-4.1-f", "RFC5480-2", "RFC8410-4", "X690-8.9.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_spki.rs"
+name = "rejects_public_key_identifier_23_constructed"
+accept = []
+reject = ["X690-8.6", "X680-22", "X690-10.2"]
+prove = []
+bounded = ""
+none = ""

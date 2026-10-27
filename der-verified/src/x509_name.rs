@@ -1071,4 +1071,24 @@ mod tests {
         // The empty RDNSequence itself is well-formed (an empty subject is a separate case).
         assert_eq!(validate_name(&[0x30, 0x00]), Ok(()));
     }
+
+    // --- RFC 5280 Appendix B: MAX is unspecified and an implementation chooses its own bound.
+    //     This crate's only bound is the u32 length cap, so a long RDNSequence is accepted. ---
+
+    #[test]
+    fn accepts_name_with_one_hundred_rdns() {
+        // 100 RDNs, each the single-ATV SET `31 0b 30 09 06 03 55 04 06 13 02 55 53` (C=US):
+        // 13 octets each, so the RDNSequence content is 1300 octets (0x0514) and the whole Name
+        // is 1304 octets: `30 82 05 14` + content.
+        const RDN: [u8; 13] =
+            [0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13, 0x02, 0x55, 0x53];
+        let mut name = vec![0x30, 0x82, 0x05, 0x14];
+        for _ in 0..100 {
+            name.extend_from_slice(&RDN);
+        }
+        assert_eq!(name.len(), 1304);
+        // The count of RDN children is 100, counted independently of the validator.
+        assert_eq!(crate::sequence::Elements::new(&name[4..]).count(), 100);
+        assert_eq!(validate_name(&name), Ok(()));
+    }
 }

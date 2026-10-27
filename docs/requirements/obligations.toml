@@ -183,3 +183,20 @@ reason = "every canonical first or later subidentifier is a valid value; no byte
 id = "X690-8.10.3"
 needs = ["accept"]
 reason = "SEQUENCE OF order is a property of the value; no byte string can violate it, so only preservation of order is testable"
+
+[[override]]
+id = "RFC5280-B-size-upper-bound"
+needs = ["accept"]
+reason = "MAX is unspecified and an implementation may choose any bound; the crate chooses none beyond the u32 length cap, so no element count is rejected and only acceptance of a long SIZE (1..MAX) list is testable"
+
+[[override]]
+id = "SAFE-resource-1"
+needs = ["gate"]
+gate = "gates/check_no_alloc.py"
+reason = "no heap allocation is a property of the source text, decided by a static scan of the shipped code (no Vec, Box, String, vec!, format!, to_vec, to_owned, collect, alloc, Rc, Arc); no byte string can violate it, so no test or proof harness applies"
+
+[[override]]
+id = "SAFE-resource-2"
+needs = ["gate"]
+gate = "gates/check_no_recursion.py"
+reason = "a bounded composition depth follows from an acyclic static call graph of the shipped code, decided by a static scan of the source text; no byte string can violate it, so no test or proof harness applies (macros, function pointers and dynamic dispatch are not resolved; see the gate's docstring)"

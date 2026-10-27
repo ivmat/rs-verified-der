@@ -339,3 +339,13 @@ reject = []
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_extension.rs"
+name = "accepts_extensions_with_sixty_four_distinct_extensions"
+accept = ["RFC5280-B-size-upper-bound"]
+reject = []
+prove = []
+bounded = ""
+none = ""

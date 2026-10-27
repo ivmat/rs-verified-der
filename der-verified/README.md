@@ -23,7 +23,7 @@ than that.
 - **L4 — Aeneas → Lean 4:** *selected properties* of six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) hold for **any input length**; `sequence` also covers any child count.
   The lids are `sorry`-free; `tag` canonicality *rejection* remains Kani-bounded at 7 bytes.
-- **651** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
+- **662** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
 
 > Read [`PROOF_MANIFEST.md`](https://github.com/ivmat/rs-verified-der/blob/main/PROOF_MANIFEST.md)
 > before relying on any of this — the honest proof envelope: exactly what is proven, under what bounds

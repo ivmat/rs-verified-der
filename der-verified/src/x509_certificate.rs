@@ -590,4 +590,47 @@ mod tests {
             Err(CertificateError::MissingSignatureAlgorithm)
         );
     }
+
+    // --- BIT STRING identifier at the signatureValue position (X.690 8.6, X.680 22): the BIT
+    //     STRING codec sees content octets only, so the identifier octet is decided here. ---
+
+    /// Absolute offset of the signatureValue identifier octet in `build_certificate()`: outer
+    /// header (3: `30 81 a7`) + tbsCertificate (155) + signatureAlgorithm (7).
+    const SIG_VALUE_ID_OFFSET: usize = 3 + 155 + 7;
+
+    #[test]
+    fn accepts_signature_value_identifier_03_primitive() {
+        // Identifier 0x03 = UNIVERSAL class, primitive, number 3 (BIT STRING).
+        let bytes = build_certificate();
+        assert_eq!(&bytes[SIG_VALUE_ID_OFFSET..], &[0x03, 0x03, 0x00, 0xAA, 0xBB]);
+        let cert = parse_certificate(&bytes).unwrap();
+        assert_eq!(cert.signature_value.unused, 0);
+        assert_eq!(cert.signature_value.data, &[0xAA, 0xBB]);
+    }
+
+    #[test]
+    fn rejects_signature_value_identifier_04() {
+        // 0x04 = UNIVERSAL OCTET STRING, primitive: well framed but not a BIT STRING.
+        let mut bytes = build_certificate();
+        bytes[SIG_VALUE_ID_OFFSET] = 0x04;
+        assert_eq!(parse_certificate(&bytes), Err(CertificateError::SignatureValueWrongTag));
+    }
+
+    #[test]
+    fn rejects_signature_value_identifier_application_class_3() {
+        // 0x43 = APPLICATION class, primitive, number 3; 0x83 = context-specific class, number 3.
+        for id in [0x43u8, 0x83] {
+            let mut bytes = build_certificate();
+            bytes[SIG_VALUE_ID_OFFSET] = id;
+            assert_eq!(parse_certificate(&bytes), Err(CertificateError::SignatureValueWrongTag), "id {id:#04x}");
+        }
+    }
+
+    #[test]
+    fn rejects_signature_value_identifier_23_constructed() {
+        // 0x23 = UNIVERSAL class, constructed, number 3: the BER segmented form, never DER.
+        let mut bytes = build_certificate();
+        bytes[SIG_VALUE_ID_OFFSET] = 0x23;
+        assert_eq!(parse_certificate(&bytes), Err(CertificateError::SignatureValueWrongTag));
+    }
 }

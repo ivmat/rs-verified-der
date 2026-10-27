@@ -42,10 +42,17 @@ MISSING-ENC. This is a lower bound: a test in an encoder module might still not 
 encoder. A later version should read the test bodies.
 
 OVERRIDES. `docs/requirements/obligations.toml` holds `[[override]]` rows with `id`, `needs`
-(a subset of accept, reject, prove, review) and `reason` (not empty). An override replaces the
+(a subset of accept, reject, prove, review, gate) and `reason` (not empty). An override replaces the
 default `needs` for that row completely. No encoder check is added to an overridden row. An
 override that names an unknown id, a row that is not `in`, an umbrella row, or that has an
 empty reason or an unknown role is an ERROR.
+
+THE `gate` ROLE. A requirement that no test or proof harness can decide, but that a static source
+gate under `gates/` decides on every commit (for example "no heap allocation"), may say
+`needs = ["gate"]` together with `gate = "gates/<file>.py"`. The role is MET when that file exists
+AND `check_fast.sh` runs it (a line of `check_fast.sh`, not a comment, names the path). Otherwise it
+is MISSING. It is an ERROR if `gate` is in `needs` and the `gate` key is absent, empty or not of the
+form `gates/<file>.py`, or if the `gate` key is present without `gate` in `needs`.
 
 STATUS
 ------
@@ -53,6 +60,7 @@ Role status:   MET (at least one test in that role), PROOF-ONLY (only Kani or Le
                role), MISSING, MISSING-ENC (accept tests exist, none in an encoder module),
                REVIEW (a review need; not evidence-driven).
                For `prove`: MET if at least one Kani or Lean entry proves the row.
+               For `gate`: MET if the named gate file exists and check_fast.sh runs it.
 Overall:       COVERED    every needed role is MET
                PARTIAL    some needed role is MET, not all
                PROOF-ONLY no needed role is MET, but Kani or Lean evidence exists on the row
@@ -83,13 +91,14 @@ import check_req_map  # noqa: E402  (shares loading and Rust comment stripping)
 
 ROOT = Path(__file__).resolve().parents[1]
 ROLES = ("accept", "reject", "prove")
-NEEDS = ("accept", "reject", "prove", "review")
+NEEDS = ("accept", "reject", "prove", "review", "gate")
 KINDS = ("test", "kani", "lean")
 STATUSES = ("COVERED", "PARTIAL", "PROOF-ONLY", "NONE", "REVIEW", "NOT-REQUIRED")
 ENCODE_RE = re.compile(r"\bpub\s+(?:const\s+|unsafe\s+)*fn\s+encode[A-Za-z0-9_]*")
 DECODER_SIDES = {"decoder", "both", "relying-party", "issuer"}
 ENCODER_SIDES = {"encoder", "both"}
-OVERRIDE_KEYS = {"id", "needs", "reason"}
+OVERRIDE_KEYS = {"id", "needs", "reason", "gate"}
+GATE_PATH_RE = re.compile(r"gates/[A-Za-z0-9_]+\.py")
 TITLE_MAX = 58
 BRANCH_ORDER = ("STD", "SAFE", "CODEC", "PROF", "API")
 BRANCH_TITLES = {
@@ -106,6 +115,8 @@ class Obligation:
     needs: tuple[str, ...]
     enc_accept: bool = False
     overridden: bool = False
+    gate: str = ""  # the gate file of a `gate` need, relative to the repository root
+    gate_active: bool = False  # the gate file exists and check_fast.sh runs it
 
 
 @dataclass
@@ -190,7 +201,28 @@ def check_overrides(overrides: list[dict[str, Any]], rows_by_id: dict[str, dict[
             for need in needs:
                 if need not in NEEDS:
                     errors.append(f"{label}: unknown role {need!r}")
+        gate = ov.get("gate")
+        wants_gate = isinstance(needs, list) and "gate" in needs
+        if wants_gate:
+            if not isinstance(gate, str) or not gate.strip():
+                errors.append(f"{label}: role `gate` needs a non-empty `gate` key")
+            elif not GATE_PATH_RE.fullmatch(gate):
+                errors.append(f"{label}: gate {gate!r} must have the form gates/<file>.py")
+        elif "gate" in ov:
+            errors.append(f"{label}: `gate` key is set but `gate` is not in needs")
     return errors
+
+
+def gate_is_active(root: Path, gate: str) -> bool:
+    """True if the gate file exists and a non-comment line of check_fast.sh names its path."""
+    if not (root / gate).is_file():
+        return False
+    try:
+        script = (root / "check_fast.sh").read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return False
+    pattern = re.compile(r"(?<![\w.-])" + re.escape(gate) + r"(?![\w.-])")
+    return any(pattern.search(line) for line in script.splitlines() if not line.lstrip().startswith("#"))
 
 
 def default_obligation(row: dict[str, Any], enc_modules: set[str]) -> Obligation:
@@ -287,6 +319,9 @@ def judge(result: RowResult) -> None:
         if need == "review":
             result.role_status[need] = "REVIEW"
             continue
+        if need == "gate":
+            result.role_status[need] = "MET" if ob.gate_active else "MISSING"
+            continue
         tests = counts[need]["test"]
         proofs = counts[need]["kani"] + counts[need]["lean"]
         if need == "prove":
@@ -317,7 +352,9 @@ def judge(result: RowResult) -> None:
         status = result.role_status[need]
         if status == "MET":
             continue
-        if need == "prove":
+        if need == "gate":
+            result.missing.append(f"gate {ob.gate} (file present and run by check_fast.sh)")
+        elif need == "prove":
             result.missing.append("proof (Kani or Lean)")
         elif status == "MISSING-ENC":
             result.missing.append("accept test in a module with an encoder")
@@ -351,6 +388,7 @@ def build(root: Path, inventory_path: Path, evidence_dir: Path, obligations_path
     if errors:
         return None, 0, errors, 1
     override_needs = {ov["id"]: tuple(ov["needs"]) for ov in overrides}
+    override_gate = {ov["id"]: ov["gate"] for ov in overrides if "gate" in ov}
     counts, enc_accept, per_kind = collect_counts(entries, enc_modules)
 
     results: list[RowResult] = []
@@ -364,6 +402,9 @@ def build(root: Path, inventory_path: Path, evidence_dir: Path, obligations_path
         ident = row["id"]
         if ident in override_needs:
             ob = Obligation(override_needs[ident], overridden=True)
+            if "gate" in ob.needs:
+                ob.gate = override_gate[ident]
+                ob.gate_active = gate_is_active(root, ob.gate)
         else:
             ob = default_obligation(row, enc_modules)
         branch, group = branch_of(row, groups)
@@ -415,8 +456,8 @@ def render(results: list[RowResult], skipped: int, overrides_count: int) -> str:
     out("It is not an acceptance manifest and it claims no assurance band.")
     out("")
     out("Inputs: the inventory, `docs/requirements/evidence/*.toml`,")
-    out("`docs/requirements/obligations.toml`, and the `pub fn encode` functions in")
-    out("`der-verified/src`.")
+    out("`docs/requirements/obligations.toml`, the `pub fn encode` functions in")
+    out("`der-verified/src`, and `check_fast.sh` (for the role `gate`).")
     out("")
     out("## Obligation rule")
     out("")
@@ -431,10 +472,14 @@ def render(results: list[RowResult], skipped: int, overrides_count: int) -> str:
     out("  encoder. This applies only if one of the row's modules has a `pub fn encode`.")
     out("  Limit: the maps do not show which tests call the encoder. The check is a lower bound.")
     out("- Umbrella rows are skipped. Their sentence rows carry the evidence.")
+    out("- An override may use the role `gate` with `gate = \"gates/<file>.py\"`. It is for a rule that a")
+    out("  static source gate decides on every commit. The role is MET if the file exists and")
+    out("  `check_fast.sh` runs it, and MISSING otherwise.")
     out(f"- `docs/requirements/obligations.toml` has {overrides_count} override rows. Each has a reason.")
     out("")
     out("Role status: MET (a test exists), PROOF-ONLY (only Kani or Lean exists in that role),")
     out("MISSING, MISSING-ENC (accept tests exist but none is in an encoder module), REVIEW.")
+    out("For the role `gate`: MET (the gate file exists and `check_fast.sh` runs it) or MISSING.")
     out("")
     out("## Totals")
     out("")
@@ -443,7 +488,7 @@ def render(results: list[RowResult], skipped: int, overrides_count: int) -> str:
     out("| status | rows | meaning |")
     out("|---|---|---|")
     meanings = {
-        "COVERED": "every needed role has a test",
+        "COVERED": "every needed role has a test (or, for the role `gate`, a gate that check_fast.sh runs)",
         "PARTIAL": "some needed role has a test, not all",
         "PROOF-ONLY": "no needed role has a test, but Kani or Lean evidence exists",
         "NONE": "no evidence in any needed role",

@@ -339,3 +339,13 @@ reject = ["CODEC-bit-string-unique", "CODEC-bit-string-reject-nonder", "X690-7.4
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/bit_string.rs"
+name = "encoded_content_is_a_bit_string_under_primitive_universal_identifier_03"
+accept = ["X690-8.6", "X680-22"]
+reject = []
+prove = []
+bounded = ""
+none = ""

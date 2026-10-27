@@ -694,4 +694,24 @@ mod tests {
         assert_eq!(decode_bit_string(&[0x07, 0xFF]), Err(BitStringError::NonZeroPadding));
         assert_eq!(decode_bit_string(&[0x07, 0x81]), Err(BitStringError::NonZeroPadding));
     }
+
+    #[test]
+    fn encoded_content_is_a_bit_string_under_primitive_universal_identifier_03() {
+        // The codec yields content octets only; the identifier is a TLV-layer matter. Wrap the
+        // encoder's output in a header with the literal identifier 0x03 (UNIVERSAL, primitive,
+        // number 3) and check that the TLV layer reads it back as a primitive BIT STRING.
+        let mut tlv = [0u8; 8];
+        tlv[0] = 0x03;
+        let w = encode_bit_string_into(&[0xF0], 4, &mut tlv[2..]).unwrap();
+        tlv[1] = w as u8;
+        assert_eq!(&tlv[..2 + w], &[0x03, 0x02, 0x04, 0xF0]);
+        let (parsed, used) = crate::tlv::decode_tlv(&tlv[..2 + w]).unwrap();
+        assert_eq!(used, 4);
+        assert_eq!(parsed.tag.class, crate::tag::Class::Universal);
+        assert_eq!(parsed.tag.number, 3);
+        assert!(!parsed.tag.constructed);
+        let bs = decode_bit_string(parsed.value).unwrap();
+        assert_eq!(bs.data, &[0xF0]);
+        assert_eq!(bs.unused, 4);
+    }
 }

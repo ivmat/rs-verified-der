@@ -51,3 +51,20 @@ python3 gates/check_req_map.py
 
 `python3 gates/check_req_map.py --report` prints accept, reject, and prove counts for every `in`
 inventory item. It does not write a file.
+
+## Roles in the test-gap report
+
+`python3 gates/gen_req_gaps.py` writes `../test-gaps.md` from these maps. Besides `accept`, `reject`
+and `prove`, an override in `../obligations.toml` may use the role `gate`:
+
+```toml
+[[override]]
+id = "SAFE-resource-1"
+needs = ["gate"]
+gate = "gates/check_no_alloc.py"
+reason = "..."
+```
+
+Use it only for a rule that a static source gate under `gates/` decides on every commit, so no map
+entry can cite the row. The role is MET when the named file exists and `check_fast.sh` runs it. It is
+MISSING otherwise. A `gate` role without a `gate = "gates/<file>.py"` key is an error.

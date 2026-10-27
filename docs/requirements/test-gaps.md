@@ -13,8 +13,8 @@ tests. It never replaces a test that a row needs. This is a working report for s
 It is not an acceptance manifest and it claims no assurance band.
 
 Inputs: the inventory, `docs/requirements/evidence/*.toml`,
-`docs/requirements/obligations.toml`, and the `pub fn encode` functions in
-`der-verified/src`.
+`docs/requirements/obligations.toml`, the `pub fn encode` functions in
+`der-verified/src`, and `check_fast.sh` (for the role `gate`).
 
 ## Obligation rule
 
@@ -29,10 +29,14 @@ Inputs: the inventory, `docs/requirements/evidence/*.toml`,
   encoder. This applies only if one of the row's modules has a `pub fn encode`.
   Limit: the maps do not show which tests call the encoder. The check is a lower bound.
 - Umbrella rows are skipped. Their sentence rows carry the evidence.
-- `docs/requirements/obligations.toml` has 35 override rows. Each has a reason.
+- An override may use the role `gate` with `gate = "gates/<file>.py"`. It is for a rule that a
+  static source gate decides on every commit. The role is MET if the file exists and
+  `check_fast.sh` runs it, and MISSING otherwise.
+- `docs/requirements/obligations.toml` has 38 override rows. Each has a reason.
 
 Role status: MET (a test exists), PROOF-ONLY (only Kani or Lean exists in that role),
 MISSING, MISSING-ENC (accept tests exist but none is in an encoder module), REVIEW.
+For the role `gate`: MET (the gate file exists and `check_fast.sh` runs it) or MISSING.
 
 ## Totals
 
@@ -40,10 +44,10 @@ Rows judged: 337. Umbrella rows skipped: 16.
 
 | status | rows | meaning |
 |---|---|---|
-| COVERED | 307 | every needed role has a test |
+| COVERED | 312 | every needed role has a test (or, for the role `gate`, a gate that check_fast.sh runs) |
 | PARTIAL | 0 | some needed role has a test, not all |
 | PROOF-ONLY | 0 | no needed role has a test, but Kani or Lean evidence exists |
-| NONE | 21 | no evidence in any needed role |
+| NONE | 16 | no evidence in any needed role |
 | REVIEW | 9 | only a human review is needed |
 
 Rows that are not COVERED and carry a known gap (`gap:` note): 16.
@@ -56,10 +60,10 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 |---|---|---|---|---|---|---|
 | X690-8.1.3.6.1 | Indefinite length uses the single octet 0x80 | accept, reject | accept:MET, reject:MET | COVERED | 2/0/1 |  |
 | X690-8.3.2 | INTEGER minimal sign representation | accept, reject | accept:MET, reject:MET | COVERED | 21/10/3 |  |
-| X690-8.6 | BIT STRING permits primitive or constructed form | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 |  |
+| X690-8.6 | BIT STRING permits primitive or constructed form | accept, reject | accept:MET, reject:MET | COVERED | 9/0/0 |  |
 | X690-8.19 | OID contents concatenate ordered subidentifier encodings | accept, reject | accept:MET, reject:MET | COVERED | 2/0/0 |  |
 | X690-10.1 | DER definite minimal lengths | accept, reject | accept:MET, reject:MET | COVERED | 45/3/11 |  |
-| X690-10.2 | DER primitive string forms | accept, reject | accept:MET, reject:MET | COVERED | 22/25/0 |  |
+| X690-10.2 | DER primitive string forms | accept, reject | accept:MET, reject:MET | COVERED | 24/25/0 |  |
 | X690-11.1 | DER BOOLEAN true octet | accept, reject | accept:MET, reject:MET | COVERED | 5/1/0 |  |
 | X690-11.5 | DER default values omitted | accept, reject | accept:MET, reject:MET | COVERED | 6/1/0 |  |
 | X690-11.6 | DER SET OF ordering | accept, reject | accept:MET, reject:MET | COVERED | 9/10/0 |  |
@@ -97,7 +101,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 | X690-8.8.1 | Primitive NULL | accept, reject | accept:MET, reject:MET | COVERED | 2/5/0 |  |
 | X690-8.8.2 | Empty NULL contents | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
 | X690-8.9.1 | Constructed SEQUENCE | accept, reject | accept:MET, reject:MET | COVERED | 15/10/0 |  |
-| X690-8.9.2 | SEQUENCE components in definition order | accept, reject | accept:MET, reject:MET | COVERED | 101/23/0 |  |
+| X690-8.9.2 | SEQUENCE components in definition order | accept, reject | accept:MET, reject:MET | COVERED | 105/23/0 |  |
 | X690-8.9.3 | OPTIONAL and DEFAULT components | accept, reject | accept:MET, reject:MET | COVERED | 13/3/0 |  |
 | X690-8.10.1 | Constructed SEQUENCE OF | accept, reject | accept:MET, reject:MET | COVERED | 12/12/0 |  |
 | X690-8.10.2 | Complete homogeneous encodings | accept, reject | accept:MET, reject:MET | COVERED | 13/12/0 |  |
@@ -162,13 +166,13 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 |---|---|---|---|---|---|---|
 | RFC5280-4.1.2.5.1 | Certificate UTCTime seconds and zone | accept, reject | accept:MET, reject:MET | COVERED | 10/6/0 |  |
 | RFC5280-4.1.2.5.2 | Certificate GeneralizedTime excludes fractional seconds | accept, reject | accept:MET, reject:MET | COVERED | 11/3/0 |  |
-| RFC5280-4.1 | Certificate has three ordered fields | accept, reject | accept:MET, reject:MET | COVERED | 8/0/0 |  |
+| RFC5280-4.1 | Certificate has three ordered fields | accept, reject | accept:MET, reject:MET | COVERED | 10/0/0 |  |
 | RFC5280-4.1-a | TBSCertificate contains the signed certificate body | accept, reject | accept:MET, reject:MET | COVERED | 15/0/0 |  |
 | RFC5280-4.1-b | Version enumerates v1 through v3 | accept, reject | accept:MET, reject:MET | COVERED | 7/0/0 |  |
 | RFC5280-4.1-c | Certificate serial number is an INTEGER | accept, reject | accept:MET, reject:MET | COVERED | 5/0/0 |  |
 | RFC5280-4.1-d | Validity contains notBefore and notAfter | accept, reject | accept:MET, reject:MET | COVERED | 9/7/0 |  |
 | RFC5280-4.1-e | Time selects UTCTime or GeneralizedTime | accept, reject | accept:MET, reject:MET | COVERED | 7/6/0 |  |
-| RFC5280-4.1-f | SubjectPublicKeyInfo contains algorithm and key bits | accept, reject | accept:MET, reject:MET | COVERED | 11/1/0 |  |
+| RFC5280-4.1-f | SubjectPublicKeyInfo contains algorithm and key bits | accept, reject | accept:MET, reject:MET | COVERED | 13/1/0 |  |
 | RFC5280-4.1-g | Extensions is a nonempty sequence | accept, reject | accept:MET, reject:MET | COVERED | 7/6/0 |  |
 | RFC5280-4.1-h | Extension carries identifier criticality and value | accept, reject | accept:MET, reject:MET | COVERED | 16/5/0 |  |
 | RFC5280-4.1.1.2 | Outer and inner signature algorithms match | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
@@ -198,8 +202,8 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 | RFC5280-4.1.2.8-b | CAs omit unique identifiers | accept, reject | accept:MET, reject:MET | COVERED | 2/0/0 |  |
 | RFC5280-4.1.2.9 | Extensions appear only in version three | accept, reject | accept:MET, reject:MET | COVERED | 6/2/0 |  |
 | RFC5280-4.2-c | Each extension identifier appears at most once | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| RFC5280-4.1.1.3-a | The certificate signature value is a BIT STRING | accept, reject | accept:MET, reject:MET | COVERED | 3/0/0 |  |
-| RFC5280-B-size-upper-bound | Implementations choose practical bounds for ASN.1 MAX | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 |  |
+| RFC5280-4.1.1.3-a | The certificate signature value is a BIT STRING | accept, reject | accept:MET, reject:MET | COVERED | 5/0/0 |  |
+| RFC5280-B-size-upper-bound | Implementations choose practical bounds for ASN.1 MAX | accept | accept:MET | COVERED | 2/0/0 |  |
 | RFC5280-B-printable-specials | PrintableString does not admit at-sign or underscore | accept, reject | accept:MET, reject:MET | COVERED | 4/4/0 |  |
 
 ### STD source X680
@@ -224,7 +228,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 | X680-18 | BOOLEAN has universal tag 1 | accept | accept:MET | COVERED | 1/0/0 |  |
 | X680-19 | INTEGER has universal tag 2 | accept | accept:MET | COVERED | 2/0/0 |  |
 | X680-20 | ENUMERATED has universal tag 10 | accept | accept:MET | COVERED | 1/0/0 |  |
-| X680-22 | BIT STRING has universal tag 3 | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 |  |
+| X680-22 | BIT STRING has universal tag 3 | accept, reject | accept:MET, reject:MET | COVERED | 9/0/0 |  |
 | X680-23 | OCTET STRING has universal tag 4 | accept, reject | accept:MET, reject:MET | COVERED | 5/4/0 |  |
 | X680-24 | NULL has universal tag 5 | accept | accept:MET | COVERED | 1/0/0 |  |
 | X680-25 | SEQUENCE has universal tag 16 | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
@@ -306,7 +310,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 
 | id | title | needs | role status | status | test/kani/lean | known gap |
 |---|---|---|---|---|---|---|
-| RFC5480-2 | EC SubjectPublicKeyInfo has two fields | accept, reject | accept:MET, reject:MET | COVERED | 10/1/0 |  |
+| RFC5480-2 | EC SubjectPublicKeyInfo has two fields | accept, reject | accept:MET, reject:MET | COVERED | 12/1/0 |  |
 | RFC5480-2-a | AlgorithmIdentifier has OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 12/1/0 |  |
 
 ### STD source RFC8410
@@ -314,8 +318,8 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 | id | title | needs | role status | status | test/kani/lean | known gap |
 |---|---|---|---|---|---|---|
 | RFC8410-3-a | AlgorithmIdentifier contains OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 12/1/0 |  |
-| RFC8410-4 | Safe-curve SPKI has algorithm and key bits | accept, reject | accept:MET, reject:MET | COVERED | 9/1/0 |  |
-| RFC8410-6 | Certificate signature has three fields | accept, reject | accept:MET, reject:MET | COVERED | 8/0/0 |  |
+| RFC8410-4 | Safe-curve SPKI has algorithm and key bits | accept, reject | accept:MET, reject:MET | COVERED | 11/1/0 |  |
+| RFC8410-6 | Certificate signature has three fields | accept, reject | accept:MET, reject:MET | COVERED | 10/0/0 |  |
 
 ### STD source RFC3629
 
@@ -343,8 +347,8 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 | SAFE-overread-1 | Accepted TLV decoding never reads beyond input | prove | prove:MET | COVERED | 1/2/2 |  |
 | SAFE-overread-2 | Sequence child walking never overreads | prove | prove:MET | COVERED | 1/1/3 |  |
 | SAFE-overread-3 | SET OF child walking never overreads | prove | prove:MET | COVERED | 0/2/0 |  |
-| SAFE-resource-1 | Decode paths allocate no heap memory | prove | prove:MISSING | NONE | 0/0/0 |  |
-| SAFE-resource-2 | Composition depth is statically bounded | prove | prove:MISSING | NONE | 0/0/0 |  |
+| SAFE-resource-1 | Decode paths allocate no heap memory | gate | gate:MET | COVERED | 0/0/0 |  |
+| SAFE-resource-2 | Composition depth is statically bounded | gate | gate:MET | COVERED | 0/0/0 |  |
 
 ## CODEC: Codec laws
 
@@ -472,27 +476,14 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 Every row that is not COVERED, grouped by its first listed module.
 Each line says which test role is missing.
 
-### bit_string (2 rows)
-
-- X690-8.6 [NONE]: missing accept test; missing reject test.
-- X680-22 [NONE]: missing accept test; missing reject test.
-
 ### context_tag (1 row)
 
 - X690-8.14.2 [NONE]: missing accept test; missing reject test. Known gap.
-
-### lib (1 row)
-
-- SAFE-resource-1 [NONE]: missing proof (Kani or Lean).
 
 ### restricted_string (2 rows)
 
 - X690-8.23.5.1 [NONE]: missing accept test; missing reject test. Known gap.
 - X690-8.23.5.3 [NONE]: missing accept test; missing reject test. Known gap.
-
-### sequence (1 row)
-
-- SAFE-resource-2 [NONE]: missing proof (Kani or Lean).
 
 ### utf8_string (7 rows)
 
@@ -513,12 +504,11 @@ Each line says which test role is missing.
 - X501-9.3-g [NONE]: missing accept test; missing reject test. Known gap.
 - RFC5280-4.1.2.4 [NONE]: missing accept test; missing reject test. Known gap.
 
-### (no module) (4 rows)
+### (no module) (3 rows)
 
 - PROF-P-5 [NONE]: missing accept test; missing reject test. Known gap.
 - PROF-P-6 [NONE]: missing accept test; missing reject test. Known gap.
 - PROF-P-7 [NONE]: missing accept test; missing reject test. Known gap.
-- RFC5280-B-size-upper-bound [NONE]: missing accept test; missing reject test.
 
 ### Review-only rows (no test obligation)
 

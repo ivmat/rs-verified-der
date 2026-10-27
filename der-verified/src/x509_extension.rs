@@ -1191,4 +1191,20 @@ mod tests {
             Err(ExtensionsError::BadExtension(ExtensionError::BadCritical(BoolError::NonCanonical)))
         );
     }
+
+    // --- RFC 5280 Appendix B: MAX is unspecified and an implementation chooses its own bound.
+    //     This crate's only bound is the u32 length cap, so a long Extensions list is accepted. ---
+
+    #[test]
+    fn accepts_extensions_with_sixty_four_distinct_extensions() {
+        // 64 Extension members `30 09 06 03 55 1d <n> 04 02 30 00`, n = 1..=64 (OID 2.5.29.n, all
+        // distinct): 11 octets each, so the content is 704 octets (0x02c0) and the whole
+        // Extensions SEQUENCE is 708 octets: `30 82 02 c0` + content.
+        let mut input = vec![0x30, 0x82, 0x02, 0xc0];
+        for n in 1u8..=64 {
+            input.extend_from_slice(&[0x30, 0x09, 0x06, 0x03, 0x55, 0x1d, n, 0x04, 0x02, 0x30, 0x00]);
+        }
+        assert_eq!(input.len(), 708);
+        assert_eq!(validate_extensions(&input), Ok(()));
+    }
 }

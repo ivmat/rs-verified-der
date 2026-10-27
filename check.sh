@@ -17,6 +17,14 @@ echo "== test-gap report gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_gen_req_gaps.py"
 echo "== test-gap report gate (test-gaps.md vs maps and inventory; pure stdlib) =="
 python3 "$ROOT/gates/gen_req_gaps.py" --check
+echo "== no-heap-allocation gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_check_no_alloc.py"
+echo "== no-heap-allocation gate (SAFE-resource-1: shipped code names no allocating type or macro; pure stdlib) =="
+python3 "$ROOT/gates/check_no_alloc.py"
+echo "== no-recursion gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_check_no_recursion.py"
+echo "== no-recursion gate (SAFE-resource-2: the static call graph of the shipped code has no cycle; pure stdlib) =="
+python3 "$ROOT/gates/check_no_recursion.py"
 echo "== proof-manifest gate: self-test (the gate's own gate; pure stdlib) =="
 # Runs BEFORE the gate it tests. Both directions are covered: the gate must not fail an honest
 # third party whose toolchain differs from ours, and must still fail on a drifted count or pin.
