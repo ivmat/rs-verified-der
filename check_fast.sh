@@ -21,6 +21,10 @@ echo "== requirement-evidence-map gate: self-test (the gate's own gate; pure std
 python3 "$ROOT/gates/test_check_req_map.py"
 echo "== requirement-evidence-map gate (maps vs source and inventory; pure stdlib) =="
 python3 "$ROOT/gates/check_req_map.py"
+echo "== test-gap report gate: self-test (the gate's own gate; pure stdlib) =="
+python3 "$ROOT/gates/test_gen_req_gaps.py"
+echo "== test-gap report gate (test-gaps.md vs maps and inventory; pure stdlib) =="
+python3 "$ROOT/gates/gen_req_gaps.py" --check
 echo "== proof-manifest gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_gen_proof_manifest.py"
 echo "== proof-manifest gate (PROOF_MANIFEST.md vs source; pure stdlib) =="

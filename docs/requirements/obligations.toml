@@ -1,0 +1,150 @@
+# Per-row test obligation overrides, read by gates/gen_req_gaps.py.
+#
+# The generator applies a default obligation to every `in` row (see the docstring of
+# gates/gen_req_gaps.py). An override REPLACES the default `needs` for one row. Use it only
+# where the default is clearly wrong, for example a definition or permission that no byte
+# string can violate, so only acceptance is testable.
+#
+# Fields: id (an `in`, non-umbrella inventory row), needs (a subset of "accept", "reject",
+# "prove", "review"), reason (not empty). Unknown ids, non-`in` rows, empty reasons and
+# unknown roles are errors.
+
+[[override]]
+id = "X680-8a"
+needs = ["accept"]
+reason = "tag numbers are defined as nonnegative; no encoded tag can be negative, so nothing is rejectable"
+
+[[override]]
+id = "X680-8b"
+needs = ["accept"]
+reason = "the universal tag table is a definition; the decoder can only accept the assigned tags"
+
+[[override]]
+id = "X680-22m"
+needs = ["accept"]
+reason = "definition of leading and trailing bits; no violating byte string exists"
+
+[[override]]
+id = "X680-22n"
+needs = ["accept"]
+reason = "named bits do not restrict the value set; a permission, so only acceptance is testable"
+
+[[override]]
+id = "X680-25t"
+needs = ["accept"]
+reason = "OPTIONAL and DEFAULT components may be omitted; a permission, so only acceptance is testable"
+
+[[override]]
+id = "X680-28e"
+needs = ["accept"]
+reason = "SET OF permits repeated values; a permission, so only acceptance is testable"
+
+[[override]]
+id = "X680-31i"
+needs = ["accept"]
+reason = "a prefixed type changes tags without changing values; a definition, so only acceptance is testable"
+
+[[override]]
+id = "X680-31k"
+needs = ["accept"]
+reason = "encoding prefixes do not change abstract values; a definition with no violating input"
+
+[[override]]
+id = "X680-39a"
+needs = ["accept"]
+reason = "a repertoire cell maps to its own abstract character; a definition with no violating input"
+
+[[override]]
+id = "RFC5280-4.1.2.1-d"
+needs = ["accept"]
+reason = "decoders must recognize version three; the sentence names no violation to reject"
+
+[[override]]
+id = "RFC5280-4.1.2.2-c"
+needs = ["accept"]
+reason = "decoders must handle serials up to twenty octets; the sentence names no violation to reject"
+
+[[override]]
+id = "RFC5280-4.1.2.2-e"
+needs = ["accept"]
+reason = "decoders should handle nonpositive serials gracefully; this is an acceptance rule"
+
+[[override]]
+id = "RFC5280-4.1.2.4-e"
+needs = ["accept"]
+reason = "structural acceptance of required issuer attributes; an acceptance rule"
+
+[[override]]
+id = "RFC5280-4.1.2.4-f"
+needs = ["accept"]
+reason = "structural acceptance of standard issuer attributes; an acceptance rule"
+
+[[override]]
+id = "RFC5280-4.1.2.4-g"
+needs = ["accept"]
+reason = "structural acceptance of additional issuer attributes; an acceptance rule"
+
+[[override]]
+id = "RFC5280-4.1.2.4-h"
+needs = ["accept"]
+reason = "structural acceptance of domainComponent attributes; an acceptance rule"
+
+[[override]]
+id = "RFC5280-4.1.2.5-a"
+needs = ["accept"]
+reason = "decoders accept either Time alternative; an acceptance rule"
+
+[[override]]
+id = "RFC5280-4.1.2.5.1-b"
+needs = ["accept"]
+reason = "the UTCTime year pivot maps values; a mapping rule with no violating input"
+
+[[override]]
+id = "RFC5280-4.1.2.5.1c"
+needs = ["accept"]
+reason = "years 50 to 99 mean 19YY; a mapping rule with no violating input"
+
+[[override]]
+id = "RFC5280-4.1.2.5.1d"
+needs = ["accept"]
+reason = "years 00 to 49 mean 20YY; a mapping rule with no violating input"
+
+[[override]]
+id = "RFC5280-4.1.2.6-d"
+needs = ["accept"]
+reason = "structural acceptance of required subject attributes; an acceptance rule"
+
+[[override]]
+id = "RFC5280-4.1.2.6-e"
+needs = ["accept"]
+reason = "structural acceptance of recommended subject attributes; an acceptance rule"
+
+[[override]]
+id = "PROF-lenient-trailing"
+needs = ["accept"]
+reason = "composable decoders return the consumed length; a behaviour decision with no violating input (strict entry points are covered by PROF-strict-trailing)"
+
+[[override]]
+id = "PROF-sequence-framing-only"
+needs = ["accept"]
+reason = "sequence walking defers child content checks; a behaviour decision with no violating input"
+
+[[override]]
+id = "PROF-bit-string-preserve-zero-bits"
+needs = ["accept"]
+reason = "trailing zero bits are preserved; a behaviour decision with no violating input"
+
+[[override]]
+id = "SAFE-unsafe-1"
+needs = ["review"]
+reason = "enforced by #![forbid(unsafe_code)] in lib.rs, which the compiler checks; no test or proof harness applies, so it is a review item"
+
+[[override]]
+id = "X690-8.1.1.4"
+needs = ["review"]
+reason = "the crate has no subtype-constraint or extension-marker feature, so no byte string can violate this declarative sentence"
+
+[[override]]
+id = "X690-10"
+needs = ["review"]
+reason = "a composition statement (DER = basic encoding plus clauses 10 and 11); the clause 10 and 11 rows carry the evidence"
