@@ -2292,3 +2292,68 @@ Kani floor already runs on the shipped configuration; zero runtime dependencies;
 **Not a claim/reality gap today.** `PROOF_MANIFEST.md` no longer asserts `no_std` — that wording was
 corrected on 2026-08-17, separately from this decision, because it was a false statement rather than
 a design choice.
+
+## D37 — Profile rules P-12, P-13, P-14: duplicate extension ids, empty issuer, repeated RDN attribute type (2026-10-27)  ·  landed
+
+**Context.** `validate_extensions`, `validate_name` and `set_of` accept a repeated extnID, an empty issuer Name and a
+repeated attribute type in one RDN. RFC 5280 §4.2, RFC 5280 §4.1.2.4 and X.501 §9.3 forbid these. Owner decisions
+G1, G2, G3 = A (2026-10-27, `owner-drafts` packet in the control repo).
+
+**Decision.** The three checks are profile rules in `profile::validate_profile` (rules 5–7, after the existing four),
+not structural parser checks. This keeps the heavy `x509_name` and `x509_extension` harnesses unchanged. New
+`ProfileError` variants: `DuplicateExtension`, `EmptyIssuer`, `IssuerDuplicateAttributeType`,
+`SubjectDuplicateAttributeType`. Ids and types are compared as canonical OID content octets, so a prefix is not a
+duplicate. Precedence: rules 1–4, P-12, P-13, P-14 issuer, P-14 subject.
+
+**Consequence.** A caller that uses only `validate_extensions` or `validate_name` still accepts these inputs. The walks are
+quadratic in the element count and allocation-free. An empty subject stays legal. `validate_profile` is stricter (additive
+variants; the enum is `#[non_exhaustive]`).
+
+## D38 — IA5String rejects ESC; UTF8String rejects ESC, SO, SI, SS2, SS3 (2026-10-27)  ·  landed
+
+**Context.** X.690 Table 3 (§8.23.5.3) allows no explicit escape sequences in IA5String. §8.23.9 a)–f) forbids ISO 2022
+announcer, designation, invocation and shift sequences in UTF8String, and allows the other C0/C1 controls. Both decoders
+accepted these controls. Owner decision G4 = A.
+
+**Decision.** IA5String rejects the octet 0x1B (`StringError::Ia5Escape`). UTF8String rejects U+001B, U+000E, U+000F,
+U+008E and U+008F (`Utf8Error::ForbiddenControl`). Every other well-formed value stays accepted, including CR, LF, TAB,
+NEL and CSI. Ill-formed UTF-8 is reported before a forbidden control, so `IllFormed` keeps its position meaning.
+`Charset::contains` stays the X.680 repertoire, because ESC is an IA5 character; the escape rule lives in
+`validate_content`. The encoders refuse the same values.
+
+**Consequence.** Strings carrying these controls no longer decode. CSI-introduced control sequences (X.690 §8.23.9 e) stay
+accepted, by the owner's choice. `StringError` and `Utf8Error` are exhaustive enums, so the new variants are a breaking
+change for downstream exhaustive matches.
+
+## D39 — Identifier-form check on opaque value headers (2026-10-27)  ·  landed
+
+**Context.** ATV values and AlgorithmIdentifier parameters were framed as one TLV and nothing more, so `00 00`
+(end-of-contents) and impossible primitive/constructed forms were accepted (X.690 §8.1.5, §8.1.2.5). Owner decision G5 = A.
+
+**Decision.** `identifier_form::validate_identifier_form` is applied to the header of the ATV value
+(`NameError::AtvValueForm`) and of the AlgorithmIdentifier parameters (`AlgIdError::ParametersForm`, mapped by SPKI as
+`SpkiError::AlgorithmParametersForm` and inherited by PKCS#8). The check runs after framing and exact tiling.
+
+**Consequence.** Contents stay opaque: `02 00` and `06 00` are still accepted. The PKCS#8 `[0]` attributes wrapper is
+context-specific and its members are not decoded, so the check decides nothing there. Three exhaustive public enums gain a
+variant, which is a breaking change. The `validate_rdn` path gains one table lookup per ATV; its 17 GB harness is
+re-measured at the next full run.
+
+## D40 — EXPLICIT wrapper completeness is the callers' duty (2026-10-27)  ·  landed
+
+**Context.** `context_tag::decode_explicit_context` returns a wrapper's contents without checking that they are one
+complete encoding (`A0 00`, `A0 01 FF` and `A0 04 02 01 05 AA` are accepted). X.690 §8.14.2–§8.14.3 require exactly one.
+Owner decision G6 = A.
+
+**Decision.** Completeness is decided by the callers, each of which decodes its inner value strictly: the TBS version `[0]`
+(`VersionInnerTrailing` / `BadVersionInnerTlv`), the `ec_private_key` `[0]`/`[1]` wrappers (`InnerTrailing` / `InnerTlv`), and
+the TBS extensions `[3]` (through `validate_extensions`). The helper's doc states this and lists the callers.
+
+**Consequence.** No behaviour or API change. A future caller must decode its inner value strictly.
+
+## D41 — Basic constraints, key usage and name constraints are out of this milestone (2026-10-27)  ·  settled
+
+**Context.** Profile rules for basicConstraints, keyUsage and nameConstraints need decoders for those extension values (new
+modules and proofs). RFC 5280 §4.2.1 extension semantics are outside the structural scope. Owner decision G7 = A.
+
+**Decision.** PROF-P-5/6/7 are `excluded` for this milestone. A later milestone may add them as a scope of their own.

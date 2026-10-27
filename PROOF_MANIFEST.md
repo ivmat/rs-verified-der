@@ -11,7 +11,7 @@ generated header.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "298 Kani harnesses, 6 Lean lids, 662 tests" describes how
+> **Counts are inventory, not coverage.** "298 Kani harnesses, 6 Lean lids, 708 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -85,12 +85,12 @@ deviations. Read the two differently.
 | …named by at least one Kani harness | 83 |
 | …named by **no** Kani harness | **1** |
 | `#[kani::proof]` harnesses | 298 |
-| `kani::assume` harness preconditions, in harness bodies and in the input-generator helpers they call (narrow the proved domain; 29 of the total are in generator helpers) | 293 |
+| `kani::assume` harness preconditions, in harness bodies and in the input-generator helpers they call (narrow the proved domain; 29 of the total are in generator helpers) | 297 |
 | `kani::assume` inside stub bodies (constrain a stub's *return*, not an input) | 1 |
-| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 504 |
+| `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 528 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 23 / 20 |
-| `#[test]` unit + regression tests | 662 |
+| `#[test]` unit + regression tests | 708 |
 | crate-doc examples run as doc-tests | 34 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
@@ -240,7 +240,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 662 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 708 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.
@@ -470,8 +470,8 @@ Reading the `symbolic [u8; N]` column: it reports syntactically declared array s
 | `octet_string` | 2 | 2 | 8 | 3..16 | 16..17 | 10 | 11 | 0 |  |
 | `oid` | 1 | 1 | 5 | 4..6 | 8 | 5 | 2 | 0 | ✅ |
 | `pkcs8` | 2 | 2 | 4 | 16..48 | 20 | 3 | 20 | 0 |  |
-| `profile` | 1 | 1 | 8 | 1..4 | 4..6 | 8 | 42 | 0 |  |
-| `restricted_string` | 14 | 13 | 42 | 3..16 | 6..16 | 37 | 17 | 0 |  |
+| `profile` | 1 | 1 | 8 | 1..6 | 4..8 | 11 | 57 | 0 |  |
+| `restricted_string` | 14 | 13 | 42 | 3..16 | 6..16 | 37 | 18 | 0 |  |
 | `rsa_private_key` | 2 | 2 | 23 | 16..317 | 5..20 | 21 | 71 | 16 |  |
 | `rsa_public_key` | 2 | 2 | 4 | 16..270 | 20 | 3 | 19 | 0 |  |
 | `sequence` | 6 | 6 | 7 | 8..16 | 16 | 3 | 4 | 0 | ✅ |
@@ -479,11 +479,11 @@ Reading the `symbolic [u8; N]` column: it reports syntactically declared array s
 | `tag` | 2 | 2 | 7 | 7 | 12 | 6 | 2 | 0 | ✅ |
 | `tlv` | 3 | 3 | 5 | 3..16 | 16 | 3 | 3 | 0 | ✅ |
 | `utc_time` | 3 | 3 | 16 | 14..17 | 14..18 | 16 | 23 | 0 |  |
-| `utf8_string` | 4 | 4 | 12 | 4..16 | 6..16 | 17 | 16 | 0 |  |
+| `utf8_string` | 4 | 4 | 12 | 4..16 | 6..16 | 18 | 17 | 0 |  |
 | `x509_algorithm_identifier` | 1 | 1 | 2 | 16 | 20 | 2 | 4 | 0 |  |
 | `x509_certificate` | 1 | 1 | 1 | 12 | 12 | 1 | 1 | 1 |  |
 | `x509_extension` | 2 | 2 | 10 | 2..16 | 3..20 | 6 | 32 | 0 |  |
-| `x509_name` | 1 | 1 | 16 | 2..20 | 3..12 | 19 | 36 | 1 |  |
+| `x509_name` | 1 | 1 | 16 | 2..20 | 3..12 | 19 | 43 | 1 |  |
 | `x509_spki` | 1 | 1 | 2 | 16 | 20 | 2 | 2 | 0 |  |
 | `x509_tbs_certificate` | 1 | 1 | 2 | 10..135 | 12 | 1 | 2 | 5 |  |
 | `x509_validity` | 1 | 1 | 12 | 3..32 | 20 | 35 | 26 | 0 |  |
@@ -811,11 +811,11 @@ buffer widths and unwind ranges are in §4's table; the crate-wide distribution:
 |---:|---:|
 | 1 | 6 |
 | 3 | 18 |
-| 4 | 6 |
+| 4 | 4 |
 | 5 | 20 |
-| 6 | 11 |
+| 6 | 10 |
 | 7 | 1 |
-| 8 | 13 |
+| 8 | 16 |
 | 10 | 11 |
 | 12 | 27 |
 | 14 | 13 |
@@ -852,7 +852,7 @@ input space. This crate treats that as the default suspicion, and the check is m
 | Non-vacuity audit (derived from source) | Count |
 |---|---:|
 | harnesses | 298 |
-| `kani::cover` witnesses | 504, in 33 of the 33 modules that have harnesses |
+| `kani::cover` witnesses | 528, in 33 of the 33 modules that have harnesses |
 | harnesses whose ONLY checks are Kani's implicit panic/overflow/memory-safety ones (no `cover`, no `assert`) | **1** |
 | harnesses narrowed by `assume` with no `cover` (their `assert` is the post-state witness instead) | 84 |
 | harnesses whose `cover` is known-UNSATISFIABLE and disclosed | 3 |
@@ -867,7 +867,7 @@ Exactly 1 harness is left with nothing but Kani's implicit checks: `rsa_private_
 
 **The counts in this audit are lexical.** `cover`, `assume` and `assert` counts come from a line scan of each module's `mod proofs`: comment-only lines are excluded, but a `kani::cover` or `kani::assume` token inside a string literal, behind an inline `//` tail or inside a `/* */` block can be counted as if it were code. The scan is checked by a self-test that finds no such token outside code positions in the current source (`gates/test_gen_proof_manifest.py`); that is a statement about today's source, not a guarantee about future edits, and a tokenizing count is a follow-up.
 
-**What the 293 harness assumptions actually restrict.** 237 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 56 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
+**What the 297 harness assumptions actually restrict.** 240 of them are size or range bounds — they relate lengths, indices and integer values with comparisons and `&&`, and nothing else — which narrows *how big* an input may be, not *what it may contain*. The remaining 57 restrict input CONTENT, which is the materially stronger kind of narrowing, so every one is named here rather than folded into a count:
 
 Two things to hold in mind reading it. First, the classifier is deliberately conservative: anything it cannot show is a pure size/range bound is listed, so some entries below *are* range constraints in a shape it does not recognise (a negated range such as `!(mo >= 1 && mo <= 12)`, for instance). It errs toward disclosing. Second, content narrowing is usually the **point** of the harness rather than a weakness in it: a rejection-classification harness exists precisely to pin a malformed shape and assert the exact error it must produce, and it must narrow to that shape to do so. What the list gives you is the ability to check that judgement yourself, harness by harness, instead of taking a count on trust.
 
@@ -900,7 +900,7 @@ Two things to hold in mind reading it. First, the classifier is deliberately con
 - `profile::rule4_fraction_iff_generalized_with_fraction` — `assume(!nb_gen || nb_year >= 2050)`
 - `profile::rule4_fraction_iff_generalized_with_fraction` — `assume(!na_gen || na_year >= 2050)`
 - `restricted_string::roundtrip_printable` — `assume((0..n).all(|i| oracle_printable(content[i])))`
-- `restricted_string::roundtrip_ia5` — `assume((0..n).all(|i| oracle_ia5(content[i])))`
+- `restricted_string::roundtrip_ia5` — `assume((0..n).all(|i| oracle_ia5(content[i]) && content[i] != 0x1B))`
 - `restricted_string::roundtrip_numeric` — `assume((0..n).all(|i| oracle_numeric(content[i])))`
 - `restricted_string::roundtrip_visible` — `assume((0..n).all(|i| oracle_visible(content[i])))`
 - `restricted_string::out_of_charset_reports_position` — `assume(!(0..n).all(|i| oracle_numeric(buf[i])))`
@@ -922,6 +922,7 @@ Two things to hold in mind reading it. First, the classifier is deliberately con
 - `utc_time::month_range_is_classified` — `assume(mo <= 99 && !(mo >= 1 && mo <= 12))`
 - `utc_time::day_range_is_classified` — `assume(d <= 99 && !(d >= 1 && d <= 31))`
 - `utf8_string::roundtrip` — `assume(oracle_wellformed_utf8(&content[..n]))`
+- `utf8_string::roundtrip` — `assume(!oracle_has_forbidden_control(&content[..n]))`
 - `utf8_string::ill_formed_reports_position` — `assume(!oracle_wellformed_utf8(&buf[..n]))`
 - `x509_validity::any_gen` — `assume(g.k < 1 || (g.frac[0] >= b'0' && g.frac[0] <= b'9'))`
 - `x509_validity::any_gen` — `assume(g.k < 2 || (g.frac[1] >= b'0' && g.frac[1] <= b'9'))`
@@ -1118,20 +1119,20 @@ The full hand-written helper surface inside `mod proofs`, so a reader can go aud
 | `generalized_time` | `is_canonical_der_generalizedtime`, `reference_generalized_time` | `accepted_iff_canonical_oracle`, `encode_is_total_exact_oracle`, `require_no_fraction_iff_no_fraction_octets` |
 | `identifier_form` | `accepted_exactly_as_framed`, `any_class`, `any_tag`, `oracle_is_constructed_only`, `oracle_is_primitive_only` | `accepts_iff_no_encoded_rule_violated_and_never_rejects_non_universal`, `constructed_form_rule_matches_oracle_on_all_tags`, `oracle_is_well_formed`, `required_form_matches_oracle_on_all_u32`, `reserved_eoc_rejected_iff_universal_zero` |
 | `profile` | `raw_bytes_differ`, `window` | `rule1_mismatch_iff_algorithms_differ`, `rule2_requires_v3_iff_extensions_present_and_not_v3`, `rule3_generalized_too_early_iff_year_le_2049`, `rule4_fraction_iff_generalized_with_fraction` |
-| `restricted_string` | `check_decode_faithful`, `check_decode_wrapper`, `check_encode_exact`, `check_encode_wrapper`, `oracle_ia5`, `oracle_numeric`, `oracle_of`, `oracle_printable`, `oracle_tag_number`, `oracle_visible` | `charset_exactly_matches_oracle_ia5`, `charset_exactly_matches_oracle_numeric`, `charset_exactly_matches_oracle_printable`, `charset_exactly_matches_oracle_visible`, `validate_iff_all_in_charset_ia5`, `validate_iff_all_in_charset_numeric`, `validate_iff_all_in_charset_printable`, `validate_iff_all_in_charset_visible` |
+| `restricted_string` | `check_decode_faithful`, `check_decode_wrapper`, `check_encode_exact`, `check_encode_wrapper`, `oracle_accepts`, `oracle_ia5`, `oracle_numeric`, `oracle_of`, `oracle_printable`, `oracle_tag_number`, `oracle_visible` | `charset_exactly_matches_oracle_ia5`, `charset_exactly_matches_oracle_numeric`, `charset_exactly_matches_oracle_printable`, `charset_exactly_matches_oracle_visible`, `validate_iff_all_in_charset_ia5`, `validate_iff_all_in_charset_numeric`, `validate_iff_all_in_charset_printable`, `validate_iff_all_in_charset_visible` |
 | `rsa_private_key` | `check_multi`, `expected_skeleton`, `field_at`, `key_at`, `key_is_borrowed_at`, `same_slice`, `sentinel_validate_other_prime_infos`, `slot_error`, `stub_validate_other_prime_info`, `stub_validate_other_prime_infos`, `tail_case` | — |
 | `set_of` | `cmp_padded_oracle`, `oracle_encoding_cmp`, `oracle_set_of`, `previous_decode_set_of` | `cmp_padded_matches_oracle`, `ordering_iff_oracle`, `ordering_matches_whole_encoding_oracle` |
 | `tag` | `any_class` | — |
 | `tlv` | `any_class` | — |
 | `utc_time` | `is_canonical_der_utctime`, `reference_utc_time` | `accepted_iff_canonical_oracle`, `encode_is_total_exact_oracle` |
-| `utf8_string` | `oracle_wellformed_utf8` | `validate_iff_oracle`, `validate_iff_oracle_multi`, `validate_iff_std` |
+| `utf8_string` | `oracle_has_forbidden_control`, `oracle_wellformed_utf8`, `std_first_forbidden` | `validate_iff_oracle`, `validate_iff_oracle_multi`, `validate_iff_std` |
 | `x509_certificate` | `stub_parse_tbs_certificate` | — |
 | `x509_extension` | `expected_member`, `expected_parse_extension` | — |
-| `x509_name` | `expected_single`, `single_atv_case`, `stub_validate_rdn` | — |
+| `x509_name` | `expected_atv`, `expected_form_tag`, `expected_single`, `expected_value_form`, `single_atv_case`, `stub_validate_rdn` | — |
 | `x509_tbs_certificate` | `stub_parse_validity`, `stub_validate_extensions`, `stub_validate_name` | — |
 | `x509_validity` | `any_gen`, `any_utc`, `arms_case`, `build_uu`, `check_frac`, `gen_of`, `put_gen`, `put_tlv`, `put_utc` | — |
 
-59 hand-written helper functions in total. Derived by exclusion — every `fn` in a `mod proofs` block that is not itself a harness — so a helper cannot escape this list by being named something unexpected.
+65 hand-written helper functions in total. Derived by exclusion — every `fn` in a `mod proofs` block that is not itself a harness — so a helper cannot escape this list by being named something unexpected.
 <!-- END GENERATED:oracles -->
 
 What mitigates this, and what does not:

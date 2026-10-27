@@ -4091,13 +4091,13 @@ id = "X501-9.3-g"
 title = "An RDN cannot repeat an attribute type"
 ref = "X.501 §9.3"
 parent = "SEC.X501.9.3"
-firmness = "draft"
+firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["x509_name", "oid"]
-note = "gap: x509_name does not reject a repeated attribute type within one RDN"
+modules = ["x509_name", "oid", "profile"]
+note = "decided for certificate issuer and subject by profile rule P-14 (validate_profile); a caller of validate_name alone does not get this check"
 line = 1828
 
 [[item]]
@@ -4964,13 +4964,13 @@ id = "RFC5280-4.1.2.4"
 title = "Issuer name is nonempty"
 ref = "RFC5280 §4.1.2.4"
 parent = "SEC.RFC5280.4.1.2"
-firmness = "draft"
+firmness = "firm"
 force = "must"
 side = "decoder"
 source = "primary"
 disposition = "in"
-modules = ["x509_name", "x509_tbs_certificate"]
-note = "gap: x509_name accepts an empty issuer Name and x509_tbs_certificate adds no nonempty check"
+modules = ["x509_name", "x509_tbs_certificate", "profile"]
+note = "decided by profile rule P-13 (validate_profile); x509_name alone accepts an empty Name because an empty subject is legal"
 line = 1078
 
 [[item]]
@@ -5458,13 +5458,13 @@ id = "RFC5280-4.2-c"
 title = "Each extension identifier appears at most once"
 ref = "RFC5280 §4.2"
 parent = "SEC.RFC5280.4.2"
-firmness = "draft"
+firmness = "firm"
 force = "must-not"
 side = "decoder"
 source = "primary"
 disposition = "in"
-modules = ["x509_extension"]
-note = "gap: x509_extension does not compare extension OIDs for duplicates"
+modules = ["x509_extension", "profile"]
+note = "decided by profile rule P-12 (validate_profile); a caller of validate_extensions alone does not get this check"
 line = 1438
 
 [[item]]
@@ -7086,10 +7086,9 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["context_tag"]
+modules = ["x509_tbs_certificate", "ec_private_key", "x509_extension"]
 line = 903
-note = "gap: decode_explicit_context does not check that the contents are one complete inner encoding (A0 00, A0 01 FF and A0 04 02 01 05 AA are accepted); callers decode the inner value"
-firmness = "draft"
+firmness = "firm"
 
 [[item]]
 id = "X690-8.14.3"
@@ -7100,7 +7099,7 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["context_tag"]
+modules = ["context_tag", "x509_tbs_certificate", "ec_private_key", "x509_extension"]
 line = 905
 
 [[item]]
@@ -7248,8 +7247,8 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["restricted_string"]
-note = "gap: IA5String accepts ESC sequences"
 line = 1135
+firmness = "firm"
 
 [[item]]
 id = "X690-8.23.5.2"
@@ -7273,8 +7272,8 @@ side = "both"
 source = "primary"
 disposition = "in"
 modules = ["restricted_string"]
-note = "gap: IA5String accepts ESC sequences"
 line = 1170
+firmness = "firm"
 
 [[item]]
 id = "X690-8.23.5.4"
@@ -7287,8 +7286,7 @@ source = "primary"
 disposition = "in"
 modules = ["restricted_string"]
 line = 1173
-note = "gap: IA5String accepts the announcer ESC SP F (decode_restricted_string on 16 04 31 1B 20 46 returns Ok); PrintableString, NumericString and VisibleString reject it"
-firmness = "draft"
+firmness = "firm"
 
 [[item]]
 id = "X690-8.23.5-unsupported"
@@ -7372,13 +7370,12 @@ id = "X690-8.23.9"
 ref = "8.23.9"
 title = "UTF8String permits most C0 and C1 controls"
 parent = "SEC.X690.8"
-firmness = "draft"
+firmness = "firm"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utf8_string"]
-note = "gap: decoder does not reject escape sequences; design decision pending"
 line = 1216
 
 [[item]]
@@ -7865,9 +7862,9 @@ force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["tlv", "identifier_form", "x509_name"]
-note = "gap: x509_name accepts the end-of-contents octets 00 00 as an attribute value (opaque framing only; x509_name.rs proofs)"
+modules = ["tlv", "identifier_form", "x509_name", "x509_algorithm_identifier"]
 line = 605
+firmness = "firm"
 
 [[item]]
 id = "X690-8.3.1-a"
@@ -8449,13 +8446,12 @@ id = "X690-8.23.9a"
 ref = "8.23.9 a)"
 title = "UTF8String excludes ISO 2022 announcer escapes"
 parent = "SEC.X690.8"
-firmness = "draft"
+firmness = "firm"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utf8_string"]
-note = "gap: decoder does not reject escape sequences; design decision pending"
 line = 1220
 
 [[item]]
@@ -8463,13 +8459,12 @@ id = "X690-8.23.9b"
 ref = "8.23.9 b)"
 title = "UTF8String excludes code-set designation and identification escapes"
 parent = "SEC.X690.8"
-firmness = "draft"
+firmness = "firm"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utf8_string"]
-note = "gap: decoder does not reject escape sequences; design decision pending"
 line = 1222
 
 [[item]]
@@ -8477,13 +8472,12 @@ id = "X690-8.23.9c"
 ref = "8.23.9 c)"
 title = "UTF8String excludes ISO 2022 invocation controls"
 parent = "SEC.X690.8"
-firmness = "draft"
+firmness = "firm"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utf8_string"]
-note = "gap: decoder does not reject escape sequences; design decision pending"
 line = 1227
 
 [[item]]
@@ -8491,13 +8485,12 @@ id = "X690-8.23.9d"
 ref = "8.23.9 d)"
 title = "UTF8String coding stays within ISO 10646"
 parent = "SEC.X690.8"
-firmness = "draft"
+firmness = "firm"
 force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utf8_string"]
-note = "gap: decoder does not reject escape sequences; design decision pending"
 line = 1229
 
 [[item]]
@@ -8505,27 +8498,26 @@ id = "X690-8.23.9e"
 ref = "8.23.9 e)"
 title = "UTF8String excludes graphic-subset identification controls"
 parent = "SEC.X690.8"
-firmness = "draft"
+firmness = "firm"
 force = "shall-not"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "excluded"
 modules = ["utf8_string"]
-note = "gap: decoder does not reject escape sequences; design decision pending"
 line = 1230
+reason = "control sequences introduced by CSI (U+009B) are accepted: owner decision G4 = A rejects ESC, SO, SI, SS2 and SS3 only (option B, rejecting CSI, was not chosen)"
 
 [[item]]
 id = "X690-8.23.9f"
 ref = "8.23.9 f)"
 title = "UTF8String excludes switches into ISO 2022 coding"
 parent = "SEC.X690.8"
-firmness = "draft"
+firmness = "firm"
 force = "shall-not"
 side = "both"
 source = "primary"
 disposition = "in"
 modules = ["utf8_string"]
-note = "gap: decoder does not reject escape sequences; design decision pending"
 line = 1233
 
 
@@ -11236,6 +11228,42 @@ disposition = "in"
 modules = ["profile"]
 
 [[item]]
+id = "PROF-P-12"
+title = "Certificate extensions do not repeat an extension identifier"
+ref = "RFC5280 §4.2"
+parent = "PROF"
+firmness = "firm"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-13"
+title = "Certificate issuer name is not empty"
+ref = "RFC5280 §4.1.2.4"
+parent = "PROF"
+firmness = "firm"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
+id = "PROF-P-14"
+title = "Issuer and subject RDNs do not repeat an attribute type"
+ref = "X.501 §9.3"
+parent = "PROF"
+firmness = "firm"
+force = "contract"
+side = "both"
+source = "primary"
+disposition = "in"
+modules = ["profile"]
+
+[[item]]
 id = "PROF-no-std-deferred"
 title = "No-std support remains deferred"
 ref = "DECISIONS.md D36"
@@ -11564,7 +11592,7 @@ force = "contract"
 side = "decoder"
 source = "primary"
 disposition = "excluded"
-reason = "ATV values, AlgorithmIdentifier parameters, extension payloads, PKCS#8 attributes and private-key payloads, EC parameters and private-key bytes, and encryptedData remain opaque"
+reason = "ATV values, AlgorithmIdentifier parameters, extension payloads, PKCS#8 attributes and private-key payloads, EC parameters and private-key bytes, and encryptedData remain opaque; since owner decision G5 = A the identifier of an ATV value and of AlgorithmIdentifier parameters is checked (identifier_form), the contents are not; PKCS#8 attribute members stay fully opaque"
 modules = ["x509_name", "x509_algorithm_identifier", "x509_extension", "pkcs8", "ec_private_key", "encrypted_private_key_info"]
 
 [[item]]

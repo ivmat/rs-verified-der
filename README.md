@@ -21,7 +21,7 @@ production deployment record. Evaluate it as a building block, not a hardened pa
 - **L4/L5 — Aeneas → Lean 4:** selected properties of six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) hold for any input length; `sequence` also covers any child count. The
   lids are `sorry`-free; `tag` canonicality rejection remains Kani-bounded at 7 bytes.
-- **Tests:** 662 unit and regression tests plus 34 doc-tests cover concrete vectors. Counts are
+- **Tests:** 708 unit and regression tests plus 34 doc-tests cover concrete vectors. Counts are
   inventory, not coverage.
 
 Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the exact properties, bounds, stubs and non-goals;
@@ -178,7 +178,7 @@ records, not re-run. Neither mode runs the full Kani floor or establishes X.509 
 ### Tests and full gates
 
 ```sh
-cargo test                                      # 662 tests + 34 doc-tests
+cargo test                                      # 708 tests + 34 doc-tests
 cargo install --locked kani-verifier --version 0.67.0
 cargo kani setup
 cargo kani -Z stubbing                          # 298 proof harnesses, needs a large machine

@@ -40,17 +40,17 @@ For the role `gate`: MET (the gate file exists and `check_fast.sh` runs it) or M
 
 ## Totals
 
-Rows judged: 334. Umbrella rows skipped: 16.
+Rows judged: 336. Umbrella rows skipped: 16.
 
 | status | rows | meaning |
 |---|---|---|
-| COVERED | 312 | every needed role has a test (or, for the role `gate`, a gate that check_fast.sh runs) |
+| COVERED | 327 | every needed role has a test (or, for the role `gate`, a gate that check_fast.sh runs) |
 | PARTIAL | 0 | some needed role has a test, not all |
 | PROOF-ONLY | 0 | no needed role has a test, but Kani or Lean evidence exists |
-| NONE | 13 | no evidence in any needed role |
+| NONE | 0 | no evidence in any needed role |
 | REVIEW | 9 | only a human review is needed |
 
-Rows that are not COVERED and carry a known gap (`gap:` note): 13.
+Rows that are not COVERED and carry a known gap (`gap:` note): 0.
 
 ## STD: External standards
 
@@ -81,13 +81,13 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | X690-8.1.2.4 | High tag form | accept, reject | accept:MET, reject:MET | COVERED | 4/2/0 |  |
 | X690-8.1.2.4.1 | High tag leading octet | accept, reject | accept:MET, reject:MET | COVERED | 4/2/0 |  |
 | X690-8.1.2.4.2 | Base 128 tag digits and minimal first digit | accept, reject | accept:MET, reject:MET | COVERED | 9/3/6 |  |
-| X690-8.1.2.5 | Primitive and constructed bit | accept, reject | accept:MET, reject:MET | COVERED | 4/5/5 |  |
+| X690-8.1.2.5 | Primitive and constructed bit | accept, reject | accept:MET, reject:MET | COVERED | 12/6/5 |  |
 | X690-8.1.3.2 | Primitive definite length | accept, reject | accept:MET, reject:MET | COVERED | 3/0/0 |  |
 | X690-8.1.3.3 | Definite length content size | accept, reject | accept:MET, reject:MET | COVERED | 39/5/7 |  |
 | X690-8.1.3.4 | Short length | accept, reject | accept:MET, reject:MET | COVERED | 11/1/3 |  |
 | X690-8.1.3.5 | Long length and forbidden ff | accept, reject | accept:MET, reject:MET | COVERED | 14/4/5 |  |
 | X690-8.1.4 | Contents octets | accept, reject | accept:MET, reject:MET | COVERED | 3/1/1 |  |
-| X690-8.2.1 | Primitive BOOLEAN one octet | accept, reject | accept:MET, reject:MET | COVERED | 5/8/0 |  |
+| X690-8.2.1 | Primitive BOOLEAN one octet | accept, reject | accept:MET, reject:MET | COVERED | 8/8/0 |  |
 | X690-8.2.2 | BOOLEAN abstract values | accept, reject | accept:MET, reject:MET | COVERED | 2/1/0 |  |
 | X690-8.3.1 | Primitive INTEGER | accept, reject | accept:MET, reject:MET | COVERED | 9/5/0 |  |
 | X690-8.3.3 | Signed two complement INTEGER | accept, reject | accept:MET, reject:MET | COVERED | 9/1/1 |  |
@@ -100,7 +100,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | X690-8.7.2 | Primitive OCTET STRING contents | accept, reject | accept:MET, reject:MET | COVERED | 5/3/0 |  |
 | X690-8.8.1 | Primitive NULL | accept, reject | accept:MET, reject:MET | COVERED | 2/5/0 |  |
 | X690-8.8.2 | Empty NULL contents | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
-| X690-8.9.1 | Constructed SEQUENCE | accept, reject | accept:MET, reject:MET | COVERED | 15/10/0 |  |
+| X690-8.9.1 | Constructed SEQUENCE | accept, reject | accept:MET, reject:MET | COVERED | 17/10/0 |  |
 | X690-8.9.2 | SEQUENCE components in definition order | accept, reject | accept:MET, reject:MET | COVERED | 105/23/0 |  |
 | X690-8.9.3 | OPTIONAL and DEFAULT components | accept, reject | accept:MET, reject:MET | COVERED | 13/3/0 |  |
 | X690-8.10.1 | Constructed SEQUENCE OF | accept, reject | accept:MET, reject:MET | COVERED | 12/12/0 |  |
@@ -108,8 +108,8 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | X690-8.10.3 | SEQUENCE OF order | accept | accept:MET | COVERED | 1/0/0 |  |
 | X690-8.12.1 | Constructed SET OF | accept, reject | accept:MET, reject:MET | COVERED | 15/14/0 |  |
 | X690-8.12.2 | SET OF homogeneous encodings | accept, reject | accept:MET, reject:MET | COVERED | 4/2/0 |  |
-| X690-8.14.2 | Tagged base encoding | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| X690-8.14.3 | EXPLICIT complete constructed wrapper | accept, reject | accept:MET, reject:MET | COVERED | 18/2/0 |  |
+| X690-8.14.2 | Tagged base encoding | accept, reject | accept:MET, reject:MET | COVERED | 21/0/0 |  |
+| X690-8.14.3 | EXPLICIT complete constructed wrapper | accept, reject | accept:MET, reject:MET | COVERED | 35/2/0 |  |
 | X690-8.19.1 | Primitive OID | accept, reject | accept:MET, reject:MET | COVERED | 4/7/0 |  |
 | X690-8.19.2 | Minimal base 128 OID subidentifiers | accept, reject | accept:MET, reject:MET | COVERED | 8/2/1 |  |
 | X690-8.19.3 | OID component count | accept, reject | accept:MET, reject:MET | COVERED | 2/1/1 |  |
@@ -118,11 +118,11 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | X690-8.23.3 | Restricted strings as octet strings | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
 | X690-8.23.4 | Numeric and Printable mapping | accept, reject | accept:MET, reject:MET | COVERED | 7/8/0 |  |
 | X690-8.23.5 | Registered encodings for the supported restricted strings | accept, reject | accept:MET, reject:MET | COVERED | 3/0/0 |  |
-| X690-8.23.5.1 | Supported restricted strings limit registered escapes | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
+| X690-8.23.5.1 | Supported restricted strings limit registered escapes | accept, reject | accept:MET, reject:MET | COVERED | 2/2/0 |  |
 | X690-8.23.5.2 | Supported restricted strings begin with their assigned... | accept, reject | accept:MET, reject:MET | COVERED | 3/0/0 |  |
-| X690-8.23.5.3 | Supported restricted strings obey the explicit-escape t... | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| X690-8.23.5.4 | Supported restricted strings use announcers only when a... | accept, reject | accept:MET, reject:MET | COVERED | 2/0/0 | yes |
-| X690-8.23.9 | UTF8String permits most C0 and C1 controls | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
+| X690-8.23.5.3 | Supported restricted strings obey the explicit-escape t... | accept, reject | accept:MET, reject:MET | COVERED | 3/3/0 |  |
+| X690-8.23.5.4 | Supported restricted strings use announcers only when a... | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
+| X690-8.23.9 | UTF8String permits most C0 and C1 controls | accept, reject | accept:MET, reject:MET | COVERED | 4/5/0 |  |
 | X690-8.23.10 | UTF8String octets | accept, reject | accept:MET, reject:MET | COVERED | 14/4/0 |  |
 | X690-11.2.1 | Zero unused padding bits | accept, reject | accept:MET, reject:MET | COVERED | 9/5/0 |  |
 | X690-11.7.1 | GeneralizedTime Z suffix | accept, reject | accept:MET, reject:MET | COVERED | 9/4/0 |  |
@@ -133,23 +133,22 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | X690-11.8.1 | UTCTime Z suffix | accept, reject | accept:MET, reject:MET | COVERED | 9/5/0 |  |
 | X690-11.8.2 | UTCTime seconds | accept, reject | accept:MET, reject:MET | COVERED | 7/4/0 |  |
 | X690-11.8.3 | UTCTime midnight | accept, reject | accept:MET, reject:MET | COVERED | 6/4/0 |  |
-| X690-8.1.5 | Definite encodings have no EOC trailer | accept, reject | accept:MET, reject:MET | COVERED | 2/0/0 | yes |
+| X690-8.1.5 | Definite encodings have no EOC trailer | accept, reject | accept:MET, reject:MET | COVERED | 6/6/0 |  |
 | X690-8.3.1-a | INTEGER payload has at least one octet | accept, reject | accept:MET, reject:MET | COVERED | 10/3/3 |  |
 | X690-8.5.1 | REAL requires the primitive form bit | accept, reject | accept:MET, reject:MET | COVERED | 2/5/0 |  |
 | X690-8.13 | CHOICE carries the selected alternative directly | accept, reject | accept:MET, reject:MET | COVERED | 7/6/0 |  |
-| X690-8.15 | An open-type value is exactly one framed TLV | accept, reject | accept:MET, reject:MET | COVERED | 15/10/0 |  |
+| X690-8.15 | An open-type value is exactly one framed TLV | accept, reject | accept:MET, reject:MET | COVERED | 21/10/0 |  |
 | X690-8.16.1 | INSTANCE OF requires the constructed form bit | accept, reject | accept:MET, reject:MET | COVERED | 1/4/0 |  |
 | X690-8.17.1 | EMBEDDED PDV requires the constructed form bit | accept, reject | accept:MET, reject:MET | COVERED | 1/4/0 |  |
 | X690-8.18.1 | EXTERNAL requires the constructed form bit | accept, reject | accept:MET, reject:MET | COVERED | 1/5/0 |  |
 | X690-8.20.1 | Relative OID requires the primitive form bit | accept, reject | accept:MET, reject:MET | COVERED | 2/4/0 |  |
 | X690-8.21.1 | OID IRI requires the primitive form bit | accept, reject | accept:MET, reject:MET | COVERED | 1/5/0 |  |
 | X690-8.22.1 | Relative OID IRI requires the primitive form bit | accept, reject | accept:MET, reject:MET | COVERED | 2/5/0 |  |
-| X690-8.23.9a | UTF8String excludes ISO 2022 announcer escapes | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| X690-8.23.9b | UTF8String excludes code-set designation and identifica... | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| X690-8.23.9c | UTF8String excludes ISO 2022 invocation controls | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| X690-8.23.9d | UTF8String coding stays within ISO 10646 | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| X690-8.23.9e | UTF8String excludes graphic-subset identification controls | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| X690-8.23.9f | UTF8String excludes switches into ISO 2022 coding | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
+| X690-8.23.9a | UTF8String excludes ISO 2022 announcer escapes | accept, reject | accept:MET, reject:MET | COVERED | 3/5/0 |  |
+| X690-8.23.9b | UTF8String excludes code-set designation and identifica... | accept, reject | accept:MET, reject:MET | COVERED | 2/5/0 |  |
+| X690-8.23.9c | UTF8String excludes ISO 2022 invocation controls | accept, reject | accept:MET, reject:MET | COVERED | 3/5/0 |  |
+| X690-8.23.9d | UTF8String coding stays within ISO 10646 | accept, reject | accept:MET, reject:MET | COVERED | 2/5/0 |  |
+| X690-8.23.9f | UTF8String excludes switches into ISO 2022 coding | accept, reject | accept:MET, reject:MET | COVERED | 2/5/0 |  |
 | X690-8.23.10-a | UTF8String uses shortest UTF8 without announcers or esc... | accept, reject | accept:MET, reject:MET | COVERED | 12/3/0 |  |
 | X690-8.24.1 | CHARACTER STRING requires the constructed form bit | accept, reject | accept:MET, reject:MET | COVERED | 1/4/0 |  |
 | X690-8.26.1.1 | TIME requires the primitive form bit | accept, reject | accept:MET, reject:MET | COVERED | 2/4/0 |  |
@@ -168,21 +167,21 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | RFC5280-4.1.2.5.2 | Certificate GeneralizedTime excludes fractional seconds | accept, reject | accept:MET, reject:MET | COVERED | 11/3/0 |  |
 | RFC5280-4.1 | Certificate has three ordered fields | accept, reject | accept:MET, reject:MET | COVERED | 10/0/0 |  |
 | RFC5280-4.1-a | TBSCertificate contains the signed certificate body | accept, reject | accept:MET, reject:MET | COVERED | 15/0/0 |  |
-| RFC5280-4.1-b | Version enumerates v1 through v3 | accept, reject | accept:MET, reject:MET | COVERED | 7/0/0 |  |
+| RFC5280-4.1-b | Version enumerates v1 through v3 | accept, reject | accept:MET, reject:MET | COVERED | 10/0/0 |  |
 | RFC5280-4.1-c | Certificate serial number is an INTEGER | accept, reject | accept:MET, reject:MET | COVERED | 5/0/0 |  |
 | RFC5280-4.1-d | Validity contains notBefore and notAfter | accept, reject | accept:MET, reject:MET | COVERED | 9/7/0 |  |
 | RFC5280-4.1-e | Time selects UTCTime or GeneralizedTime | accept, reject | accept:MET, reject:MET | COVERED | 7/6/0 |  |
 | RFC5280-4.1-f | SubjectPublicKeyInfo contains algorithm and key bits | accept, reject | accept:MET, reject:MET | COVERED | 13/1/0 |  |
 | RFC5280-4.1-g | Extensions is a nonempty sequence | accept, reject | accept:MET, reject:MET | COVERED | 7/6/0 |  |
-| RFC5280-4.1-h | Extension carries identifier criticality and value | accept, reject | accept:MET, reject:MET | COVERED | 16/5/0 |  |
+| RFC5280-4.1-h | Extension carries identifier criticality and value | accept, reject | accept:MET, reject:MET | COVERED | 19/5/0 |  |
 | RFC5280-4.1.1.2 | Outer and inner signature algorithms match | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
-| RFC5280-4.1.1.2-a | AlgorithmIdentifier contains OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 12/1/0 |  |
+| RFC5280-4.1.1.2-a | AlgorithmIdentifier contains OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 14/1/0 |  |
 | RFC5280-4.1.2.1 | Extensions require certificate version three | accept, reject | accept:MET, reject:MET | COVERED | 6/2/0 |  |
 | RFC5280-4.1.2.1-d | Decoders recognize version three | accept | accept:MET | COVERED | 1/0/0 |  |
 | RFC5280-4.1.2.2-c | Decoders handle serials through twenty octets | accept | accept:MET | COVERED | 2/0/0 |  |
 | RFC5280-4.1.2.2-e | Decoders gracefully handle nonpositive serials | accept | accept:MET | COVERED | 1/0/0 |  |
 | RFC5280-4.1.2.3 | Inner and outer signature algorithms match | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
-| RFC5280-4.1.2.4 | Issuer name is nonempty | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
+| RFC5280-4.1.2.4 | Issuer name is nonempty | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
 | RFC5280-4.1.2.4-a | Name is an RDN sequence | accept, reject | accept:MET, reject:MET | COVERED | 5/4/0 |  |
 | RFC5280-4.1.2.4-b | RDN contains at least one attribute | accept, reject | accept:MET, reject:MET | COVERED | 6/5/0 |  |
 | RFC5280-4.1.2.4-c | Attribute carries type and value | accept, reject | accept:MET, reject:MET | COVERED | 10/9/0 |  |
@@ -201,7 +200,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | RFC5280-4.1.2.6-e | Structurally accept recommended subject attributes | accept | accept:MET | COVERED | 3/0/0 |  |
 | RFC5280-4.1.2.8-b | CAs omit unique identifiers | accept, reject | accept:MET, reject:MET | COVERED | 2/0/0 |  |
 | RFC5280-4.1.2.9 | Extensions appear only in version three | accept, reject | accept:MET, reject:MET | COVERED | 6/2/0 |  |
-| RFC5280-4.2-c | Each extension identifier appears at most once | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
+| RFC5280-4.2-c | Each extension identifier appears at most once | accept, reject | accept:MET, reject:MET | COVERED | 4/1/0 |  |
 | RFC5280-4.1.1.3-a | The certificate signature value is a BIT STRING | accept, reject | accept:MET, reject:MET | COVERED | 5/0/0 |  |
 | RFC5280-B-size-upper-bound | Implementations choose practical bounds for ASN.1 MAX | accept | accept:MET | COVERED | 2/0/0 |  |
 | RFC5280-B-printable-specials | PrintableString does not admit at-sign or underscore | accept, reject | accept:MET, reject:MET | COVERED | 4/4/0 |  |
@@ -254,7 +253,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | X501-9.2-g | DistinguishedName aliases RDNSequence | accept, reject | accept:MET, reject:MET | COVERED | 4/4/0 |  |
 | X501-9.3-d | RDN is a nonempty set of ATVs | accept, reject | accept:MET, reject:MET | COVERED | 7/5/0 |  |
 | X501-9.3-e | ATV contains type and value fields | accept, reject | accept:MET, reject:MET | COVERED | 10/9/0 |  |
-| X501-9.3-g | An RDN cannot repeat an attribute type | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
+| X501-9.3-g | An RDN cannot repeat an attribute type | accept, reject | accept:MET, reject:MET | COVERED | 6/1/0 |  |
 
 ### STD source RFC8017
 
@@ -276,7 +275,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | id | title | needs | role status | status | test/kani/lean | known gap |
 |---|---|---|---|---|---|---|
 | RFC5915-3 | EC private keys use ECPrivateKey | accept, reject | accept:MET, reject:MET | COVERED | 8/1/0 |  |
-| RFC5915-3-a | ECPrivateKey carries required and optional fields | accept, reject | accept:MET, reject:MET | COVERED | 25/1/0 |  |
+| RFC5915-3-a | ECPrivateKey carries required and optional fields | accept, reject | accept:MET, reject:MET | COVERED | 29/1/0 |  |
 | RFC5915-3-b | EC private key version equals one | accept, reject | accept:MET, reject:MET | COVERED | 7/1/0 |  |
 
 ### STD source RFC5208
@@ -311,13 +310,13 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | id | title | needs | role status | status | test/kani/lean | known gap |
 |---|---|---|---|---|---|---|
 | RFC5480-2 | EC SubjectPublicKeyInfo has two fields | accept, reject | accept:MET, reject:MET | COVERED | 12/1/0 |  |
-| RFC5480-2-a | AlgorithmIdentifier has OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 12/1/0 |  |
+| RFC5480-2-a | AlgorithmIdentifier has OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 14/1/0 |  |
 
 ### STD source RFC8410
 
 | id | title | needs | role status | status | test/kani/lean | known gap |
 |---|---|---|---|---|---|---|
-| RFC8410-3-a | AlgorithmIdentifier contains OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 12/1/0 |  |
+| RFC8410-3-a | AlgorithmIdentifier contains OID and optional parameters | accept, reject | accept:MET, reject:MET | COVERED | 14/1/0 |  |
 | RFC8410-4 | Safe-curve SPKI has algorithm and key bits | accept, reject | accept:MET, reject:MET | COVERED | 11/1/0 |  |
 | RFC8410-6 | Certificate signature has three fields | accept, reject | accept:MET, reject:MET | COVERED | 10/0/0 |  |
 
@@ -451,9 +450,12 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 | PROF-P-1 | Certificate signature algorithm fields match | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
 | PROF-P-2 | Certificate extensions require version three | accept, reject | accept:MET, reject:MET | COVERED | 6/2/0 |  |
 | PROF-P-3 | Validity encoding follows the year boundary | accept, reject | accept:MET, reject:MET | COVERED | 11/3/0 |  |
-| PROF-P-4 | Profile violation precedence is stable | accept, reject | accept:MET, reject:MET | COVERED | 8/2/0 |  |
+| PROF-P-4 | Profile violation precedence is stable | accept, reject | accept:MET, reject:MET | COVERED | 9/2/0 |  |
 | PROF-P-11 | Validity GeneralizedTime omits fractional seconds | accept, reject | accept:MET, reject:MET | COVERED | 7/2/0 |  |
-| PROF-strict-trailing | Strict entry points reject bytes after one complete object | accept, reject | accept:MET, reject:MET | COVERED | 30/7/0 |  |
+| PROF-P-12 | Certificate extensions do not repeat an extension ident... | accept, reject | accept:MET, reject:MET | COVERED | 4/1/0 |  |
+| PROF-P-13 | Certificate issuer name is not empty | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
+| PROF-P-14 | Issuer and subject RDNs do not repeat an attribute type | accept, reject | accept:MET, reject:MET | COVERED | 6/1/0 |  |
+| PROF-strict-trailing | Strict entry points reject bytes after one complete object | accept, reject | accept:MET, reject:MET | COVERED | 33/7/0 |  |
 | PROF-identifier-form-opt-in | Identifier-form validation is explicit and leaves unass... | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
 | PROF-big-integer-comparison-only | Large INTEGER values remain minimal two-complement byte... | accept, reject | accept:MET, reject:MET | COVERED | 12/7/0 |  |
 
@@ -473,33 +475,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 Every row that is not COVERED, grouped by its first listed module.
 Each line says which test role is missing.
 
-### context_tag (1 row)
-
-- X690-8.14.2 [NONE]: missing accept test; missing reject test. Known gap.
-
-### restricted_string (2 rows)
-
-- X690-8.23.5.1 [NONE]: missing accept test; missing reject test. Known gap.
-- X690-8.23.5.3 [NONE]: missing accept test; missing reject test. Known gap.
-
-### utf8_string (7 rows)
-
-- X690-8.23.9 [NONE]: missing accept test; missing reject test. Known gap.
-- X690-8.23.9a [NONE]: missing accept test; missing reject test. Known gap.
-- X690-8.23.9b [NONE]: missing accept test; missing reject test. Known gap.
-- X690-8.23.9c [NONE]: missing accept test; missing reject test. Known gap.
-- X690-8.23.9d [NONE]: missing accept test; missing reject test. Known gap.
-- X690-8.23.9e [NONE]: missing accept test; missing reject test. Known gap.
-- X690-8.23.9f [NONE]: missing accept test; missing reject test. Known gap.
-
-### x509_extension (1 row)
-
-- RFC5280-4.2-c [NONE]: missing accept test; missing reject test. Known gap.
-
-### x509_name (2 rows)
-
-- X501-9.3-g [NONE]: missing accept test; missing reject test. Known gap.
-- RFC5280-4.1.2.4 [NONE]: missing accept test; missing reject test. Known gap.
+No rows. Every judged row is COVERED.
 
 ### Review-only rows (no test obligation)
 

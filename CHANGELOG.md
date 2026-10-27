@@ -6,6 +6,24 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
+### Changed (owner decisions G1–G7, 2026-10-27; see DECISIONS.md D37–D41)
+- **BREAKING: stricter decoding, new variants in exhaustive error enums.**
+  - IA5String rejects ESC (`StringError::Ia5Escape`); UTF8String rejects ESC, SO, SI, SS2 and SS3
+    (`Utf8Error::ForbiddenControl`), per X.690 Table 3 and §8.23.9. The encoders refuse the same values.
+  - The header of an attribute value and of AlgorithmIdentifier parameters must pass the identifier-form check
+    (no end-of-contents, no impossible primitive/constructed form): `NameError::AtvValueForm`,
+    `AlgIdError::ParametersForm`, `SpkiError::AlgorithmParametersForm`. Contents stay opaque.
+- **`validate_profile` rules 5–7:** duplicate extension ids (P-12), empty issuer (P-13) and a repeated attribute type
+  in an issuer or subject RDN (P-14) are rejected. `ProfileError` gains four variants (non-exhaustive, additive).
+- `decode_explicit_context` now documents that it does not check that the wrapper holds exactly one complete
+  encoding, and that callers must decode the inner value strictly.
+
+### Added
+- A requirements tree (`docs/requirements/der.inventory.toml`), an evidence map from every test, Kani harness and Lean
+  theorem to its rows (`docs/requirements/evidence/`), a per-requirement test-gap report
+  (`docs/requirements/test-gaps.md`), and their gates, all run by `check_fast.sh`. Static gates for no heap allocation
+  and no recursion in non-test code.
+
 ### Added
 - **The `tag` Lean lid now pins identifier-octet semantics for inputs of any length.** For every
   accepted `decode_tag` result, `tag_decode_identifier_fields` proves the class from a direct
