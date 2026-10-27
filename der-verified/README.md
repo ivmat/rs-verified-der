@@ -16,14 +16,14 @@ Read "primitive" strictly: the `x509_*` layer is **structural framing composing 
 not proven to the same bar (see Scope below). The crate's name should not be read as claiming more
 than that.
 
-- **L3 — Kani** (bounded model checking): 298 proof harnesses over 33 modules establish default
+- **L3 — Kani** (bounded model checking): 302 proof harnesses over 33 modules establish default
   safety checks (memory safety, no panics, no overflow) on their bounded domains; functional claims
   (round-trip, canonicality/minimality, rejection of malformed encodings) vary by harness and are
   listed per claim in `acceptance.toml` / `PROOF_MANIFEST.md`.
 - **L4 — Aeneas → Lean 4:** *selected properties* of six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) hold for **any input length**; `sequence` also covers any child count.
   The lids are `sorry`-free; `tag` canonicality *rejection* remains Kani-bounded at 7 bytes.
-- **708** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
+- **710** unit and regression tests (concrete vectors, incl. seeded-bad specimens).
 
 > Read [`PROOF_MANIFEST.md`](https://github.com/ivmat/rs-verified-der/blob/main/PROOF_MANIFEST.md)
 > before relying on any of this — the honest proof envelope: exactly what is proven, under what bounds

@@ -7,7 +7,47 @@ name = "error_precedence_follows_declaration_order"
 accept = []
 reject = []
 prove = ["PROF-P-4"]
-bounded = "2-octet OIDs; extensions, issuer and subject each chosen between a 0-2-octet window and concrete specimens (two extension lists, three Names of at most 20 octets with one-octet OIDs); unwind 8"
+bounded = "2-octet OIDs; extensions, issuer and subject are independent windows of 0-2 octets whose first octet steers stubbed rule 5 to 7 helpers, so every combination of the helper outcomes is reachable but the helpers themselves are not decided here (the helpers are decided on concrete inputs by the unit test rules_5_to_7_end_to_end_on_specimens; the inner has_repeated_leading_oid has no Kani proof yet, S5); unwind 4"
+none = ""
+
+[[entry]]
+kind = "kani"
+file = "der-verified/src/profile.rs"
+name = "extensions_repeat_an_id_decides_on_the_envelope"
+accept = []
+reject = []
+prove = ["SAFE-panic-profile-1"]
+bounded = "span of 0-6 octets with no octet restricted; the inner has_repeated_leading_oid is stubbed with a result read from the first content octet, so the id comparison is not decided here (unit tests only; the Kani harnesses for it ran out of memory and are parked for S5, docs/proof-work/s5-profile-helper-harnesses.md), and the stub's totality obligation for has_repeated_leading_oid is not discharged by Kani; unwind 7"
+none = ""
+
+[[entry]]
+kind = "kani"
+file = "der-verified/src/profile.rs"
+name = "leading_oid_is_exact"
+accept = []
+reject = []
+prove = ["SAFE-panic-profile-1"]
+bounded = "element value of 0-6 octets with no octet restricted; class, constructed flag and tag number all symbolic; first child only (no deeper nesting); unwind 7"
+none = ""
+
+[[entry]]
+kind = "kani"
+file = "der-verified/src/profile.rs"
+name = "name_has_repeated_attribute_type_decides_on_the_walk"
+accept = []
+reject = []
+prove = ["SAFE-panic-profile-1"]
+bounded = "a Name of one or two RDNs, each with a 2-octet content, optional stray trailing octet, every identifier and content octet symbolic; the inner has_repeated_leading_oid is stubbed with a result read from the first content octet, so the type comparison, and with it X501-9.3-g and PROF-P-14, is NOT decided here (unit tests only; the Kani harnesses for it ran out of memory and are parked for S5, docs/proof-work/s5-profile-helper-harnesses.md), and the stub's totality obligation for has_repeated_leading_oid is not discharged by Kani; a third RDN, longer contents and a long-form envelope length are not enumerated; unwind 4"
+none = ""
+
+[[entry]]
+kind = "kani"
+file = "der-verified/src/profile.rs"
+name = "name_is_empty_iff_exactly_30_00"
+accept = []
+reject = []
+prove = ["RFC5280-4.1.2.4", "PROF-P-13", "SAFE-panic-profile-1"]
+bounded = "span of 0-6 octets with no octet restricted; unwind 7"
 none = ""
 
 [[entry]]
@@ -17,7 +57,7 @@ name = "rule1_mismatch_iff_algorithms_differ"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.1.2", "RFC5280-4.1.2.3", "PROF-P-1"]
-bounded = "both OID and parameter lengths <= 4; fixed v3/extensions-present certificate with two fixed UTCTimes; unwind 6"
+bounded = "both OID and parameter lengths <= 4; fixed v3/extensions-present certificate with two fixed UTCTimes; rules 5 to 7 stubbed to no violation (extensions absent or the empty list 30 00, empty issuer and subject; the stub is discharged by the unit test rules_5_to_7_helpers_return_false_on_the_isolation_inputs); unwind 6"
 none = ""
 
 [[entry]]
@@ -27,7 +67,7 @@ name = "rule2_requires_v3_iff_extensions_present_and_not_v3"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.2.1", "RFC5280-4.1.2.9", "PROF-P-2"]
-bounded = "all u8 versions and symbolic extension presence; unwind 4"
+bounded = "all u8 versions and symbolic extension presence; rules 5 to 7 stubbed to no violation (extensions absent or the empty list 30 00, empty issuer and subject; the stub is discharged by the unit test rules_5_to_7_helpers_return_false_on_the_isolation_inputs); unwind 4"
 none = ""
 
 [[entry]]
@@ -37,7 +77,7 @@ name = "rule3_generalized_too_early_iff_year_le_2049"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.2.5", "PROF-P-3"]
-bounded = "symbolic time arms and years; both UTCTime year2 values <= 99; empty fractions; fixed equal algorithms, v3, and no extensions; unwind 4"
+bounded = "symbolic time arms and years; both UTCTime year2 values <= 99; empty fractions; fixed equal algorithms, v3, and no extensions; rules 5 to 7 stubbed to no violation (extensions absent or the empty list 30 00, empty issuer and subject; the stub is discharged by the unit test rules_5_to_7_helpers_return_false_on_the_isolation_inputs); unwind 4"
 none = ""
 
 [[entry]]
@@ -47,7 +87,7 @@ name = "rule4_fraction_iff_generalized_with_fraction"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.2.5.2", "PROF-P-11"]
-bounded = "fraction lengths <= 4 and symbolic time arms; each GeneralizedTime year >= 2050; fixed equal algorithms, v3, and extensions present; unwind 4"
+bounded = "fraction lengths <= 4 and symbolic time arms; each GeneralizedTime year >= 2050; fixed equal algorithms, v3, and extensions present; rules 5 to 7 stubbed to no violation (extensions absent or the empty list 30 00, empty issuer and subject; the stub is discharged by the unit test rules_5_to_7_helpers_return_false_on_the_isolation_inputs); unwind 4"
 none = ""
 
 [[entry]]
@@ -66,8 +106,8 @@ file = "der-verified/src/profile.rs"
 name = "validate_profile_is_exactly_the_documented_precedence"
 accept = []
 reject = []
-prove = ["RFC5280-4.1.1.2", "RFC5280-4.1.2.3", "RFC5280-4.1.2.1", "RFC5280-4.1.2.9", "RFC5280-4.1.2.5", "RFC5280-4.1.2.5.2", "RFC5280-4.2-c", "RFC5280-4.1.2.4", "X501-9.3-g", "PROF-P-1", "PROF-P-2", "PROF-P-3", "PROF-P-4", "PROF-P-11", "PROF-P-12", "PROF-P-13", "PROF-P-14"]
-bounded = "OID and parameter lengths <= 4; each GeneralizedTime fraction length <= 4; every profile-irrelevant span length <= 2; extensions, issuer and subject each chosen between a 0-2-octet window and concrete specimens (two extension lists, three Names of at most 20 octets with one-octet OIDs), so rules 5 to 7 are decided on those specimens only; unwind 8"
+prove = ["RFC5280-4.1.1.2", "RFC5280-4.1.2.3", "RFC5280-4.1.2.1", "RFC5280-4.1.2.9", "RFC5280-4.1.2.5", "RFC5280-4.1.2.5.2", "PROF-P-1", "PROF-P-2", "PROF-P-3", "PROF-P-4", "PROF-P-11"]
+bounded = "OID and parameter lengths <= 4; each GeneralizedTime fraction length <= 4; every profile-irrelevant span length <= 2; extensions, issuer and subject are independent windows of 0-2 octets whose first octet steers stubbed rule 5 to 7 helpers, so the glue and precedence of rules 5 to 7 hold for every combination of helper outcomes but the helpers are not decided here; unwind 6"
 none = ""
 
 [[entry]]
@@ -77,7 +117,7 @@ name = "validate_profile_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-profile-1"]
-bounded = "2-octet OIDs, 1-octet parameters/fractions; extensions, issuer and subject spans of 0-6 octets; unwind 8"
+bounded = "2-octet OIDs, 1-octet parameters/fractions; the three rule 5 to 7 helpers stubbed to a nondeterministic bool and the three spans empty (CONDITIONAL: the helpers' totality is shown by Kani for name_is_empty and for the envelope and RDN walk of the other two helpers up to the inner call, but not for has_repeated_leading_oid, whose harnesses ran out of memory and are parked for S5, docs/proof-work/s5-profile-helper-harnesses.md); unwind 4"
 none = ""
 
 [[entry]]
@@ -349,6 +389,26 @@ reject = ["RFC5280-4.1.2.5.2", "PROF-P-11", "PROF-P-4"]
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/profile.rs"
+name = "rules_5_to_7_end_to_end_on_specimens"
+accept = ["RFC5280-4.2-c", "RFC5280-4.1.2.4", "X501-9.3-g", "PROF-P-12", "PROF-P-13", "PROF-P-14"]
+reject = ["RFC5280-4.2-c", "RFC5280-4.1.2.4", "X501-9.3-g", "PROF-P-12", "PROF-P-13", "PROF-P-14", "PROF-P-4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/profile.rs"
+name = "rules_5_to_7_helpers_return_false_on_the_isolation_inputs"
+accept = []
+reject = []
+prove = []
+bounded = ""
+none = "stub discharge for the rule 1 to 4 Kani harnesses: asserts the three rule 5 to 7 helpers return false on the empty Extensions list 30 00 and the empty span (and that 30 00 is the one empty Name); no requirement row states this behaviour"
 
 [[entry]]
 kind = "test"

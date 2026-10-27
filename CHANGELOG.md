@@ -15,6 +15,8 @@ All notable changes to `der-verified` are documented here. The format is based o
     `AlgIdError::ParametersForm`, `SpkiError::AlgorithmParametersForm`. Contents stay opaque.
 - **`validate_profile` rules 5–7:** duplicate extension ids (P-12), empty issuer (P-13) and a repeated attribute type
   in an issuer or subject RDN (P-14) are rejected. `ProfileError` gains four variants (non-exhaustive, additive).
+  The Kani harnesses for the id comparison of these rules ran out of memory at 20 GB and are parked for S5
+  (`docs/proof-work/s5-profile-helper-harnesses.md`); that comparison is decided by unit tests until then.
 - `decode_explicit_context` now documents that it does not check that the wrapper holds exactly one complete
   encoding, and that callers must decode the inner value strictly.
 

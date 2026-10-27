@@ -181,7 +181,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 0.
 | RFC5280-4.1.2.2-c | Decoders handle serials through twenty octets | accept | accept:MET | COVERED | 2/0/0 |  |
 | RFC5280-4.1.2.2-e | Decoders gracefully handle nonpositive serials | accept | accept:MET | COVERED | 1/0/0 |  |
 | RFC5280-4.1.2.3 | Inner and outer signature algorithms match | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
-| RFC5280-4.1.2.4 | Issuer name is nonempty | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
+| RFC5280-4.1.2.4 | Issuer name is nonempty | accept, reject | accept:MET, reject:MET | COVERED | 4/1/0 |  |
 | RFC5280-4.1.2.4-a | Name is an RDN sequence | accept, reject | accept:MET, reject:MET | COVERED | 5/4/0 |  |
 | RFC5280-4.1.2.4-b | RDN contains at least one attribute | accept, reject | accept:MET, reject:MET | COVERED | 6/5/0 |  |
 | RFC5280-4.1.2.4-c | Attribute carries type and value | accept, reject | accept:MET, reject:MET | COVERED | 10/9/0 |  |
@@ -200,7 +200,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 0.
 | RFC5280-4.1.2.6-e | Structurally accept recommended subject attributes | accept | accept:MET | COVERED | 3/0/0 |  |
 | RFC5280-4.1.2.8-b | CAs omit unique identifiers | accept, reject | accept:MET, reject:MET | COVERED | 2/0/0 |  |
 | RFC5280-4.1.2.9 | Extensions appear only in version three | accept, reject | accept:MET, reject:MET | COVERED | 6/2/0 |  |
-| RFC5280-4.2-c | Each extension identifier appears at most once | accept, reject | accept:MET, reject:MET | COVERED | 4/1/0 |  |
+| RFC5280-4.2-c | Each extension identifier appears at most once | accept, reject | accept:MET, reject:MET | COVERED | 5/0/0 |  |
 | RFC5280-4.1.1.3-a | The certificate signature value is a BIT STRING | accept, reject | accept:MET, reject:MET | COVERED | 5/0/0 |  |
 | RFC5280-B-size-upper-bound | Implementations choose practical bounds for ASN.1 MAX | accept | accept:MET | COVERED | 2/0/0 |  |
 | RFC5280-B-printable-specials | PrintableString does not admit at-sign or underscore | accept, reject | accept:MET, reject:MET | COVERED | 4/4/0 |  |
@@ -253,7 +253,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 0.
 | X501-9.2-g | DistinguishedName aliases RDNSequence | accept, reject | accept:MET, reject:MET | COVERED | 4/4/0 |  |
 | X501-9.3-d | RDN is a nonempty set of ATVs | accept, reject | accept:MET, reject:MET | COVERED | 7/5/0 |  |
 | X501-9.3-e | ATV contains type and value fields | accept, reject | accept:MET, reject:MET | COVERED | 10/9/0 |  |
-| X501-9.3-g | An RDN cannot repeat an attribute type | accept, reject | accept:MET, reject:MET | COVERED | 6/1/0 |  |
+| X501-9.3-g | An RDN cannot repeat an attribute type | accept, reject | accept:MET, reject:MET | COVERED | 7/0/0 |  |
 
 ### STD source RFC8017
 
@@ -340,7 +340,7 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 0.
 | SAFE-panic-collections-1 | Collection codecs never panic on any input | prove | prove:MET | COVERED | 0/3/2 |  |
 | SAFE-panic-keys-1 | Key-container parsers never panic on any input | prove | prove:MET | COVERED | 0/14/0 |  |
 | SAFE-panic-x509-1 | X.509 parsers never panic on any input | prove | prove:MET | COVERED | 0/9/0 |  |
-| SAFE-panic-profile-1 | Profile validation never panics on any value | prove | prove:MET | COVERED | 0/1/0 |  |
+| SAFE-panic-profile-1 | Profile validation never panics on any value | prove | prove:MET | COVERED | 0/5/0 |  |
 | SAFE-termination-1 | Identifier decoding terminates for arbitrary input length | prove | prove:MET | COVERED | 0/1/12 |  |
 | SAFE-termination-2 | TLV and sequence walks terminate | prove | prove:MET | COVERED | 0/3/6 |  |
 | SAFE-overread-1 | Accepted TLV decoding never reads beyond input | prove | prove:MET | COVERED | 1/2/2 |  |
@@ -450,11 +450,11 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 0.
 | PROF-P-1 | Certificate signature algorithm fields match | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
 | PROF-P-2 | Certificate extensions require version three | accept, reject | accept:MET, reject:MET | COVERED | 6/2/0 |  |
 | PROF-P-3 | Validity encoding follows the year boundary | accept, reject | accept:MET, reject:MET | COVERED | 11/3/0 |  |
-| PROF-P-4 | Profile violation precedence is stable | accept, reject | accept:MET, reject:MET | COVERED | 9/2/0 |  |
+| PROF-P-4 | Profile violation precedence is stable | accept, reject | accept:MET, reject:MET | COVERED | 10/2/0 |  |
 | PROF-P-11 | Validity GeneralizedTime omits fractional seconds | accept, reject | accept:MET, reject:MET | COVERED | 7/2/0 |  |
-| PROF-P-12 | Certificate extensions do not repeat an extension ident... | accept, reject | accept:MET, reject:MET | COVERED | 4/1/0 |  |
-| PROF-P-13 | Certificate issuer name is not empty | accept, reject | accept:MET, reject:MET | COVERED | 3/1/0 |  |
-| PROF-P-14 | Issuer and subject RDNs do not repeat an attribute type | accept, reject | accept:MET, reject:MET | COVERED | 6/1/0 |  |
+| PROF-P-12 | Certificate extensions do not repeat an extension ident... | accept, reject | accept:MET, reject:MET | COVERED | 5/0/0 |  |
+| PROF-P-13 | Certificate issuer name is not empty | accept, reject | accept:MET, reject:MET | COVERED | 4/1/0 |  |
+| PROF-P-14 | Issuer and subject RDNs do not repeat an attribute type | accept, reject | accept:MET, reject:MET | COVERED | 7/0/0 |  |
 | PROF-strict-trailing | Strict entry points reject bytes after one complete object | accept, reject | accept:MET, reject:MET | COVERED | 33/7/0 |  |
 | PROF-identifier-form-opt-in | Identifier-form validation is explicit and leaves unass... | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
 | PROF-big-integer-comparison-only | Large INTEGER values remain minimal two-complement byte... | accept, reject | accept:MET, reject:MET | COVERED | 12/7/0 |  |
