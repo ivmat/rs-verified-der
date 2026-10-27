@@ -136,8 +136,10 @@
 //!   duplicate extension (§4.2), a non-empty issuer (§4.1.2.4), and no repeated attribute type in
 //!   one RDN of the issuer or subject (X.501 §9.3) — establishing the pattern the rest of this
 //!   layer (key usage, basic constraints, name constraints, path validation, …) is expected to
-//!   follow. Backed by bounded Kani harnesses that prove each rule over symbolic FIELD VALUES (not
-//!   symbolic DER bytes), plus `#[test]` vectors — no Lean lid yet; see `PROOF_MANIFEST.md`.
+//!   follow. Rules 1 to 4 are proved by bounded Kani harnesses over symbolic FIELD VALUES (not
+//!   symbolic DER bytes); for rules 5 to 7, Kani proves the glue with the id-comparison helpers
+//!   stubbed, and the comparisons themselves are decided by `#[test]` vectors until their helper
+//!   proofs land. No Lean lid yet; see `PROOF_MANIFEST.md`.
 //!
 //! **Verification:** each module carries Kani proof harnesses in a `#[cfg(kani)]` block, so an
 //! ordinary `cargo build` / `cargo test` neither sees nor depends on Kani. Run the proofs with
