@@ -5,7 +5,7 @@ real X.509 parser differentials live. Codec evidence is machine-checkable and re
 clone, but it is **uneven**: read the shipped per-claim assurance manifest (`acceptance.toml`) before
 relying on any of it.
 
-**Status:** pre-1.0 (`0.2.0`). **37 of 39 manifest claims reach the target assurance band A3 or
+**Status:** pre-1.0 (`0.3.0`). **37 of 39 manifest claims reach the target assurance band A3 or
 better; 2 do not** (both are A1: `x509_certificate` and `x509_tbs_certificate`; the shipped
 `acceptance.toml` gives the exact per-claim split) — the crate is not uniformly formally verified
 and is not done. The proofs and their evidence are real, re-runnable and honestly bounded; the API
@@ -63,7 +63,7 @@ Some of the evidence travels with the crate and some of it does not, so here is 
 re-runnable from the repository. For everything in between — what each claim rests on, and what is
 *not* claimed — read `acceptance.toml` here, and `PROOF_MANIFEST.md` in the repository.
 
-**Repository:** <https://github.com/ivmat/rs-verified-der>. Each release is tagged (`v0.2.0` for
+**Repository:** <https://github.com/ivmat/rs-verified-der>. Each release is tagged (`v0.3.0` for
 this one) and that tag is the exact source this package was built from.
 
 ## Scope

@@ -7,7 +7,7 @@
 A DER (X.690) encoding/decoding core in Rust **under formal verification**, with re-runnable
 evidence and an explicit claim-by-claim assurance map.
 
-**Status:** pre-1.0 (`0.2.0`). Today **37 of 39** manifest claims reach the target assurance band A3
+**Status:** pre-1.0 (`0.3.0`). Today **37 of 39** manifest claims reach the target assurance band A3
 or better; **2 do not** (both are A1: the full-certificate and TBS-certificate parsers,
 `x509_certificate` and `x509_tbs_certificate`, whose evidence is stub-mediated, bounded
 panic-freedom only; none are A0). The crate is therefore not uniformly formally verified and is not
@@ -205,7 +205,7 @@ are listed in `PROOF_MANIFEST.md` §8.4. The Lean step re-extracts the shipped R
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs hygiene and parity gates, tests, clippy, and the
-memory-tractable **221 of 302** Kani harnesses. The remaining heavy modules are a local milestone via
+memory-tractable **225 of 302** Kani harnesses. The remaining heavy modules are a local milestone via
 `./check.sh`; the full floor needs roughly 24 GB available (largest harness peaks ~20 GB). Indicative shard timings and
 memory measurements live in [`docs/verification-cost.md`](docs/verification-cost.md).
 

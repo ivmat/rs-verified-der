@@ -166,15 +166,15 @@ pub fn required_form(number: u32) -> RequiredForm {
         1 | 2 => RequiredForm::Primitive,
         // 3 BIT STRING, 4 OCTET STRING (§8.6, §8.7) — DER §10.2 forbids BER's segmented form.
         3 | 4 => RequiredForm::Primitive,
-        // 5 NULL, 6 OBJECT IDENTIFIER, 7 ObjectDescriptor (§8.8, §8.19; 7 is a string type).
+        // 5 NULL, 6 OBJECT IDENTIFIER, 7 ObjectDescriptor (§8.8, §8.19, §8.25; 7 is a string type).
         5..=7 => RequiredForm::Primitive,
         // 8 EXTERNAL (§8.18) — an associated-type SEQUENCE.
         8 => RequiredForm::Constructed,
         // 9 REAL, 10 ENUMERATED (§8.5, §8.4) — simple types.
         9 | 10 => RequiredForm::Primitive,
-        // 11 EMBEDDED PDV (§8.20) — an associated-type SEQUENCE.
+        // 11 EMBEDDED PDV (§8.17) — an associated-type SEQUENCE.
         11 => RequiredForm::Constructed,
-        // 12 UTF8String (a string type, DER §10.2), 13 RELATIVE-OID (§8.21), 14 TIME (§8.26).
+        // 12 UTF8String (a string type, DER §10.2), 13 RELATIVE-OID (§8.20), 14 TIME (§8.26).
         // NOTE on 14: X.680 (2008 and later, incl. the 2021 edition this crate targets) assigns
         // UNIVERSAL 14 to TIME. Pre-2008 tables show 14 as reserved; a reviewer working from such a
         // table will flag this arm. The same revision that assigns 14 assigns 31..=36 below, so the
@@ -186,7 +186,7 @@ pub fn required_form(number: u32) -> RequiredForm {
         // value (cargo-mutants survivor, not a coverage gap). Kept as an explicit arm for
         // documentation: 15 is reserved by X.680, unassigned. Not decided; see the module docs.
         15 => RequiredForm::Unspecified,
-        // 16 SEQUENCE / SEQUENCE OF, 17 SET / SET OF (§8.9, §8.11, §8.12) — constructed by
+        // 16 SEQUENCE / SEQUENCE OF, 17 SET / SET OF (§8.9 to §8.12) — constructed by
         // definition; this is the rule that makes 0x30/0x31 the only legal spellings.
         16 | 17 => RequiredForm::Constructed,
         // 18..=22 NumericString, PrintableString, T61String, VideotexString, IA5String;

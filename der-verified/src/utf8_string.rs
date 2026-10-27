@@ -76,7 +76,12 @@ use crate::tlv::{decode_tlv, encode_tlv_into, TlvError};
 pub const TAG: u32 = 12;
 
 /// Why a UTF8String TLV, or its content alone, was rejected.
+///
+/// This enum is `#[non_exhaustive]`: later releases may add error variants, so a `match` over it
+/// outside this crate needs a wildcard arm. The attribute only protects `match` expressions from
+/// breaking on a new variant; stricter validation can still change behaviour incompatibly.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[non_exhaustive]
 pub enum Utf8Error {
     /// The TLV envelope was malformed (bad identifier/length, indefinite length, over-read, …).
     Tlv(TlvError),

@@ -85,7 +85,12 @@ use crate::tlv::{decode_tlv, Tlv, TlvError};
 /// Why a `Name` (`RDNSequence`) was rejected. Every variant names a specific structural cause,
 /// wrapping the underlying primitive's error where one exists (mirrors [`crate::x509_spki::SpkiError`]'s
 /// wrapping style).
+///
+/// This enum is `#[non_exhaustive]`: later releases may add error variants, so a `match` over it
+/// outside this crate needs a wildcard arm. The attribute only protects `match` expressions from
+/// breaking on a new variant; stricter validation can still change behaviour incompatibly.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[non_exhaustive]
 pub enum NameError {
     /// The outer `RDNSequence` SEQUENCE envelope was malformed: bad identifier/length, the
     /// primitive (non-constructed) form, or trailing bytes after the whole structure (this is a

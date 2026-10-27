@@ -388,8 +388,8 @@ in this document a reader cannot check from the source alone:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
   those two will not converge, and `./check.sh` will fail on them rather than on any defect. CI runs
-  the memory-tractable share — 221 of the 302 harnesses (the shard filters are by module, not a
-  pinned count, so read the workflow for the exact set), sharded across three 7 GB runners; the
+  the memory-tractable share — 225 of the 302 harnesses (the shard filters match by qualified-name substring, not a
+  pinned count, so read the workflow for the exact set), sharded across four 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
 **At `d05d3f2`, L3 and L4 were witnessed by the same single run, which removed the separate-artifact drift

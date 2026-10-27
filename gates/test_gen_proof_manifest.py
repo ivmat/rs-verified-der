@@ -1521,6 +1521,79 @@ class LexicalCounting(unittest.TestCase):
         self.assertEqual(offenders, [], 'the lexical count would mis-credit these tokens')
 
 
+class CiHarnessCountIsGated(unittest.TestCase):
+    """"N of M harnesses run in CI" was hand-typed ("221 of 302") and went stale (the shard filters
+    select 225). `ci_harnesses` is now derived from ci.yml's shard filters by qualified-name
+    SUBSTRING (as Kani selects), and README/PROOF_MANIFEST must state it. Opposing pairs: a stale
+    number MUST fail, the true number and an unrelated "N of N harnesses" history line must NOT."""
+
+    def _violations_for(self, text, docname='ci_claim_fixture.md'):
+        f = facts()
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, docname), 'w', encoding='utf-8') as fh:
+                fh.write(text + '\n')
+            old_root = gen.ROOT
+            gen.ROOT = d
+            try:
+                return [b for b in gen.guard_violations(f, docs=[docname], ci_count_docs=[docname])
+                        if b[2] == 'ci_harnesses'], f['totals']
+            finally:
+                gen.ROOT = old_root
+
+    def test_stale_ci_count_is_flagged(self):
+        bad, t = self._violations_for('CI runs the memory-tractable share, %d of the %d harnesses.'
+                                      % (t_ci() - 4, t_all()))
+        self.assertEqual(len(bad), 1, bad)
+        self.assertEqual(bad[0][4], t['ci_harnesses'])
+
+    def test_stale_readme_style_phrasing_is_flagged(self):
+        bad, _ = self._violations_for('memory-tractable **%d of %d** Kani harnesses.'
+                                      % (t_ci() + 1, t_all()))
+        self.assertEqual(len(bad), 1, bad)
+
+    def test_true_ci_count_passes(self):
+        bad, _ = self._violations_for('CI runs %d of the %d harnesses.' % (t_ci(), t_all()))
+        self.assertEqual(bad, [])
+
+    def test_a_doc_that_drops_the_claim_fails(self):
+        bad, _ = self._violations_for('CI runs the memory-tractable share of the harnesses.')
+        self.assertEqual(len(bad), 1, bad)
+        self.assertIn('no "N of M harnesses"', bad[0][5])
+
+    def test_history_line_in_an_uncovered_doc_is_ignored(self):
+        f = facts()
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, 'hist.md'), 'w', encoding='utf-8') as fh:
+                fh.write('the floor was 210 of 210 harnesses\n')
+            old_root = gen.ROOT
+            gen.ROOT = d
+            try:
+                bad = gen.guard_violations(f, docs=['hist.md'], ci_count_docs=[])
+            finally:
+                gen.ROOT = old_root
+        self.assertEqual([b for b in bad if b[2] == 'ci_harnesses'], [])
+
+    def test_count_is_by_substring_not_by_module(self):
+        # `--harness tag::` also selects `context_tag::proofs::*`: a module-name count would miss it.
+        mods = [{'module': 'context_tag', 'harnesses': [{'name': 'a'}, {'name': 'b'}]},
+                {'module': 'set_of', 'harnesses': [{'name': 'c'}]}]
+        ci = 'jobs:\n  kani:\n    strategy:\n      matrix:\n        include:\n' \
+             '          - shard: x\n            filters: "--harness tag::"\n'
+        self.assertEqual(gen.ci_harness_count(mods, ci), 2)
+
+    def test_real_count_is_between_zero_and_total(self):
+        t = facts()['totals']
+        self.assertTrue(0 < t['ci_harnesses'] < t['harnesses'], t)
+
+
+def t_ci():
+    return facts()['totals']['ci_harnesses']
+
+
+def t_all():
+    return facts()['totals']['harnesses']
+
+
 if __name__ == '__main__':
     # Default warning filters on purpose: nothing is suppressed, so a future DeprecationWarning in
     # the generator surfaces here. (The ResourceWarning flood this used to silence is gone — the

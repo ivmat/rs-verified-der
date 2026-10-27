@@ -43,6 +43,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+import check_tier_parity as ctp   # noqa: E402  (CI shard-filter parsing; one parser, not two)
 SRC = os.path.join(ROOT, 'der-verified', 'src')
 LEAN = os.path.join(ROOT, 'lean')
 MANIFEST = os.path.join(ROOT, 'PROOF_MANIFEST.md')
@@ -837,6 +839,25 @@ def l4_module_set():
     return {LID_TO_MODULE[l['codec']] for l in lids}
 
 
+CI_YML = os.path.join(ROOT, '.github', 'workflows', 'ci.yml')
+CRATE_PREFIX = 'der_verified'
+
+
+def ci_harness_count(mods, ci_text=None):
+    """How many harnesses the CI kani shards run: those whose fully qualified name
+    (`<crate>::<module>::proofs::<harness>`) contains one of the shard filters' `<module>::` strings.
+    Kani selects `--harness X` by SUBSTRING of the qualified name, not by module, so `tag::` also
+    selects `context_tag::proofs::*` and `integer::` also selects `big_integer::proofs::*`. A count
+    by module name alone is exactly how the figure went stale."""
+    if ci_text is None:
+        with open(CI_YML, encoding='utf-8') as fh:
+            ci_text = fh.read()
+    filters = ['%s::' % m for m in ctp.ci_filter_modules(ci_text)]
+    return sum(1 for m in mods for h in m['harnesses']
+               if any(x in '%s::%s::proofs::%s' % (CRATE_PREFIX, m['module'], h['name'])
+                      for x in filters))
+
+
 def collect():
     mods = []
     for f in sorted(os.listdir(SRC)):
@@ -870,6 +891,7 @@ def collect():
             'harnessed_entry_points': sum(len(m['harnessed_entry_points']) for m in mods),
             'unharnessed_entry_points': sum(len(m['unharnessed_entry_points']) for m in mods),
             'harnesses': sum(m['n_harnesses'] for m in mods),
+            'ci_harnesses': ci_harness_count(mods),
             'assumes': sum(m['n_assumes'] for m in mods),
             'stub_assumes': sum(m['n_stub_assumes'] for m in mods),
             'generator_assumes': sum(m['n_generator_assumes'] for m in mods),
@@ -1402,6 +1424,9 @@ GUARDS = [
     ('harnesses', NUM + r'\s+`#\[kani::proof\]` harnesses'),
     ('harnesses', r'All\s+' + NUM + r'\s+harnesses'),
     ('harnesses', r'of the\s+' + NUM + r'\s+harnesses'),
+    # "N of M harnesses run in CI": M is guarded by the entries above (`M Kani harnesses`, `of the M
+    # harnesses`); N is the figure derived from the CI shard filters (`ci_harness_count`).
+    ('ci_harnesses', NUM + r'\s+of(?:\s+the)?\s+\d+(?:\*\*|\*|`)?\s+(?:Kani\s+)?harnesses'),
     ('tests', NUM + r'\s+unit and regression tests'),
     # `docs/why-verified.md` says "concrete and regression tests" for the same number. A guard is a
     # fixed phrase list, so a synonym is invisible to it — that line was the second stale count this
@@ -1457,17 +1482,34 @@ def guard_line_hits(line):
     return out
 
 
-def guard_violations(f):
+# Docs that MUST state the CI-covered harness count. A guard only checks the claims it finds, so
+# rewording the sentence out of the guard's phrase would silently stop the check; requiring the
+# claim to be present closes that.
+CI_COUNT_DOCS = ['README.md', 'PROOF_MANIFEST.md']
+
+
+def guard_violations(f, docs=None, ci_count_docs=None):
     t = f['totals']
     bad = []
-    for doc in GUARDED_DOCS:
+    ci_docs = CI_COUNT_DOCS if ci_count_docs is None else ci_count_docs
+    for doc in (GUARDED_DOCS if docs is None else docs):
         p = os.path.join(ROOT, doc)
         if not os.path.exists(p):
             continue
         for lineno, line in enumerate(read_text(p).split('\n'), 1):
             for key, got, matched in guard_line_hits(line):
+                # "N of M harnesses" is a CI-coverage claim only in the two docs that make it; other
+                # docs use the same words for history (COVERAGE.md: "210 of 210 harnesses").
+                if key == 'ci_harnesses' and doc not in ci_docs:
+                    continue
                 if got != t[key]:
                     bad.append((doc, lineno, key, got, t[key], matched))
+    for doc in ci_docs:
+        p = os.path.join(ROOT, doc)
+        if os.path.exists(p) and not any(k == 'ci_harnesses' for line in read_text(p).split('\n')
+                                         for k, _, _ in guard_line_hits(line)):
+            bad.append((doc, 0, 'ci_harnesses', 0, t['ci_harnesses'],
+                        'no "N of M harnesses" CI-coverage claim found'))
     return bad
 
 

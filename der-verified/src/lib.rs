@@ -51,7 +51,9 @@
 //!   **structural** `SEQUENCE { version, modulus, publicExponent, privateExponent, prime1, prime2,
 //!   exponent1, exponent2, coefficient, otherPrimeInfos OPTIONAL }` parser composing [`sequence`] +
 //!   [`big_integer`], exposing the eight key-material INTEGERs as opaque validated bytes (never
-//!   materialized as numbers) and the optional `otherPrimeInfos` SEQUENCE's content opaque. Enforces
+//!   materialized as numbers). The optional `otherPrimeInfos` SEQUENCE is framed and each
+//!   `OtherPrimeInfo` member is validated (three canonical INTEGERs, exact tiling); only the
+//!   INTEGER values stay opaque, and the SEQUENCE's content is exposed as raw bytes. Enforces
 //!   RFC 8017's `version` ↔ `otherPrimeInfos` cross-field rule (`version == 1` iff `otherPrimeInfos`
 //!   is present). See the module docs for the full scope fence.
 //! - [`rsa_public_key`] — the PKCS#1 `RSAPublicKey` (RFC 8017 §A.1.1) container: structurally the
@@ -127,12 +129,14 @@
 //! - [`profile`] — the first slice of a **typed profile-validation layer**, built on top of (not
 //!   inside) the structural parsers above: cross-field RFC 5280 rules that the transfer-syntax
 //!   modules deliberately leave "to the caller" (e.g. [`x509_certificate`]'s and
-//!   [`x509_tbs_certificate`]'s own docs name this split explicitly). Currently enforces three rules
+//!   [`x509_tbs_certificate`]'s own docs name this split explicitly). Currently enforces seven rules
 //!   — §4.1.1.2's `signatureAlgorithm`/`tbsCertificate.signature` equality, the §4.1.2.1/§4.1.2.9
-//!   "extensions is v3-only" rule, and the §4.1.2.5 UTCTime-through-2049/GeneralizedTime-from-2050
-//!   encoding-choice rule — establishing the pattern the rest of this layer (key usage, basic
-//!   constraints, name constraints, path validation, …) is expected to follow. Backed by six
-//!   bounded Kani harnesses that prove each rule as a biconditional over symbolic FIELD VALUES (not
+//!   "extensions is v3-only" rule, the §4.1.2.5 UTCTime-through-2049/GeneralizedTime-from-2050
+//!   encoding-choice rule, the §4.1.2.5.2 no-fractional-seconds rule for GeneralizedTime, no
+//!   duplicate extension (§4.2), a non-empty issuer (§4.1.2.4), and no repeated attribute type in
+//!   one RDN of the issuer or subject (X.501 §9.3) — establishing the pattern the rest of this
+//!   layer (key usage, basic constraints, name constraints, path validation, …) is expected to
+//!   follow. Backed by bounded Kani harnesses that prove each rule over symbolic FIELD VALUES (not
 //!   symbolic DER bytes), plus `#[test]` vectors — no Lean lid yet; see `PROOF_MANIFEST.md`.
 //!
 //! **Verification:** each module carries Kani proof harnesses in a `#[cfg(kani)]` block, so an

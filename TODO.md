@@ -17,9 +17,6 @@ test-gap report (`docs/requirements/test-gaps.md`) are in place: every testable 
       value's identifier form).
 - [ ] Regenerate the acceptance manifest for the new source (it still describes the proof run at `d68eeca`), and decide
       between the 0.3.2 format at the new commit and the 0.4.0 uplift with the requirements inventory.
-- [ ] Public API review. `StringError`, `Utf8Error`, `NameError`, `AlgIdError` and `SpkiError` gained variants, and they are
-      exhaustive enums, so this is a breaking change (see CHANGELOG). Decide the version, and whether these enums become
-      `#[non_exhaustive]`.
 
 **Proofs**
 - [ ] The three profile helper harnesses that exceed 20 GB: [`docs/proof-work/s5-profile-helper-harnesses.md`](docs/proof-work/s5-profile-helper-harnesses.md)
@@ -40,11 +37,6 @@ test-gap report (`docs/requirements/test-gaps.md`) are in place: every testable 
 - [ ] Basic constraints, key usage and name constraints (PROF-P-5/6/7) are excluded for now; a later milestone may add them.
 
 **Docs**
-- [ ] `der-verified/src/lib.rs` says the profile "enforces three rules" (it enforces eight) and calls the `otherPrimeInfos`
-      content opaque (each member is validated). `identifier_form.rs` comments give the X.690 clause numbers of
-      EMBEDDED PDV and RELATIVE-OID as 8.20/8.21 (they are 8.17/8.20).
-- [ ] README and PROOF_MANIFEST say "221 of the N harnesses" run in CI; by the shard filters it is 225 now, and no gate
-      guards it.
 - [ ] `COVERAGE.md` keeps its hand-written `DER-C-*` rows next to the generated inventory; decide whether the inventory
       replaces them.
 

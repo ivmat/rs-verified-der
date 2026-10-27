@@ -2357,3 +2357,15 @@ the TBS extensions `[3]` (through `validate_extensions`). The helper's doc state
 modules and proofs). RFC 5280 §4.2.1 extension semantics are outside the structural scope. Owner decision G7 = A.
 
 **Decision.** PROF-P-5/6/7 are `excluded` for this milestone. A later milestone may add them as a scope of their own.
+
+## D42 — `#[non_exhaustive]` on the five remaining error enums, and version 0.3.0 (2026-10-27)  ·  landed
+
+**Context.** `ProfileError` was already `#[non_exhaustive]`, but `StringError`, `Utf8Error`, `NameError`, `AlgIdError` and
+`SpkiError` were exhaustive, so every new variant (D38, D39) was a breaking change. Owner word 2026-10-27: route A
+acceptance; "non_exhaustive + 0.3.0"; "push-ready main only"; fold the doc fixes in before the final proof run.
+
+**Decision.** The five enums are marked `#[non_exhaustive]` and carry the same doc sentence as `ProfileError`. The crate
+version is 0.3.0 (the stricter decoding of D37–D39 is already breaking, so this release carries the one-time break).
+
+**Consequence.** Callers outside the crate need a wildcard arm in a `match` over these enums; later variants are additive.
+The release date is an owner act and is filled at release.

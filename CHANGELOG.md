@@ -6,7 +6,12 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [Unreleased]
 
-### Changed (owner decisions G1–G7, 2026-10-27; see DECISIONS.md D37–D41)
+## [0.3.0] - unreleased
+
+### Changed (owner decisions G1–G7, 2026-10-27; see DECISIONS.md D37–D42)
+- **BREAKING (once): the five remaining public error enums are now `#[non_exhaustive]`** — `StringError`,
+  `Utf8Error`, `NameError`, `AlgIdError` and `SpkiError` (`ProfileError` already was). A `match` over one of them outside
+  this crate needs a wildcard arm. This is the one-time break; later variants are then additive.
 - **BREAKING: stricter decoding, new variants in exhaustive error enums.**
   - IA5String rejects ESC (`StringError::Ia5Escape`); UTF8String rejects ESC, SO, SI, SS2 and SS3
     (`Utf8Error::ForbiddenControl`), per X.690 Table 3 and §8.23.9. The encoders refuse the same values.

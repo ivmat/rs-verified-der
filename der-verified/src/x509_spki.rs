@@ -85,7 +85,12 @@ pub struct SubjectPublicKeyInfo<'a> {
 /// Why a `SubjectPublicKeyInfo` was rejected. Every variant names a specific structural cause,
 /// wrapping the underlying primitive's error where one exists (mirrors [`SequenceError`]'s
 /// `Tlv`/`Element` wrapping style).
+///
+/// This enum is `#[non_exhaustive]`: later releases may add error variants, so a `match` over it
+/// outside this crate needs a wildcard arm. The attribute only protects `match` expressions from
+/// breaking on a new variant; stricter validation can still change behaviour incompatibly.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[non_exhaustive]
 pub enum SpkiError {
     /// The outer `SubjectPublicKeyInfo` SEQUENCE envelope was malformed: bad identifier/length,
     /// the primitive (non-constructed) form, or trailing bytes after the whole structure (this is

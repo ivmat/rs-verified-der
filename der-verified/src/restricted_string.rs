@@ -119,7 +119,12 @@ impl Charset {
 }
 
 /// Why a restricted-string TLV was rejected.
+///
+/// This enum is `#[non_exhaustive]`: later releases may add error variants, so a `match` over it
+/// outside this crate needs a wildcard arm. The attribute only protects `match` expressions from
+/// breaking on a new variant; stricter validation can still change behaviour incompatibly.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum StringError {
     /// The TLV envelope was malformed (bad identifier/length, indefinite length, over-read, …).
     Tlv(TlvError),
