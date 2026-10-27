@@ -16,12 +16,12 @@ production deployment record. Evaluate it as a building block, not a hardened pa
 
 ## Evidence at a glance
 
-- **L3 — Kani:** 307 proof harnesses over 33 modules establish default safety checks on their
+- **L3 — Kani:** 302 proof harnesses over 33 modules establish default safety checks on their
   bounded domains; functional claims vary by harness and are listed in the proof manifest.
 - **L4/L5 — Aeneas → Lean 4:** selected properties of six codecs (`length`, `big_integer`, `oid`,
   `tag`, `tlv`, `sequence`) hold for any input length; `sequence` also covers any child count. The
   lids are `sorry`-free; `tag` canonicality rejection remains Kani-bounded at 7 bytes.
-- **Tests:** 708 unit and regression tests plus 34 doc-tests cover concrete vectors. Counts are
+- **Tests:** 710 unit and regression tests plus 34 doc-tests cover concrete vectors. Counts are
   inventory, not coverage.
 
 Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the exact properties, bounds, stubs and non-goals;
@@ -178,10 +178,10 @@ records, not re-run. Neither mode runs the full Kani floor or establishes X.509 
 ### Tests and full gates
 
 ```sh
-cargo test                                      # 708 tests + 34 doc-tests
+cargo test                                      # 710 tests + 34 doc-tests
 cargo install --locked kani-verifier --version 0.67.0
 cargo kani setup
-cargo kani -Z stubbing                          # 307 proof harnesses, needs a large machine
+cargo kani -Z stubbing                          # 302 proof harnesses, needs a large machine
 ```
 
 ```sh
@@ -205,7 +205,7 @@ are listed in `PROOF_MANIFEST.md` §8.4. The Lean step re-extracts the shipped R
 ## Continuous integration
 
 [GitHub Actions](.github/workflows/ci.yml) runs hygiene and parity gates, tests, clippy, and the
-memory-tractable **221 of 307** Kani harnesses. The remaining heavy modules are a local milestone via
+memory-tractable **221 of 302** Kani harnesses. The remaining heavy modules are a local milestone via
 `./check.sh`; the full floor needs roughly 24 GB available (largest harness peaks ~20 GB). Indicative shard timings and
 memory measurements live in [`docs/verification-cost.md`](docs/verification-cost.md).
 
