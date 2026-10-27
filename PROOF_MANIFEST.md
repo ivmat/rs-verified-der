@@ -11,7 +11,7 @@ generated header.
 
 > ## The rule this document is written under
 >
-> **Counts are inventory, not coverage.** "298 Kani harnesses, 6 Lean lids, 539 tests" describes how
+> **Counts are inventory, not coverage.** "298 Kani harnesses, 6 Lean lids, 651 tests" describes how
 > much verification *exists*. It says nothing about how much of the crate's behaviour is covered, and
 > a reader who reads it as a coverage figure has been misled by this document, not by themselves. So
 > the *claims* below are stated in prose, per property and per bound; the counts sit underneath them
@@ -90,7 +90,7 @@ deviations. Read the two differently.
 | `kani::cover` **statements** (satisfaction is observed at a run, is not gate-enforced, and its currency versus HEAD is derived in §3.4, not asserted here) | 504 |
 | …harnesses whose cover is **known-unsatisfiable and disclosed** — i.e. known *non*-witnesses | **3** |
 | `#[kani::stub]` applications / harnesses using them | 23 / 20 |
-| `#[test]` unit + regression tests | 539 |
+| `#[test]` unit + regression tests | 651 |
 | crate-doc examples run as doc-tests | 34 |
 | Lean lids (`lean/*Proofs.lean`) | 6 |
 | `unsafe` blocks in `der-verified/src` | 0 (crate is `#![forbid(unsafe_code)]`: yes) |
@@ -240,7 +240,7 @@ is only re-checked on a machine that has Aeneas, Charon and Lean installed at th
 
 ### 3.3 Concrete tests
 
-`cargo test` runs 539 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
+`cargo test` runs 651 unit and regression tests (plus 34 module and crate-doc examples) over concrete vectors, including
 seeded-bad specimens. **These are example-based tests, not property-based and not proofs.** They are
 regression road-signs; the assurance claim rests on the harnesses and the lids. For the `profile`
 module (§7) they are the *only* evidence that exists.
@@ -277,10 +277,7 @@ Every column here is read out of the committed log itself, so this table is repr
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**The run evidence captured at `d68eeca` still speaks for HEAD** (a SPLIT floor of 4 logs, read together: the main half `evidence/check-d68eeca.log` and its 3 heavy-harness companion logs `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_never_panics.log`, `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_ok_path_witnessed.log`, `evidence/check-d68eeca-heavy-x509_name-validate_rdn_never_panics.log`). No build input it depends on has changed since the anchor `d68eeca`: `git diff d68eeca -- check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs lean` is empty.
-
-This is a **sufficient** condition, not an iff. An empty diff over the L3 build inputs (`check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs`) since the anchor, with the §2 toolchain pins unchanged, means the Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty diff, or a moved pin, means re-run: it does not by itself show the evidence is wrong. The generator checks the diff only; whether a §2 pin moved is for the reader. Run the command rather than trusting this sentence.
-
+**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
 - `evidence/check-0e327b7.log` (at `0e327b7`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-24ddb69.log` (at `24ddb69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
@@ -295,6 +292,10 @@ This is a **sufficient** condition, not an iff. An empty diff over the L3 build 
 - `evidence/check-ba40709.log` (at `ba40709`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-bffab69.log` (at `bffab69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-d05d3f2.log` (at `d05d3f2`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_never_panics.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-d68eeca-heavy-x509_name-validate_rdn_never_panics.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+- `evidence/check-d68eeca.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ea8dad4-remainder.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ea8dad4.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 - `evidence/check-ffcea81.log` (at `ffcea81`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.

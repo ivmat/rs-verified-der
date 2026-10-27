@@ -876,7 +876,7 @@ force = "shall"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["bit_string"]
+modules = ["bit_string", "x509_spki", "x509_certificate", "ec_private_key"]
 line = 746
 
 [[item]]
@@ -3209,9 +3209,10 @@ firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "not-applicable"
 modules = ["context_tag", "tag"]
 line = 3823
+reason = "ASN.1 definition or notation rule; a codec observes it only through the per-type rows (X680-41.x repertoires, X690-8.23.3-b/8.23.4 octet mapping, X680-31.2 tagging)"
 
 [[item]]
 id = "X680-31m"
@@ -3222,9 +3223,10 @@ firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "not-applicable"
 modules = ["context_tag"]
 line = 3830
+reason = "ASN.1 definition or notation rule; a codec observes it only through the per-type rows (X680-41.x repertoires, X690-8.23.3-b/8.23.4 octet mapping, X680-31.2 tagging)"
 
 [[item]]
 id = "X680-32a"
@@ -3389,9 +3391,10 @@ firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "not-applicable"
 modules = ["restricted_string", "utf8_string"]
 line = 4904
+reason = "ASN.1 definition or notation rule; a codec observes it only through the per-type rows (X680-41.x repertoires, X690-8.23.3-b/8.23.4 octet mapping, X680-31.2 tagging)"
 
 [[item]]
 id = "X680-39a"
@@ -3402,9 +3405,10 @@ firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "not-applicable"
 modules = ["restricted_string", "utf8_string"]
 line = 4914
+reason = "ASN.1 definition or notation rule; a codec observes it only through the per-type rows (X680-41.x repertoires, X690-8.23.3-b/8.23.4 octet mapping, X680-31.2 tagging)"
 
 [[item]]
 id = "X680-40"
@@ -4591,9 +4595,10 @@ firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "excluded"
 modules = ["oid"]
 line = 1048
+reason = "validate_oid checks the canonical form without computing subidentifier values (DECISIONS D25); value semantics are excluded together with X680-32i"
 
 [[item]]
 id = "X690-8.19.2-d"
@@ -4604,9 +4609,10 @@ firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "excluded"
 modules = ["oid"]
 line = 1049
+reason = "validate_oid checks the canonical form without computing subidentifier values (DECISIONS D25); value semantics are excluded together with X680-32i"
 
 [[item]]
 id = "X690-8.23.3-a"
@@ -7082,6 +7088,8 @@ source = "primary"
 disposition = "in"
 modules = ["context_tag"]
 line = 903
+note = "gap: decode_explicit_context does not check that the contents are one complete inner encoding (A0 00, A0 01 FF and A0 04 02 01 05 AA are accepted); callers decode the inner value"
+firmness = "draft"
 
 [[item]]
 id = "X690-8.14.3"
@@ -7103,9 +7111,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "excluded"
 modules = ["context_tag"]
 line = 907
+reason = "only EXPLICIT context tagging is implemented (PROF-explicit-context-only); IMPLICIT and encoding-prefixed forms are out of scope"
 
 [[item]]
 id = "X690-8.19.1"
@@ -7175,9 +7184,10 @@ parent = "SEC.X690.8"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "not-applicable"
 modules = ["restricted_string", "utf8_string"]
 line = 1117
+reason = "ASN.1 definition or notation rule; a codec observes it only through the per-type rows (X680-41.x repertoires, X690-8.23.3-b/8.23.4 octet mapping, X680-31.2 tagging)"
 
 [[item]]
 id = "X690-8.23.2"
@@ -7187,9 +7197,10 @@ parent = "SEC.X690.8"
 force = "shall"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "not-applicable"
 modules = ["restricted_string", "utf8_string"]
 line = 1118
+reason = "ASN.1 definition or notation rule; a codec observes it only through the per-type rows (X680-41.x repertoires, X690-8.23.3-b/8.23.4 octet mapping, X680-31.2 tagging)"
 
 [[item]]
 id = "X690-8.23.3"
@@ -7276,6 +7287,8 @@ source = "primary"
 disposition = "in"
 modules = ["restricted_string"]
 line = 1173
+note = "gap: IA5String accepts the announcer ESC SP F (decode_restricted_string on 16 04 31 1B 20 46 returns Ok); PrintableString, NumericString and VisibleString reject it"
+firmness = "draft"
 
 [[item]]
 id = "X690-8.23.5-unsupported"
@@ -7602,7 +7615,7 @@ force = "declarative"
 side = "both"
 source = "primary"
 disposition = "in"
-modules = ["bit_string", "tag"]
+modules = ["bit_string", "tag", "x509_spki", "x509_certificate", "ec_private_key"]
 line = 3064
 
 [[item]]
@@ -7786,9 +7799,10 @@ firmness = "firm"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "not-applicable"
 modules = ["utf8_string"]
 line = 5197
+reason = "ASN.1 definition or notation rule; a codec observes it only through the per-type rows (X680-41.x repertoires, X690-8.23.3-b/8.23.4 octet mapping, X680-31.2 tagging)"
 
 [[item]]
 id = "X680-46.2"
@@ -8931,9 +8945,10 @@ parent = "SEC.X690.8"
 force = "declarative"
 side = "both"
 source = "primary"
-disposition = "in"
+disposition = "excluded"
 modules = ["context_tag"]
 line = 896
+reason = "only EXPLICIT context tagging is implemented (PROF-explicit-context-only); IMPLICIT and encoding-prefixed forms are out of scope"
 
 [[item]]
 id = "X690-8.20.4"

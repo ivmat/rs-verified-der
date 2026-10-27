@@ -50,11 +50,6 @@ needs = ["accept"]
 reason = "encoding prefixes do not change abstract values; a definition with no violating input"
 
 [[override]]
-id = "X680-39a"
-needs = ["accept"]
-reason = "a repertoire cell maps to its own abstract character; a definition with no violating input"
-
-[[override]]
 id = "RFC5280-4.1.2.1-d"
 needs = ["accept"]
 reason = "decoders must recognize version three; the sentence names no violation to reject"
@@ -148,3 +143,43 @@ reason = "the crate has no subtype-constraint or extension-marker feature, so no
 id = "X690-10"
 needs = ["review"]
 reason = "a composition statement (DER = basic encoding plus clauses 10 and 11); the clause 10 and 11 rows carry the evidence"
+
+[[override]]
+id = "X680-18"
+needs = ["accept"]
+reason = "the module decodes content octets only; a wrong identifier is rejected by the TLV layer and by each consuming parser (their schema rows), so this row's own test obligation is acceptance under the literal identifier"
+
+[[override]]
+id = "X680-19"
+needs = ["accept"]
+reason = "the module decodes content octets only; a wrong identifier is rejected by the TLV layer and by each consuming parser (their schema rows), so this row's own test obligation is acceptance under the literal identifier"
+
+[[override]]
+id = "X680-20"
+needs = ["accept"]
+reason = "the module decodes content octets only; a wrong identifier is rejected by the TLV layer and by each consuming parser (their schema rows), so this row's own test obligation is acceptance under the literal identifier"
+
+[[override]]
+id = "X680-24"
+needs = ["accept"]
+reason = "the module decodes content octets only; a wrong identifier is rejected by the TLV layer and by each consuming parser (their schema rows), so this row's own test obligation is acceptance under the literal identifier"
+
+[[override]]
+id = "X680-32"
+needs = ["accept"]
+reason = "the module decodes content octets only; a wrong identifier is rejected by the TLV layer and by each consuming parser (their schema rows), so this row's own test obligation is acceptance under the literal identifier"
+
+[[override]]
+id = "X690-8.19.4"
+needs = ["accept"]
+reason = "every canonical first or later subidentifier is a valid value; no byte string violates this rule"
+
+[[override]]
+id = "X690-8.19.5"
+needs = ["accept"]
+reason = "every canonical first or later subidentifier is a valid value; no byte string violates this rule"
+
+[[override]]
+id = "X690-8.10.3"
+needs = ["accept"]
+reason = "SEQUENCE OF order is a property of the value; no byte string can violate it, so only preservation of order is testable"
