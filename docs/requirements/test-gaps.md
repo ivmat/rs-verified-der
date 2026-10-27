@@ -40,17 +40,17 @@ For the role `gate`: MET (the gate file exists and `check_fast.sh` runs it) or M
 
 ## Totals
 
-Rows judged: 337. Umbrella rows skipped: 16.
+Rows judged: 334. Umbrella rows skipped: 16.
 
 | status | rows | meaning |
 |---|---|---|
 | COVERED | 312 | every needed role has a test (or, for the role `gate`, a gate that check_fast.sh runs) |
 | PARTIAL | 0 | some needed role has a test, not all |
 | PROOF-ONLY | 0 | no needed role has a test, but Kani or Lean evidence exists |
-| NONE | 16 | no evidence in any needed role |
+| NONE | 13 | no evidence in any needed role |
 | REVIEW | 9 | only a human review is needed |
 
-Rows that are not COVERED and carry a known gap (`gap:` note): 16.
+Rows that are not COVERED and carry a known gap (`gap:` note): 13.
 
 ## STD: External standards
 
@@ -452,9 +452,6 @@ Rows that are not COVERED and carry a known gap (`gap:` note): 16.
 | PROF-P-2 | Certificate extensions require version three | accept, reject | accept:MET, reject:MET | COVERED | 6/2/0 |  |
 | PROF-P-3 | Validity encoding follows the year boundary | accept, reject | accept:MET, reject:MET | COVERED | 11/3/0 |  |
 | PROF-P-4 | Profile violation precedence is stable | accept, reject | accept:MET, reject:MET | COVERED | 8/2/0 |  |
-| PROF-P-5 | Basic constraints receive profile validation | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| PROF-P-6 | Key usage receives profile validation | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
-| PROF-P-7 | Name constraints receive profile validation | accept, reject | accept:MISSING, reject:MISSING | NONE | 0/0/0 | yes |
 | PROF-P-11 | Validity GeneralizedTime omits fractional seconds | accept, reject | accept:MET, reject:MET | COVERED | 7/2/0 |  |
 | PROF-strict-trailing | Strict entry points reject bytes after one complete object | accept, reject | accept:MET, reject:MET | COVERED | 30/7/0 |  |
 | PROF-identifier-form-opt-in | Identifier-form validation is explicit and leaves unass... | accept, reject | accept:MET, reject:MET | COVERED | 5/2/0 |  |
@@ -503,12 +500,6 @@ Each line says which test role is missing.
 
 - X501-9.3-g [NONE]: missing accept test; missing reject test. Known gap.
 - RFC5280-4.1.2.4 [NONE]: missing accept test; missing reject test. Known gap.
-
-### (no module) (3 rows)
-
-- PROF-P-5 [NONE]: missing accept test; missing reject test. Known gap.
-- PROF-P-6 [NONE]: missing accept test; missing reject test. Known gap.
-- PROF-P-7 [NONE]: missing accept test; missing reject test. Known gap.
 
 ### Review-only rows (no test obligation)
 
