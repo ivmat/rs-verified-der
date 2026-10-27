@@ -17,7 +17,7 @@ name = "bad_fraction_separator_is_classified"
 accept = []
 reject = []
 prove = ["X690-11.7.4", "CODEC-generalized-time-reject-nonder"]
-bounded = "fixed 16-octet content; symbolic separator; unwind 18"
+bounded = "fixed 16-octet content; symbolic separator other than '.'; unwind 18"
 none = ""
 
 [[entry]]
@@ -26,7 +26,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "day_range_is_classified"
 accept = []
 reject = []
-prove = ["PROF-time-field-ranges", "CODEC-generalized-time-reject-nonder"]
+prove = ["PROF-time-field-ranges"]
 bounded = "fixed 15-octet content; symbolic day 00..99 outside 01..31; unwind 16"
 none = ""
 
@@ -36,7 +36,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "decode_accepts_only_canonical"
 accept = []
 reject = []
-prove = ["CODEC-generalized-time-encode-decode", "CODEC-generalized-time-unique", "X690-7.4"]
+prove = ["CODEC-generalized-time-encode-decode", "CODEC-generalized-time-unique"]
 bounded = "input len <= 19; fraction digits <= 3; unwind 20"
 none = ""
 
@@ -66,7 +66,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "encode_is_total_exact_oracle"
 accept = []
 reject = []
-prove = ["X690-11.7.1", "X690-11.7.2", "X690-11.7.3", "X690-11.7.4", "X690-11.7.5", "RFC5280-4.1.2.5.2-a", "X680-46.2", "PROF-time-field-ranges", "PROF-time-no-leap-second", "API-short-buffer-none", "CODEC-generalized-time-unique", "X690-7.4"]
+prove = ["X690-11.7.1", "X690-11.7.2", "X690-11.7.3", "X690-11.7.4", "X690-11.7.5", "RFC5280-4.1.2.5.2-a", "X680-46.2", "PROF-time-field-ranges", "PROF-time-no-leap-second", "API-short-buffer-none"]
 bounded = "fraction len <= 3; output cap <= 20; unwind 21"
 none = ""
 
@@ -76,9 +76,9 @@ file = "der-verified/src/generalized_time.rs"
 name = "fraction_empty_is_classified"
 accept = []
 reject = []
-prove = ["CODEC-generalized-time-reject-nonder"]
-bounded = "fixed 16-octet empty-fraction content; unwind 18"
-none = ""
+prove = []
+bounded = ""
+none = "fully concrete malformed empty-fraction check has no matching in-scope requirement row"
 
 [[entry]]
 kind = "kani"
@@ -86,9 +86,9 @@ file = "der-verified/src/generalized_time.rs"
 name = "fraction_non_digit_is_classified"
 accept = []
 reject = []
-prove = ["CODEC-generalized-time-reject-nonder"]
-bounded = "fixed 18-octet content; symbolic non-digit; unwind 18"
-none = ""
+prove = []
+bounded = ""
+none = "non-digit fraction is malformed, not a promised non-DER alternate"
 
 [[entry]]
 kind = "kani"
@@ -106,7 +106,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "hour_range_is_classified"
 accept = []
 reject = []
-prove = ["X690-11.7.5", "PROF-time-field-ranges", "CODEC-generalized-time-reject-nonder"]
+prove = ["X690-11.7.5", "PROF-time-field-ranges"]
 bounded = "fixed 15-octet content; symbolic hour 24..99; unwind 16"
 none = ""
 
@@ -116,7 +116,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "minute_range_is_classified"
 accept = []
 reject = []
-prove = ["PROF-time-field-ranges", "CODEC-generalized-time-reject-nonder"]
+prove = ["PROF-time-field-ranges"]
 bounded = "fixed 15-octet content; symbolic minute 60..99; unwind 16"
 none = ""
 
@@ -126,7 +126,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "month_range_is_classified"
 accept = []
 reject = []
-prove = ["PROF-time-field-ranges", "CODEC-generalized-time-reject-nonder"]
+prove = ["PROF-time-field-ranges"]
 bounded = "fixed 15-octet content; symbolic month 00..99 outside 01..12; unwind 16"
 none = ""
 
@@ -136,9 +136,9 @@ file = "der-verified/src/generalized_time.rs"
 name = "non_digit_is_classified"
 accept = []
 reject = []
-prove = ["CODEC-generalized-time-reject-nonder"]
-bounded = "fixed 15-octet content; symbolic mandatory position and non-digit; unwind 16"
-none = ""
+prove = []
+bounded = ""
+none = "non-digit mandatory content is malformed, not a promised non-DER alternate"
 
 [[entry]]
 kind = "kani"
@@ -146,7 +146,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "not_zulu_is_classified"
 accept = []
 reject = []
-prove = ["X690-11.7.1", "RFC5280-4.1.2.5.2-a", "CODEC-generalized-time-reject-nonder"]
+prove = ["X690-11.7.1", "RFC5280-4.1.2.5.2-a"]
 bounded = "fixed 15-octet content; symbolic non-Z terminator; unwind 16"
 none = ""
 
@@ -167,7 +167,7 @@ name = "roundtrip_all_fields"
 accept = []
 reject = []
 prove = ["CODEC-generalized-time-decode-encode"]
-bounded = "canonical fraction len <= 3; symbolic in-range fields; unwind 20"
+bounded = "year <= 9999; fraction len <= 3 with every byte a digit and final byte nonzero when present; month 1..12; day 1..31; hour <= 23; minute and second <= 59; unwind 20"
 none = ""
 
 [[entry]]
@@ -176,7 +176,7 @@ file = "der-verified/src/generalized_time.rs"
 name = "second_range_is_classified"
 accept = []
 reject = []
-prove = ["PROF-time-field-ranges", "PROF-time-no-leap-second", "CODEC-generalized-time-reject-nonder"]
+prove = ["PROF-time-field-ranges", "PROF-time-no-leap-second"]
 bounded = "fixed 15-octet content; symbolic second 60..99; unwind 16"
 none = ""
 
@@ -194,7 +194,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "accepts_leading_zero_fraction"
-accept = ["X690-11.7.3", "X690-11.7.4", "CODEC-generalized-time-unique"]
+accept = ["X690-11.7.3", "X690-11.7.4"]
 reject = []
 prove = []
 bounded = ""
@@ -205,20 +205,20 @@ kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "decode_rejects_non_digit_in_mandatory_prefix"
 accept = []
-reject = ["CODEC-generalized-time-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "non-digit mandatory content is malformed, not a promised non-DER alternate"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "decode_rejects_non_digit_inside_fraction"
 accept = []
-reject = ["CODEC-generalized-time-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "non-digit fraction content is malformed, not a promised non-DER alternate"
 
 [[entry]]
 kind = "test"
@@ -255,17 +255,17 @@ kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "encode_rejects_non_digit_fraction"
 accept = []
-reject = ["CODEC-generalized-time-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "encoder refusal of a non-digit fraction does not decide a promised non-DER decoding variant"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "encode_rejects_noncanonical_fraction"
 accept = []
-reject = ["X690-11.7.3", "CODEC-generalized-time-reject-nonder"]
+reject = ["X690-11.7.3"]
 prove = []
 bounded = ""
 none = ""
@@ -325,10 +325,10 @@ kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "rejects_empty_fraction"
 accept = []
-reject = ["CODEC-generalized-time-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "empty fractional content is malformed, not a promised non-DER alternate"
 
 [[entry]]
 kind = "test"
@@ -355,7 +355,7 @@ kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "rejects_local_time_without_z"
 accept = []
-reject = ["X690-11.7.1", "RFC5280-4.1.2.5.2-a"]
+reject = ["X690-11.7.1", "RFC5280-4.1.2.5.2-a", "CODEC-generalized-time-reject-nonder"]
 prove = []
 bounded = ""
 none = ""
@@ -375,7 +375,7 @@ kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "rejects_missing_seconds"
 accept = []
-reject = ["X690-11.7.2", "RFC5280-4.1.2.5.2-a"]
+reject = ["X690-11.7.2", "RFC5280-4.1.2.5.2-a", "CODEC-generalized-time-reject-nonder"]
 prove = []
 bounded = ""
 none = ""
@@ -395,7 +395,7 @@ kind = "test"
 file = "der-verified/src/generalized_time.rs"
 name = "rejects_offset_form"
 accept = []
-reject = ["X690-11.7.1", "RFC5280-4.1.2.5.2-a"]
+reject = ["X690-11.7.1", "RFC5280-4.1.2.5.2-a", "CODEC-generalized-time-reject-nonder"]
 prove = []
 bounded = ""
 none = ""

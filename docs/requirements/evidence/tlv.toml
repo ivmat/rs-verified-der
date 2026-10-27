@@ -7,7 +7,7 @@ name = "decode_tlv_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-framing-1", "SAFE-termination-2"]
-bounded = "len <= 16; unwind 16"
+bounded = "input len <= 16; unwind 16"
 none = ""
 
 [[entry]]
@@ -17,7 +17,7 @@ name = "decode_tlv_structure"
 accept = []
 reject = []
 prove = ["X690-8.1", "X690-8.1.1.1", "X690-8.1.4", "SAFE-overread-1"]
-bounded = "len <= 16; unwind 16"
+bounded = "input len <= 16; unwind 16"
 none = ""
 
 [[entry]]
@@ -27,7 +27,7 @@ name = "strict_rejects_trailing"
 accept = []
 reject = []
 prove = ["PROF-strict-trailing"]
-bounded = "one trailing octet; unwind 16"
+bounded = "fixed INTEGER TLV framing; one symbolic value and one symbolic trailing octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -36,8 +36,8 @@ file = "der-verified/src/tlv.rs"
 name = "tlv_roundtrip_small"
 accept = []
 reject = []
-prove = ["X690-8.1.1.1", "X690-8.1.4", "CODEC-tlv-decode-encode"]
-bounded = "value len 3; unwind 16"
+prove = ["CODEC-tlv-decode-encode"]
+bounded = "class selector < 4; value len = 3; unwind 16"
 none = ""
 
 [[entry]]
@@ -46,15 +46,15 @@ file = "der-verified/src/tlv.rs"
 name = "tlv_truncated_value_is_classified"
 accept = []
 reject = []
-prove = ["SAFE-overread-1", "CODEC-tlv-reject-nonder"]
-bounded = "four-octet specimen; unwind 16"
+prove = ["SAFE-overread-1"]
+bounded = "fixed tag and declared length; two symbolic value octets; unwind 16"
 none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "decodes_empty_value"
-accept = ["X690-8.1.1.1", "X690-8.1.4", "PROF-lenient-trailing"]
+accept = ["X690-8.1.1.1", "X690-8.1.4"]
 reject = []
 prove = []
 bounded = ""
@@ -64,7 +64,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "decodes_simple_integer_tlv"
-accept = ["X690-8.1", "X690-8.1.1.1", "X690-8.1.4", "PROF-lenient-trailing"]
+accept = ["X690-8.1", "X690-8.1.1.1", "X690-8.1.4"]
 reject = []
 prove = []
 bounded = ""
@@ -95,7 +95,7 @@ kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_bad_tag"
 accept = []
-reject = ["CODEC-tlv-reject-nonder"]
+reject = ["X690-8.1.2.4", "X690-8.1.2.4.1"]
 prove = []
 bounded = ""
 none = ""
@@ -105,17 +105,17 @@ kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_empty_input"
 accept = []
-reject = ["CODEC-tlv-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "empty input is malformed, not a promised non-DER variant"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_indefinite_length_via_length_codec"
 accept = []
-reject = ["X690-10", "CODEC-tlv-reject-nonder"]
+reject = ["X690-10.1", "CODEC-tlv-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -125,7 +125,7 @@ kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "rejects_truncated_value"
 accept = []
-reject = ["SAFE-overread-1", "CODEC-tlv-reject-nonder"]
+reject = ["SAFE-overread-1"]
 prove = []
 bounded = ""
 none = ""
@@ -134,7 +134,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/tlv.rs"
 name = "roundtrips_via_encode"
-accept = ["X690-8.1.1.1", "X690-8.1.4", "CODEC-tlv-decode-encode"]
+accept = ["CODEC-tlv-decode-encode"]
 reject = []
 prove = []
 bounded = ""

@@ -6,8 +6,8 @@ file = "der-verified/src/sequence.rs"
 name = "accepted_identifier_is_canonical_0x30"
 accept = []
 reject = []
-prove = ["X690-8.9.1", "X680-25", "CODEC-sequence-encode-decode", "CODEC-sequence-unique", "X690-7.4"]
-bounded = "len <= 16; unwind 16"
+prove = ["X690-8.9.1", "X680-25"]
+bounded = "input len <= 16; unwind 16"
 none = ""
 
 [[entry]]
@@ -37,17 +37,17 @@ name = "ok_implies_exact_tiling"
 accept = []
 reject = []
 prove = ["X690-8.9.1", "X690-8.10.1", "PROF-sequence-framing-only"]
-bounded = "fixed 8-octet content; unwind 16"
+bounded = "symbolic content len = 8; unwind 16"
 none = ""
 
 [[entry]]
 kind = "kani"
 file = "der-verified/src/sequence.rs"
 name = "roundtrip_two_children"
-accept = []
+accept = ["CODEC-sequence-decode-encode"]
 reject = []
-prove = ["X690-8.9", "X690-8.9.1", "X680-25", "CODEC-sequence-decode-encode"]
-bounded = "two fixed children; unwind 16"
+prove = []
+bounded = ""
 none = ""
 
 [[entry]]
@@ -57,7 +57,7 @@ name = "strict_rejects_trailing"
 accept = []
 reject = []
 prove = ["PROF-strict-trailing"]
-bounded = "one trailing octet; unwind 16"
+bounded = "fixed empty SEQUENCE plus one symbolic trailing octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -66,8 +66,8 @@ file = "der-verified/src/sequence.rs"
 name = "tag_correctness"
 accept = []
 reject = []
-prove = ["X690-8.9.1", "X680-25", "CODEC-sequence-reject-nonder"]
-bounded = "one-octet body; unwind 16"
+prove = ["X690-8.9.1", "X680-25"]
+bounded = "one symbolic body octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -104,7 +104,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "decodes_two_element_sequence"
-accept = ["X690-8.9", "X690-8.9.1", "X690-8.9.2", "X680-25"]
+accept = ["X690-8.9", "X690-8.9.1", "X680-25"]
 reject = []
 prove = []
 bounded = ""
@@ -145,7 +145,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_child_that_overruns_content"
 accept = []
-reject = ["CODEC-sequence-reject-nonder", "SAFE-overread-2"]
+reject = ["SAFE-overread-2"]
 prove = []
 bounded = ""
 none = ""
@@ -155,7 +155,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_high_tag_form_of_tag_16"
 accept = []
-reject = ["CODEC-sequence-reject-nonder", "X690-7.4"]
+reject = ["X690-8.1.2.2", "X690-8.1.2.4.2", "CODEC-sequence-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -165,7 +165,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_indefinite_length_envelope"
 accept = []
-reject = ["CODEC-sequence-reject-nonder"]
+reject = ["X690-10.1", "CODEC-sequence-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -175,7 +175,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_non_minimal_length"
 accept = []
-reject = ["CODEC-sequence-reject-nonder", "X690-7.4"]
+reject = ["X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-sequence-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -185,7 +185,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_non_sequence_tag_as_wrong_tag"
 accept = []
-reject = ["X680-25", "CODEC-sequence-reject-nonder"]
+reject = ["X680-25"]
 prove = []
 bounded = ""
 none = ""
@@ -195,7 +195,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_primitive_sequence_identifier"
 accept = []
-reject = ["X690-8.9.1", "CODEC-sequence-reject-nonder"]
+reject = ["X690-8.9.1"]
 prove = []
 bounded = ""
 none = ""
@@ -205,7 +205,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_set_tag_as_wrong_tag"
 accept = []
-reject = ["X680-25", "CODEC-sequence-reject-nonder"]
+reject = ["X680-25"]
 prove = []
 bounded = ""
 none = ""
@@ -215,10 +215,10 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "rejects_truncated_envelope"
 accept = []
-reject = ["CODEC-sequence-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "truncated SEQUENCE envelope is malformed, not a promised non-DER variant"
 
 [[entry]]
 kind = "test"
@@ -235,7 +235,7 @@ kind = "test"
 file = "der-verified/src/sequence.rs"
 name = "strict_accepts_exact_and_rejects_trailing"
 accept = ["PROF-strict-trailing"]
-reject = []
+reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
 none = ""

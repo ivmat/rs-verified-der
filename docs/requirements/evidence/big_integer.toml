@@ -7,7 +7,7 @@ name = "accepted_is_fixed_point_of_minimizer"
 accept = []
 reject = []
 prove = ["CODEC-big-integer-encode-decode", "CODEC-big-integer-unique"]
-bounded = "len <= 20; unwind 22"
+bounded = "content len <= 20; unwind 22"
 none = ""
 
 [[entry]]
@@ -15,9 +15,9 @@ kind = "kani"
 file = "der-verified/src/big_integer.rs"
 name = "empty_is_empty"
 accept = []
-reject = []
-prove = ["X690-8.3.1-a", "CODEC-big-integer-reject-nonder"]
-bounded = "empty input"
+reject = ["X690-8.3.1-a"]
+prove = []
+bounded = ""
 none = ""
 
 [[entry]]
@@ -27,7 +27,7 @@ name = "encode_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-content-1"]
-bounded = "input/output len <= 20; unwind 20"
+bounded = "input len <= 20; output len <= 20; unwind 20"
 none = ""
 
 [[entry]]
@@ -37,7 +37,7 @@ name = "is_negative_matches_sign_bit"
 accept = []
 reject = []
 prove = ["X690-8.3.3", "PROF-big-integer-comparison-only"]
-bounded = "len 1..=20; unwind 1"
+bounded = "content len 1..=20; unwind 1"
 none = ""
 
 [[entry]]
@@ -47,7 +47,7 @@ name = "minimality_is_local"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "PROF-big-integer-comparison-only"]
-bounded = "len <= 20; unwind 1"
+bounded = "content len <= 20; comparison buffers share first two octets; unwind 1"
 none = ""
 
 [[entry]]
@@ -56,8 +56,8 @@ file = "der-verified/src/big_integer.rs"
 name = "minimizer_output_is_always_minimal"
 accept = []
 reject = []
-prove = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
-bounded = "len 1..=20; unwind 21"
+prove = ["X690-8.3.2"]
+bounded = "content len 1..=20; unwind 21"
 none = ""
 
 [[entry]]
@@ -67,7 +67,7 @@ name = "redundant_negative_padding_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
-bounded = "all negative-sign second octets"
+bounded = "two octets; second-octet sign bit set"
 none = ""
 
 [[entry]]
@@ -77,7 +77,7 @@ name = "redundant_negative_padding_is_non_minimal_at_length"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
-bounded = "fixed 20 octets; unwind 1"
+bounded = "fixed 20 octets; first = 0xff; second-octet sign bit set; unwind 1"
 none = ""
 
 [[entry]]
@@ -87,7 +87,7 @@ name = "redundant_positive_padding_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
-bounded = "all positive-sign second octets"
+bounded = "two octets; second-octet sign bit clear"
 none = ""
 
 [[entry]]
@@ -97,7 +97,7 @@ name = "redundant_positive_padding_is_non_minimal_at_length"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "CODEC-big-integer-reject-nonder", "X690-7.4"]
-bounded = "fixed 20 octets; unwind 1"
+bounded = "fixed 20 octets; first = 0x00; second-octet sign bit clear; unwind 1"
 none = ""
 
 [[entry]]
@@ -107,7 +107,7 @@ name = "strips_redundant_padding"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
-bounded = "fixed 20 octets; unwind 20"
+bounded = "fixed 20 octets; first = 0x00; second nonzero with sign bit clear; unwind 20"
 none = ""
 
 [[entry]]
@@ -117,7 +117,7 @@ name = "validate_iff_minimal_oracle"
 accept = []
 reject = []
 prove = ["X690-8.3.1-a", "X690-8.3.2", "CODEC-big-integer-reject-nonder", "CODEC-big-integer-unique", "X690-7.4"]
-bounded = "len <= 20; unwind 1"
+bounded = "content len <= 20; unwind 1"
 none = ""
 
 [[entry]]
@@ -127,7 +127,7 @@ name = "validate_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-content-1"]
-bounded = "len <= 20; unwind 1"
+bounded = "content len <= 20; unwind 1"
 none = ""
 
 [[entry]]
@@ -205,7 +205,7 @@ kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "rejects_empty"
 accept = []
-reject = ["X690-8.3.1-a", "CODEC-big-integer-reject-nonder"]
+reject = ["X690-8.3.1-a"]
 prove = []
 bounded = ""
 none = ""
@@ -244,7 +244,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/big_integer.rs"
 name = "strips_all_zero_content_to_single_zero_without_over_reading"
-accept = ["X690-8.3.2", "CODEC-big-integer-decode-encode"]
+accept = ["X690-8.3.2"]
 reject = []
 prove = []
 bounded = ""

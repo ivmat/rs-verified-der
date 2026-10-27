@@ -6,8 +6,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_identifier"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.1", "CODEC-name-reject-nonder"]
-bounded = "one symbolic low-tag ATV identifier and bounded one-byte fields; input = 11; unwind 3"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.1", "X690-8.12.2"]
+bounded = "ATV and value identifiers are low-tag; bounded one-byte fields; input = 11; unwind 3"
 none = ""
 
 [[entry]]
@@ -16,7 +16,7 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_missing_value_exact"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.2"]
 bounded = "one symbolic one-byte OID content; input = 9; unwind 3"
 none = ""
 
@@ -26,8 +26,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_oid_length"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
-bounded = "one symbolic OID length octet plus bounded fields; input = 11; unwind 3"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.1.3.3"]
+bounded = "OID length octet != 0x03 and != 0x83; bounded fields; input = 11; unwind 3"
 none = ""
 
 [[entry]]
@@ -36,8 +36,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_trailing_exact"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
-bounded = "symbolic one-byte OID and two value tags; input = 13; unwind 3"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.2"]
+bounded = "one-byte OID; both value identifiers are low-tag; input = 13; unwind 3"
 none = ""
 
 [[entry]]
@@ -46,8 +46,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_value_length"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
-bounded = "symbolic one-byte OID, value tag, and length; input = 11; unwind 3"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.1.3.3"]
+bounded = "one-byte OID; value identifier is low-tag; symbolic value length; input = 11; unwind 3"
 none = ""
 
 [[entry]]
@@ -55,8 +55,8 @@ kind = "kani"
 file = "der-verified/src/x509_name.rs"
 name = "validate_name_empty_rdn"
 accept = []
-reject = []
-prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1"]
+prove = []
 bounded = "fixed empty RDN input; unwind 3"
 none = ""
 
@@ -64,9 +64,9 @@ none = ""
 kind = "kani"
 file = "der-verified/src/x509_name.rs"
 name = "validate_name_empty_sequence_accepted"
-accept = []
+accept = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1"]
 reject = []
-prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1"]
+prove = []
 bounded = "fixed empty RDNSequence input; unwind 3"
 none = ""
 
@@ -76,8 +76,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_oid_identifier"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.1", "CODEC-name-reject-nonder"]
-bounded = "one symbolic low-tag OID identifier and bounded one-byte fields; input = 11; unwind 3"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.1", "X690-8.9.2"]
+bounded = "OID and value identifiers are low-tag; bounded one-byte fields; input = 11; unwind 3"
 none = ""
 
 [[entry]]
@@ -86,8 +86,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_outer_identifier"
 accept = []
 reject = []
-prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "CODEC-name-reject-nonder"]
-bounded = "one symbolic low-tag outer identifier and bounded one-byte fields; input = 11; unwind 3"
+prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1"]
+bounded = "outer and value identifiers are low-tag; bounded one-byte fields; input = 11; unwind 3"
 none = ""
 
 [[entry]]
@@ -96,8 +96,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_rdn_identifier"
 accept = []
 reject = []
-prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
-bounded = "one symbolic low-tag RDN identifier and bounded one-byte fields; input = 11; unwind 3"
+prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X690-8.10.2"]
+bounded = "RDN and value identifiers are low-tag; bounded one-byte fields; input = 11; unwind 3"
 none = ""
 
 [[entry]]
@@ -107,7 +107,7 @@ name = "validate_name_single_atv_exact"
 accept = []
 reject = []
 prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15"]
-bounded = "symbolic one-byte OID content and value tag; input = 11; unwind 3"
+bounded = "one-byte OID content; value identifier is low-tag; input = 11; unwind 3"
 none = ""
 
 [[entry]]
@@ -117,7 +117,7 @@ name = "validate_name_two_atvs_exact"
 accept = []
 reject = []
 prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.12.2", "X690-11.6"]
-bounded = "two bounded ATVs with symbolic one-byte OID/value fields; input = 19; unwind 3"
+bounded = "two bounded ATVs; both value identifiers are low-tag; input = 19; unwind 3"
 none = ""
 
 [[entry]]
@@ -137,7 +137,7 @@ name = "validate_name_two_rdns_exact"
 accept = []
 reject = []
 prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.10.2"]
-bounded = "two bounded RDNs with symbolic one-byte OID/value fields; input = 20; unwind 3"
+bounded = "two bounded RDNs; both value identifiers are low-tag; input = 20; unwind 3"
 none = ""
 
 [[entry]]
@@ -195,7 +195,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_first_field_not_oid"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -205,7 +205,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_primitive_form"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.1", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.1", "X690-8.12.2"]
 prove = []
 bounded = ""
 none = ""
@@ -215,7 +215,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_with_one_field"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -225,7 +225,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_with_three_fields"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -235,7 +235,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_atv_wrong_tag"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.12.2"]
 prove = []
 bounded = ""
 none = ""
@@ -245,7 +245,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_constructed_oid"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.1", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.1"]
 prove = []
 bounded = ""
 none = ""
@@ -255,7 +255,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_empty_rdn"
 accept = []
-reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1"]
 prove = []
 bounded = ""
 none = ""
@@ -275,7 +275,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_non_canonical_oid"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.19.2", "X690-7.4", "CODEC-oid-reject-nonder", "CODEC-name-reject-nonder"]
+reject = ["X690-8.19.2", "X690-7.4", "CODEC-oid-reject-nonder", "CODEC-name-reject-nonder"]
 prove = []
 bounded = ""
 none = ""
@@ -285,7 +285,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_rdn_wrong_tag"
 accept = []
-reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X690-8.10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -295,7 +295,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_trailing_bytes_after_whole_name"
 accept = []
-reject = ["PROF-strict-trailing", "CODEC-name-reject-nonder"]
+reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
 none = ""
@@ -305,7 +305,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_trailing_bytes_inside_atv"
 accept = []
-reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -315,7 +315,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_trailing_bytes_inside_rdn"
 accept = []
-reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X690-8.12.2", "CODEC-name-reject-nonder"]
+reject = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X690-8.12.2", "X690-8.1.3.3"]
 prove = []
 bounded = ""
 none = ""
@@ -325,7 +325,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_truncated_input"
 accept = []
-reject = ["X690-8.1.3.3", "CODEC-name-reject-nonder"]
+reject = ["X690-8.1.3.3"]
 prove = []
 bounded = ""
 none = ""
@@ -345,7 +345,7 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "CODEC-name-reject-nonder"]
+reject = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1"]
 prove = []
 bounded = ""
 none = ""

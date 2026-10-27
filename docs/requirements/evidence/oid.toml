@@ -5,9 +5,9 @@ kind = "kani"
 file = "der-verified/src/oid.rs"
 name = "empty_is_classified"
 accept = []
-reject = []
-prove = ["X690-8.19.3", "CODEC-oid-reject-nonder"]
-bounded = "empty input"
+reject = ["X690-8.19.3"]
+prove = []
+bounded = ""
 none = ""
 
 [[entry]]
@@ -17,7 +17,7 @@ name = "later_0x80_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
-bounded = "fixed 4 octets; unwind 8"
+bounded = "fixed 4 octets; first octet < 0x80; second octet = 0x80; unwind 8"
 none = ""
 
 [[entry]]
@@ -27,7 +27,7 @@ name = "leading_0x80_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.19.2", "X690-8.19.2-a", "X690-8.19.2-c", "X690-8.19.2-d", "CODEC-oid-reject-nonder", "X690-7.4"]
-bounded = "fixed 5 octets; unwind 8"
+bounded = "fixed 5 octets; first octet = 0x80; unwind 8"
 none = ""
 
 [[entry]]
@@ -36,8 +36,8 @@ file = "der-verified/src/oid.rs"
 name = "unterminated_is_truncated"
 accept = []
 reject = []
-prove = ["X690-8.19.2-a", "X690-8.19.2-b", "CODEC-oid-reject-nonder"]
-bounded = "fixed 4 octets; unwind 8"
+prove = ["X690-8.19.2-a", "X690-8.19.2-b"]
+bounded = "fixed 4 octets; first octet is a non-0x80 continuation; remaining octets have continuation bits set; unwind 8"
 none = ""
 
 [[entry]]
@@ -47,7 +47,7 @@ name = "validate_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-content-1"]
-bounded = "fixed 6 octets; unwind 8"
+bounded = "symbolic content len = 6; unwind 8"
 none = ""
 
 [[entry]]
@@ -65,7 +65,7 @@ kind = "test"
 file = "der-verified/src/oid.rs"
 name = "rejects_empty"
 accept = []
-reject = ["X690-8.19.3", "CODEC-oid-reject-nonder"]
+reject = ["X690-8.19.3"]
 prove = []
 bounded = ""
 none = ""
@@ -85,7 +85,7 @@ kind = "test"
 file = "der-verified/src/oid.rs"
 name = "rejects_unterminated_subid"
 accept = []
-reject = ["X690-8.19.2-a", "X690-8.19.2-b", "CODEC-oid-reject-nonder"]
+reject = ["X690-8.19.2-a", "X690-8.19.2-b"]
 prove = []
 bounded = ""
 none = ""

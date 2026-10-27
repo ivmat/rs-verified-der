@@ -6,8 +6,8 @@ file = "der-verified/src/tag.rs"
 name = "decode_tag_accepts_only_canonical"
 accept = []
 reject = []
-prove = ["X690-8.1.2.2", "X690-8.1.2.4", "X690-8.1.2.4.2", "CODEC-tag-encode-decode", "CODEC-tag-unique", "X690-7.4"]
-bounded = "fixed 7 octets; unwind 12"
+prove = ["CODEC-tag-encode-decode", "CODEC-tag-unique"]
+bounded = "symbolic input len = 7; unwind 12"
 none = ""
 
 [[entry]]
@@ -17,7 +17,7 @@ name = "decode_tag_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-framing-1", "SAFE-termination-1"]
-bounded = "fixed 7 octets; unwind 12"
+bounded = "symbolic input len = 7; unwind 12"
 none = ""
 
 [[entry]]
@@ -27,7 +27,7 @@ name = "high_tag_of_small_number_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.1.2.2", "X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
-bounded = "all small tag numbers; unwind 12"
+bounded = "first octet uses high-tag marker; final tag-number octet <= 30; unwind 12"
 none = ""
 
 [[entry]]
@@ -37,7 +37,7 @@ name = "leading_zero_high_tag_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.1.2.4.2", "CODEC-tag-reject-nonder", "X690-7.4"]
-bounded = "four-octet high-tag inputs; unwind 12"
+bounded = "first octet uses high-tag marker; second octet fixed 0x80; two symbolic tail octets; unwind 12"
 none = ""
 
 [[entry]]
@@ -46,8 +46,8 @@ file = "der-verified/src/tag.rs"
 name = "roundtrip_all_tags"
 accept = []
 reject = []
-prove = ["X690-8.1.2", "X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.4", "X690-8.1.2.4.1", "X690-8.1.2.4.2", "X690-8.1.2.5", "X680-8", "X680-8a", "CODEC-tag-decode-encode"]
-bounded = "all u32 tags/classes/forms; unwind 12"
+prove = ["CODEC-tag-decode-encode"]
+bounded = "class selector < 4; all u32 tag numbers and both forms; unwind 12"
 none = ""
 
 [[entry]]
@@ -57,7 +57,7 @@ name = "too_large_tag_is_classified"
 accept = []
 reject = []
 prove = ["PROF-tag-u32-cap", "RFC5280-B-size-upper-bound"]
-bounded = "six-octet oversized tag; unwind 12"
+bounded = "first octet uses high-tag marker; fixed oversized continuation; unwind 12"
 none = ""
 
 [[entry]]
@@ -66,8 +66,8 @@ file = "der-verified/src/tag.rs"
 name = "truncated_high_tag_is_classified"
 accept = []
 reject = []
-prove = ["X690-8.1.2.4", "X690-8.1.2.4.1", "CODEC-tag-reject-nonder"]
-bounded = "one-octet high-tag prefix; unwind 12"
+prove = ["X690-8.1.2.4", "X690-8.1.2.4.1"]
+bounded = "one octet using the high-tag marker; unwind 12"
 none = ""
 
 [[entry]]
@@ -95,10 +95,10 @@ kind = "test"
 file = "der-verified/src/tag.rs"
 name = "rejects_empty_input"
 accept = []
-reject = ["CODEC-tag-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "empty identifier is malformed, not a promised non-DER variant"
 
 [[entry]]
 kind = "test"
@@ -135,7 +135,7 @@ kind = "test"
 file = "der-verified/src/tag.rs"
 name = "rejects_truncated_high_tag"
 accept = []
-reject = ["X690-8.1.2.4", "X690-8.1.2.4.1", "CODEC-tag-reject-nonder"]
+reject = ["X690-8.1.2.4", "X690-8.1.2.4.1"]
 prove = []
 bounded = ""
 none = ""

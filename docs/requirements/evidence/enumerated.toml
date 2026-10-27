@@ -7,7 +7,7 @@ name = "decode_delegates_to_integer"
 accept = []
 reject = []
 prove = ["X690-8.4"]
-bounded = "len <= 9; unwind 12"
+bounded = "content len <= 9; unwind 12"
 none = ""
 
 [[entry]]

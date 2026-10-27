@@ -6,8 +6,8 @@ file = "der-verified/src/context_tag.rs"
 name = "decode_explicit_context_exact_result"
 accept = []
 reject = []
-prove = ["X680-31i", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14.2", "X690-8.14.3", "CODEC-context-tag-reject-nonder", "PROF-explicit-context-only"]
-bounded = "len <= 16, all u32 tags; unwind 20"
+prove = ["X680-31i", "X680-31.2", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
+bounded = "input len <= 16; all u32 expected tag numbers; unwind 20"
 none = ""
 
 [[entry]]
@@ -16,8 +16,8 @@ file = "der-verified/src/context_tag.rs"
 name = "decode_explicit_context_faithful"
 accept = []
 reject = []
-prove = ["X680-31i", "X680-31j", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
-bounded = "len <= 16, all u32 tags; unwind 20"
+prove = ["X680-31i", "X680-31j", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
+bounded = "input len <= 16; all u32 expected tag numbers; unwind 20"
 none = ""
 
 [[entry]]
@@ -27,14 +27,14 @@ name = "decode_explicit_context_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-framing-1"]
-bounded = "len <= 16, all expected tags; unwind 20"
+bounded = "input len <= 16; all u32 expected tag numbers; unwind 20"
 none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "accepts_explicit_0_wrapper"
-accept = ["X680-31i", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
+accept = ["X680-31i", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
 reject = []
 prove = []
 bounded = ""
@@ -44,7 +44,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "accepts_explicit_3_wrapper"
-accept = ["X680-31i", "X680-31l", "X680-31m", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
+accept = ["X680-31i", "X680-31.2", "X690-8.14", "X690-8.14.2", "X690-8.14.3", "PROF-explicit-context-only"]
 reject = []
 prove = []
 bounded = ""
@@ -55,7 +55,7 @@ kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_high_tag_form_of_context_number_0"
 accept = []
-reject = ["CODEC-context-tag-reject-nonder"]
+reject = ["X690-8.1.2.2", "X690-8.1.2.4.2", "CODEC-context-tag-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -65,17 +65,17 @@ kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_malformed_wrapper"
 accept = []
-reject = ["CODEC-context-tag-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "truncated wrapper is malformed, not a promised non-DER variant"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_non_canonical_wrapper_length"
 accept = []
-reject = ["CODEC-context-tag-reject-nonder"]
+reject = ["X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-context-tag-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -85,7 +85,7 @@ kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_primitive_form"
 accept = []
-reject = ["X680-31l", "X680-31m", "X690-8.14.3", "CODEC-context-tag-reject-nonder", "PROF-explicit-context-only"]
+reject = ["X690-8.14.3", "PROF-explicit-context-only"]
 prove = []
 bounded = ""
 none = ""
@@ -95,7 +95,7 @@ kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_wrong_class"
 accept = []
-reject = ["X680-31.2", "X690-8.14.2", "CODEC-context-tag-reject-nonder"]
+reject = ["X680-31.2", "X690-8.14.2"]
 prove = []
 bounded = ""
 none = ""
@@ -105,7 +105,7 @@ kind = "test"
 file = "der-verified/src/context_tag.rs"
 name = "rejects_wrong_number"
 accept = []
-reject = ["X680-31.2", "X690-8.14.2", "CODEC-context-tag-reject-nonder"]
+reject = ["X680-31.2", "X690-8.14.2"]
 prove = []
 bounded = ""
 none = ""

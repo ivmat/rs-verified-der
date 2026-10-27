@@ -16,8 +16,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_faithful"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13", "CODEC-validity-reject-nonder"]
-bounded = "two symbolic UTCTimes; tail <= 3; input <= 35; unwind 20"
+prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; tail len <= 3; input <= 35; unwind 20"
 none = ""
 
 [[entry]]
@@ -26,8 +26,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_faithful_gg"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13"]
-bounded = "two symbolic GeneralizedTimes; fraction len <= 3; tail <= 3; input <= 47; unwind 20"
+prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; two GeneralizedTimes: year <= 9999 and same field ranges; fraction len <= 3, ASCII digits, final digit nonzero; tail len <= 3; input <= 47; unwind 20"
 none = ""
 
 [[entry]]
@@ -36,8 +36,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_faithful_gu"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13"]
-bounded = "symbolic GeneralizedTime/UTCTime; fraction len <= 3; tail <= 3; input <= 47; unwind 20"
+prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; two GeneralizedTimes: year <= 9999 and same field ranges; fraction len <= 3, ASCII digits, final digit nonzero; tail len <= 3; input <= 47; unwind 20"
 none = ""
 
 [[entry]]
@@ -46,8 +46,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_faithful_ug"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13"]
-bounded = "symbolic UTCTime/GeneralizedTime; fraction len <= 3; tail <= 3; input <= 47; unwind 20"
+prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; two GeneralizedTimes: year <= 9999 and same field ranges; fraction len <= 3, ASCII digits, final digit nonzero; tail len <= 3; input <= 47; unwind 20"
 none = ""
 
 [[entry]]
@@ -56,8 +56,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_faithful_uu"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13"]
-bounded = "two symbolic UTCTimes; tail <= 3; input <= 47; unwind 20"
+prove = ["RFC5280-4.1-d", "RFC5280-4.1-e", "RFC5280-4.1.2.5-a", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; two GeneralizedTimes: year <= 9999 and same field ranges; fraction len <= 3, ASCII digits, final digit nonzero; tail len <= 3; input <= 47; unwind 20"
 none = ""
 
 [[entry]]
@@ -76,8 +76,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_rejects_field_content"
 accept = []
 reject = []
-prove = ["CODEC-validity-reject-nonder"]
-bounded = "one symbolic 13-byte UTCTime content; input = 32; unwind 20"
+prove = ["PROF-time-field-ranges"]
+bounded = "other UTCTime: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; selected field has symbolic 13-byte content; input = 32; unwind 20"
 none = ""
 
 [[entry]]
@@ -86,8 +86,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_rejects_field_identifier"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "CODEC-validity-reject-nonder"]
-bounded = "one symbolic low-tag field identifier; input = 32; unwind 20"
+prove = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2", "X690-10.2", "CODEC-validity-reject-nonder"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; selected field identifier is low-tag; input = 32; unwind 20"
 none = ""
 
 [[entry]]
@@ -96,8 +96,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_rejects_field_length"
 accept = []
 reject = []
-prove = ["CODEC-validity-reject-nonder"]
-bounded = "one symbolic length octet != 13; input = 32; unwind 20"
+prove = ["X690-8.1.3.3"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; selected field length octet != 13; input = 32; unwind 20"
 none = ""
 
 [[entry]]
@@ -106,8 +106,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_rejects_missing_fields"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-d", "CODEC-validity-reject-nonder"]
-bounded = "fixed empty/one-field inputs; one symbolic UTCTime; input <= 17; unwind 20"
+prove = ["RFC5280-4.1-d", "X690-8.9.2"]
+bounded = "one UTCTime: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; fixed empty/one-field shapes; input <= 17; unwind 20"
 none = ""
 
 [[entry]]
@@ -116,8 +116,8 @@ file = "der-verified/src/x509_validity.rs"
 name = "parse_validity_rejects_outer_identifier"
 accept = []
 reject = []
-prove = ["RFC5280-4.1-d", "X690-8.9.1", "CODEC-validity-reject-nonder"]
-bounded = "one symbolic low-tag outer identifier; input = 32; unwind 20"
+prove = ["RFC5280-4.1-d", "X690-8.9.1"]
+bounded = "two UTCTimes: year2 <= 99, month 1..=12, day 1..=31, hour <= 23, minute/second <= 59; outer identifier is low-tag; input = 32; unwind 20"
 none = ""
 
 [[entry]]
@@ -165,7 +165,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_empty_validity"
 accept = []
-reject = ["RFC5280-4.1-d", "CODEC-validity-reject-nonder"]
+reject = ["RFC5280-4.1-d", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -175,7 +175,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_missing_not_after"
 accept = []
-reject = ["RFC5280-4.1-d", "CODEC-validity-reject-nonder"]
+reject = ["RFC5280-4.1-d", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -205,7 +205,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_not_after_wrong_tag"
 accept = []
-reject = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "CODEC-validity-reject-nonder"]
+reject = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -215,7 +215,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_not_before_bad_utc"
 accept = []
-reject = ["PROF-time-field-ranges", "CODEC-utc-time-reject-nonder", "CODEC-validity-reject-nonder"]
+reject = ["PROF-time-field-ranges"]
 prove = []
 bounded = ""
 none = ""
@@ -225,7 +225,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_not_before_constructed"
 accept = []
-reject = ["RFC5280-4.1-e", "X690-10.2", "CODEC-validity-reject-nonder"]
+reject = ["X690-10.2", "CODEC-validity-reject-nonder"]
 prove = []
 bounded = ""
 none = ""
@@ -235,7 +235,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_not_before_wrong_class"
 accept = []
-reject = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "CODEC-validity-reject-nonder"]
+reject = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -245,7 +245,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_not_before_wrong_tag"
 accept = []
-reject = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "CODEC-validity-reject-nonder"]
+reject = ["RFC5280-4.1-e", "X680-29", "X690-8.1.2.6", "X690-8.13", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -255,7 +255,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_trailing_byte_after_validity"
 accept = []
-reject = ["PROF-strict-trailing", "CODEC-validity-reject-nonder"]
+reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
 none = ""
@@ -265,7 +265,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_trailing_bytes_inside_outer"
 accept = []
-reject = ["RFC5280-4.1-d", "CODEC-validity-reject-nonder"]
+reject = ["RFC5280-4.1-d", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -275,7 +275,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_truncated"
 accept = []
-reject = ["X690-8.1.3.3", "CODEC-validity-reject-nonder"]
+reject = ["X690-8.1.3.3"]
 prove = []
 bounded = ""
 none = ""
@@ -285,7 +285,7 @@ kind = "test"
 file = "der-verified/src/x509_validity.rs"
 name = "rejects_wrong_outer_tag"
 accept = []
-reject = ["RFC5280-4.1-d", "X690-8.9.1", "CODEC-validity-reject-nonder"]
+reject = ["RFC5280-4.1-d", "X690-8.9.1"]
 prove = []
 bounded = ""
 none = ""

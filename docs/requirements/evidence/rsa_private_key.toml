@@ -7,7 +7,7 @@ name = "parse_faithful_two_prime_s1"
 accept = []
 reject = []
 prove = ["RFC8017-A.1.2", "RFC8017-A.1.2-a", "RFC8017-A.1.2-c", "RFC8017-A.1.2-d", "X690-8.9.2", "X690-8.9.3", "PROF-strict-trailing", "PROF-big-integer-comparison-only"]
-bounded = "tail len <= 3; post len <= 2; 43-octet backing; unwind 5; member-walk sentinel stub"
+bounded = "43-octet backing; 1-octet INTEGER contents; tail len <= 3; post len <= 2; nonempty tail first octet is neither 0x10 nor 0x30; unwind 5; member-walk sentinel stub"
 none = ""
 
 [[entry]]
@@ -16,8 +16,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_faithful_two_prime_s2"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2", "RFC8017-A.1.2-a", "RFC8017-A.1.2-c", "RFC8017-A.1.2-d", "X690-8.9.2", "PROF-big-integer-comparison-only", "CODEC-rsa-private-key-reject-nonder"]
-bounded = "37 used of 43 octets; 2-octet symbolic INTEGER contents; unwind 5; member-walk sentinel stub"
+prove = ["RFC8017-A.1.2", "RFC8017-A.1.2-a", "RFC8017-A.1.2-c", "RFC8017-A.1.2-d", "X690-8.3.2", "X690-8.9.2", "PROF-strict-trailing", "PROF-big-integer-comparison-only", "CODEC-rsa-private-key-reject-nonder"]
+bounded = "43-octet backing with fixed 37-octet no-tail/no-post shape; symbolic 2-octet INTEGER contents; unwind 5; member-walk sentinel stub"
 none = ""
 
 [[entry]]
@@ -26,8 +26,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_multi_prime_faithful"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2", "RFC8017-A.1.2-b", "RFC8017-A.1.2-c", "RFC8017-A.1.2-e", "RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.9.2", "X690-8.9.3", "X690-8.10.1", "X690-8.10.2", "X690-8.10.3", "PROF-big-integer-comparison-only"]
-bounded = "fixed 42-octet one-member shape with symbolic INTEGER contents; unwind 5"
+prove = ["RFC8017-A.1.2", "RFC8017-A.1.2-b", "RFC8017-A.1.2-c", "RFC8017-A.1.2-e", "RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.9.2", "X690-8.10.1", "X690-8.10.2", "PROF-big-integer-comparison-only"]
+bounded = "fixed 42-octet one-member shape with 1-octet symbolic INTEGER contents; version <= 1; unwind 5"
 none = ""
 
 [[entry]]
@@ -36,8 +36,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_multi_prime_rejects_member_field_identifier"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-g", "X690-8.10.2", "CODEC-rsa-private-key-reject-nonder"]
-bounded = "one member; symbolic field index 0..2 and low-tag identifier; unwind 5"
+prove = ["RFC8017-A.1.2-g", "X690-8.9.2", "X690-8.10.2"]
+bounded = "fixed 42-octet one-member shape; field index <= 2; identifier is low-tag form; unwind 5"
 none = ""
 
 [[entry]]
@@ -46,8 +46,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_multi_prime_rejects_member_field_length"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-g", "X690-8.10.2", "CODEC-rsa-private-key-reject-nonder"]
-bounded = "one member; symbolic field index 0..2 and invalid length; unwind 5"
+prove = ["RFC8017-A.1.2-g", "X690-8.10.2"]
+bounded = "fixed 42-octet one-member shape; field index <= 2; length exceeds octets remaining in member; unwind 5"
 none = ""
 
 [[entry]]
@@ -56,8 +56,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_multi_prime_rejects_member_identifier"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.10.1", "X690-8.10.2", "CODEC-rsa-private-key-reject-nonder"]
-bounded = "one member; symbolic low-tag identifier; unwind 5"
+prove = ["RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.10.1", "X690-8.10.2"]
+bounded = "fixed 42-octet one-member shape; identifier is low-tag form; unwind 5"
 none = ""
 
 [[entry]]
@@ -66,8 +66,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_multi_prime_rejects_member_length"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-f", "X690-8.10.2", "CODEC-rsa-private-key-reject-nonder"]
-bounded = "one member; symbolic invalid member length; unwind 5"
+prove = ["RFC8017-A.1.2-f", "X690-8.10.2"]
+bounded = "fixed 42-octet one-member shape; member length > 9; unwind 5"
 none = ""
 
 [[entry]]
@@ -76,8 +76,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_multi_prime_rejects_member_shape"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-g", "X690-8.10.2"]
-bounded = "one member with symbolic element count 0..4; unwind 5"
+prove = ["RFC8017-A.1.2-g", "X690-8.9.2", "X690-8.10.2"]
+bounded = "fixed one-member framing with element count <= 4; at most three INTEGERs plus one NULL; input len 33..44; unwind 5"
 none = ""
 
 [[entry]]
@@ -116,7 +116,7 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_other_prime_infos_tail_primitive"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-f", "X690-8.10.1", "CODEC-rsa-private-key-reject-nonder"]
+prove = ["RFC8017-A.1.2-f", "X690-8.10.1"]
 bounded = "32-octet backing; symbolic version and primitive SEQUENCE tail; unwind 5; member-walk sentinel stub"
 none = ""
 
@@ -126,7 +126,7 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_other_prime_infos_tail_set"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-f", "X690-8.10.1"]
+prove = ["RFC8017-A.1.2-f", "X690-8.9.2", "X690-8.10.1"]
 bounded = "32-octet backing; symbolic version and SET tail; unwind 5; member-walk sentinel stub"
 none = ""
 
@@ -136,7 +136,7 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_other_prime_infos_tail_trailing"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-f", "X690-8.10.2"]
+prove = ["RFC8017-A.1.2-f", "X690-8.9.2", "X690-8.10.2"]
 bounded = "32-octet backing; symbolic version and trailing tail octet; unwind 5; member-walk sentinel stub"
 none = ""
 
@@ -146,7 +146,7 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_other_prime_infos_tail_truncated"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-f", "X690-8.10.2", "CODEC-rsa-private-key-reject-nonder"]
+prove = ["RFC8017-A.1.2-f"]
 bounded = "32-octet backing; symbolic version and truncated SEQUENCE tail; unwind 5; member-walk sentinel stub"
 none = ""
 
@@ -156,7 +156,7 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_rejects_field_identifier"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2", "X690-8.9.2", "CODEC-rsa-private-key-reject-nonder"]
+prove = ["RFC8017-A.1.2", "X690-8.9.2"]
 bounded = "29-octet shape; symbolic slot 0..8 and low-tag identifier; unwind 5; member-walk sentinel stub"
 none = ""
 
@@ -166,8 +166,8 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_rejects_field_length"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2", "CODEC-rsa-private-key-reject-nonder"]
-bounded = "29-octet shape; symbolic slot 0..8 and invalid length; unwind 5; member-walk sentinel stub"
+prove = ["RFC8017-A.1.2"]
+bounded = "fixed 29-octet shape; slot <= 8; length exceeds octets remaining after that slot; unwind 5; member-walk sentinel stub"
 none = ""
 
 [[entry]]
@@ -177,7 +177,7 @@ name = "parse_rejects_missing_fields"
 accept = []
 reject = []
 prove = ["RFC8017-A.1.2", "X690-8.9.2"]
-bounded = "symbolic present INTEGER count 0..9 in 29-octet backing; unwind 5; member-walk sentinel stub"
+bounded = "29-octet backing; present INTEGER count <= 9; fixed 1-octet field framing with symbolic contents; unwind 5; member-walk sentinel stub"
 none = ""
 
 [[entry]]
@@ -186,7 +186,7 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_rejects_outer_identifier"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2", "CODEC-rsa-private-key-reject-nonder"]
+prove = ["RFC8017-A.1.2"]
 bounded = "29-octet shape; symbolic low-tag outer identifier; unwind 5; member-walk sentinel stub"
 none = ""
 
@@ -196,7 +196,7 @@ file = "der-verified/src/rsa_private_key.rs"
 name = "parse_rejects_two_octet_version"
 accept = []
 reject = []
-prove = ["RFC8017-A.1.2-a", "RFC8017-A.1.2-b", "CODEC-rsa-private-key-reject-nonder"]
+prove = ["RFC8017-A.1.2-a", "RFC8017-A.1.2-b", "X690-8.3.2", "CODEC-rsa-private-key-reject-nonder"]
 bounded = "fixed 30-octet shape; symbolic 2-octet version content; unwind 5; member-walk sentinel stub"
 none = ""
 
@@ -234,7 +234,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "accepts_two_member_other_prime_infos"
-accept = ["RFC8017-A.1.2-b", "RFC8017-A.1.2-c", "RFC8017-A.1.2-e", "RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.10.1", "X690-8.10.2", "X690-8.10.3"]
+accept = ["RFC8017-A.1.2-b", "RFC8017-A.1.2-c", "RFC8017-A.1.2-e", "RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.10.1", "X690-8.10.2", "PROF-strict-trailing"]
 reject = []
 prove = []
 bounded = ""
@@ -254,7 +254,7 @@ none = "composable entry-point trailing behavior has no inventory row"
 kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "parses_2prime_specimen_composable_and_strict"
-accept = ["RFC8017-A.1.2", "RFC8017-A.1.2-a", "RFC8017-A.1.2-c", "RFC8017-A.1.2-d", "X680-25t", "X690-8.9.2", "X690-8.9.3", "PROF-big-integer-comparison-only"]
+accept = ["RFC8017-A.1.2", "RFC8017-A.1.2-a", "RFC8017-A.1.2-c", "RFC8017-A.1.2-d", "X680-25t", "X690-8.9.2", "X690-8.9.3", "PROF-strict-trailing", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
@@ -264,7 +264,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "parses_minimal_2prime_specimen"
-accept = ["RFC8017-A.1.2", "RFC8017-A.1.2-a", "RFC8017-A.1.2-c", "RFC8017-A.1.2-d", "X680-25t", "X690-8.9.3", "PROF-big-integer-comparison-only"]
+accept = ["RFC8017-A.1.2", "RFC8017-A.1.2-a", "RFC8017-A.1.2-c", "RFC8017-A.1.2-d", "X680-25t", "X690-8.9.3", "PROF-strict-trailing", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
@@ -274,7 +274,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "parses_multiprime_specimen_composable_and_strict"
-accept = ["RFC8017-A.1.2", "RFC8017-A.1.2-b", "RFC8017-A.1.2-c", "RFC8017-A.1.2-e", "RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.10.1", "X690-8.10.2", "PROF-big-integer-comparison-only"]
+accept = ["RFC8017-A.1.2", "RFC8017-A.1.2-b", "RFC8017-A.1.2-c", "RFC8017-A.1.2-e", "RFC8017-A.1.2-f", "RFC8017-A.1.2-g", "X690-8.10.1", "X690-8.10.2", "PROF-strict-trailing", "PROF-big-integer-comparison-only"]
 reject = []
 prove = []
 bounded = ""
@@ -285,7 +285,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_ber_long_form_length_where_short_form_fits"
 accept = []
-reject = ["CODEC-rsa-private-key-reject-nonder"]
+reject = ["X690-10.1", "CODEC-rsa-private-key-reject-nonder"]
 prove = []
 bounded = ""
 none = ""
@@ -295,7 +295,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_empty_outer_content_missing_version"
 accept = []
-reject = ["RFC8017-A.1.2"]
+reject = ["RFC8017-A.1.2", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -305,7 +305,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_field_malformed_early_modulus"
 accept = []
-reject = ["RFC8017-A.1.2"]
+reject = ["RFC8017-A.1.2", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -315,7 +315,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_field_malformed_late_prime2"
 accept = []
-reject = ["RFC8017-A.1.2"]
+reject = ["RFC8017-A.1.2", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -325,7 +325,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_indefinite_length_outer_envelope"
 accept = []
-reject = ["CODEC-rsa-private-key-reject-nonder"]
+reject = ["X690-10.1", "CODEC-rsa-private-key-reject-nonder"]
 prove = []
 bounded = ""
 none = ""
@@ -335,7 +335,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_missing_field_early_modulus"
 accept = []
-reject = ["RFC8017-A.1.2"]
+reject = ["RFC8017-A.1.2", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -345,7 +345,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_missing_field_late_coefficient"
 accept = []
-reject = ["RFC8017-A.1.2"]
+reject = ["RFC8017-A.1.2", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -375,7 +375,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_other_prime_info_member_missing_field"
 accept = []
-reject = ["RFC8017-A.1.2-g", "X690-8.10.2"]
+reject = ["RFC8017-A.1.2-g", "X690-8.9.2", "X690-8.10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -385,7 +385,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_other_prime_info_member_non_canonical_integer"
 accept = []
-reject = ["RFC8017-A.1.2-g", "X690-8.10.2", "PROF-big-integer-comparison-only", "CODEC-rsa-private-key-reject-nonder"]
+reject = ["X690-8.3.2", "PROF-big-integer-comparison-only", "CODEC-rsa-private-key-reject-nonder"]
 prove = []
 bounded = ""
 none = ""
@@ -395,7 +395,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_other_prime_info_member_not_sequence"
 accept = []
-reject = ["RFC8017-A.1.2-g", "X690-8.10.1", "X690-8.10.2"]
+reject = ["RFC8017-A.1.2-g", "X690-8.9.2", "X690-8.10.1", "X690-8.10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -405,7 +405,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_other_prime_info_member_trailing"
 accept = []
-reject = ["RFC8017-A.1.2-g", "X690-8.10.2"]
+reject = ["RFC8017-A.1.2-g", "X690-8.9.2", "X690-8.10.2"]
 prove = []
 bounded = ""
 none = ""
@@ -425,7 +425,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_other_prime_infos_malformed_truncated"
 accept = []
-reject = ["RFC8017-A.1.2-f", "X690-8.10.2"]
+reject = ["RFC8017-A.1.2-f"]
 prove = []
 bounded = ""
 none = ""
@@ -435,7 +435,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_other_prime_infos_primitive_sequence_form"
 accept = []
-reject = ["RFC8017-A.1.2-f", "X690-8.10.1", "CODEC-rsa-private-key-reject-nonder"]
+reject = ["RFC8017-A.1.2-f", "X690-8.10.1"]
 prove = []
 bounded = ""
 none = ""
@@ -445,7 +445,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_primitive_outer_sequence_identifier"
 accept = []
-reject = ["RFC8017-A.1.2", "CODEC-rsa-private-key-reject-nonder"]
+reject = ["RFC8017-A.1.2"]
 prove = []
 bounded = ""
 none = ""
@@ -475,7 +475,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_version_constructed"
 accept = []
-reject = ["RFC8017-A.1.2", "CODEC-rsa-private-key-reject-nonder"]
+reject = ["RFC8017-A.1.2", "X690-8.3.1"]
 prove = []
 bounded = ""
 none = ""
@@ -485,7 +485,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_version_empty_integer"
 accept = []
-reject = ["RFC8017-A.1.2", "CODEC-rsa-private-key-reject-nonder"]
+reject = ["RFC8017-A.1.2", "X690-8.3.1-a"]
 prove = []
 bounded = ""
 none = ""
@@ -515,7 +515,7 @@ kind = "test"
 file = "der-verified/src/rsa_private_key.rs"
 name = "rejects_version_wrong_tag"
 accept = []
-reject = ["RFC8017-A.1.2"]
+reject = ["RFC8017-A.1.2", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""

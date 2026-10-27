@@ -64,9 +64,9 @@ none = ""
 kind = "kani"
 file = "der-verified/src/identifier_form.rs"
 name = "legal_der_the_comparison_library_rejected_is_still_accepted"
-accept = []
+accept = ["X690-10.2", "X690-8.18.1"]
 reject = []
-prove = ["X690-10.2", "X690-8.18.1"]
+prove = []
 bounded = "two fixed TLV specimens; input len <= 4; unwind 12"
 none = ""
 
@@ -84,9 +84,9 @@ none = "internal bit-mask consistency check; it does not exercise a decoder or p
 kind = "kani"
 file = "der-verified/src/identifier_form.rs"
 name = "real_x509_identifiers_are_still_accepted"
-accept = []
+accept = ["X680-8", "X680-8a", "X680-8b", "X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.8.1", "X690-8.9.1", "X690-8.12.1", "X690-8.19.1"]
 reject = []
-prove = ["X680-8", "X680-8a", "X680-8b", "X690-8.1.2.1", "X690-8.1.2.2", "X690-8.1.2.5", "X690-10.2", "X690-8.2.1", "X690-8.3.1", "X690-8.8.1", "X690-8.9.1", "X690-8.12.1", "X690-8.19.1"]
+prove = []
 bounded = "seven fixed TLV specimens; input len <= 3; unwind 12"
 none = ""
 
@@ -95,8 +95,8 @@ kind = "kani"
 file = "der-verified/src/identifier_form.rs"
 name = "rejects_every_disclosed_illegal_identifier"
 accept = []
-reject = []
-prove = ["X690-8.1.1.2", "X690-8.2.1", "X690-8.5.1", "X690-8.19.1", "X690-10.2"]
+reject = ["X690-8.1.1.2", "X690-8.2.1", "X690-8.5.1", "X690-8.19.1", "X690-10.2"]
+prove = []
 bounded = "ten fixed TLV specimens; input len <= 4; unwind 12"
 none = ""
 
@@ -165,7 +165,7 @@ kind = "test"
 file = "der-verified/src/identifier_form.rs"
 name = "framing_errors_pass_through_unchanged"
 accept = []
-reject = ["X690-8.1.3.3", "X690-10.1", "CODEC-tlv-reject-nonder"]
+reject = ["X690-8.1.3.3", "X690-10.1"]
 prove = []
 bounded = ""
 none = ""

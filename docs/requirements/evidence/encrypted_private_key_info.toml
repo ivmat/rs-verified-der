@@ -7,7 +7,7 @@ name = "parse_faithful"
 accept = []
 reject = []
 prove = ["RFC5208-6", "RFC5208-6-a", "RFC5958-3", "RFC5958-3-a"]
-bounded = "len <= 16; unwind 20"
+bounded = "input len <= 16; unwind 20"
 none = ""
 
 [[entry]]
@@ -17,7 +17,7 @@ name = "parse_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-keys-1"]
-bounded = "len <= 16; unwind 20"
+bounded = "input len <= 16; unwind 20"
 none = ""
 
 [[entry]]
@@ -36,15 +36,15 @@ file = "der-verified/src/encrypted_private_key_info.rs"
 name = "parse_strict_never_panics"
 accept = []
 reject = []
-prove = ["SAFE-panic-keys-1", "PROF-strict-trailing"]
-bounded = "len <= 16; unwind 20"
+prove = ["SAFE-panic-keys-1"]
+bounded = "input len <= 16; unwind 20"
 none = ""
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "composable_ignores_trailing_bytes"
-accept = ["RFC5208-6", "RFC5208-6-a", "RFC5958-3", "RFC5958-3-a"]
+accept = ["RFC5208-6", "RFC5208-6-a", "RFC5958-3", "RFC5958-3-a", "PROF-lenient-trailing"]
 reject = []
 prove = []
 bounded = ""
@@ -75,7 +75,7 @@ kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_encrypted_data_wrong_tag"
 accept = []
-reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
+reject = ["RFC5208-6-a", "RFC5958-3-a", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -85,7 +85,7 @@ kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_encryption_algorithm_not_a_sequence"
 accept = []
-reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
+reject = ["RFC5208-6-a", "RFC5958-3-a", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -95,7 +95,7 @@ kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_missing_encrypted_data"
 accept = []
-reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
+reject = ["RFC5208-6-a", "RFC5958-3-a", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -105,7 +105,7 @@ kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_missing_encryption_algorithm"
 accept = []
-reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
+reject = ["RFC5208-6-a", "RFC5958-3-a", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -115,7 +115,7 @@ kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_non_sequence_outer_tag"
 accept = []
-reject = ["RFC5208-6", "RFC5958-3", "CODEC-encrypted-pkcs8-reject-nonder"]
+reject = ["RFC5208-6", "RFC5958-3"]
 prove = []
 bounded = ""
 none = ""
@@ -125,7 +125,7 @@ kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "rejects_trailing_byte_after_encrypted_data"
 accept = []
-reject = ["RFC5208-6-a", "RFC5958-3-a", "CODEC-encrypted-pkcs8-reject-nonder"]
+reject = ["RFC5208-6-a", "RFC5958-3-a", "X690-8.9.2"]
 prove = []
 bounded = ""
 none = ""
@@ -135,7 +135,7 @@ kind = "test"
 file = "der-verified/src/encrypted_private_key_info.rs"
 name = "strict_rejects_trailing_byte_after_epki"
 accept = []
-reject = ["PROF-strict-trailing", "CODEC-encrypted-pkcs8-reject-nonder"]
+reject = ["PROF-strict-trailing"]
 prove = []
 bounded = ""
 none = ""

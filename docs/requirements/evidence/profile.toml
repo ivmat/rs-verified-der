@@ -17,7 +17,7 @@ name = "rule1_mismatch_iff_algorithms_differ"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.1.2", "RFC5280-4.1.2.3", "PROF-P-1"]
-bounded = "OID and parameter lengths <= 4; unwind 6"
+bounded = "both OID and parameter lengths <= 4; fixed v3/extensions-present certificate with two fixed UTCTimes; unwind 6"
 none = ""
 
 [[entry]]
@@ -37,7 +37,7 @@ name = "rule3_generalized_too_early_iff_year_le_2049"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.2.5", "PROF-P-3"]
-bounded = "symbolic time arms and years; decoded UTCTime year2 <= 99; unwind 4"
+bounded = "symbolic time arms and years; both UTCTime year2 values <= 99; empty fractions; fixed equal algorithms, v3, and no extensions; unwind 4"
 none = ""
 
 [[entry]]
@@ -47,7 +47,7 @@ name = "rule4_fraction_iff_generalized_with_fraction"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.2.5.2", "PROF-P-11"]
-bounded = "fraction lengths <= 4 and symbolic time arms; unwind 4"
+bounded = "fraction lengths <= 4 and symbolic time arms; each GeneralizedTime year >= 2050; fixed equal algorithms, v3, and extensions present; unwind 4"
 none = ""
 
 [[entry]]
@@ -57,7 +57,7 @@ name = "utc_time_can_never_denote_2050_or_later"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.2.5", "PROF-P-3"]
-bounded = "all decoded year2 values 0..99; unwind 4"
+bounded = "year2 <= 99; month/day fixed to 1 and clock fields fixed to 0; unwind 4"
 none = ""
 
 [[entry]]
@@ -67,7 +67,7 @@ name = "validate_profile_is_exactly_the_documented_precedence"
 accept = []
 reject = []
 prove = ["RFC5280-4.1.1.2", "RFC5280-4.1.2.3", "RFC5280-4.1.2.1", "RFC5280-4.1.2.9", "RFC5280-4.1.2.5", "RFC5280-4.1.2.5.2", "PROF-P-1", "PROF-P-2", "PROF-P-3", "PROF-P-4", "PROF-P-11"]
-bounded = "identifier and fraction lengths <= 4; other spans <= 2; unwind 6"
+bounded = "OID and parameter lengths <= 4; each GeneralizedTime fraction length <= 4; every profile-irrelevant span length <= 2; unwind 6"
 none = ""
 
 [[entry]]

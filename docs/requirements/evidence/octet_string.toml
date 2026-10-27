@@ -7,7 +7,7 @@ name = "accepted_content_is_the_tlv_value"
 accept = []
 reject = []
 prove = ["X690-8.7.2"]
-bounded = "len <= 16; unwind 16"
+bounded = "input len <= 16; unwind 16"
 none = ""
 
 [[entry]]
@@ -16,8 +16,8 @@ file = "der-verified/src/octet_string.rs"
 name = "accepted_identifier_is_canonical_0x04"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-23", "CODEC-octet-string-unique", "X690-7.4"]
-bounded = "len <= 16; unwind 16"
+prove = ["X690-10.2", "X680-23"]
+bounded = "input len <= 16; unwind 16"
 none = ""
 
 [[entry]]
@@ -27,7 +27,7 @@ name = "classification_is_exact"
 accept = []
 reject = []
 prove = ["X690-8.7.1", "X690-8.7.2", "X690-10.2", "X680-23", "CODEC-octet-string-reject-nonder"]
-bounded = "len <= 16; unwind 17"
+bounded = "input len <= 16; unwind 17"
 none = ""
 
 [[entry]]
@@ -36,8 +36,8 @@ file = "der-verified/src/octet_string.rs"
 name = "constructed_form_is_rejected"
 accept = []
 reject = []
-prove = ["X690-10.2", "CODEC-octet-string-reject-nonder"]
-bounded = "one-octet bodies; unwind 16"
+prove = ["X690-10.2", "CODEC-octet-string-reject-nonder", "X690-7.4"]
+bounded = "one symbolic body octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -47,7 +47,7 @@ name = "decode_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-collections-1"]
-bounded = "len <= 16; unwind 16"
+bounded = "input len <= 16; unwind 16"
 none = ""
 
 [[entry]]
@@ -57,7 +57,7 @@ name = "encode_with_symbolic_capacity_is_exact"
 accept = []
 reject = []
 prove = ["X690-8.7.2", "X690-10.2", "X680-23", "API-short-buffer-none"]
-bounded = "content len <= 14, cap <= 16; unwind 17"
+bounded = "content len <= 14; output cap <= 16; unwind 17"
 none = ""
 
 [[entry]]
@@ -66,8 +66,8 @@ file = "der-verified/src/octet_string.rs"
 name = "non_octet_string_tag_is_wrong_tag"
 accept = []
 reject = []
-prove = ["X680-23", "CODEC-octet-string-reject-nonder"]
-bounded = "all low-form identifiers; unwind 16"
+prove = ["X680-23"]
+bounded = "low-form identifier; identifier != 0x04 and != 0x24; one symbolic value octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -76,7 +76,7 @@ file = "der-verified/src/octet_string.rs"
 name = "roundtrip_small"
 accept = []
 reject = []
-prove = ["X690-8.7", "X690-8.7.1", "X690-8.7.2", "X690-10.2", "X680-23", "CODEC-octet-string-decode-encode"]
+prove = ["CODEC-octet-string-decode-encode"]
 bounded = "content len <= 3; unwind 16"
 none = ""
 
@@ -104,7 +104,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "ignores_trailing_bytes"
-accept = ["X690-8.7.2"]
+accept = ["X690-8.7", "X690-8.7.1", "X690-8.7.2", "X690-10.2", "X680-23", "PROF-lenient-trailing"]
 reject = []
 prove = []
 bounded = ""
@@ -115,7 +115,7 @@ kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_constructed_form"
 accept = []
-reject = ["X690-10.2", "CODEC-octet-string-reject-nonder"]
+reject = ["X690-10.2", "CODEC-octet-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -125,7 +125,7 @@ kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_high_tag_form_of_tag_4"
 accept = []
-reject = ["X680-23", "CODEC-octet-string-reject-nonder", "X690-7.4"]
+reject = ["X690-8.1.2.2", "X690-8.1.2.4.2", "CODEC-octet-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -135,7 +135,7 @@ kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_indefinite_length"
 accept = []
-reject = ["X690-10.2", "CODEC-octet-string-reject-nonder"]
+reject = ["X690-10.1", "CODEC-octet-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -145,7 +145,7 @@ kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_non_minimal_length"
 accept = []
-reject = ["CODEC-octet-string-reject-nonder", "X690-7.4"]
+reject = ["X690-8.1.3.4", "X690-8.1.3.5", "X690-10.1", "CODEC-octet-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -155,7 +155,7 @@ kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_sequence_tag_as_wrong_not_constructed"
 accept = []
-reject = ["X680-23", "CODEC-octet-string-reject-nonder"]
+reject = ["X680-23"]
 prove = []
 bounded = ""
 none = ""
@@ -165,17 +165,17 @@ kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_truncated_value"
 accept = []
-reject = ["CODEC-octet-string-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "truncated OCTET STRING value is malformed, not a promised non-DER variant"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/octet_string.rs"
 name = "rejects_wrong_tag"
 accept = []
-reject = ["X680-23", "CODEC-octet-string-reject-nonder"]
+reject = ["X680-23"]
 prove = []
 bounded = ""
 none = ""

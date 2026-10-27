@@ -6,8 +6,8 @@ file = "der-verified/src/integer.rs"
 name = "decode_accepts_only_minimal"
 accept = []
 reject = []
-prove = ["X690-8.3.2", "CODEC-integer-encode-decode", "CODEC-integer-unique", "X690-7.4"]
-bounded = "len 1..=8; unwind 12"
+prove = ["CODEC-integer-encode-decode", "CODEC-integer-unique"]
+bounded = "content len 1..=8; unwind 12"
 none = ""
 
 [[entry]]
@@ -17,7 +17,7 @@ name = "decode_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-content-1"]
-bounded = "len <= 10; unwind 12"
+bounded = "content len <= 10; unwind 12"
 none = ""
 
 [[entry]]
@@ -25,9 +25,9 @@ kind = "kani"
 file = "der-verified/src/integer.rs"
 name = "empty_is_classified"
 accept = []
-reject = []
-prove = ["X690-8.3.1-a", "CODEC-integer-reject-nonder"]
-bounded = "empty input"
+reject = ["X690-8.3.1-a"]
+prove = []
+bounded = ""
 none = ""
 
 [[entry]]
@@ -37,7 +37,7 @@ name = "nine_octets_is_too_large"
 accept = []
 reject = []
 prove = ["PROF-integer-i64-cap", "RFC5280-B-size-upper-bound"]
-bounded = "all minimal 9-octet positive prefixes; unwind 12"
+bounded = "fixed leading 0x01; eight symbolic tail octets; unwind 12"
 none = ""
 
 [[entry]]
@@ -47,7 +47,7 @@ name = "redundant_negative_padding_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "CODEC-integer-reject-nonder", "X690-7.4"]
-bounded = "all negative-sign second octets"
+bounded = "two octets; second-octet sign bit set"
 none = ""
 
 [[entry]]
@@ -57,7 +57,7 @@ name = "redundant_positive_padding_is_non_minimal"
 accept = []
 reject = []
 prove = ["X690-8.3.2", "CODEC-integer-reject-nonder", "X690-7.4"]
-bounded = "all positive-sign second octets"
+bounded = "two octets; second-octet sign bit clear"
 none = ""
 
 [[entry]]
@@ -66,7 +66,7 @@ file = "der-verified/src/integer.rs"
 name = "roundtrip_all_i64"
 accept = []
 reject = []
-prove = ["CODEC-integer-decode-encode", "X690-8.3.3"]
+prove = ["CODEC-integer-decode-encode"]
 bounded = "all i64; unwind 12"
 none = ""
 
@@ -95,7 +95,7 @@ kind = "test"
 file = "der-verified/src/integer.rs"
 name = "rejects_empty"
 accept = []
-reject = ["X690-8.3.1-a", "CODEC-integer-reject-nonder"]
+reject = ["X690-8.3.1-a"]
 prove = []
 bounded = ""
 none = ""

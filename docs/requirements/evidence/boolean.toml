@@ -26,8 +26,8 @@ file = "der-verified/src/boolean.rs"
 name = "wrong_length_is_bad_length"
 accept = []
 reject = []
-prove = ["X690-8.2.1", "CODEC-boolean-reject-nonder"]
-bounded = "len <= 16, len != 1"
+prove = ["X690-8.2.1"]
+bounded = "content len <= 16 and != 1"
 none = ""
 
 [[entry]]
@@ -55,7 +55,7 @@ kind = "test"
 file = "der-verified/src/boolean.rs"
 name = "rejects_wrong_length"
 accept = []
-reject = ["X690-8.2.1", "CODEC-boolean-reject-nonder"]
+reject = ["X690-8.2.1"]
 prove = []
 bounded = ""
 none = ""

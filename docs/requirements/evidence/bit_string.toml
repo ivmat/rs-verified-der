@@ -7,7 +7,7 @@ name = "accepted_iff_canonical_oracle"
 accept = []
 reject = []
 prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-reject-nonder", "CODEC-bit-string-unique", "X690-7.4"]
-bounded = "len <= 4; unwind 8"
+bounded = "content len <= 4; unwind 8"
 none = ""
 
 [[entry]]
@@ -17,7 +17,7 @@ name = "decode_accepts_only_canonical"
 accept = []
 reject = []
 prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-encode-decode", "CODEC-bit-string-unique", "X690-7.4"]
-bounded = "len <= 4; unwind 8"
+bounded = "content len <= 4; unwind 8"
 none = ""
 
 [[entry]]
@@ -27,7 +27,7 @@ name = "decode_is_exactly_the_reference"
 accept = []
 reject = []
 prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-reject-nonder"]
-bounded = "len <= 6; unwind 8"
+bounded = "content len <= 6; unwind 8"
 none = ""
 
 [[entry]]
@@ -37,7 +37,7 @@ name = "decode_never_panics"
 accept = []
 reject = []
 prove = ["SAFE-panic-content-1"]
-bounded = "len <= 6; unwind 8"
+bounded = "content len <= 6; unwind 8"
 none = ""
 
 [[entry]]
@@ -45,9 +45,9 @@ kind = "kani"
 file = "der-verified/src/bit_string.rs"
 name = "empty_is_classified"
 accept = []
-reject = []
-prove = ["X690-8.6.2", "CODEC-bit-string-reject-nonder"]
-bounded = "empty input"
+reject = ["X690-8.6.2"]
+prove = []
+bounded = ""
 none = ""
 
 [[entry]]
@@ -56,8 +56,8 @@ file = "der-verified/src/bit_string.rs"
 name = "empty_nonzero_unused_is_classified"
 accept = []
 reject = []
-prove = ["X690-8.6.2.3", "CODEC-bit-string-reject-nonder"]
-bounded = "unused 1..=7"
+prove = ["X690-8.6.2.3"]
+bounded = "one-octet content; unused count 1..=7"
 none = ""
 
 [[entry]]
@@ -66,8 +66,8 @@ file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_exactly_the_non_canonical"
 accept = []
 reject = []
-prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "CODEC-bit-string-reject-nonder", "API-short-buffer-none"]
-bounded = "data len <= 3, cap <= 8; unwind 10"
+prove = ["X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1", "API-short-buffer-none"]
+bounded = "data len <= 3; output cap <= 8; unwind 10"
 none = ""
 
 [[entry]]
@@ -77,7 +77,7 @@ name = "nonzero_padding_is_classified"
 accept = []
 reject = []
 prove = ["X690-11.2.1", "CODEC-bit-string-reject-nonder", "X690-7.4"]
-bounded = "unused 1..=7; unwind 6"
+bounded = "unused 1..=7; final octet has fewer trailing zeros than unused; unwind 6"
 none = ""
 
 [[entry]]
@@ -87,7 +87,7 @@ name = "octet_aligned_iff_unused_zero"
 accept = []
 reject = []
 prove = ["API-bit-string-octet-aligned"]
-bounded = "len <= 4; unwind 8"
+bounded = "content len <= 4; unwind 8"
 none = ""
 
 [[entry]]
@@ -97,7 +97,7 @@ name = "require_octet_aligned_exact_on_built_values"
 accept = []
 reject = []
 prove = ["API-bit-string-octet-aligned"]
-bounded = "data len <= 3, all u8 unused; unwind 8"
+bounded = "data len <= 3; all u8 unused counts; unwind 8"
 none = ""
 
 [[entry]]
@@ -106,8 +106,8 @@ file = "der-verified/src/bit_string.rs"
 name = "roundtrip_canonical"
 accept = []
 reject = []
-prove = ["CODEC-bit-string-decode-encode", "X690-8.6.2", "X690-8.6.2.2", "X690-8.6.2.3", "X690-11.2.1"]
-bounded = "data len <= 3; unwind 8"
+prove = ["CODEC-bit-string-decode-encode"]
+bounded = "data len <= 3; raw unused <= 7; empty data forces unused 0; padding cleared; unwind 8"
 none = ""
 
 [[entry]]
@@ -116,8 +116,8 @@ file = "der-verified/src/bit_string.rs"
 name = "unused_too_large_is_classified"
 accept = []
 reject = []
-prove = ["X690-8.6.2.2", "CODEC-bit-string-reject-nonder"]
-bounded = "all unused counts > 7; unwind 6"
+prove = ["X690-8.6.2.2"]
+bounded = "unused count > 7; one optional symbolic data octet; unwind 6"
 none = ""
 
 [[entry]]
@@ -205,7 +205,7 @@ kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_empty_data_with_nonzero_unused"
 accept = []
-reject = ["X690-8.6.2.3", "CODEC-bit-string-reject-nonder"]
+reject = ["X690-8.6.2.3"]
 prove = []
 bounded = ""
 none = ""
@@ -215,7 +215,7 @@ kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_noncanonical_padding"
 accept = []
-reject = ["X690-11.2.1", "CODEC-bit-string-reject-nonder"]
+reject = ["X690-11.2.1"]
 prove = []
 bounded = ""
 none = ""
@@ -235,7 +235,7 @@ kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "encode_rejects_unused_over_seven"
 accept = []
-reject = ["X690-8.6.2.2", "CODEC-bit-string-reject-nonder"]
+reject = ["X690-8.6.2.2"]
 prove = []
 bounded = ""
 none = ""
@@ -265,7 +265,7 @@ kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "rejects_empty_content"
 accept = []
-reject = ["X690-8.6.2", "CODEC-bit-string-reject-nonder"]
+reject = ["X690-8.6.2"]
 prove = []
 bounded = ""
 none = ""
@@ -275,7 +275,7 @@ kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "rejects_empty_with_nonzero_unused"
 accept = []
-reject = ["X690-8.6.2.3", "CODEC-bit-string-reject-nonder"]
+reject = ["X690-8.6.2.3"]
 prove = []
 bounded = ""
 none = ""
@@ -295,7 +295,7 @@ kind = "test"
 file = "der-verified/src/bit_string.rs"
 name = "rejects_unused_bits_over_seven"
 accept = []
-reject = ["X690-8.6.2.2", "CODEC-bit-string-reject-nonder"]
+reject = ["X690-8.6.2.2"]
 prove = []
 bounded = ""
 none = ""

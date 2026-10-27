@@ -6,8 +6,8 @@ file = "der-verified/src/null.rs"
 name = "only_empty_is_valid"
 accept = []
 reject = []
-prove = ["X690-8.8", "X690-8.8.2", "CODEC-null-unique", "CODEC-null-reject-nonder", "X690-7.4"]
-bounded = "empty and len 1..=16"
+prove = ["X690-8.8", "X690-8.8.2", "CODEC-null-unique", "X690-7.4"]
+bounded = "empty content plus symbolic content len 1..=16"
 none = ""
 
 [[entry]]
@@ -25,7 +25,7 @@ kind = "test"
 file = "der-verified/src/null.rs"
 name = "rejects_non_empty"
 accept = []
-reject = ["X690-8.8.2", "CODEC-null-reject-nonder", "X690-7.4"]
+reject = ["X690-8.8.2"]
 prove = []
 bounded = ""
 none = ""

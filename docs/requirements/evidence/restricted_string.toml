@@ -46,7 +46,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "charset_exactly_matches_oracle_ia5"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X680-41.1"]
+prove = ["X690-8.23.3-b", "X680-41.1"]
 bounded = "all 256 byte values"
 none = ""
 
@@ -56,7 +56,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "charset_exactly_matches_oracle_numeric"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.2"]
+prove = ["X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.2"]
 bounded = "all 256 byte values"
 none = ""
 
@@ -66,7 +66,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "charset_exactly_matches_oracle_printable"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.4", "RFC5280-B-printable-specials"]
+prove = ["X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.4", "RFC5280-B-printable-specials"]
 bounded = "all 256 byte values"
 none = ""
 
@@ -76,7 +76,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "charset_exactly_matches_oracle_visible"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X680-41.1"]
+prove = ["X690-8.23.3-b", "X680-41.1"]
 bounded = "all 256 byte values"
 none = ""
 
@@ -126,7 +126,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_ia5"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39", "X680-39a", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4"]
+prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -136,7 +136,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_numeric"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39", "X680-39a", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.2"]
+prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.2"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -146,7 +146,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_printable"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39", "X680-39a", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.4", "RFC5280-B-printable-specials"]
+prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.4", "RFC5280-B-printable-specials"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -156,7 +156,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_visible"
 accept = []
 reject = []
-prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39", "X680-39a", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4"]
+prove = ["X690-10.2", "X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "CODEC-restricted-string-reject-nonder", "CODEC-restricted-string-unique", "X690-7.4"]
 bounded = "input len <= 6; unwind 16"
 none = ""
 
@@ -176,7 +176,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "encode_is_exact_ia5"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39a", "X680-41.1", "API-short-buffer-none", "CODEC-restricted-string-unique", "X690-7.4"]
+prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "API-short-buffer-none"]
 bounded = "content len <= 4; output cap <= 8; unwind 16"
 none = ""
 
@@ -186,7 +186,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "encode_is_exact_numeric"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39a", "X680-41.1", "API-short-buffer-none", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.2"]
+prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "API-short-buffer-none", "X690-8.23.4", "X680-41.2"]
 bounded = "content len <= 4; output cap <= 8; unwind 16"
 none = ""
 
@@ -196,7 +196,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "encode_is_exact_printable"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39a", "X680-41.1", "API-short-buffer-none", "CODEC-restricted-string-unique", "X690-7.4", "X690-8.23.4", "X680-41.4", "RFC5280-B-printable-specials"]
+prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "API-short-buffer-none", "X690-8.23.4", "X680-41.4", "RFC5280-B-printable-specials"]
 bounded = "content len <= 4; output cap <= 8; unwind 16"
 none = ""
 
@@ -206,7 +206,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "encode_is_exact_visible"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-39a", "X680-41.1", "API-short-buffer-none", "CODEC-restricted-string-unique", "X690-7.4"]
+prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "API-short-buffer-none"]
 bounded = "content len <= 4; output cap <= 8; unwind 16"
 none = ""
 
@@ -217,7 +217,7 @@ name = "out_of_charset_reports_position"
 accept = []
 reject = []
 prove = ["X690-8.23.3-b", "X680-41.2"]
-bounded = "NumericString content len 1..4; unwind 6"
+bounded = "NumericString content len 1..4 with at least one out-of-repertoire byte; unwind 6"
 none = ""
 
 [[entry]]
@@ -226,8 +226,8 @@ file = "der-verified/src/restricted_string.rs"
 name = "roundtrip_ia5"
 accept = []
 reject = []
-prove = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b"]
-bounded = "content len <= 3; unwind 16"
+prove = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b"]
+bounded = "content len <= 3; every content byte is in the IA5String repertoire; unwind 16"
 none = ""
 
 [[entry]]
@@ -236,8 +236,8 @@ file = "der-verified/src/restricted_string.rs"
 name = "roundtrip_numeric"
 accept = []
 reject = []
-prove = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b"]
-bounded = "content len <= 3; unwind 16"
+prove = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b"]
+bounded = "content len <= 3; every content byte is in the NumericString repertoire; unwind 16"
 none = ""
 
 [[entry]]
@@ -246,8 +246,8 @@ file = "der-verified/src/restricted_string.rs"
 name = "roundtrip_printable"
 accept = []
 reject = []
-prove = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b"]
-bounded = "content len <= 3; unwind 16"
+prove = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b"]
+bounded = "content len <= 3; every content byte is in the PrintableString repertoire; unwind 16"
 none = ""
 
 [[entry]]
@@ -256,8 +256,8 @@ file = "der-verified/src/restricted_string.rs"
 name = "roundtrip_visible"
 accept = []
 reject = []
-prove = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b"]
-bounded = "content len <= 3; unwind 16"
+prove = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b"]
+bounded = "content len <= 3; every content byte is in the VisibleString repertoire; unwind 16"
 none = ""
 
 [[entry]]
@@ -266,7 +266,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "validate_iff_all_in_charset_ia5"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X680-41.1"]
+prove = ["X690-8.23.3-b", "X680-41.1"]
 bounded = "content len <= 4; unwind 6"
 none = ""
 
@@ -276,7 +276,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "validate_iff_all_in_charset_numeric"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.2"]
+prove = ["X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.2"]
 bounded = "content len <= 4; unwind 6"
 none = ""
 
@@ -286,7 +286,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "validate_iff_all_in_charset_printable"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.4", "RFC5280-B-printable-specials"]
+prove = ["X690-8.23.3-b", "X690-8.23.4", "X680-41.1", "X680-41.4", "RFC5280-B-printable-specials"]
 bounded = "content len <= 4; unwind 6"
 none = ""
 
@@ -296,7 +296,7 @@ file = "der-verified/src/restricted_string.rs"
 name = "validate_iff_all_in_charset_visible"
 accept = []
 reject = []
-prove = ["X680-39", "X680-39a", "X690-8.23.1", "X690-8.23.3-b", "X680-41.1"]
+prove = ["X690-8.23.3-b", "X680-41.1"]
 bounded = "content len <= 4; unwind 6"
 none = ""
 
@@ -387,7 +387,7 @@ name = "wrong_tag_is_classified_ia5"
 accept = []
 reject = []
 prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "symbolic low-tag identifier and one content octet; unwind 16"
+bounded = "low-tag identifier other than canonical or constructed IA5String; one in-repertoire content octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -397,7 +397,7 @@ name = "wrong_tag_is_classified_numeric"
 accept = []
 reject = []
 prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "symbolic low-tag identifier and one content octet; unwind 16"
+bounded = "low-tag identifier other than canonical or constructed NumericString; one in-repertoire content octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -407,7 +407,7 @@ name = "wrong_tag_is_classified_printable"
 accept = []
 reject = []
 prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "symbolic low-tag identifier and one content octet; unwind 16"
+bounded = "low-tag identifier other than canonical or constructed PrintableString; one in-repertoire content octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -417,7 +417,7 @@ name = "wrong_tag_is_classified_visible"
 accept = []
 reject = []
 prove = ["X680-40b", "X690-8.23.3-a", "X680-41.1"]
-bounded = "symbolic low-tag identifier and one content octet; unwind 16"
+bounded = "low-tag identifier other than canonical or constructed VisibleString; one in-repertoire content octet; unwind 16"
 none = ""
 
 [[entry]]
@@ -445,16 +445,16 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "decode_rejects_truncated_value"
 accept = []
-reject = ["CODEC-restricted-string-reject-nonder"]
+reject = []
 prove = []
 bounded = ""
-none = ""
+none = "truncated TLV framing is malformed, not a promised non-DER alternate"
 
 [[entry]]
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "decodes_empty_content"
-accept = ["X680-39", "X690-8.23.3-b", "X680-41.2"]
+accept = ["X690-8.23.3-b", "X680-41.2"]
 reject = []
 prove = []
 bounded = ""
@@ -464,7 +464,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "decodes_simple_printable"
-accept = ["X680-39", "X680-39a", "X690-8.23.3-a", "X690-8.23.3-b", "X690-8.23.4", "X680-41.4"]
+accept = ["X690-8.23.3-a", "X690-8.23.3-b", "X690-8.23.4", "X680-41.4"]
 reject = []
 prove = []
 bounded = ""
@@ -484,7 +484,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "ia5_accepts_full_7_bit_range"
-accept = ["X680-39", "X680-41.1"]
+accept = ["X680-41.1"]
 reject = []
 prove = []
 bounded = ""
@@ -585,7 +585,7 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "rejects_high_tag_form_of_own_tag"
 accept = []
-reject = ["X690-8.23.3-a", "CODEC-restricted-string-reject-nonder", "X690-7.4"]
+reject = ["X690-8.1.2.2", "X690-8.23.3-a", "CODEC-restricted-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -595,7 +595,7 @@ kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "rejects_non_minimal_length"
 accept = []
-reject = ["CODEC-restricted-string-reject-nonder", "X690-7.4"]
+reject = ["X690-10.1", "CODEC-restricted-string-reject-nonder", "X690-7.4"]
 prove = []
 bounded = ""
 none = ""
@@ -624,7 +624,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "roundtrips_ia5_email_like_string"
-accept = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b", "X680-41.1"]
+accept = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b", "X680-41.1"]
 reject = []
 prove = []
 bounded = ""
@@ -634,7 +634,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "roundtrips_numeric_string"
-accept = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b", "X690-8.23.4", "X680-41.2"]
+accept = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b", "X690-8.23.4", "X680-41.2"]
 reject = []
 prove = []
 bounded = ""
@@ -644,7 +644,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "roundtrips_printable_cn_like_string"
-accept = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b", "X690-8.23.4", "X680-41.4"]
+accept = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b", "X690-8.23.4", "X680-41.4"]
 reject = []
 prove = []
 bounded = ""
@@ -654,7 +654,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "roundtrips_visible_string"
-accept = ["CODEC-restricted-string-decode-encode", "X680-39a", "X690-8.23.3-b", "X680-41.1"]
+accept = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b", "X680-41.1"]
 reject = []
 prove = []
 bounded = ""
@@ -664,7 +664,7 @@ none = ""
 kind = "test"
 file = "der-verified/src/restricted_string.rs"
 name = "visible_accepts_space_through_tilde"
-accept = ["X680-39", "X680-41.1"]
+accept = ["X680-41.1"]
 reject = []
 prove = []
 bounded = ""

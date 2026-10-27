@@ -326,7 +326,7 @@ file = "lean/LengthProofs.lean"
 name = "decode_indefinite"
 accept = []
 reject = []
-prove = ["X690-8.1.3.6.1", "X690-10.1", "CODEC-length-reject-nonder"]
+prove = ["X690-8.1.3.6.1", "X690-10.1", "X690-7.4", "CODEC-length-reject-nonder"]
 bounded = ""
 none = ""
 
@@ -406,7 +406,7 @@ file = "lean/LengthProofs.lean"
 name = "decode_reserved"
 accept = []
 reject = []
-prove = ["X690-8.1.3.5", "CODEC-length-reject-nonder"]
+prove = ["X690-8.1.3.5"]
 bounded = ""
 none = ""
 
@@ -566,7 +566,7 @@ file = "lean/LengthProofs.lean"
 name = "roundtrip_long"
 accept = []
 reject = []
-prove = ["X690-10.1", "X690-7.4", "CODEC-length-encode-decode", "CODEC-length-unique"]
+prove = ["X690-10.1", "X690-7.4"]
 bounded = ""
 none = ""
 
@@ -576,7 +576,7 @@ file = "lean/LengthProofs.lean"
 name = "roundtrip_short"
 accept = []
 reject = []
-prove = ["X690-10.1", "X690-7.4", "CODEC-length-encode-decode", "CODEC-length-unique"]
+prove = ["X690-10.1", "X690-7.4"]
 bounded = ""
 none = ""
 
@@ -696,7 +696,7 @@ file = "lean/SequenceProofs.lean"
 name = "decode_sequence_loop_spec"
 accept = []
 reject = []
-prove = ["X690-8.9.1", "X690-8.10.1", "SAFE-termination-2", "SAFE-overread-2"]
+prove = ["SAFE-termination-2", "SAFE-overread-2"]
 bounded = ""
 none = ""
 
@@ -706,7 +706,7 @@ file = "lean/SequenceProofs.lean"
 name = "decode_sequence_structure"
 accept = []
 reject = []
-prove = ["X690-8.9.1", "X690-8.10.1", "SAFE-panic-collections-1", "SAFE-termination-2", "SAFE-overread-2"]
+prove = ["SAFE-panic-collections-1", "SAFE-termination-2", "SAFE-overread-2"]
 bounded = ""
 none = ""
 
