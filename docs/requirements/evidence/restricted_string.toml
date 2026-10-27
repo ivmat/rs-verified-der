@@ -126,8 +126,8 @@ file = "der-verified/src/restricted_string.rs"
 name = "decode_is_faithful_ia5"
 accept = []
 reject = []
-prove = ["X690-10.2", "X690-8.23.3-b", "X680-41.1"]
-bounded = "input len <= 6; unwind 16"
+prove = ["X690-10.2", "X690-8.23.3-b", "X680-41.1", "X690-8.23.5.1", "X690-8.23.5.3", "X690-8.23.5.4"]
+bounded = "input len <= 6; unwind 16; IA5String content: repertoire minus ESC (0x1B) accepted, ESC reported as Ia5Escape"
 none = ""
 
 [[entry]]
@@ -176,8 +176,8 @@ file = "der-verified/src/restricted_string.rs"
 name = "encode_is_exact_ia5"
 accept = []
 reject = []
-prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "API-short-buffer-none"]
-bounded = "content len <= 4; output cap <= 8; unwind 16"
+prove = ["X680-40b", "X690-8.23.3-a", "X690-8.23.3-b", "X680-41.1", "API-short-buffer-none", "X690-8.23.5.1", "X690-8.23.5.3"]
+bounded = "content len <= 4; output cap <= 8; unwind 16; ESC (0x1B) content refused"
 none = ""
 
 [[entry]]
@@ -227,7 +227,7 @@ name = "roundtrip_ia5"
 accept = []
 reject = []
 prove = ["CODEC-restricted-string-decode-encode", "X690-8.23.3-b"]
-bounded = "content len <= 3; every content byte is in the IA5String repertoire; unwind 16"
+bounded = "content len <= 3; every content byte is in the IA5String repertoire and is not ESC (0x1B); unwind 16"
 none = ""
 
 [[entry]]
@@ -266,8 +266,8 @@ file = "der-verified/src/restricted_string.rs"
 name = "validate_iff_all_in_charset_ia5"
 accept = []
 reject = []
-prove = ["X690-8.23.3-b", "X680-41.1"]
-bounded = "content len <= 4; unwind 6"
+prove = ["X690-8.23.3-b", "X680-41.1", "X690-8.23.5.3"]
+bounded = "content len <= 4; unwind 6; accepted set is the 7-bit repertoire minus ESC (0x1B)"
 none = ""
 
 [[entry]]
@@ -766,6 +766,46 @@ file = "der-verified/src/restricted_string.rs"
 name = "rejects_alternate_spellings_of_one_restricted_string_value"
 accept = []
 reject = ["CODEC-restricted-string-unique", "CODEC-restricted-string-reject-nonder", "X690-7.4", "X690-10.1", "X690-10.2"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "accepts_ia5_controls_that_are_not_the_escape_octet"
+accept = ["X690-8.23.5.3"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "rejects_ia5_escape_octet_and_names_its_position"
+accept = []
+reject = ["X690-8.23.5.1", "X690-8.23.5.3"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "rejects_announcer_escape_sequence_in_ia5"
+accept = ["X690-8.23.5.4"]
+reject = ["X690-8.23.5.4"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/restricted_string.rs"
+name = "encode_refuses_ia5_escape_octet"
+accept = ["X690-8.23.5.3"]
+reject = ["X690-8.23.5.3"]
 prove = []
 bounded = ""
 none = ""

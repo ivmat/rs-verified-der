@@ -36,8 +36,17 @@
 //! therefore stops at `8F`). Lead bytes `C0`, `C1` (always overlong 2-byte forms) and `F5..FF`
 //! (always beyond `U+10FFFF`) are never valid; a byte `80..BF` as a *lead* is a stray continuation.
 //!
-//! **Scope boundary (see `DECISIONS.md`).** In scope: content-level UTF-8 well-formedness, plus the
-//! structural constructed-form rejection. **Empty content is accepted** (the empty string is
+//! **Forbidden control functions (X.690 §8.23.9 a–f).** Well-formed UTF-8 is not enough: X.690
+//! allows the C0 and C1 control functions of ISO/IEC 6429 in a UTF8String (CR, LF, TAB, ...) but
+//! forbids the ones that announce, designate or invoke an ISO/IEC 2022 escape or shift. This module
+//! rejects exactly five code points, with [`Utf8Error::ForbiddenControl`]: `U+001B` ESC (`1B`),
+//! `U+000E` SO (`0E`), `U+000F` SI (`0F`), `U+008E` SS2 (`C2 8E`) and `U+008F` SS3 (`C2 8F`). Every
+//! other well-formed code point stays accepted, including all other C0 and C1 controls. A
+//! malformed sequence is reported first: the forbidden-control check applies only to content that
+//! is well-formed UTF-8, so [`Utf8Error::IllFormed`] keeps its `valid_up_to` meaning.
+//!
+//! **Scope boundary (see `DECISIONS.md`).** In scope: content-level UTF-8 well-formedness, the
+//! forbidden control functions above, plus the structural constructed-form rejection. **Empty content is accepted** (the empty string is
 //! well-formed UTF-8). Out of scope, as caller-applied profile concerns: Unicode **normalization**
 //! (NFC/NFKC — a PKIX name-comparison rule, not a DER encoding rule), `SIZE`/length limits, and the
 //! `DirectoryString` CHOICE (which of `UTF8String`/`PrintableString`/... an attribute may use — see
@@ -86,6 +95,23 @@ pub enum Utf8Error {
         /// Length of the longest well-formed prefix (= `str::from_utf8`'s `valid_up_to()`).
         position: usize,
     },
+    /// The content is well-formed UTF-8 but holds a control function that X.690 §8.23.9 a)–f)
+    /// forbids in a UTF8String, because it announces, designates or invokes an ISO/IEC 2022 escape
+    /// or shift: `U+001B` ESC, `U+000E` SO, `U+000F` SI, `U+008E` SS2 or `U+008F` SS3. Other C0
+    /// and C1 controls (CR, LF, TAB, ...) are allowed by §8.23.9 and are accepted. Only reported
+    /// for well-formed content: ill-formed content is [`Utf8Error::IllFormed`].
+    ForbiddenControl {
+        /// Byte offset of the start of the first forbidden code point within the content.
+        position: usize,
+        /// The forbidden code point: `0x1B`, `0x0E`, `0x0F`, `0x8E` or `0x8F`.
+        code_point: u32,
+    },
+}
+
+/// Whether code point `cp` is one of the five control functions that X.690 §8.23.9 a)–f) forbids
+/// in a UTF8String: ESC `U+001B`, SO `U+000E`, SI `U+000F`, SS2 `U+008E`, SS3 `U+008F`.
+fn is_forbidden_control(cp: u32) -> bool {
+    matches!(cp, 0x0E | 0x0F | 0x1B | 0x8E | 0x8F)
 }
 
 /// The number of bytes a UTF-8 sequence beginning with lead byte `b` commits to, from the lead
@@ -117,10 +143,17 @@ fn sequence_len(b: u8) -> Option<usize> {
 /// Kani oracle in `proofs` below, which instead states Table 3-7 directly as byte-range matching
 /// with no code-point arithmetic — so a bug in one cannot hide behind the same bug in the other.
 ///
+/// The walk also tracks the first of the five control functions that X.690 §8.23.9 a)–f) forbids
+/// (ESC, SO, SI, SS2, SS3). Well-formedness is decided first: when `content` is not well-formed
+/// the result is [`Utf8Error::IllFormed`] whatever controls come before the defect; when it is
+/// well-formed and holds a forbidden control the result is [`Utf8Error::ForbiddenControl`] naming
+/// the first one.
+///
 /// Empty content is accepted (vacuously well-formed). On failure, returns
 /// [`Utf8Error::IllFormed`] naming the first byte not part of a well-formed sequence.
 pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
     let mut i = 0;
+    let mut forbidden: Option<(usize, u32)> = None;
     while i < content.len() {
         let lead = content[i];
         let len = match sequence_len(lead) {
@@ -128,6 +161,9 @@ pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
             None => return Err(Utf8Error::IllFormed { position: i }),
         };
         if len == 1 {
+            if forbidden.is_none() && is_forbidden_control(lead as u32) {
+                forbidden = Some((i, lead as u32));
+            }
             i += 1;
             continue;
         }
@@ -167,9 +203,15 @@ pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
         if cp > 0x10FFFF {
             return Err(Utf8Error::IllFormed { position: i });
         }
+        if forbidden.is_none() && is_forbidden_control(cp) {
+            forbidden = Some((i, cp));
+        }
         i += len;
     }
-    Ok(())
+    match forbidden {
+        Some((position, code_point)) => Err(Utf8Error::ForbiddenControl { position, code_point }),
+        None => Ok(()),
+    }
 }
 
 /// Decode a complete DER UTF8String from the front of `input`, returning the content octets and
@@ -177,7 +219,8 @@ pub fn validate_utf8(content: &[u8]) -> Result<(), Utf8Error> {
 ///
 /// Enforces UNIVERSAL 12, **primitive** form (else [`Utf8Error::Constructed`] — the
 /// constructed/segmented form is BER-only), definite length and no over-read (via [`decode_tlv`]),
-/// and well-formed UTF-8 content (else [`Utf8Error::IllFormed`]).
+/// and well-formed UTF-8 content (else [`Utf8Error::IllFormed`]) free of the control functions
+/// X.690 §8.23.9 forbids (else [`Utf8Error::ForbiddenControl`]).
 ///
 /// Tag identity is checked before primitiveness, so a well-formed TLV of a *different* type (e.g.
 /// OCTET STRING `0x04`) is `WrongTag`, not `Constructed` — mirroring [`crate::octet_string`] /
@@ -216,8 +259,9 @@ pub fn decode_utf8_str(input: &[u8]) -> Result<(&str, usize), Utf8Error> {
 
 /// Encode `content` as a canonical DER UTF8String (UNIVERSAL 12, primitive) into `out`.
 ///
-/// Returns the number of bytes written, or `None` if `content` is not well-formed UTF-8, `out` is
-/// too small, or `content` is longer than the length codec supports (`> u32::MAX`).
+/// Returns the number of bytes written, or `None` if `content` is not well-formed UTF-8 or holds
+/// one of the control functions X.690 §8.23.9 forbids (ESC, SO, SI, SS2, SS3; the encoder never
+/// emits what the decoder rejects), `out` is too small, or `content` is longer than the length codec supports (`> u32::MAX`).
 ///
 /// On `None` nothing is written to `out`; on `Some(n)` only `out[..n]` is written.
 pub fn encode_utf8_string_into(content: &[u8], out: &mut [u8]) -> Option<usize> {
@@ -323,8 +367,37 @@ mod proofs {
         true
     }
 
+    /// Independent oracle for the X.690 §8.23.9 forbidden controls, valid for WELL-FORMED UTF-8
+    /// only: ESC `1B`, SO `0E` and SI `0F` are one-octet code points (and no continuation or lead
+    /// octet can equal them, since those are `>= 0x80`); SS2 and SS3 are the two-octet sequences
+    /// `C2 8E` and `C2 8F` (`C2` is a lead octet only, never a continuation octet). Stated as
+    /// byte patterns, with no code-point arithmetic and no call into `is_forbidden_control`.
+    fn oracle_has_forbidden_control(c: &[u8]) -> bool {
+        let mut i = 0;
+        while i < c.len() {
+            if c[i] == 0x1B || c[i] == 0x0E || c[i] == 0x0F {
+                return true;
+            }
+            if c[i] == 0xC2 && i + 1 < c.len() && (c[i + 1] == 0x8E || c[i + 1] == 0x8F) {
+                return true;
+            }
+            i += 1;
+        }
+        false
+    }
+
+    /// The first forbidden control of a `&str`, by the standard library's own `char` iteration
+    /// (a different lineage from both `validate_utf8` and the byte-pattern oracle above): byte
+    /// offset and code point.
+    fn std_first_forbidden(s: &str) -> Option<(usize, u32)> {
+        s.char_indices()
+            .find(|&(_, c)| matches!(c, '\u{1B}' | '\u{0E}' | '\u{0F}' | '\u{8E}' | '\u{8F}'))
+            .map(|(i, c)| (i, c as u32))
+    }
+
     /// THE security property (de-tautologized): `validate_utf8` accepts iff the independent
-    /// Table 3-7 oracle accepts, over every 4-byte buffer and every prefix length `<= 4`. Four
+    /// Table 3-7 oracle accepts and the content holds none of the five X.690 §8.23.9 forbidden
+    /// controls (ESC, SO, SI, SS2, SS3), over every 4-byte buffer and every prefix length `<= 4`. Four
     /// bytes is sufficient to reach every single-code-point class, including every overlong,
     /// surrogate, and beyond-`U+10FFFF` boundary row (the longest row is 4 bytes).
     #[kani::proof]
@@ -333,7 +406,10 @@ mod proofs {
         let buf: [u8; 4] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 4);
-        assert!(validate_utf8(&buf[..n]).is_ok() == oracle_wellformed_utf8(&buf[..n]));
+        assert!(
+            validate_utf8(&buf[..n]).is_ok()
+                == (oracle_wellformed_utf8(&buf[..n]) && !oracle_has_forbidden_control(&buf[..n]))
+        );
     }
 
     /// Sequencing / state-reset across *multiple* code points: the same biconditional over a
@@ -346,7 +422,10 @@ mod proofs {
         let buf: [u8; 6] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 6);
-        assert!(validate_utf8(&buf[..n]).is_ok() == oracle_wellformed_utf8(&buf[..n]));
+        assert!(
+            validate_utf8(&buf[..n]).is_ok()
+                == (oracle_wellformed_utf8(&buf[..n]) && !oracle_has_forbidden_control(&buf[..n]))
+        );
     }
 
     /// Bonus independent oracle: agreement with `core::str::from_utf8`, the standard library's own
@@ -354,13 +433,19 @@ mod proofs {
     /// internals are a wholly different code path from both `validate_utf8` and
     /// `oracle_wellformed_utf8` above). Kept only because it verifies cleanly within the same
     /// unwind bound as `validate_iff_oracle`; see the module report if this ever needs dropping.
+    /// With the X.690 §8.23.9 rule, "accepts" means std accepts AND the standard library's own
+    /// `char` iteration finds none of the five forbidden controls (`std_first_forbidden`).
     #[kani::proof]
     #[kani::unwind(6)]
     fn validate_iff_std() {
         let buf: [u8; 4] = kani::any();
         let n: usize = kani::any();
         kani::assume(n <= 4);
-        assert!(validate_utf8(&buf[..n]).is_ok() == core::str::from_utf8(&buf[..n]).is_ok());
+        let std_ok = match core::str::from_utf8(&buf[..n]) {
+            Ok(s) => std_first_forbidden(s).is_none(),
+            Err(_) => false,
+        };
+        assert!(validate_utf8(&buf[..n]).is_ok() == std_ok);
     }
 
     /// Round-trip: any short well-formed content encodes then decodes back to exactly itself,
@@ -372,6 +457,7 @@ mod proofs {
         let n: usize = kani::any();
         kani::assume(n <= 4);
         kani::assume(oracle_wellformed_utf8(&content[..n]));
+        kani::assume(!oracle_has_forbidden_control(&content[..n]));
         let mut out = [0u8; 16]; // 6 (max tag, unused here) + 5 (len) + 4 (value) fits comfortably
         let written = encode_utf8_string_into(&content[..n], &mut out).unwrap();
         let (dec, used) = decode_utf8_string(&out[..written]).unwrap();
@@ -478,7 +564,9 @@ mod proofs {
     /// - `decode_tlv` as the separately-verified envelope reference,
     /// - a literal UNIVERSAL tag number 12 (not the `TAG` const),
     /// - `core::str::from_utf8` as the content oracle (external, other author; no call into
-    ///   `validate_utf8`): ill-formed content -> `IllFormed { position: valid_up_to() }` exactly.
+    ///   `validate_utf8`): ill-formed content -> `IllFormed { position: valid_up_to() }` exactly;
+    ///   well-formed content with a forbidden control -> `ForbiddenControl` at the first one
+    ///   (`std_first_forbidden`).
     ///
     /// Without this, the content gate `validate_utf8(tlv.value)?` in `decode_utf8_string` is reached
     /// by no Kani assertion on a non-encoder input (`constructed_form_is_rejected` /
@@ -510,18 +598,24 @@ mod proofs {
                             kani::cover(true, "ill-formed content reached");
                             assert!(r == Err(Utf8Error::IllFormed { position: e.valid_up_to() }));
                         }
-                        Ok(_) => {
-                            kani::cover(!v.is_empty(), "non-empty well-formed content accepted");
-                            kani::cover(v.is_empty(), "empty content accepted");
-                            match r {
-                                Ok((content, consumed)) => {
-                                    assert!(consumed == used);
-                                    assert!(content.len() == v.len());
-                                    assert!(content == v);
-                                }
-                                Err(_) => panic!("well-formed UTF-8 universal primitive rejected"),
+                        Ok(text) => match std_first_forbidden(text) {
+                            Some((p, cp)) => {
+                                kani::cover(true, "well-formed content with a forbidden control reached");
+                                assert!(r == Err(Utf8Error::ForbiddenControl { position: p, code_point: cp }));
                             }
-                        }
+                            None => {
+                                kani::cover(!v.is_empty(), "non-empty well-formed content accepted");
+                                kani::cover(v.is_empty(), "empty content accepted");
+                                match r {
+                                    Ok((content, consumed)) => {
+                                        assert!(consumed == used);
+                                        assert!(content.len() == v.len());
+                                        assert!(content == v);
+                                    }
+                                    Err(_) => panic!("well-formed UTF-8 universal primitive rejected"),
+                                }
+                            }
+                        },
                     }
                 }
             }
@@ -570,7 +664,8 @@ mod proofs {
     /// octets, valid AND ill-formed UTF-8), the output capacity is symbolic (`0..=10`) and the output
     /// buffer starts symbolic. `encode_utf8_string_into(content, &mut out[..cap])` returns EXACTLY:
     /// - `None` when `core::str::from_utf8(content)` rejects the content (independent external
-    ///   validator; no call into `validate_utf8`), whatever the capacity;
+    ///   validator; no call into `validate_utf8`) or the content holds a forbidden control
+    ///   (ESC, SO, SI, SS2, SS3; `std_first_forbidden`), whatever the capacity;
     /// - else `None` when `cap < 2 + n` (identifier octet `0x0C`, one short-form length octet since
     ///   `n <= 6 < 0x80`, then the `n` content octets);
     /// - else `Some(2 + n)`, with the emitted bytes exactly `0C n content` and every octet at or
@@ -595,7 +690,11 @@ mod proofs {
         let init: [u8; 10] = kani::any();
         let mut out = init;
         let r = encode_utf8_string_into(content, &mut out[..cap]);
-        let well_formed = core::str::from_utf8(content).is_ok();
+        // encodable = well-formed UTF-8 (external validator) with no X.690 §8.23.9 forbidden control
+        let well_formed = match core::str::from_utf8(content) {
+            Ok(s) => std_first_forbidden(s).is_none(),
+            Err(_) => false,
+        };
         let total = 2 + n;
         if !well_formed {
             kani::cover(cap >= total, "ill-formed content rejected despite ample capacity");
@@ -1009,6 +1108,156 @@ mod tests {
         assert_eq!(
             decode_utf8_string(&[0x0C, 0x02, 0xC1, 0x81]),
             Err(Utf8Error::IllFormed { position: 0 })
+        );
+    }
+
+    /// Row X690-8.23.9 (accept): the C0 and C1 control functions of ISO/IEC 6429 may be used, with
+    /// the exceptions of 8.23.9 a)-f). Every C0 control (U+0000..U+001F) and every C1 control
+    /// (U+0080..U+009F) except ESC, SO, SI, SS2 and SS3 is accepted: CR, LF, TAB, NEL, CSI and the
+    /// rest. The decoded text is asserted.
+    #[test]
+    fn accepts_utf8_c0_and_c1_controls_that_are_not_escapes_or_shifts() {
+        let mut input = [0u8; 2 + 29 + 2 * 30];
+        let mut n = 2;
+        let mut text = [0u32; 59];
+        let mut t = 0;
+        for cp in (0x00u32..=0x1F).chain(0x80..=0x9F) {
+            if matches!(cp, 0x0E | 0x0F | 0x1B | 0x8E | 0x8F) {
+                continue;
+            }
+            if cp < 0x80 {
+                input[n] = cp as u8;
+                n += 1;
+            } else {
+                input[n] = 0xC2;
+                input[n + 1] = (0x80 | (cp & 0x3F)) as u8;
+                n += 2;
+            }
+            text[t] = cp;
+            t += 1;
+        }
+        assert_eq!((n, t), (input.len(), 59));
+        input[0] = 0x0C;
+        input[1] = (n - 2) as u8;
+        let (s, used) = decode_utf8_str(&input).unwrap();
+        assert_eq!(used, input.len());
+        assert_eq!(s.chars().count(), text.len());
+        for (c, expected) in s.chars().zip(text.iter()) {
+            assert_eq!(c as u32, *expected);
+        }
+        // CR LF TAB spelled out
+        assert_eq!(decode_utf8_str(&[0x0C, 0x03, 0x0D, 0x0A, 0x09]), Ok(("\r\n\t", 5)));
+    }
+
+    /// Row X690-8.23.9 (accept): the forbidden controls are code points, not octet values. Octet
+    /// 0x8E or 0x8F as a continuation octet, and 0xC2 before another continuation octet, are
+    /// ordinary text: U+00CE (`C3 8E`), U+0E0E (`E0 B8 8E`), U+200E (`E2 80 8E`), U+200F
+    /// (`E2 80 8F`), U+0080 (`C2 80`) and U+00A0 (`C2 A0`).
+    #[test]
+    fn accepts_text_whose_octets_equal_a_forbidden_control_but_whose_code_points_do_not() {
+        assert_eq!(decode_utf8_str(&[0x0C, 0x02, 0xC3, 0x8E]), Ok(("\u{CE}", 4)));
+        assert_eq!(decode_utf8_str(&[0x0C, 0x03, 0xE0, 0xB8, 0x8E]), Ok(("\u{E0E}", 5)));
+        assert_eq!(decode_utf8_str(&[0x0C, 0x03, 0xE2, 0x80, 0x8E]), Ok(("\u{200E}", 5)));
+        assert_eq!(decode_utf8_str(&[0x0C, 0x03, 0xE2, 0x80, 0x8F]), Ok(("\u{200F}", 5)));
+        assert_eq!(decode_utf8_str(&[0x0C, 0x02, 0xC2, 0x80]), Ok(("\u{80}", 4)));
+        assert_eq!(decode_utf8_str(&[0x0C, 0x02, 0xC2, 0xA0]), Ok(("\u{A0}", 4)));
+    }
+
+    /// Rows X690-8.23.9, X690-8.23.9a, X690-8.23.9b, X690-8.23.9c, X690-8.23.9d, X690-8.23.9f
+    /// (reject): the controls that announce, designate or invoke an ISO 2022 escape or shift are
+    /// rejected: ESC (U+001B, `1B`), SO (U+000E, `0E`), SI (U+000F, `0F`), SS2 (U+008E, `C2 8E`)
+    /// and SS3 (U+008F, `C2 8F`). Each is rejected alone, after a text prefix and between two
+    /// characters, with its byte position and code point.
+    #[test]
+    fn rejects_utf8_escape_and_shift_controls() {
+        let table: [(&[u8], u32); 5] = [
+            (&[0x1B], 0x1B),
+            (&[0x0E], 0x0E),
+            (&[0x0F], 0x0F),
+            (&[0xC2, 0x8E], 0x8E),
+            (&[0xC2, 0x8F], 0x8F),
+        ];
+        for (control, cp) in table {
+            // alone
+            let mut input = [0u8; 8];
+            input[0] = 0x0C;
+            input[1] = control.len() as u8;
+            input[2..2 + control.len()].copy_from_slice(control);
+            assert_eq!(
+                decode_utf8_string(&input[..2 + control.len()]),
+                Err(Utf8Error::ForbiddenControl { position: 0, code_point: cp }),
+                "{:x?}",
+                control
+            );
+            // after "A" and a two-octet character (U+00E9): position 3
+            let mut input = [0u8; 12];
+            input[..5].copy_from_slice(&[0x0C, 0, b'A', 0xC3, 0xA9]);
+            input[5..5 + control.len()].copy_from_slice(control);
+            input[5 + control.len()] = b'Z';
+            let n = 6 + control.len();
+            input[1] = (n - 2) as u8;
+            assert_eq!(
+                decode_utf8_string(&input[..n]),
+                Err(Utf8Error::ForbiddenControl { position: 3, code_point: cp }),
+                "{:x?}",
+                control
+            );
+            // validate_utf8 directly
+            assert_eq!(
+                validate_utf8(control),
+                Err(Utf8Error::ForbiddenControl { position: 0, code_point: cp })
+            );
+        }
+        // an ISO 2022 announcer, ESC SP F, is rejected at its ESC
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x04, b'x', 0x1B, 0x20, 0x46]),
+            Err(Utf8Error::ForbiddenControl { position: 1, code_point: 0x1B })
+        );
+        // so is a designating escape, ESC ( B
+        assert_eq!(
+            decode_utf8_string(&[0x0C, 0x03, 0x1B, 0x28, 0x42]),
+            Err(Utf8Error::ForbiddenControl { position: 0, code_point: 0x1B })
+        );
+    }
+
+    /// Rows X690-8.23.9, X690-8.23.9a, X690-8.23.9c (reject): an encoder never emits what the
+    /// decoder rejects. The encoder refuses content holding ESC, SO, SI, SS2 or SS3 and writes
+    /// nothing; the text next to them encodes.
+    #[test]
+    fn encode_refuses_utf8_escape_and_shift_controls() {
+        let mut out = [0xA5u8; 16];
+        for content in [
+            &[0x1Bu8][..],
+            &[0x0E],
+            &[0x0F],
+            &[0xC2, 0x8E],
+            &[0xC2, 0x8F],
+            &[b'a', 0xC3, 0xA9, 0x1B, b'b'],
+        ] {
+            assert_eq!(encode_utf8_string_into(content, &mut out), None, "{:x?}", content);
+        }
+        assert_eq!(out, [0xA5u8; 16]);
+        // CR, LF, TAB, NEL and SS2's neighbour U+008D encode
+        assert_eq!(encode_utf8_string_into(&[0x0D, 0x0A, 0x09, 0xC2, 0x85, 0xC2, 0x8D], &mut out), Some(9));
+        assert_eq!(&out[..9], &[0x0C, 0x07, 0x0D, 0x0A, 0x09, 0xC2, 0x85, 0xC2, 0x8D]);
+    }
+
+    /// Design record (no requirement row): malformed UTF-8 is reported as `IllFormed` even when a
+    /// forbidden control comes first, so `position` keeps its `valid_up_to` meaning; for
+    /// well-formed content the first forbidden control is reported.
+    #[test]
+    fn forbidden_control_is_reported_for_well_formed_content_and_first_one_wins() {
+        // ESC then a lone continuation octet: ill-formed, position of the longest valid prefix
+        assert_eq!(validate_utf8(&[0x1B, 0x80]), Err(Utf8Error::IllFormed { position: 1 }));
+        assert_eq!(validate_utf8(&[0xC2, 0x8E, 0xFF]), Err(Utf8Error::IllFormed { position: 2 }));
+        // two forbidden controls: the first one
+        assert_eq!(
+            validate_utf8(&[b'a', 0x0F, 0x1B]),
+            Err(Utf8Error::ForbiddenControl { position: 1, code_point: 0x0F })
+        );
+        assert_eq!(
+            validate_utf8(&[0xC2, 0x8F, 0x0E]),
+            Err(Utf8Error::ForbiddenControl { position: 0, code_point: 0x8F })
         );
     }
 }

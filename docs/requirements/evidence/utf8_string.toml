@@ -26,8 +26,8 @@ file = "der-verified/src/utf8_string.rs"
 name = "decode_is_faithful"
 accept = []
 reject = []
-prove = ["X680-41.1", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-unique"]
-bounded = "input len <= 6; unwind 16"
+prove = ["X680-41.1", "X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-unique", "X690-8.23.9", "X690-8.23.9a", "X690-8.23.9b", "X690-8.23.9c", "X690-8.23.9d", "X690-8.23.9f"]
+bounded = "input len <= 6; unwind 16; ForbiddenControl asserted for well-formed content with ESC, SO, SI, SS2 or SS3"
 none = ""
 
 [[entry]]
@@ -56,8 +56,8 @@ file = "der-verified/src/utf8_string.rs"
 name = "encode_is_exact_over_content_and_capacity"
 accept = []
 reject = []
-prove = ["X680-40b", "X680-41.1", "X690-8.23.3-a", "X690-8.23.3", "X690-8.23.10", "API-short-buffer-none"]
-bounded = "content len <= 6; output capacity <= 10; unwind 16"
+prove = ["X680-40b", "X680-41.1", "X690-8.23.3-a", "X690-8.23.3", "X690-8.23.10", "API-short-buffer-none", "X690-8.23.9", "X690-8.23.9a", "X690-8.23.9b", "X690-8.23.9c", "X690-8.23.9d", "X690-8.23.9f"]
+bounded = "content len <= 6; output capacity <= 10; unwind 16; content with ESC, SO, SI, SS2 or SS3 refused"
 none = ""
 
 [[entry]]
@@ -77,7 +77,7 @@ name = "roundtrip"
 accept = []
 reject = []
 prove = ["CODEC-utf8-string-decode-encode"]
-bounded = "well-formed content len <= 4; output len <= 16; unwind 16"
+bounded = "well-formed content len <= 4 with no ESC, SO, SI, SS2 or SS3; output len <= 16; unwind 16"
 none = ""
 
 [[entry]]
@@ -86,8 +86,8 @@ file = "der-verified/src/utf8_string.rs"
 name = "validate_iff_oracle"
 accept = []
 reject = []
-prove = ["X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-unique"]
-bounded = "content len <= 4; unwind 6"
+prove = ["X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-unique", "X690-8.23.9", "X690-8.23.9a", "X690-8.23.9b", "X690-8.23.9c", "X690-8.23.9d", "X690-8.23.9f"]
+bounded = "content len <= 4; unwind 6; accepted set is well-formed UTF-8 minus ESC, SO, SI, SS2, SS3"
 none = ""
 
 [[entry]]
@@ -96,8 +96,8 @@ file = "der-verified/src/utf8_string.rs"
 name = "validate_iff_oracle_multi"
 accept = []
 reject = []
-prove = ["X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-unique"]
-bounded = "content len <= 6; unwind 8"
+prove = ["X690-8.23.3-b", "X690-8.23.10", "X690-8.23.10-a", "RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "CODEC-utf8-string-unique", "X690-8.23.9", "X690-8.23.9a", "X690-8.23.9b", "X690-8.23.9c", "X690-8.23.9d", "X690-8.23.9f"]
+bounded = "content len <= 6; unwind 8; accepted set is well-formed UTF-8 minus ESC, SO, SI, SS2, SS3"
 none = ""
 
 [[entry]]
@@ -106,8 +106,8 @@ file = "der-verified/src/utf8_string.rs"
 name = "validate_iff_std"
 accept = []
 reject = []
-prove = ["RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4"]
-bounded = "content len <= 4; unwind 6"
+prove = ["RFC3629-3", "RFC3629-3-a", "RFC3629-3-b", "RFC3629-3-c", "RFC3629-4", "X690-8.23.9", "X690-8.23.9a", "X690-8.23.9b", "X690-8.23.9c", "X690-8.23.9d", "X690-8.23.9f"]
+bounded = "content len <= 4; unwind 6; accepted set is well-formed UTF-8 minus ESC, SO, SI, SS2, SS3"
 none = ""
 
 [[entry]]
@@ -419,3 +419,53 @@ reject = ["CODEC-utf8-string-unique", "CODEC-utf8-string-reject-nonder", "X690-7
 prove = []
 bounded = ""
 none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "accepts_utf8_c0_and_c1_controls_that_are_not_escapes_or_shifts"
+accept = ["X690-8.23.9"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "accepts_text_whose_octets_equal_a_forbidden_control_but_whose_code_points_do_not"
+accept = ["X690-8.23.9"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "rejects_utf8_escape_and_shift_controls"
+accept = []
+reject = ["X690-8.23.9", "X690-8.23.9a", "X690-8.23.9b", "X690-8.23.9c", "X690-8.23.9d", "X690-8.23.9f"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "encode_refuses_utf8_escape_and_shift_controls"
+accept = ["X690-8.23.9"]
+reject = ["X690-8.23.9", "X690-8.23.9a", "X690-8.23.9c"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/utf8_string.rs"
+name = "forbidden_control_is_reported_for_well_formed_content_and_first_one_wins"
+accept = []
+reject = []
+prove = []
+bounded = ""
+none = "design record for the error order (IllFormed before ForbiddenControl, first forbidden control wins); no requirement row states an error order"
