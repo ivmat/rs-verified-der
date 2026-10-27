@@ -375,6 +375,7 @@ mod proofs {
     use crate::bit_string::BitString;
     use crate::generalized_time::GeneralizedTime;
     use crate::utc_time::{full_year_rfc5280, UtcTime};
+    use crate::tag::Tag;
     use crate::x509_algorithm_identifier::AlgorithmIdentifier;
     use crate::x509_spki::SubjectPublicKeyInfo;
     use crate::x509_tbs_certificate::TbsCertificate;
@@ -385,12 +386,19 @@ mod proofs {
     ///
     /// This is the whole reason `profile` is cheap to verify where the `x509_*` modules are not: rules
     /// 1 to 4 perform **no byte-level decoding** (the module docs say so), so a harness does not
-    /// need a symbolic DER buffer and a parse — it needs a symbolic *value*. The opaque byte-span
+    /// need a symbolic DER buffer and a parse -- it needs a symbolic *value*. The opaque byte-span
     /// fields (`serial_number`, `issuer`, `subject`, key material) are not read by rules 1 to 4, so
-    /// fixing them to an empty slice loses no generality for the harnesses that isolate those rules
-    /// (an empty slice does not frame as a `Name`, so rules 6 and 7 cannot fire on it); what stays
-    /// symbolic is exactly what rules 1 to 4 inspect. The harnesses for rules 5 to 7 build their
-    /// spans with `symbolic_cert_names`.
+    /// fixing them to an empty slice loses no generality for the harnesses that isolate those rules;
+    /// what stays symbolic is exactly what rules 1 to 4 inspect.
+    ///
+    /// The empty `issuer` and `subject` do not frame as a `Name`, so rules 6 and 7 cannot fire on them,
+    /// and the callers pass either no `extensions` or the empty `Extensions` list `30 00`, which holds no
+    /// element, so rule 5 cannot fire either. The harnesses that use this builder therefore replace the
+    /// three rule 5 to 7 helpers by `stub_rule_never_fires` (they cost CBMC a symbolic element walk and
+    /// a `memcmp` unwinding each); that replacement is sound because
+    /// `rules_5_to_7_helpers_return_false_on_the_isolation_inputs` proves the real helpers return
+    /// `false` on exactly these inputs. The harnesses for rules 5 to 7 build their spans themselves with
+    /// `symbolic_cert_names`.
     fn symbolic_cert<'a>(
         sig_alg: AlgorithmIdentifier<'a>,
         tbs_sig: AlgorithmIdentifier<'a>,
@@ -403,9 +411,8 @@ mod proofs {
     }
 
     /// `symbolic_cert` with caller-chosen `issuer` and `subject` spans, for the harnesses that
-    /// exercise rules 5 to 7 (P-12 to P-14). `symbolic_cert` passes the empty slice for both: an
-    /// empty slice does not frame as a `Name`, so rules 6 and 7 cannot fire on it and the
-    /// harnesses that use `symbolic_cert` keep isolating rules 1 to 4.
+    /// exercise rules 5 to 7 (P-12 to P-14) or that must hold them satisfied through stubs.
+    /// `symbolic_cert` passes the empty slice for both.
     fn symbolic_cert_names<'a>(
         sig_alg: AlgorithmIdentifier<'a>,
         tbs_sig: AlgorithmIdentifier<'a>,
@@ -476,6 +483,68 @@ mod proofs {
         } else {
             k3
         }
+    }
+
+    // ---- Stubs for the rule 5 to 7 helpers (modular proof, DECISIONS.md D26 style) ----
+    //
+    // Rules 5 to 7 re-walk three byte spans with `Elements` and `decode_tlv`, and compare object
+    // identifiers with slice equality. Left inline in a harness about rules 1 to 4, that walk
+    // multiplies with the symbolic algorithm identifiers (their `memcmp`) and with the symbolic times,
+    // and the harness grew from well under 1 GB to an out-of-memory kill at the 20 GB cap
+    // (`rule1_mismatch_iff_algorithms_differ`, 11 min 42 s, last log lines unwinding `memcmp` and
+    // `leading_oid`; its code had not changed). The helpers are therefore proven once, by their own
+    // small harnesses (the last block of this module), and every `validate_profile` harness replaces
+    // them by one of the stubs below. A stub is sound only when its harness discharges the stub's
+    // obligation, and no stub here assumes anything about a helper that is not proven elsewhere:
+    //
+    // * `stub_rule_never_fires` returns `false`. It is used where the harness holds rules 5 to 7
+    //   satisfied by construction (no `extensions` or the empty list `30 00`; empty `issuer` and
+    //   `subject`). Obligation: the real helpers return `false` on those inputs, discharged by
+    //   `rules_5_to_7_helpers_return_false_on_the_isolation_inputs`.
+    // * `stub_any_outcome` returns a nondeterministic `bool`. It is used by the totality harness,
+    //   which asserts nothing about the outcome. Obligation: the real helpers are total (return a
+    //   `bool` and never panic) on every span the harness could pass; discharged by the helper
+    //   harnesses (`*_never_panics*`, `*_is_exact*`).
+    // * `stub_steered_by_bit0` / `stub_steered_by_bit1` return a `bool` read from the first octet of
+    //   the span, so the harness (which owns that octet symbolically) can both reach every outcome and
+    //   compute the exact expected result from the same octet. A bare `kani::any()` could not be
+    //   mirrored by an exact reference. Each stub is a deterministic function of its span, and the
+    //   harness spans are independent symbolic windows, so every combination of the rule 5, 6, 7
+    //   (issuer) and 7 (subject) outcomes is reachable; that makes the stub an over-approximation of any
+    //   total helper. The same span reaching two different helpers (the issuer reaches rule 6 and rule
+    //   7) uses different bits, and the issuer and subject are different spans, so a call that read the
+    //   wrong field or the wrong helper changes the result and the exact assertion fails.
+    //
+    // (rustc's dead-code lint does not see the `#[kani::stub]` references as uses.)
+
+    /// Stub for the three helpers where rules 5 to 7 cannot fire (see the block comment above).
+    #[allow(dead_code)]
+    fn stub_rule_never_fires(_span: &[u8]) -> bool {
+        false
+    }
+
+    /// Stub for the three helpers where the harness asserts nothing about the outcome.
+    #[allow(dead_code)]
+    fn stub_any_outcome(_span: &[u8]) -> bool {
+        kani::any()
+    }
+
+    /// The outcome a steered stub reads from `span`: `true` iff the first octet exists and has a bit
+    /// of `mask` set. Used by the stubs and, independently, by the references of the harnesses.
+    fn steer(span: &[u8], mask: u8) -> bool {
+        span.len() >= 1 && span[0] & mask != 0
+    }
+
+    /// Stub steered by bit 0 of the span's first octet (rule 5 on `extensions`, rule 6 on `issuer`).
+    #[allow(dead_code)]
+    fn stub_steered_by_bit0(span: &[u8]) -> bool {
+        steer(span, 1)
+    }
+
+    /// Stub steered by bit 1 of the span's first octet (rule 7 on `issuer` and on `subject`).
+    #[allow(dead_code)]
+    fn stub_steered_by_bit1(span: &[u8]) -> bool {
+        steer(span, 2)
     }
 
     /// A symbolic `AlgorithmIdentifier` over a caller-owned 2-octet OID buffer and an optional
@@ -601,7 +670,17 @@ mod proofs {
     /// both sides. The assertion pins the EXACT result (`Err(SignatureAlgorithmMismatch)` when the
     /// identifiers differ, `Ok(())` when they are equal -- rules 2 and 3 are held satisfied), so
     /// neither an over-eager nor a missing check, nor a different error for an equal pair, can pass.
+    ///
+    /// Rules 5 to 7 are stubbed out (`stub_rule_never_fires`): the certificate carries the empty
+    /// `Extensions` list `30 00` and an empty `issuer` and `subject`, on which the real helpers return
+    /// `false` (discharged by `rules_5_to_7_helpers_return_false_on_the_isolation_inputs`). Unwind 6
+    /// is the value this harness had before rules 5 to 7 existed (when it verified in well under
+    /// 1 GB); with the stubs, the loops left in its path are the same ones as then (the 4-octet OID and
+    /// parameter comparisons and `raw_bytes_differ`), so the bound is unchanged.
     #[kani::proof]
+    #[kani::stub(extensions_repeat_an_id, stub_rule_never_fires)]
+    #[kani::stub(name_is_empty, stub_rule_never_fires)]
+    #[kani::stub(name_has_repeated_attribute_type, stub_rule_never_fires)]
     #[kani::unwind(6)]
     fn rule1_mismatch_iff_algorithms_differ() {
         let oid_a: [u8; 4] = kani::any();
@@ -665,7 +744,7 @@ mod proofs {
         kani::cover(r.is_ok() && has_a && has_b && lpa > 0, "equal non-empty parameters are accepted");
     }
 
-    /// **Whole-function exact-result oracle.** Over
+    /// **Whole-function exact-result reference.** Over
     /// symbolic algorithm identifiers (4-octet OID and parameter backings with symbolic lengths
     /// `0..=4` and symbolic parameter presence on each side), a symbolic `version` (all 256 values),
     /// symbolic `extensions` presence, and both `Time`s with EVERY field symbolic (`any_time`: the
@@ -673,19 +752,28 @@ mod proofs {
     /// with a symbolic `u16` year -- which includes the 2049/2050 boundary -- symbolic
     /// month/day/hour/minute/second and a symbolic 0..=4-octet fraction), `validate_profile(cert)`
     /// equals `expected(..)` EXACTLY. The profile-irrelevant certificate fields are symbolic too:
-    /// `serial_number`, `issuer`, `subject`, the SPKI (OID, optional parameters, key window, unused
-    /// count), `signature_value`, and the `extensions` content are each a symbolic 0..=2-octet window
-    /// over a 2-octet symbolic backing (`unused` is any `u8`), so no "never read" argument by
-    /// inspection is needed: the reference below depends only on what the module docs say is
-    /// inspected (algorithm identifiers, `version`, extensions PRESENCE, each Time's arm, year and
-    /// fraction emptiness), and the assertion proves nothing else changes the result.
-    /// Rules 5 to 7 (P-12 to P-14, added in S4b): the `extensions`, `issuer` and `subject` spans are each
-    /// chosen symbolically (`ext_kind`, `issuer_kind`, `subject_kind`) between the symbolic window above
-    /// and concrete well-formed specimens (`EXT_TWO_DISTINCT`, `EXT_TWO_SAME`, `NAME_ONE_RDN_TWO_TYPES`,
-    /// `NAME_ONE_RDN_SAME_TYPE`, `NAME_TWO_RDNS_SAME_TYPE`). The reference spells the rule-5 and rule-7
-    /// violations from which specimen was chosen (a window of 0 to 2 octets cannot hold two elements)
-    /// and the rule-6 violation from the issuer's bytes (exactly `30 00`). The three spans are chosen
-    /// independently, so the proof covers every combination of the three rules and their precedence.
+    /// `serial_number`, the SPKI (OID, optional parameters, key window, unused count) and
+    /// `signature_value` are each a symbolic 0..=2-octet window over a 2-octet symbolic backing
+    /// (`unused` is any `u8`), so no "never read" argument by inspection is needed: the reference below
+    /// depends only on what the module docs say is inspected (algorithm identifiers, `version`,
+    /// extensions PRESENCE, each Time's arm, year and fraction emptiness, and the three rule 5 to 7
+    /// outcomes), and the assertion proves nothing else changes the result.
+    ///
+    /// **Rules 5 to 7 are stubbed (modular proof).** The three helpers are replaced by
+    /// `stub_steered_by_bit0` (rule 5 on `extensions`, rule 6 on `issuer`) and `stub_steered_by_bit1`
+    /// (rule 7 on `issuer` and on `subject`). Each reads its outcome from the first octet of the span it
+    /// is given; the `extensions`, `issuer` and `subject` spans are independent symbolic windows of 0 to
+    /// 2 octets, so every combination of the four helper outcomes is reachable, and the reference reads
+    /// the outcomes from the same octets (`steer`). What this harness proves about rules 5 to 7 is the
+    /// glue only: rule 5 runs on the `extensions` span and only when it is present, rule 6 on the
+    /// `issuer`, rule 7 on the `issuer` and then on the `subject`, each reports its own variant, and the
+    /// whole sits after rule 4 in the documented order. What each helper decides on real DER is proven
+    /// by the helper harnesses at the end of this module
+    /// (`extensions_repeat_an_id_decides_on_the_envelope`, `name_is_empty_iff_exactly_30_00`,
+    /// `name_has_repeated_attribute_type_decides_on_the_walk`, `has_repeated_leading_oid_is_exact_on_three_elements`,
+    /// `leading_oid_is_exact`), and the glue with the real helpers on concrete DER by
+    /// `rules_5_to_7_end_to_end_on_specimens`. The PROF rows for rules 5 to 7 are therefore proven by the
+    /// composition, not by this harness alone; the standard-text rows are cited by the helper harnesses.
     ///
     /// `expected` is an independent total reference written from the documented rule precedence (the
     /// `validate_profile` doc comment and the `ProfileError` declaration order: signature-algorithm,
@@ -701,17 +789,22 @@ mod proofs {
     ///
     /// Bounds (disclosed): 4-octet backings and lengths `0..=4` for the identifier bytes (the same
     /// domain as `rule1_mismatch_iff_algorithms_differ`); 2-octet backings, lengths `0..=2`, for the
-    /// irrelevant spans and for the window choice of `extensions`, `issuer` and `subject`; for rules 5 to
-    /// 7 only the five concrete specimens (2 to 4 elements, at most 20 octets, one-octet OIDs) are
-    /// enumerated, not arbitrary element counts, OID lengths or RDN counts; a 4-octet backing, length
-    /// `0..=4`, for each Generalized fraction. Slices
+    /// irrelevant spans and for the `extensions`, `issuer` and `subject` windows (whose first octet
+    /// steers the stubs); a 4-octet backing, length `0..=4`, for each Generalized fraction. Slices
     /// longer than that are not enumerated (for the fraction: lengths above 4 are covered by unit tests
     /// only, and the code reads emptiness, not length). The profile-irrelevant spans and fractions
     /// are inspected only for presence or emptiness, so their windows are representative. The two
     /// algorithm identifiers are compared octet by octet, however, so their `0..=4` windows bound
     /// the proof rather than establishing the result for arbitrary identifier lengths.
+    ///
+    /// Unwind 6, the value before rules 5 to 7 existed: the widest loops left are the 4-octet
+    /// comparisons; the stubs contain none. (The unwind 8 of the monolithic version is no longer
+    /// needed: it covered the element walks of rules 5 to 7, which are now outside this harness.)
     #[kani::proof]
-    #[kani::unwind(8)]
+    #[kani::stub(extensions_repeat_an_id, stub_steered_by_bit0)]
+    #[kani::stub(name_is_empty, stub_steered_by_bit0)]
+    #[kani::stub(name_has_repeated_attribute_type, stub_steered_by_bit1)]
+    #[kani::unwind(6)]
     fn validate_profile_is_exactly_the_documented_precedence() {
         let oid_a: [u8; 4] = kani::any();
         let oid_b: [u8; 4] = kani::any();
@@ -748,31 +841,10 @@ mod proofs {
         let sig_val: [u8; 2] = kani::any();
         let ext_back: [u8; 2] = kani::any();
         let spki_has_par: bool = kani::any();
-        let ext_kind: u8 = kani::any();
-        let issuer_kind: u8 = kani::any();
-        let subject_kind: u8 = kani::any();
-        kani::assume(ext_kind <= 2 && issuer_kind <= 3 && subject_kind <= 3);
-        let ext_span: &[u8] = if ext_kind == 0 {
-            window(&ext_back)
-        } else if ext_kind == 1 {
-            &EXT_TWO_DISTINCT
-        } else {
-            &EXT_TWO_SAME
-        };
-        let issuer_span = pick_span(
-            issuer_kind,
-            window(&issuer),
-            &NAME_ONE_RDN_TWO_TYPES,
-            &NAME_ONE_RDN_SAME_TYPE,
-            &NAME_TWO_RDNS_SAME_TYPE,
-        );
-        let subject_span = pick_span(
-            subject_kind,
-            window(&subject),
-            &NAME_ONE_RDN_TWO_TYPES,
-            &NAME_ONE_RDN_SAME_TYPE,
-            &NAME_TWO_RDNS_SAME_TYPE,
-        );
+        // The spans rules 5 to 7 are given; the first octet of each steers a stub.
+        let ext_span = window(&ext_back);
+        let issuer_span = window(&issuer);
+        let subject_span = window(&subject);
         let cert = Certificate {
             tbs_certificate: TbsCertificate {
                 version,
@@ -802,13 +874,11 @@ mod proofs {
         let na_bad = na_gen && na_year <= 2049;
         let nb_frac = nb_gen && nb_flen > 0;
         let na_frac = na_gen && na_flen > 0;
-        let ext_dup = has_ext && ext_kind == 2;
-        let issuer_empty = issuer_kind == 0
-            && issuer_span.len() == 2
-            && issuer_span[0] == 0x30
-            && issuer_span[1] == 0x00;
-        let issuer_dup = issuer_kind == 2;
-        let subject_dup = subject_kind == 2;
+        // The rule 5 to 7 outcomes the stubs return: the extensions only when present.
+        let ext_dup = has_ext && steer(ext_span, 1);
+        let issuer_empty = steer(issuer_span, 1);
+        let issuer_dup = steer(issuer_span, 2);
+        let subject_dup = steer(subject_span, 2);
         let expected = if alg_differ {
             Err(ProfileError::SignatureAlgorithmMismatch)
         } else if ext_bad {
@@ -890,7 +960,7 @@ mod proofs {
             "an accepted certificate with present-but-empty extensions content",
         );
         kani::cover(
-            r == Err(ProfileError::DuplicateExtension) && nb_frac == false && na_frac == false && has_a && has_b,
+            r == Err(ProfileError::DuplicateExtension) && !nb_frac && !na_frac && has_a && has_b,
             "P-12 is reported once rules 1 to 4 pass (parameters present on both identifiers)",
         );
         kani::cover(
@@ -902,20 +972,24 @@ mod proofs {
             "P-12 wins over P-13 and P-14",
         );
         kani::cover(
-            r == Err(ProfileError::EmptyIssuer) && subject_dup,
-            "P-13 wins over P-14 for the subject",
+            r == Err(ProfileError::EmptyIssuer) && issuer_dup && subject_dup,
+            "P-13 wins over both P-14 outcomes",
         );
         kani::cover(
             r == Err(ProfileError::IssuerDuplicateAttributeType) && subject_dup,
             "P-14 reports the issuer before the subject",
         );
         kani::cover(
-            r == Err(ProfileError::SubjectDuplicateAttributeType) && issuer_kind == 3 && ext_kind == 1,
-            "P-14 reports the subject alone (distinct ids and a legal repeated type in the issuer)",
+            r == Err(ProfileError::SubjectDuplicateAttributeType) && !ext_dup && !issuer_empty && !issuer_dup,
+            "P-14 reports the subject alone",
         );
         kani::cover(
-            r.is_ok() && ext_kind == 1 && issuer_kind == 3 && subject_kind == 3 && has_ext && version == 2,
-            "distinct extension ids and the same attribute type in different RDNs are accepted",
+            r.is_ok() && has_ext && version == 2 && !ext_dup && !issuer_empty && !issuer_dup && !subject_dup,
+            "all three of rules 5 to 7 are satisfied and the certificate is accepted",
+        );
+        kani::cover(
+            r.is_ok() && !has_ext && steer(ext_span, 1),
+            "rule 5 does not run when extensions are absent, whatever the extensions span would say",
         );
     }
 
@@ -924,8 +998,13 @@ mod proofs {
     /// Rule 2 (§4.1.2.1 / §4.1.2.9), **exactly**: with rule 1 satisfied, `validate_profile` rejects
     /// with `ExtensionsRequireV3` iff `extensions` is present and `version != 2` — over a fully
     /// symbolic `version: u8` (all 256 values, not just 0/1/2) and a symbolic present/absent
-    /// `extensions`.
+    /// `extensions`. Rules 5 to 7 are stubbed out (`stub_rule_never_fires`; the extensions are absent or
+    /// the empty list `30 00`, the names empty; see `symbolic_cert`). Unwind 4 is the pre-rules-5-to-7
+    /// value: the only loop left is the 2-octet OID comparison.
     #[kani::proof]
+    #[kani::stub(extensions_repeat_an_id, stub_rule_never_fires)]
+    #[kani::stub(name_is_empty, stub_rule_never_fires)]
+    #[kani::stub(name_has_repeated_attribute_type, stub_rule_never_fires)]
     #[kani::unwind(4)]
     fn rule2_requires_v3_iff_extensions_present_and_not_v3() {
         let version: u8 = kani::any();
@@ -951,8 +1030,13 @@ mod proofs {
     /// Rule 3 (§4.1.2.5.2), **exactly**, and with the two fields' precedence pinned: with rules 1–2
     /// satisfied (and rule 4 satisfied: every GeneralizedTime here has an empty fraction), `validate_profile` rejects iff at least one of `notBefore` / `notAfter` is a
     /// GeneralizedTime with year `<= 2049`, and it reports `notBefore`'s variant when both are bad —
-    /// the order `validate_profile`'s doc comment promises.
+    /// the order `validate_profile`'s doc comment promises. The certificate has no `extensions` and empty
+    /// names, so rules 5 to 7 are stubbed out (`stub_rule_never_fires`; see `symbolic_cert`). Unwind 4 is
+    /// the pre-rules-5-to-7 value: the only loop left is the 2-octet OID comparison.
     #[kani::proof]
+    #[kani::stub(extensions_repeat_an_id, stub_rule_never_fires)]
+    #[kani::stub(name_is_empty, stub_rule_never_fires)]
+    #[kani::stub(name_has_repeated_attribute_type, stub_rule_never_fires)]
     #[kani::unwind(4)]
     fn rule3_generalized_too_early_iff_year_le_2049() {
         let nb_gen: bool = kani::any();
@@ -998,8 +1082,14 @@ mod proofs {
     /// is a symbolic window of `0..=4` arbitrary octets (the rule inspects emptiness only; lengths above 4
     /// are covered by unit tests, not by this proof) and the
     /// reference is computed from the window length, not from `require_no_fraction`. A UTCTime on
-    /// either side (which has no fraction field) is never rejected by this rule.
+    /// either side (which has no fraction field) is never rejected by this rule. The certificate has the
+    /// empty `Extensions` list and empty names, so rules 5 to 7 are stubbed out (`stub_rule_never_fires`;
+    /// see `symbolic_cert`). Unwind 4 is the pre-rules-5-to-7 value: the loops left are the 2-octet OID
+    /// comparison and the fraction window (at most 4 octets, read only for emptiness).
     #[kani::proof]
+    #[kani::stub(extensions_repeat_an_id, stub_rule_never_fires)]
+    #[kani::stub(name_is_empty, stub_rule_never_fires)]
+    #[kani::stub(name_has_repeated_attribute_type, stub_rule_never_fires)]
     #[kani::unwind(4)]
     fn rule4_fraction_iff_generalized_with_fraction() {
         let frac_nb: [u8; 4] = kani::any();
@@ -1046,12 +1136,20 @@ mod proofs {
     /// rule (P-14). With every rule independently violable, the reported error is always the first
     /// violated one.
     ///
-    /// Rules 5 to 7 are driven by concrete specimens chosen symbolically (`ext_kind`, `issuer_kind`,
-    /// `subject_kind`; see `pick_span`), so the walks run on well-formed DER with a symbolic choice among
-    /// violating and conforming shapes. The issuer's `kind == 0` is a symbolic window of 0 to 2 octets:
-    /// its violation is the one the reference spells out from the bytes (exactly `30 00`).
+    /// Rules 5 to 7 are stubbed with the steered stubs (`stub_steered_by_bit0` for rule 5 on
+    /// `extensions` and rule 6 on `issuer`, `stub_steered_by_bit1` for rule 7 on `issuer` and `subject`;
+    /// see the block comment before `stub_rule_never_fires`). The `extensions`, `issuer` and `subject`
+    /// spans are independent symbolic windows of 0 to 2 octets, so every combination of the four helper
+    /// outcomes is reachable together with every combination of the rule 1 to 4 outcomes, and the
+    /// reference reads each outcome from the same octet (`steer`). The precedence is therefore proven
+    /// for ANY outcome of the helpers; the helpers are proven separately (end of this module).
+    ///
+    /// Unwind 4, the value before rules 5 to 7 existed: the loops left are the 2-octet OID comparison.
     #[kani::proof]
-    #[kani::unwind(8)]
+    #[kani::stub(extensions_repeat_an_id, stub_steered_by_bit0)]
+    #[kani::stub(name_is_empty, stub_steered_by_bit0)]
+    #[kani::stub(name_has_repeated_attribute_type, stub_steered_by_bit1)]
+    #[kani::unwind(4)]
     fn error_precedence_follows_declaration_order() {
         let oid_a: [u8; 2] = kani::any();
         let oid_b: [u8; 2] = kani::any();
@@ -1063,10 +1161,7 @@ mod proofs {
         let na_year: u16 = kani::any();
         let nb_has_frac: bool = kani::any();
         let na_has_frac: bool = kani::any();
-        let ext_kind: u8 = kani::any();
-        let issuer_kind: u8 = kani::any();
-        let subject_kind: u8 = kani::any();
-        kani::assume(ext_kind <= 2 && issuer_kind <= 3 && subject_kind <= 3);
+        let ext_back: [u8; 2] = kani::any();
         let issuer_back: [u8; 2] = kani::any();
         let subject_back: [u8; 2] = kani::any();
         let a = symbolic_alg(&oid_a, &[0], false);
@@ -1074,28 +1169,9 @@ mod proofs {
         let frac: [u8; 1] = [0];
         let nb = symbolic_time(nb_gen, nb_year, 24, &frac, nb_has_frac);
         let na = symbolic_time(na_gen, na_year, 24, &frac, na_has_frac);
-        const EXT: &[u8] = &[0x30, 0x00];
-        let ext: &[u8] = if ext_kind == 0 {
-            EXT
-        } else if ext_kind == 1 {
-            &EXT_TWO_DISTINCT
-        } else {
-            &EXT_TWO_SAME
-        };
-        let issuer = pick_span(
-            issuer_kind,
-            window(&issuer_back),
-            &NAME_ONE_RDN_TWO_TYPES,
-            &NAME_ONE_RDN_SAME_TYPE,
-            &NAME_TWO_RDNS_SAME_TYPE,
-        );
-        let subject = pick_span(
-            subject_kind,
-            window(&subject_back),
-            &NAME_ONE_RDN_TWO_TYPES,
-            &NAME_ONE_RDN_SAME_TYPE,
-            &NAME_TWO_RDNS_SAME_TYPE,
-        );
+        let ext = window(&ext_back);
+        let issuer = window(&issuer_back);
+        let subject = window(&subject_back);
         let cert = symbolic_cert_names(
             a,
             b,
@@ -1113,12 +1189,11 @@ mod proofs {
         let bad4 = na_gen && na_year <= 2049;
         let bad5 = nb_gen && nb_has_frac;
         let bad6 = na_gen && na_has_frac;
-        // Rules 5 to 7, from the bytes of the span the harness chose (a 0..=2-octet window cannot hold
-        // two elements, so only the specimens can repeat an id or an attribute type).
-        let bad7 = has_ext && ext_kind == 2;
-        let bad8 = issuer_kind == 0 && issuer.len() == 2 && issuer[0] == 0x30 && issuer[1] == 0x00;
-        let bad9 = issuer_kind == 2;
-        let bad10 = subject_kind == 2;
+        // Rules 5 to 7: the outcome each steered stub returns for the span it is given.
+        let bad7 = has_ext && steer(ext, 1);
+        let bad8 = steer(issuer, 1);
+        let bad9 = steer(issuer, 2);
+        let bad10 = steer(subject, 2);
         let expected = if bad1 {
             Err(ProfileError::SignatureAlgorithmMismatch)
         } else if bad2 {
@@ -1144,7 +1219,7 @@ mod proofs {
         };
         assert!(r == expected);
         kani::cover(
-            bad1 && bad2 && bad3 && bad4 && bad5 && bad6 && bad7 && bad8 && bad10,
+            bad1 && bad2 && bad3 && bad4 && bad5 && bad6 && bad7 && bad8 && bad9 && bad10,
             "all violations at once -- rule 1 still wins",
         );
         kani::cover(!bad1 && bad2 && bad3, "rule 2 wins over rule 3");
@@ -1156,19 +1231,22 @@ mod proofs {
             "P-12 wins over P-13 and P-14 (the fraction rules are satisfied)",
         );
         kani::cover(
-            r == Err(ProfileError::DuplicateExtension) && bad6 == false && bad5 == false,
+            r == Err(ProfileError::DuplicateExtension) && !bad5 && !bad6 && !bad8 && !bad9 && !bad10,
             "the duplicate-extension error is reachable alone",
         );
-        kani::cover(!bad7 && bad8 && bad10, "P-13 wins over P-14");
-        kani::cover(r == Err(ProfileError::EmptyIssuer), "the empty-issuer error is reachable");
-        kani::cover(!bad7 && bad9 && bad10, "the issuer's repeated type wins over the subject's");
+        kani::cover(!bad7 && bad8 && bad9 && bad10, "P-13 wins over both P-14 outcomes");
         kani::cover(
-            r == Err(ProfileError::SubjectDuplicateAttributeType),
+            r == Err(ProfileError::EmptyIssuer) && !bad9 && !bad10,
+            "the empty-issuer error is reachable alone",
+        );
+        kani::cover(!bad7 && !bad8 && bad9 && bad10, "the issuer's repeated type wins over the subject's");
+        kani::cover(
+            r == Err(ProfileError::SubjectDuplicateAttributeType) && !bad7 && !bad8 && !bad9,
             "the subject's repeated-type error is reachable alone",
         );
         kani::cover(
-            r.is_ok() && has_ext && ext_kind == 1 && issuer_kind == 3 && subject_kind == 3,
-            "distinct extension ids and the same attribute type in different RDNs are accepted",
+            !has_ext && steer(ext, 1) && r.is_ok(),
+            "rule 5 does not run when extensions are absent, whatever the extensions span would say",
         );
         kani::cover(r.is_ok(), "a fully conforming certificate is accepted");
     }
@@ -1176,10 +1254,16 @@ mod proofs {
     // ---- P7: totality ----
 
     /// `validate_profile` is total on symbolic profile-relevant fields: no panic, no arithmetic
-    /// overflow, for any combination of the fields the seven rules inspect. The `extensions`,
-    /// `issuer` and `subject` spans are arbitrary symbolic windows of `0..=6` octets (not only
-    /// well-formed DER), so the walks of rules 5 to 7 are exercised on every shape of short, truncated
-    /// or mis-tagged input up to that bound.
+    /// overflow, for any combination of the fields the seven rules inspect and for ANY outcome of the
+    /// three rule 5 to 7 helpers. The helpers are stubbed by `stub_any_outcome` (a nondeterministic
+    /// `bool`); their own totality on every span of 0 to 6 octets, the bound this harness used before
+    /// the helpers were stubbed, is proven by `extensions_repeat_an_id_decides_on_the_envelope` (the
+    /// envelope; its inner call is stubbed) together with `has_repeated_leading_oid_is_total` (the inner
+    /// call on any content of 0 to 6 octets, which covers the at most 4 octets of content such a span
+    /// holds), by `name_is_empty_iff_exactly_30_00`, and by `name_has_repeated_attribute_type_is_total`.
+    /// Each of those is a never-panics proof with an exact functional assertion. `validate_profile`
+    /// passes the helpers nothing but the three spans, and the stubs return a `bool`, the only thing the
+    /// glue uses. The spans this harness passes are empty (the glue does not read them).
     ///
     /// **Every harness in this module carries an explicit `#[kani::unwind]`, and that is load-bearing
     /// rather than stylistic.** Rule 1 compares two `AlgorithmIdentifier`s, whose `parameters` field
@@ -1187,11 +1271,14 @@ mod proofs {
     /// sends CBMC into `memcmp` unwinding that does not converge — observed at ~18,000 iterations
     /// before the run was OOM-killed inside its 14 GB cgroup. A finite bound makes it converge, and
     /// CBMC's own unwinding assertion (checked, not assumed) confirms the bound suffices, so the bound
-    /// costs no generality. The bound is 8 since rules 5 to 7 added element walks over the 6-octet
-    /// windows (the bound was 4 before; it is not yet measured at 8). Read an OOM on one of these as
-    /// a missing bound before reading it as an intractable harness.
+    /// costs no generality. The bound is 4 (the value before rules 5 to 7 existed; the 2-octet OIDs
+    /// are the widest loop). Read an OOM on one of these as a missing bound, or as a rule 5 to 7
+    /// helper left unstubbed, before reading it as an intractable harness.
     #[kani::proof]
-    #[kani::unwind(8)]
+    #[kani::stub(extensions_repeat_an_id, stub_any_outcome)]
+    #[kani::stub(name_is_empty, stub_any_outcome)]
+    #[kani::stub(name_has_repeated_attribute_type, stub_any_outcome)]
+    #[kani::unwind(4)]
     fn validate_profile_never_panics() {
         let oid_a: [u8; 2] = kani::any();
         let oid_b: [u8; 2] = kani::any();
@@ -1207,13 +1294,7 @@ mod proofs {
         let y2: u8 = kani::any();
         let frac: [u8; 1] = kani::any();
         let has_frac: bool = kani::any();
-        let ext_back: [u8; 6] = kani::any();
-        let issuer_back: [u8; 6] = kani::any();
-        let subject_back: [u8; 6] = kani::any();
-        let ext_len: usize = kani::any();
-        let issuer_len: usize = kani::any();
-        let subject_len: usize = kani::any();
-        kani::assume(ext_len <= 6 && issuer_len <= 6 && subject_len <= 6);
+        const NO_SPAN: &[u8] = &[];
         let a = symbolic_alg(&oid_a, &par, has_a);
         let b = symbolic_alg(&oid_b, &par, has_b);
         let nb = symbolic_time(nb_gen, nb_year, y2, &frac, has_frac);
@@ -1222,10 +1303,10 @@ mod proofs {
             a,
             b,
             version,
-            if has_ext { Some(&ext_back[..ext_len]) } else { None },
+            if has_ext { Some(NO_SPAN) } else { None },
             Validity { not_before: nb, not_after: na },
-            &issuer_back[..issuer_len],
-            &subject_back[..subject_len],
+            NO_SPAN,
+            NO_SPAN,
         );
         let r = validate_profile(&cert);
         // A totality harness has no functional `assert!` by construction, so without these it would
@@ -1236,8 +1317,472 @@ mod proofs {
         kani::cover(r.is_err(), "a violating certificate is rejected at the fully-symbolic bound");
         kani::cover(
             r == Err(ProfileError::EmptyIssuer),
-            "rule 6 fires on a symbolic issuer window (the empty Name is reachable)",
+            "rule 6 fires on a stubbed helper outcome (the empty-issuer error is reachable)",
         );
+        kani::cover(
+            r == Err(ProfileError::SubjectDuplicateAttributeType),
+            "rule 7 fires on the subject for a stubbed helper outcome (the last rule is reachable)",
+        );
+    }
+
+    // ---- P8: the rule 5 to 7 helpers, one small proof each (the modular half) ----
+    //
+    // The `validate_profile` harnesses above replace these helpers by stubs. These harnesses prove the
+    // helpers themselves, each on a symbolic and explicitly bounded input, with an exact assertion
+    // against a reference written here (never the helper's own code), and a `kani::cover` for both
+    // outcomes. Three input shapes are used, all bounded:
+    //
+    // * RAW windows: a symbolic backing of 6 octets and a symbolic length `0..=6`, no restriction on the
+    //   octets. The helpers are total on these (Kani's implicit panic, overflow and bounds checks), and
+    //   the exact result is `false` for the walks (a repeat needs at least 8 content octets: two
+    //   `30 02 06 00` elements, with an envelope 10 for `extensions` and 12 for a `Name`).
+    // * The FRAMED shape: elements of a fixed 8 octets (identifier octet, length octet `06`, six content
+    //   octets), so the offsets are concrete and the identifier octet and all six content octets are
+    //   symbolic. The first child of the content is read as a TLV; the whole 6-octet content holds an
+    //   OID child of at most 4 content octets. A symbolic total length cuts the buffer inside an element.
+    // * The Name shape of `name_has_repeated_attribute_type_decides_on_the_walk`.
+    //
+    // Unwind 7 where the input is a raw or partly symbolic span: `decode_tag`'s high-tag-number loop
+    // reads up to 6 octets of a 6-octet span (6 executions, one more for the exit check), the widest
+    // loop on these paths (`decode_length`'s loop runs at most 4 times, the element walks at most 3).
+    // The unwinding assertion is checked by CBMC, so a too-low bound fails loud.
+
+    /// Octets of one element of the framed shape: identifier octet, length octet `06`, six content octets.
+    const ELEM: usize = 8;
+
+    /// `true` iff the two optional OID content slices are both absent, or both present and equal octet
+    /// by octet (`raw_bytes_differ`, not slice equality).
+    fn same_oid(x: Option<&[u8]>, y: Option<&[u8]>) -> bool {
+        match (x, y) {
+            (Some(p), Some(q)) => !raw_bytes_differ(p, q),
+            (None, None) => true,
+            _ => false,
+        }
+    }
+
+    /// Reference for the OID child of a six-octet element content: the content is a TLV `06 k <k octets>`
+    /// iff its first octet is `06` and `k <= 4` (a longer `k`, or any long-form length, cannot fit in six
+    /// octets, so the TLV is truncated). Written from the DER layout, not from `decode_tlv`.
+    fn child_oid(content: &[u8; 6]) -> Option<&[u8]> {
+        if content[0] == 0x06 && content[1] <= 4 {
+            Some(&content[2..2 + content[1] as usize])
+        } else {
+            None
+        }
+    }
+
+    /// Reference for `leading_oid` on the framed shape: the element must be tagged `30` (UNIVERSAL 16,
+    /// constructed) and have an OID child.
+    fn ref_leading<'a>(tag: u8, content: &'a [u8; 6]) -> Option<&'a [u8]> {
+        if tag == 0x30 {
+            child_oid(content)
+        } else {
+            None
+        }
+    }
+
+    /// How many leading elements of the framed shape a walk over `len` octets visits: an element is
+    /// visited iff it lies wholly inside `len` and every element before it was visited and its
+    /// identifier octet is a single-octet form. An identifier octet whose low five bits are `1f` starts
+    /// the high-tag-number form, which reads the following length octet `06` as its tag number
+    /// (6 <= 30, non-minimal) and is rejected, so the walk stops there; a cut element is truncated
+    /// and the walk stops there.
+    fn visited(tags: &[u8; 3], len: usize) -> usize {
+        let mut n = 0;
+        while n < 3 && (n + 1) * ELEM <= len && tags[n] & 0x1f != 0x1f {
+            n += 1;
+        }
+        n
+    }
+
+    /// Reference for `has_repeated_leading_oid` on the framed shape: two visited elements have the same
+    /// leading OID content octets.
+    fn ref_has_repeat(tags: &[u8; 3], content: &[[u8; 6]; 3], visited: usize) -> bool {
+        let mut i = 0;
+        while i < visited {
+            if let Some(id) = ref_leading(tags[i], &content[i]) {
+                let mut j = i + 1;
+                while j < visited {
+                    if same_oid(ref_leading(tags[j], &content[j]), Some(id)) {
+                        return true;
+                    }
+                    j += 1;
+                }
+            }
+            i += 1;
+        }
+        false
+    }
+
+    /// Write one element of the framed shape at `buf[at..at + ELEM]`.
+    fn put_elem(buf: &mut [u8], at: usize, tag: u8, content: &[u8; 6]) {
+        buf[at] = tag;
+        buf[at + 1] = 6;
+        buf[at + 2..at + ELEM].copy_from_slice(content);
+    }
+
+    /// `leading_oid` is exact: for every element whose class, constructed flag and tag number are
+    /// symbolic (all four classes, both flags, every `u32` number) and whose value is a symbolic window
+    /// of `0..=6` octets, it returns `Some(content octets)` iff the element is UNIVERSAL 16 constructed
+    /// and its value starts with a TLV `06 k <k octets>` that lies wholly inside the value, and `None`
+    /// otherwise. The reference reads the raw octets (`06`, a length octet that fits, then the content),
+    /// not `decode_tlv`. No octet is assumed anything; a long-form length (`>= 0x80`) cannot fit in six
+    /// octets and the reference gives `None` for it, matching the decoder's truncation. The proof is
+    /// also a totality proof for `leading_oid` on every such value.
+    ///
+    /// Bounds: value window `0..=6` octets; the element is not nested deeper than its first child.
+    #[kani::proof]
+    #[kani::unwind(7)]
+    fn leading_oid_is_exact() {
+        let back: [u8; 6] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 6);
+        let class_sel: u8 = kani::any();
+        kani::assume(class_sel <= 3);
+        let class = if class_sel == 0 {
+            Class::Universal
+        } else if class_sel == 1 {
+            Class::Application
+        } else if class_sel == 2 {
+            Class::ContextSpecific
+        } else {
+            Class::Private
+        };
+        let constructed: bool = kani::any();
+        let number: u32 = kani::any();
+        let element = Tlv { tag: Tag { class, constructed, number }, value: &back[..len] };
+        let got = leading_oid(&element);
+        let frames = class_sel == 0 && number == 16 && constructed;
+        let oid_child = len >= 2 && back[0] == 0x06 && (back[1] as usize) + 2 <= len;
+        let expected: Option<&[u8]> = if frames && oid_child { Some(&back[2..2 + back[1] as usize]) } else { None };
+        assert!(same_oid(got, expected));
+        kani::cover(matches!(got, Some(o) if o.is_empty()), "an empty OID content octet string is still an id");
+        kani::cover(matches!(got, Some(o) if o.len() == 4), "the widest id (4 content octets) is returned");
+        kani::cover(!frames && oid_child, "a well-framed OID child inside an element of another tag gives None");
+        kani::cover(frames && len >= 2 && back[0] == 0x06 && (back[1] as usize) + 2 > len, "a truncated OID child gives None");
+        kani::cover(frames && len >= 2 && back[0] != 0x06, "a first child that is not an OID gives None");
+    }
+
+    /// `has_repeated_leading_oid` is exact on the framed shape: up to three elements of 8 octets each
+    /// (identifier octet symbolic, length octet `06`, six symbolic content octets), cut at a symbolic
+    /// total length `0..=24`. It returns `true` iff two VISITED elements (`visited`) both have an id
+    /// (UNIVERSAL 16 constructed, first child an OID of `k <= 4` content octets) and the ids are equal
+    /// octet by octet (`ref_has_repeat`, using `raw_bytes_differ`). Pairs are compared whether
+    /// adjacent or not; a repeat behind a cut or rejected element is not seen; an element with another
+    /// tag, or whose first child is not an OID, takes no part; ids of different length are different.
+    /// No restriction on any octet: an identifier octet with low bits `1f` is modelled (the walk
+    /// stops), and the content octets are unconstrained, so truncated and non-OID first children are
+    /// included.
+    ///
+    /// Bounds: at most 3 elements of the fixed 8-octet stride (so at most 3 pairs); ids of at most 4
+    /// octets. Longer lists and longer ids are covered by the unit tests only; the pair loop is the same
+    /// at any length. Unwind 7: see the P8 block comment.
+    #[kani::proof]
+    #[kani::unwind(7)]
+    fn has_repeated_leading_oid_is_exact_on_three_elements() {
+        let tags: [u8; 3] = kani::any();
+        let content: [[u8; 6]; 3] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 3 * ELEM);
+        let mut buf = [0u8; 3 * ELEM];
+        put_elem(&mut buf, 0, tags[0], &content[0]);
+        put_elem(&mut buf, ELEM, tags[1], &content[1]);
+        put_elem(&mut buf, 2 * ELEM, tags[2], &content[2]);
+        let r = has_repeated_leading_oid(&buf[..len]);
+        let seen = visited(&tags, len);
+        assert!(r == ref_has_repeat(&tags, &content, seen));
+        let l0 = ref_leading(tags[0], &content[0]);
+        let l1 = ref_leading(tags[1], &content[1]);
+        let l2 = ref_leading(tags[2], &content[2]);
+        kani::cover(r && seen == 2, "a repeat between two framed elements is found");
+        kani::cover(
+            r && seen == 3 && l0.is_some() && same_oid(l0, l2) && !same_oid(l0, l1) && !same_oid(l1, l2),
+            "a non-adjacent repeat (elements 0 and 2, a different element between) is found",
+        );
+        kani::cover(
+            !r && seen == 3 && l0.is_some() && l1.is_some() && l2.is_some(),
+            "three framed elements with three different ids: no repeat",
+        );
+        kani::cover(
+            !r && seen == 2 && l0.is_some() && same_oid(l0, l2),
+            "an id repeated by an element the walk never reaches (cut or rejected) is not a repeat",
+        );
+        kani::cover(
+            r && seen >= 2 && matches!(l0, Some(o) if o.len() == 2) && same_oid(l0, l1),
+            "two-octet ids are compared octet by octet",
+        );
+        kani::cover(
+            !r && seen >= 2
+                && matches!((l0, l1), (Some(p), Some(q)) if p.len() == 2 && q.len() == 2 && p[0] == q[0] && p[1] != q[1]),
+            "ids that differ in the last octet only are not a repeat",
+        );
+        kani::cover(
+            !r && seen >= 2 && l0.is_some() && tags[1] != 0x30 && same_oid(child_oid(&content[1]), l0),
+            "the same id bytes inside an element of another tag take no part",
+        );
+        kani::cover(
+            !r && seen >= 2 && matches!((l0, l1), (Some(p), Some(q)) if p.len() != q.len() && p.len() > 0 && q.len() > 0 && p[0] == q[0]),
+            "an id that is a strict prefix of another is not a repeat",
+        );
+    }
+
+    /// `has_repeated_leading_oid` is total and `false` on every short content: for any octets and any
+    /// length `0..=6` it neither panics nor overflows, and returns `false` (two elements that both
+    /// have an id need at least 8 octets: two `30 02 06 00`). RAW window shape, no octet restricted.
+    ///
+    /// Bounds: content window `0..=6` octets. This is the totality half of the proof; the exact
+    /// half for longer content is `has_repeated_leading_oid_is_exact_on_three_elements`.
+    #[kani::proof]
+    #[kani::unwind(7)]
+    fn has_repeated_leading_oid_is_total() {
+        let back: [u8; 6] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 6);
+        let r = has_repeated_leading_oid(&back[..len]);
+        assert!(!r);
+        kani::cover(
+            matches!(decode_tlv(&back[..len]), Ok((_, used)) if used < len),
+            "the walk gets past its first element (a second element or a leftover is examined)",
+        );
+        kani::cover(
+            matches!(decode_tlv(&back[..len]), Ok((t, _)) if leading_oid(&t).is_some()),
+            "a first element with an id is reached, so the comparison with later elements runs",
+        );
+    }
+
+    /// `extensions_repeat_an_id` decides on the envelope: with `has_repeated_leading_oid` stubbed by
+    /// `stub_steered_by_bit0` (the stub reads its outcome from the first octet of the content it is
+    /// given), the result is `true` iff the span is exactly one UNIVERSAL 16 constructed TLV `30 n <n
+    /// octets>` (the reference: first octet `30`, length octet equal to the remaining octet count, no
+    /// trailing octet) AND the content it passed on makes the stub answer `true`. So the helper strips
+    /// exactly the envelope, passes exactly the content octets, and answers `false` for a span that does
+    /// not frame (trailing octets, a length that does not match, a long-form or indefinite length, a
+    /// wrong or high-tag-number identifier). RAW window shape, no octet restricted, `0..=6` octets
+    /// (so the length octet is always short form when the span frames).
+    ///
+    /// The stub is sound here because it is a total function of the content, the only thing the helper
+    /// does with the inner result is return it, and the real inner helper is proven by
+    /// `has_repeated_leading_oid_is_exact_on_three_elements` and `has_repeated_leading_oid_is_total`.
+    ///
+    /// Bounds: span window `0..=6` octets. Unwind 7: see the P8 block comment.
+    #[kani::proof]
+    #[kani::stub(has_repeated_leading_oid, stub_steered_by_bit0)]
+    #[kani::unwind(7)]
+    fn extensions_repeat_an_id_decides_on_the_envelope() {
+        let back: [u8; 6] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 6);
+        let r = extensions_repeat_an_id(&back[..len]);
+        let framed = len >= 2 && back[0] == 0x30 && back[1] as usize == len - 2;
+        let expected = framed && steer(&back[2..len], 1);
+        assert!(r == expected);
+        kani::cover(r, "an Extensions envelope whose content the inner helper flags is reported");
+        kani::cover(framed && !r && len > 2, "a framed envelope whose content the inner helper does not flag is not reported");
+        kani::cover(
+            !framed && len >= 3 && back[0] == 0x30 && steer(&back[2..len], 1),
+            "a span that does not frame is not reported even when its octets would be flagged",
+        );
+    }
+
+    /// `name_is_empty` is exact: for any octets and any length `0..=6` it returns `true` iff the span
+    /// is exactly `30 00`, the empty `RDNSequence` (a longer `Name`, trailing octets, a truncated or
+    /// wrong-tag span, `30 80`, `30 81 00` and every other span give `false`). RAW window shape; also
+    /// the totality proof for this helper at that bound.
+    ///
+    /// Bounds: span window `0..=6` octets. Unwind 7: see the P8 block comment.
+    #[kani::proof]
+    #[kani::unwind(7)]
+    fn name_is_empty_iff_exactly_30_00() {
+        let back: [u8; 6] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 6);
+        let r = name_is_empty(&back[..len]);
+        assert!(r == (len == 2 && back[0] == 0x30 && back[1] == 0x00));
+        kani::cover(r, "the empty Name 30 00 is empty");
+        kani::cover(!r && len == 2 && back[0] == 0x30 && back[1] != 0x00, "30 followed by a non-zero length is not the empty Name");
+        kani::cover(!r && len == 3 && back[0] == 0x30 && back[1] == 0x00, "30 00 plus a trailing octet is not the empty Name");
+        kani::cover(!r && len == 0, "the empty span is not the empty Name");
+    }
+
+    /// `name_has_repeated_attribute_type` decides on the walk: with `has_repeated_leading_oid` stubbed by
+    /// `stub_steered_by_bit0`, over a `Name` of the shape `30 L | 31-or-other 02 f x | [r2 02 f2 x2] |
+    /// [stray]` with every identifier octet, flag octet and filler octet symbolic, one or two RDNs
+    /// (`two`), and an optional stray trailing octet (`extra`): the result is `true` iff the envelope
+    /// is `30` and has no trailing octet, the first RDN is tagged `31` (UNIVERSAL 17 constructed) and
+    /// either its content makes the stub answer `true`, or the second RDN exists, is tagged `31`
+    /// and its content makes the stub answer `true`. So the walk visits the RDNs in order, hands each
+    /// RDN's content octets (not the RDN TLV) to the id comparison, stops at the first RDN that is not
+    /// a SET (a repeat in a later RDN is then not reported), and answers `false` for an envelope that
+    /// is not exactly one SEQUENCE. A repeat is decided inside one RDN, never across two (each
+    /// stub call sees one RDN's content).
+    ///
+    /// Bounds: at most 2 RDNs, each with a 2-octet content; the envelope length octet is 4 or 8 (short
+    /// form). A third RDN, longer contents and a long-form envelope length are not enumerated. The
+    /// inner id comparison is `has_repeated_leading_oid_is_exact_on_three_elements`. Unwind 4: the RDN
+    /// walk runs at most 2 times (3 loop-condition evaluations); every length octet here is a short form
+    /// constant, so `decode_length`'s loop and `decode_tag`'s high-tag loop (which stops at its first
+    /// octet, the length octet) are not reached for more than one iteration. One unit of margin over the
+    /// count is kept because this bound is derived by reading, not measured.
+    #[kani::proof]
+    #[kani::stub(has_repeated_leading_oid, stub_steered_by_bit0)]
+    #[kani::unwind(4)]
+    fn name_has_repeated_attribute_type_decides_on_the_walk() {
+        let nt: u8 = kani::any();
+        let r1t: u8 = kani::any();
+        let f1: u8 = kani::any();
+        let x1: u8 = kani::any();
+        let r2t: u8 = kani::any();
+        let f2: u8 = kani::any();
+        let x2: u8 = kani::any();
+        let two: bool = kani::any();
+        let extra: bool = kani::any();
+        let mut buf = [0u8; 11];
+        buf[0] = nt;
+        buf[1] = if two { 8 } else { 4 };
+        buf[2] = r1t;
+        buf[3] = 2;
+        buf[4] = f1;
+        buf[5] = x1;
+        buf[6] = r2t;
+        buf[7] = 2;
+        buf[8] = f2;
+        buf[9] = x2;
+        let total = if two { 10 } else { 6 };
+        buf[total] = 0x00; // the stray octet, used only when `extra`
+        let len = if extra { total + 1 } else { total };
+        let r = name_has_repeated_attribute_type(&buf[..len]);
+        let framed = nt == 0x30 && !extra;
+        let first = r1t == 0x31 && f1 & 1 != 0;
+        let second = two && r2t == 0x31 && f2 & 1 != 0;
+        let expected = framed && r1t == 0x31 && (first || second);
+        assert!(r == expected);
+        kani::cover(r && first, "a repeat in the first RDN is reported");
+        kani::cover(r && !first && second, "a repeat in the second RDN is reported when the first is clean");
+        kani::cover(
+            !r && framed && r1t != 0x31 && two && r2t == 0x31 && f2 & 1 != 0,
+            "the walk stops at a first RDN that is not a SET: a repeat in the second RDN is not reported",
+        );
+        kani::cover(!r && !framed && f1 & 1 != 0 && r1t == 0x31, "an envelope that is not exactly one SEQUENCE is not reported");
+        kani::cover(!r && framed && r1t == 0x31 && f1 & 1 == 0 && two && f2 & 1 == 0, "two clean RDNs are not reported");
+    }
+
+    /// `name_has_repeated_attribute_type` is total and `false` on every short span: for any octets and
+    /// any length `0..=6` it neither panics nor overflows, and returns `false` (a repeat needs the
+    /// envelope, an RDN and two elements: at least 12 octets). RAW window shape, no octet restricted,
+    /// the real inner comparison (no stub).
+    ///
+    /// Bounds: span window `0..=6` octets. Unwind 7: see the P8 block comment.
+    #[kani::proof]
+    #[kani::unwind(7)]
+    fn name_has_repeated_attribute_type_is_total() {
+        let back: [u8; 6] = kani::any();
+        let len: usize = kani::any();
+        kani::assume(len <= 6);
+        let r = name_has_repeated_attribute_type(&back[..len]);
+        assert!(!r);
+        kani::cover(
+            matches!(decode_sequence_tlv_strict(&back[..len]), Ok(c) if c.len() >= 2),
+            "a Name envelope with content is framed, so the RDN walk runs",
+        );
+        kani::cover(
+            matches!(decode_sequence_tlv_strict(&back[..len]), Ok(c) if matches!(decode_tlv(c), Ok((t, _)) if t.tag.number == SET_TAG)),
+            "a first RDN that is a SET is reached, so its element comparison runs",
+        );
+    }
+
+    /// Discharges the obligation of `stub_rule_never_fires`: on the inputs the rule 1 to 4 harnesses
+    /// build (`symbolic_cert`: no `extensions` or the empty `Extensions` list `30 00`, and the empty
+    /// `issuer` and `subject`), the three real helpers return `false`. Concrete inputs, so the proof is
+    /// an evaluation, not a quantified statement; it needs no more than that, because the stub
+    /// harnesses never use any other input.
+    ///
+    /// Bounds: the three concrete inputs named above. Unwind 4: no loop runs more than once.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn rules_5_to_7_helpers_return_false_on_the_isolation_inputs() {
+        const EMPTY_LIST: &[u8] = &[0x30, 0x00];
+        const NO_SPAN: &[u8] = &[];
+        assert!(!extensions_repeat_an_id(EMPTY_LIST));
+        assert!(!extensions_repeat_an_id(NO_SPAN));
+        assert!(!name_is_empty(NO_SPAN));
+        assert!(!name_has_repeated_attribute_type(NO_SPAN));
+        kani::cover(
+            matches!(decode_sequence_tlv_strict(EMPTY_LIST), Ok(c) if c.is_empty()),
+            "the empty Extensions list frames as an empty SEQUENCE, so rule 5 walks zero elements",
+        );
+        kani::cover(decode_sequence_tlv_strict(NO_SPAN).is_err(), "the empty span does not frame, so rules 6 and 7 stop at the envelope");
+    }
+
+    /// Glue plus the REAL helpers on concrete DER: with equal algorithm identifiers, version v3 and a
+    /// UTCTime pair (rules 1 to 4 satisfied), `validate_profile` equals an exact reference over a symbolic
+    /// choice of `extensions` (absent, the empty list, two different ids, two equal ids), `issuer` and
+    /// `subject` (`30 00`, one RDN with two types, one RDN with the same type twice, two RDNs each with
+    /// the same type). Nothing is stubbed. This is the link between the stubbed `validate_profile`
+    /// harnesses and the helper harnesses: it shows the composition on real DER, as the monolithic
+    /// harness did before the helpers were stubbed.
+    ///
+    /// Bounds: the specimen lists `EXT_TWO_DISTINCT`, `EXT_TWO_SAME` and `NAME_*` (at most 2 elements,
+    /// at most 20 octets, one-octet ids), the `30 00` list and the `30 00` name; rules 1 to 4 fixed.
+    /// Unwind 4: the walks run at most twice (3 loop-condition evaluations) and the short-form lengths
+    /// of the specimens keep the length and tag loops out of reach; one unit of margin is kept because
+    /// the bound is derived by reading, not measured.
+    #[kani::proof]
+    #[kani::unwind(4)]
+    fn rules_5_to_7_end_to_end_on_specimens() {
+        const EMPTY_LIST: &[u8] = &[0x30, 0x00];
+        const EMPTY_NAME: &[u8] = &[0x30, 0x00];
+        let ext_kind: u8 = kani::any();
+        let issuer_kind: u8 = kani::any();
+        let subject_kind: u8 = kani::any();
+        kani::assume(ext_kind <= 2 && issuer_kind <= 3 && subject_kind <= 3);
+        let has_ext: bool = kani::any();
+        let ext: &[u8] = if ext_kind == 0 {
+            EMPTY_LIST
+        } else if ext_kind == 1 {
+            &EXT_TWO_DISTINCT
+        } else {
+            &EXT_TWO_SAME
+        };
+        let issuer =
+            pick_span(issuer_kind, EMPTY_NAME, &NAME_ONE_RDN_TWO_TYPES, &NAME_ONE_RDN_SAME_TYPE, &NAME_TWO_RDNS_SAME_TYPE);
+        let subject =
+            pick_span(subject_kind, EMPTY_NAME, &NAME_ONE_RDN_TWO_TYPES, &NAME_ONE_RDN_SAME_TYPE, &NAME_TWO_RDNS_SAME_TYPE);
+        let oid = [0x2a_u8, 0x2b];
+        let alg = symbolic_alg(&oid, &[0], false);
+        let t = Time::Utc(UtcTime { year2: 24, month: 1, day: 1, hour: 0, minute: 0, second: 0 });
+        let cert = symbolic_cert_names(
+            alg,
+            alg,
+            2,
+            if has_ext { Some(ext) } else { None },
+            Validity { not_before: t, not_after: t },
+            issuer,
+            subject,
+        );
+        let r = validate_profile(&cert);
+        // The specimen kinds spell the violations: kind 2 repeats an id (extensions) or an attribute type
+        // (names); kind 0 of the issuer is the empty Name.
+        let expected = if has_ext && ext_kind == 2 {
+            Err(ProfileError::DuplicateExtension)
+        } else if issuer_kind == 0 {
+            Err(ProfileError::EmptyIssuer)
+        } else if issuer_kind == 2 {
+            Err(ProfileError::IssuerDuplicateAttributeType)
+        } else if subject_kind == 2 {
+            Err(ProfileError::SubjectDuplicateAttributeType)
+        } else {
+            Ok(())
+        };
+        assert!(r == expected);
+        kani::cover(r == Err(ProfileError::DuplicateExtension) && issuer_kind == 0 && subject_kind == 2, "P-12 wins over P-13 and P-14");
+        kani::cover(r == Err(ProfileError::EmptyIssuer) && subject_kind == 2, "P-13 wins over P-14");
+        kani::cover(r == Err(ProfileError::IssuerDuplicateAttributeType) && subject_kind == 2, "P-14 reports the issuer first");
+        kani::cover(
+            r == Err(ProfileError::SubjectDuplicateAttributeType) && issuer_kind == 3,
+            "P-14 reports the subject; the same type in different RDNs of the issuer is legal",
+        );
+        kani::cover(r.is_ok() && has_ext && ext_kind == 1 && subject_kind == 0, "distinct ids and an empty subject are accepted");
+        kani::cover(r.is_ok() && !has_ext && ext_kind == 2, "absent extensions are accepted whatever the unused list is");
     }
 }
 

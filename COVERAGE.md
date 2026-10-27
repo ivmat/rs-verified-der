@@ -112,7 +112,7 @@ same green check. This table's job is to stop them reading alike.
 | **out-of-scope** | the rule is deliberately outside what this crate sets out to do, and that boundary is declared in the crate's own documents. Not a gap; a fence. |
 
 > **`CONTRACT` here is NOT Kani's `#[kani::requires]`/`#[kani::ensures]` machinery.** This crate uses
-> **zero** function contracts — its 298 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
+> **zero** function contracts — its 307 Kani harnesses are all plain `#[kani::proof]`, and modular proofs are
 > built with `#[kani::stub]` + `-Z stubbing`. `CONTRACT` in this table is the review-lens sense
 > (*proves the documented rule, on the real shipped path, with an independent oracle*), which is the
 > distinction a consumer actually cares about. Verify with
@@ -151,7 +151,7 @@ All commands run from the repository root at `d68eeca` (or at any later commit f
 
 | id | recipe | what green means |
 |---|---|---|
-| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 708 unit and regression tests, all 298 Kani harnesses. **This exact command was not run as one pass at `d68eeca`: the floor there is SPLIT** — a 295-harness pass with the Lean lid (~2h32m at the 20G cap) plus 3 heavy harnesses in separate 24G runs, and there is no single-run 298-harness floor. Needs ≥24 GB RAM; harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
+| **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 + `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==`. Gates, 708 unit and regression tests, all 307 Kani harnesses. **This exact command was not run as one pass at `d68eeca`: the floor there is SPLIT** — a 295-harness pass with the Lean lid (~2h32m at the 20G cap) plus 3 heavy harnesses in separate 24G runs, and there is no single-run 298-harness floor. Needs ≥24 GB RAM; harnesses run sequentially. **Set `DER_REQUIRE_LEAN=1`** — without it, an absent Lean toolchain takes a guarded SKIP path and still exits 0. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Seven modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension`, `rsa_private_key` — see `gates/tiers.txt`. |
 | **R** `<H>` | `awk '/Checking harness <H>/,/^Verification Time/' evidence/check-d68eeca.log` (for the 3 heavy harnesses, use their own `evidence/check-d68eeca-heavy-<module>-<name>.log` instead — they are not in the main log) | The committed run's own `SUMMARY`, **cover tally**, and `VERIFICATION:- SUCCESSFUL` line for that harness. A bare `grep '<H>'` prints only the `Checking harness …` heading and shows you **neither** — the verdict and cover lines come several lines later. Valid only while the freshness command in §1 returns empty. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
@@ -216,7 +216,7 @@ All commands run from the repository root at `d68eeca` (or at any later commit f
 `kani::cover` is unsatisfiable as `SUCCESSFUL`, with `0 of 1 cover properties satisfied`. `check.sh`
 does **not** fail on that. Exactly 3 harnesses have a cover in that state, and they are disclosed
 in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, read it. The crate has
-528 `kani::cover` statements in total.
+567 `kani::cover` statements in total.
 
 ---
 
