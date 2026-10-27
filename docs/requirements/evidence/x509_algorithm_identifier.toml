@@ -16,8 +16,8 @@ file = "der-verified/src/x509_algorithm_identifier.rs"
 name = "parse_faithful"
 accept = []
 reject = []
-prove = ["RFC5280-4.1.1.2-a", "RFC5480-2-a", "RFC8410-3-a", "X690-8.9.2", "X690-8.15"]
-bounded = "input len <= 16; unwind 20"
+prove = ["RFC5280-4.1.1.2-a", "RFC5480-2-a", "RFC8410-3-a", "X690-8.9.2", "X690-8.15", "X690-8.1.5"]
+bounded = "input len <= 16; unwind 20; the end-of-contents exclusion is stated from the literal tag, the form half re-states validate_identifier_form"
 none = ""
 
 [[entry]]
@@ -126,6 +126,56 @@ file = "der-verified/src/x509_algorithm_identifier.rs"
 name = "rejects_wrong_seq_tag"
 accept = []
 reject = ["RFC5280-4.1.1.2-a", "RFC5480-2-a", "RFC8410-3-a"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_algorithm_identifier.rs"
+name = "rejects_end_of_contents_parameters"
+accept = []
+reject = ["X690-8.1.5"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_algorithm_identifier.rs"
+name = "rejects_constructed_primitive_only_parameters"
+accept = []
+reject = ["X690-8.1.2.5", "X690-8.2.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_algorithm_identifier.rs"
+name = "rejects_primitive_constructed_only_parameters"
+accept = []
+reject = ["X690-8.1.2.5", "X690-8.9.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_algorithm_identifier.rs"
+name = "accepts_octet_string_parameters_with_valid_identifier"
+accept = ["RFC5280-4.1.1.2-a", "RFC5480-2-a", "RFC8410-3-a", "X690-8.15", "X690-8.1.2.5"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_algorithm_identifier.rs"
+name = "accepts_empty_integer_and_empty_oid_parameters_contents_stay_opaque"
+accept = ["X690-8.15"]
+reject = []
 prove = []
 bounded = ""
 none = ""

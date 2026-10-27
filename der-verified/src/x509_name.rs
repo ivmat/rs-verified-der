@@ -37,6 +37,13 @@
 //!   length + value) is walked only far enough to confirm it is one well-framed TLV that exactly
 //!   fills the remainder of the ATV's content; this module does not know or care whether it holds a
 //!   `PrintableString`, a `UTF8String`, or any other type.
+//! - *`value`'s identifier is checked, its contents are not.* The value's header must pass
+//!   [`crate::identifier_form::validate_identifier_form`]: the reserved end-of-contents identifier
+//!   (`00 00`, X.690 §8.1.5) and an impossible primitive/constructed form for a UNIVERSAL type
+//!   (e.g. a constructed BOOLEAN `21 00`, X.690 §8.1.2/§10.2) are rejected as
+//!   [`NameError::AtvValueForm`]. Content validation of opaque values is out of scope, so `02 00`
+//!   (an empty INTEGER) and `06 00` (an empty OID) are still **accepted**: only their framing
+//!   is decided.
 //! - *Strict, top to bottom, but level-appropriate.* The outer `RDNSequence` must consume the
 //!   entire input (no trailing bytes after the whole `Name`); each RDN's SET OF content must
 //!   exactly tile into its `AttributeTypeAndValue` children *and* be in §11.6 ascending order
@@ -66,6 +73,7 @@
 //! assert_eq!(validate_name(&name_der), Ok(()));
 //! ```
 
+use crate::identifier_form::{validate_identifier_form, FormError};
 use crate::oid::TAG as OID_TAG;
 use crate::oid::{validate_oid, OidError};
 use crate::sequence::TAG as SEQUENCE_TAG;
@@ -124,6 +132,14 @@ pub enum NameError {
     /// The `AttributeTypeAndValue` SEQUENCE has more than its two permitted fields (`type`,
     /// `value`): bytes remain in its content after the `value` TLV.
     AtvTrailingElements,
+    /// The `AttributeTypeAndValue.value` TLV is one well-framed TLV, but its **identifier** is not a
+    /// legal DER identifier: it is the reserved end-of-contents identifier `00` (X.690 §8.1.5, which
+    /// a definite-length encoding never contains), or a UNIVERSAL type in a primitive/constructed
+    /// form its type cannot have (e.g. a constructed BOOLEAN `21 00`; X.690 §8.1.2, §10.2).
+    /// Wraps [`FormError`] from [`crate::identifier_form::validate_identifier_form`]. Only the
+    /// identifier is judged: the value's *contents* stay opaque (`02 00`, `06 00` are still
+    /// accepted), per the module's scope boundaries.
+    AtvValueForm(FormError),
 }
 
 /// Decode the `AttributeTypeAndValue.type` OID TLV from the front of `input`, returning its
@@ -146,7 +162,8 @@ fn decode_atv_oid_tlv(input: &[u8]) -> Result<(&[u8], usize), NameError> {
 /// `tlv` is one child of an already tag/order-validated RDN SET OF content (yielded by
 /// [`Elements`]): its identifier must be UNIVERSAL 16 (SEQUENCE) constructed, and its content must
 /// tile into exactly two fields — the `type` OID, then one more well-framed TLV (the `value`,
-/// left uninterpreted, as ASN.1 `ANY`).
+/// left uninterpreted, as ASN.1 `ANY`). The `value`'s identifier octets must also be a legal DER
+/// identifier ([`validate_identifier_form`]); its contents are never examined.
 fn validate_atv(tlv: Tlv<'_>) -> Result<(), NameError> {
     if tlv.tag.class != Class::Universal || tlv.tag.number != SEQUENCE_TAG {
         return Err(NameError::AtvWrongTag);
@@ -165,10 +182,14 @@ fn validate_atv(tlv: Tlv<'_>) -> Result<(), NameError> {
 
     // Field 2: `value` (ANY) — one well-framed TLV, left raw/uninterpreted, must exactly fill
     // what remains of the ATV's content (no third field permitted).
-    let (_value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvValueTlv)?;
+    let (value_tlv, value_used) = decode_tlv(rest).map_err(NameError::BadAtvValueTlv)?;
     if value_used != rest.len() {
         return Err(NameError::AtvTrailingElements);
     }
+    // The value's identifier must be a legal DER identifier (X.690 §8.1.5, §8.1.2, §10.2): no
+    // end-of-contents, no impossible primitive/constructed form for a UNIVERSAL type. The check
+    // reads the already-decoded header only -- the contents stay opaque and unchecked.
+    validate_identifier_form(value_tlv.tag).map_err(NameError::AtvValueForm)?;
     Ok(())
 }
 
@@ -334,7 +355,9 @@ mod proofs {
     // zero-length value TLV whose identifier octet `v` is symbolic with the literal low-tag
     // predicate `v & 0x1F != 0x1F`, so it is always well-framed). RDN `R(..) = 31 <len> ATVs`.
     // Outer `30 <len> RDNs`. Identifier perturbation octets (`t_*`) are symbolic with
-    // `t & 0x1F != 0x1F` (low-tag). Attribute values are uninterpreted (module scope).
+    // `t & 0x1F != 0x1F` (low-tag). Attribute value CONTENTS are uninterpreted (module scope); the
+    // value's IDENTIFIER octet must pass the identifier-form rule (`expected_value_form` below), so
+    // every harness whose accepted shape has a symbolic `v` states that rule in its expected result.
     //
     // Every harness: concrete framing, `#[kani::unwind(N)]` stated per harness (CBMC's unwinding
     // assertions are enabled and report SUCCESS in the logs), no stubs, no assumptions beyond the
@@ -352,15 +375,62 @@ mod proofs {
     // about 7.6 GB. `check.sh` has no per-harness solver arguments, so it is not shipped. Ordering
     // correctness itself is the `set_of` claim.
 
+    // The identifier-form rule for an ATV value's identifier (X.690 §8.1.5, §8.1.2, §10.2), stated
+    // independently of `validate_identifier_form` as a membership test over two bitmasks (bit `n` is
+    // set iff UNIVERSAL tag number `n` is primitive-only / constructed-only). These are the same two
+    // masks `identifier_form::proofs` proves equal to `required_form` on every `u32`; they are not
+    // re-derived here. Only contents are opaque: `02 00` and `06 00` pass.
+    const PRIMITIVE_ONLY_MASK: u64 = 0x0000_001F_DFFC_76FE;
+    const CONSTRUCTED_ONLY_MASK: u64 = 0x0000_0000_2003_0900;
+
+    fn expected_form_tag(class: Class, constructed: bool, number: u32) -> Result<(), FormError> {
+        if class != Class::Universal {
+            return Ok(());
+        }
+        if number == 0 {
+            return Err(FormError::ReservedIdentifier);
+        }
+        let in_table = number <= 36;
+        if in_table && (PRIMITIVE_ONLY_MASK >> number) & 1 == 1 && constructed {
+            return Err(FormError::MustBePrimitive);
+        }
+        if in_table && (CONSTRUCTED_ONLY_MASK >> number) & 1 == 1 && !constructed {
+            return Err(FormError::MustBeConstructed);
+        }
+        Ok(())
+    }
+
+    /// The same rule read from a LOW-TAG identifier octet `b` (`b & 0x1F != 0x1F`): class from the
+    /// top two bits, constructed from bit 5, number from the low five bits.
+    fn expected_value_form(b: u8) -> Result<(), FormError> {
+        let class = match b >> 6 {
+            0 => Class::Universal,
+            1 => Class::Application,
+            2 => Class::ContextSpecific,
+            _ => Class::Private,
+        };
+        expected_form_tag(class, b & 0x20 != 0, (b & 0x1F) as u32)
+    }
+
+    /// Expected result of one ATV `30 05 06 01 o v 00`: the OID first, then the value identifier.
+    fn expected_atv(o: u8, v: u8) -> Result<(), NameError> {
+        match validate_oid(&[o]) {
+            Err(e) => Err(NameError::BadAtvOid(e)),
+            Ok(()) => expected_value_form(v).map_err(NameError::AtvValueForm),
+        }
+    }
+
     /// Expected result for the single-ATV skeleton
     /// `[t_outer, 09, t_rdn, 07, t_atv, 05, t_oid, 01, o, v, 00]` for ANY identifier octets with
     /// the documented outer-to-inner precedence: outer SEQUENCE identifier (`0x30` ok / `0x10`
     /// `NotConstructed` / else `WrongTag`), RDN SET identifier (`0x31` / `0x11` / else), ATV
     /// SEQUENCE identifier (`0x30` / `0x10` -> `AtvNotConstructed` / else `AtvWrongTag`), OID
     /// identifier (`0x06` / `0x26` -> `AtvOidConstructed` / else `AtvOidWrongTag`), then the OID
-    /// content via the verified primitive `validate_oid`. Identifier checks are stated from the
-    /// literal octets, not from the implementation's tag-match expressions.
-    fn expected_single(t_outer: u8, t_rdn: u8, t_atv: u8, t_oid: u8, o: u8) -> Result<(), NameError> {
+    /// content via the verified primitive `validate_oid`, then the VALUE identifier octet `v`
+    /// (`expected_value_form`: end-of-contents and impossible primitive/constructed forms are
+    /// rejected as `AtvValueForm`; the value's contents stay opaque). Identifier checks are stated
+    /// from the literal octets, not from the implementation's tag-match expressions.
+    fn expected_single(t_outer: u8, t_rdn: u8, t_atv: u8, t_oid: u8, o: u8, v: u8) -> Result<(), NameError> {
         if t_outer != 0x30 {
             return Err(NameError::BadOuterSeq(if t_outer == 0x10 {
                 SequenceError::NotConstructed
@@ -381,27 +451,27 @@ mod proofs {
         if t_oid != 0x06 {
             return Err(if t_oid == 0x26 { NameError::AtvOidConstructed } else { NameError::AtvOidWrongTag });
         }
-        match validate_oid(&[o]) {
-            Err(e) => Err(NameError::BadAtvOid(e)),
-            Ok(()) => Ok(()),
-        }
+        expected_atv(o, v)
     }
 
     fn single_atv_case(t_outer: u8, t_rdn: u8, t_atv: u8, t_oid: u8, o: u8, v: u8) -> Result<(), NameError> {
         let input: [u8; 11] = [t_outer, 0x09, t_rdn, 0x07, t_atv, 0x05, t_oid, 0x01, o, v, 0x00];
         let r = validate_name(&input);
         assert!(
-            r == expected_single(t_outer, t_rdn, t_atv, t_oid, o),
+            r == expected_single(t_outer, t_rdn, t_atv, t_oid, o, v),
             "validate_name result differs from the total expected result"
         );
         r
     }
 
     /// (base): `30 09 31 07 A(o, v)`, 11 octets, symbolic `o` and `v` (low-tag). Expected:
-    /// `validate_oid(&[o])` `Err(e)` -> `Err(BadAtvOid(e))`, else `Ok(())`.
+    /// `validate_oid(&[o])` `Err(e)` -> `Err(BadAtvOid(e))`, else the value identifier `v` must pass
+    /// the identifier-form rule (`Err(AtvValueForm(e))` otherwise), else `Ok(())`.
     ///
     /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 11]`, `#[kani::unwind(3)]`, no
-    /// stubs. Covers: `Ok`, `BadAtvOid(NonMinimalSubid)`, `BadAtvOid(Truncated)`.
+    /// stubs. Covers: `Ok`, `BadAtvOid(NonMinimalSubid)`, `BadAtvOid(Truncated)`,
+    /// `AtvValueForm(ReservedIdentifier)` (`v = 00`), `AtvValueForm(MustBePrimitive)` (`v = 21`),
+    /// `AtvValueForm(MustBeConstructed)` (`v = 10`).
     #[kani::proof]
     #[kani::unwind(3)]
     fn validate_name_single_atv_exact() {
@@ -412,6 +482,9 @@ mod proofs {
         kani::cover(r == Ok(()), "single ATV: Ok");
         kani::cover(r == Err(NameError::BadAtvOid(OidError::NonMinimalSubid)), "single ATV: BadAtvOid(NonMinimalSubid)");
         kani::cover(r == Err(NameError::BadAtvOid(OidError::Truncated)), "single ATV: BadAtvOid(Truncated)");
+        kani::cover(r == Err(NameError::AtvValueForm(FormError::ReservedIdentifier)), "single ATV: value 00 is end-of-contents");
+        kani::cover(r == Err(NameError::AtvValueForm(FormError::MustBePrimitive)), "single ATV: value is a constructed primitive-only type");
+        kani::cover(r == Err(NameError::AtvValueForm(FormError::MustBeConstructed)), "single ATV: value is a primitive constructed-only type");
     }
 
     /// Outer identifier: `t_outer` symbolic low-tag, `o` symbolic (no assumption: an invalid `o`
@@ -479,7 +552,8 @@ mod proofs {
     }
 
     /// Two RDNs `30 12 R(A(o1, v1)) R(A(o2, v2))`, 20 octets (`R(A) = 31 07 A`).
-    /// Expected: the first `validate_oid` failure in order -> `BadAtvOid(e)`, else `Ok(())`, with NO
+    /// Expected: the first failure in order (each ATV: its `validate_oid`, then its value identifier
+    /// form -> `AtvValueForm(e)`) , else `Ok(())`, with NO
     /// ordering constraint ACROSS RDNs (a "greater" first RDN is fine: SET OF ordering applies
     /// inside one RDN only). Backing `[u8; 20]`, `#[kani::unwind(3)]`, no stubs. Covers:
     /// `Ok`, `Ok` with the first RDN's `(o, v)` greater than the second's (no spurious cross-RDN
@@ -498,17 +572,15 @@ mod proofs {
             0x00,
         ];
         let r = validate_name(&input);
-        let expected = match validate_oid(&[o1]) {
-            Err(e) => Err(NameError::BadAtvOid(e)),
-            Ok(()) => match validate_oid(&[o2]) {
-                Err(e) => Err(NameError::BadAtvOid(e)),
-                Ok(()) => Ok(()),
-            },
+        let expected = match expected_atv(o1, v1) {
+            Err(e) => Err(e),
+            Ok(()) => expected_atv(o2, v2),
         };
         assert!(r == expected, "validate_name result differs from the total expected result");
         kani::cover(r == Ok(()), "two RDNs: Ok");
         kani::cover(r == Ok(()) && (o1 > o2 || (o1 == o2 && v1 > v2)), "two RDNs: Ok with the first RDN greater (no cross-RDN ordering)");
         kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "two RDNs: BadAtvOid");
+        kani::cover(matches!(r, Err(NameError::AtvValueForm(_))), "two RDNs: AtvValueForm");
     }
 
     /// `30 02 31 00` -> `Err(EmptyRdn)`. Backing `[u8; 4]`, `#[kani::unwind(3)]`, concrete.
@@ -578,7 +650,8 @@ mod proofs {
     /// and `A2 = 30 06 06 01 o2 v2 01 x`. The encodings differ in length (`05 < 06` at the second
     /// octet), so the SET OF ordering compare decides at that octet. Symbolic `o1`, `o2`, `x`, and
     /// low-tag `v1`, `v2`. Expected: the first `validate_oid` failure in ATV order ->
-    /// `BadAtvOid(e)`, else `Ok(())` -- the second ATV is validated too. CONTRACT SURFACE /
+    /// `BadAtvOid(e)`, else a bad value identifier -> `AtvValueForm(e)` (per ATV, OID first), else
+    /// `Ok(())` -- the second ATV is validated too. CONTRACT SURFACE /
     /// bounded-backing evidence. Backing `[u8; 19]`, `#[kani::unwind(3)]`, no stubs. Covers: `Ok`,
     /// `BadAtvOid` from the first ATV, `BadAtvOid` from the second ATV only.
     #[kani::proof]
@@ -595,17 +668,15 @@ mod proofs {
             0x30, 0x11, 0x31, 0x0F, 0x30, 0x05, 0x06, 0x01, o1, v1, 0x00, 0x30, 0x06, 0x06, 0x01, o2, v2, 0x01, x,
         ];
         let r = validate_name(&input);
-        let expected = match validate_oid(&[o1]) {
-            Err(e) => Err(NameError::BadAtvOid(e)),
-            Ok(()) => match validate_oid(&[o2]) {
-                Err(e) => Err(NameError::BadAtvOid(e)),
-                Ok(()) => Ok(()),
-            },
+        let expected = match expected_atv(o1, v1) {
+            Err(e) => Err(e),
+            Ok(()) => expected_atv(o2, v2),
         };
         assert!(r == expected, "validate_name result differs from the total expected result");
         kani::cover(r == Ok(()), "two ATVs: Ok");
         kani::cover(matches!(r, Err(NameError::BadAtvOid(_))) && validate_oid(&[o1]).is_err(), "two ATVs: first ATV's OID fails");
         kani::cover(matches!(r, Err(NameError::BadAtvOid(_))) && validate_oid(&[o1]).is_ok(), "two ATVs: only the second ATV's OID fails");
+        kani::cover(matches!(r, Err(NameError::AtvValueForm(_))), "two ATVs: a value identifier is rejected");
     }
 
     /// The same two ATVs in descending order: `30 11 31 0F A2 A1`. The SET OF ordering check
@@ -631,7 +702,8 @@ mod proofs {
 
     /// ATV value framing: `30 09 31 07 30 05 06 01 o v l` (11 octets) with `o`, `l` symbolic and
     /// `v` low-tag. Expected: `validate_oid(&[o])` `Err(e)` -> `BadAtvOid(e)` (the OID precedes the
-    /// value), else `l == 0` -> `Ok(())`, else the value TLV `[v, l]` lacks its `l` content octets
+    /// value), else `l == 0` -> the value identifier `v` decides (`AtvValueForm(e)` or `Ok(())`),
+    /// else the value TLV `[v, l]` lacks its `l` content octets
     /// and the result is `BadAtvValueTlv(e)` with `e` the error of the verified primitive
     /// `decode_tlv` on `[v, l]`. CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 11]`,
     /// `#[kani::unwind(3)]`, no stubs.
@@ -648,7 +720,7 @@ mod proofs {
             Err(e) => Err(NameError::BadAtvOid(e)),
             Ok(()) => {
                 if l == 0 {
-                    Ok(())
+                    expected_value_form(v).map_err(NameError::AtvValueForm)
                 } else {
                     Err(NameError::BadAtvValueTlv(decode_tlv(&[v, l]).unwrap_err()))
                 }
@@ -656,6 +728,7 @@ mod proofs {
         };
         assert!(r == expected, "validate_name result differs from the total expected result");
         kani::cover(r == Ok(()), "ATV value length 0: Ok");
+        kani::cover(matches!(r, Err(NameError::AtvValueForm(_))), "ATV value length 0: AtvValueForm");
         kani::cover(matches!(r, Err(NameError::BadAtvValueTlv(_))), "ATV value length > 0: BadAtvValueTlv");
         kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "ATV value length: BadAtvOid first");
     }
@@ -665,7 +738,8 @@ mod proofs {
     /// derived from the verified primitives in the documented order: `decode_tlv` on the content
     /// `Err(e)` -> `BadAtvOidTlv(e)`; the OID content failing `validate_oid` -> `BadAtvOid(e)`;
     /// nothing left after the OID -> `MissingAtvValue`; `decode_tlv` on the rest `Err(e)` ->
-    /// `BadAtvValueTlv(e)`; bytes left after that value -> `AtvTrailingElements`; else `Ok(())`.
+    /// `BadAtvValueTlv(e)`; bytes left after that value -> `AtvTrailingElements`; the decoded value's
+    /// identifier failing the identifier-form rule -> `AtvValueForm(e)`; else `Ok(())`.
     /// CONTRACT SURFACE / bounded-backing evidence. Backing `[u8; 11]`, `#[kani::unwind(3)]`, no
     /// stubs. The two values `L == 0x03` (a three-octet OID content walk) and `L == 0x83` (a
     /// three-octet long-form length) need a loop bound of 4, which about doubles the cost, so they
@@ -693,11 +767,16 @@ mod proofs {
                     } else {
                         match decode_tlv(rest) {
                             Err(e) => Err(NameError::BadAtvValueTlv(e)),
-                            Ok((_, value_used)) => {
+                            Ok((value_tlv, value_used)) => {
                                 if value_used != rest.len() {
                                     Err(NameError::AtvTrailingElements)
                                 } else {
-                                    Ok(())
+                                    expected_form_tag(
+                                        value_tlv.tag.class,
+                                        value_tlv.tag.constructed,
+                                        value_tlv.tag.number,
+                                    )
+                                    .map_err(NameError::AtvValueForm)
                                 }
                             }
                         }
@@ -710,6 +789,7 @@ mod proofs {
         kani::cover(matches!(r, Err(NameError::BadAtvOidTlv(_))), "ATV OID length: BadAtvOidTlv");
         kani::cover(matches!(r, Err(NameError::BadAtvOid(_))), "ATV OID length: BadAtvOid");
         kani::cover(matches!(r, Err(NameError::BadAtvValueTlv(_))), "ATV OID length: BadAtvValueTlv");
+        kani::cover(matches!(r, Err(NameError::AtvValueForm(_))), "ATV OID length: AtvValueForm");
     }
 }
 
@@ -997,6 +1077,66 @@ mod tests {
         let mut bytes = MULTI_RDN_DN;
         bytes[8] = 0x80;
         assert_eq!(validate_name(&bytes), Err(NameError::BadAtvOid(OidError::NonMinimalSubid)));
+    }
+
+    // --- S4b / G5: the ATV value's identifier must be a legal DER identifier (X.690 §8.1.5,
+    //     §8.1.2.5, §10.2). The value's CONTENTS stay opaque. ---
+
+    /// A one-RDN Name `CN=<value>` whose ATV value is exactly the given TLV bytes
+    /// (every specimen is below 128 octets).
+    fn name_with_value(value_tlv: &[u8]) -> Vec<u8> {
+        name_of(&[rdn_of(&[0x55, 0x04, 0x03], value_tlv)])
+    }
+
+    #[test]
+    fn rejects_end_of_contents_attribute_value() {
+        // The ATV value `00 00` is the reserved end-of-contents identifier (X.690 §8.1.5): one
+        // framed TLV, but a definite-length DER encoding never contains it.
+        assert_eq!(
+            validate_name(&name_with_value(&[0x00, 0x00])),
+            Err(NameError::AtvValueForm(FormError::ReservedIdentifier))
+        );
+    }
+
+    #[test]
+    fn rejects_constructed_boolean_attribute_value() {
+        // The ATV value `21 00` is a CONSTRUCTED BOOLEAN (UNIVERSAL 1): BOOLEAN is primitive-only
+        // (X.690 §8.1.2.5, §8.2.1).
+        assert_eq!(
+            validate_name(&name_with_value(&[0x21, 0x00])),
+            Err(NameError::AtvValueForm(FormError::MustBePrimitive))
+        );
+    }
+
+    #[test]
+    fn rejects_primitive_sequence_attribute_value() {
+        // The ATV value `10 00` is a PRIMITIVE SEQUENCE (UNIVERSAL 16): SEQUENCE is
+        // constructed-only (X.690 §8.1.2.5, §8.9.1).
+        assert_eq!(
+            validate_name(&name_with_value(&[0x10, 0x00])),
+            Err(NameError::AtvValueForm(FormError::MustBeConstructed))
+        );
+    }
+
+    #[test]
+    fn accepts_attribute_value_with_legal_identifier() {
+        // The conforming neighbour of the three rejects above: a primitive UTF8String `0c 02 68 69`
+        // is accepted, and the Name is the exact 21 octets the bytes spell.
+        let name = name_with_value(&[0x0c, 0x02, 0x68, 0x69]);
+        assert_eq!(name.len(), 15);
+        assert_eq!(validate_name(&name), Ok(()));
+        // The value TLV is carried intact at the end of the Name.
+        assert_eq!(&name[name.len() - 4..], &[0x0c, 0x02, 0x68, 0x69]);
+    }
+
+    #[test]
+    fn accepts_empty_integer_and_empty_oid_attribute_values_contents_stay_opaque() {
+        // `02 00` (an empty INTEGER) and `06 00` (an empty OID) have a legal identifier and are one
+        // framed TLV; their contents are not examined (PROF-opaque-contents-not-der-checked), so both
+        // are still accepted.
+        for value in [[0x02u8, 0x00], [0x06, 0x00]] {
+            assert_eq!(validate_name(&name_with_value(&value)), Ok(()), "value {value:02x?}");
+        }
     }
 
     // --- S4a group 4: additional attribute types and non-DN subjects ---

@@ -26,8 +26,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_oid_length"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.1.3.3"]
-bounded = "OID length octet != 0x03 and != 0x83; bounded fields; input = 11; unwind 3"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.1.3.3", "X690-8.1.5"]
+bounded = "OID length octet != 0x03 and != 0x83; bounded fields; input = 11; unwind 3; the value identifier is judged only on the shape where the OID content is one octet; value identifier form stated by an independent two-mask table"
 none = ""
 
 [[entry]]
@@ -46,8 +46,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_atv_value_length"
 accept = []
 reject = []
-prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.1.3.3"]
-bounded = "one-byte OID; value identifier is low-tag; symbolic value length; input = 11; unwind 3"
+prove = ["X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.1.3.3", "X690-8.1.5"]
+bounded = "one-byte OID; value identifier is low-tag; symbolic value length; input = 11; unwind 3; the value identifier is judged only on the zero-length shape; value identifier form stated by an independent two-mask table"
 none = ""
 
 [[entry]]
@@ -106,8 +106,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_single_atv_exact"
 accept = []
 reject = []
-prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15"]
-bounded = "one-byte OID content; value identifier is low-tag; input = 11; unwind 3"
+prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.1.5", "X690-8.1.2.5"]
+bounded = "one-byte OID content; value identifier is low-tag; input = 11; unwind 3; value identifier form stated by an independent two-mask table"
 none = ""
 
 [[entry]]
@@ -116,8 +116,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_two_atvs_exact"
 accept = []
 reject = []
-prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.12.2", "X690-11.6"]
-bounded = "two bounded ATVs; both value identifiers are low-tag; input = 19; unwind 3"
+prove = ["X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.12.2", "X690-11.6", "X690-8.1.5"]
+bounded = "two bounded ATVs; both value identifiers are low-tag; input = 19; unwind 3; value identifier form stated by an independent two-mask table"
 none = ""
 
 [[entry]]
@@ -136,8 +136,8 @@ file = "der-verified/src/x509_name.rs"
 name = "validate_name_two_rdns_exact"
 accept = []
 reject = []
-prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.10.2"]
-bounded = "two bounded RDNs; both value identifiers are low-tag; input = 20; unwind 3"
+prove = ["X501-9.2-d", "X501-9.2-e", "X501-9.2-f", "X501-9.2-g", "RFC5280-4.1.2.4-a", "X690-8.10.1", "X501-9.3-d", "RFC5280-4.1.2.4-b", "X690-8.12.1", "X501-9.3-e", "RFC5280-4.1.2.4-c", "X690-8.15", "X690-8.10.2", "X690-8.1.5"]
+bounded = "two bounded RDNs; both value identifiers are low-tag; input = 20; unwind 3; value identifier form stated by an independent two-mask table"
 none = ""
 
 [[entry]]
@@ -385,6 +385,56 @@ kind = "test"
 file = "der-verified/src/x509_name.rs"
 name = "accepts_name_with_one_hundred_rdns"
 accept = ["RFC5280-B-size-upper-bound"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
+name = "rejects_end_of_contents_attribute_value"
+accept = []
+reject = ["X690-8.1.5"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
+name = "rejects_constructed_boolean_attribute_value"
+accept = []
+reject = ["X690-8.1.2.5", "X690-8.2.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
+name = "rejects_primitive_sequence_attribute_value"
+accept = []
+reject = ["X690-8.1.2.5", "X690-8.9.1"]
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
+name = "accepts_attribute_value_with_legal_identifier"
+accept = ["X690-8.15", "X690-8.1.2.5"]
+reject = []
+prove = []
+bounded = ""
+none = ""
+
+[[entry]]
+kind = "test"
+file = "der-verified/src/x509_name.rs"
+name = "accepts_empty_integer_and_empty_oid_attribute_values_contents_stay_opaque"
+accept = ["X690-8.15"]
 reject = []
 prove = []
 bounded = ""

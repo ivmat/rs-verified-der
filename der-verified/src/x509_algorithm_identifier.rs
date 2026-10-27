@@ -25,7 +25,11 @@
 //! - *`parameters` stays raw.* The second field is ASN.1 `ANY` — its DER encoding (tag + length +
 //!   value) is returned unparsed and uninterpreted; this module does not know or care whether it
 //!   holds an OID (as for EC), is absent (as for Ed25519, RFC 8410 §3), or is a NULL (as for classic
-//!   RSA).
+//!   RSA). Its **identifier** is checked ([`crate::identifier_form::validate_identifier_form`]):
+//!   the reserved end-of-contents identifier (`00 00`, X.690 §8.1.5) and an impossible
+//!   primitive/constructed form for a UNIVERSAL type (e.g. a constructed BOOLEAN `21 00`, X.690
+//!   §8.1.2/§10.2) are rejected as [`AlgIdError::ParametersForm`]. Its **contents** are never
+//!   examined, so `02 00` (an empty INTEGER) and `06 00` (an empty OID) are still accepted.
 //! - *Strict tiling, not strict top-level.* The two fields must exactly tile the SEQUENCE's content
 //!   (rejecting a third field), but [`parse_algorithm_identifier`] itself does **not** require its
 //!   `input` to be consumed exactly — it composes inside a larger structure (e.g. `Certificate` has
@@ -47,6 +51,7 @@
 //! assert_eq!(algid.parameters, None);
 //! ```
 
+use crate::identifier_form::{validate_identifier_form, FormError};
 use crate::oid::{validate_oid, OidError};
 use crate::oid::TAG as OID_TAG;
 use crate::sequence::{decode_sequence_tlv, SequenceError};
@@ -90,6 +95,13 @@ pub enum AlgIdError {
     /// The `AlgorithmIdentifier` SEQUENCE has more than its two permitted fields (algorithm,
     /// parameters): bytes remain in its content after the parameters TLV.
     TrailingElements,
+    /// The optional `parameters` TLV is one well-framed TLV that tiles the SEQUENCE, but its
+    /// **identifier** is not a legal DER identifier: the reserved end-of-contents identifier `00`
+    /// (X.690 §8.1.5), or a UNIVERSAL type in a primitive/constructed form its type cannot have
+    /// (e.g. a constructed BOOLEAN `21 00`; X.690 §8.1.2, §10.2). Wraps [`FormError`] from
+    /// [`crate::identifier_form::validate_identifier_form`]. Only the identifier is judged: the
+    /// parameters' *contents* stay opaque (`02 00`, `06 00` are still accepted).
+    ParametersForm(FormError),
 }
 
 /// Decode the `algorithm` OID TLV from the front of `input`, returning its validated content
@@ -116,7 +128,9 @@ fn decode_oid_tlv(input: &[u8]) -> Result<(&[u8], usize), AlgIdError> {
 /// 1. the SEQUENCE envelope ([`decode_sequence_tlv`]);
 /// 2. inside it, the OID ([`decode_tlv`] + [`validate_oid`]) then the optional `ANY` parameters
 ///    TLV ([`decode_tlv`], stored raw), requiring the two fields to exactly tile the SEQUENCE's
-///    content.
+///    content;
+/// 3. the parameters TLV's identifier must be a legal DER identifier
+///    ([`validate_identifier_form`]); its contents are not examined.
 ///
 /// Never panics on any input **up to the harness's 16-octet symbolic bound** (proven by the `parse_algorithm_identifier_never_panics` Kani harness
 /// below); returns a classified [`AlgIdError`] on any structural deviation.
@@ -132,10 +146,12 @@ pub fn parse_algorithm_identifier(
     let parameters = if rest.is_empty() {
         None
     } else {
-        let (_params_tlv, params_used) = decode_tlv(rest).map_err(AlgIdError::BadParametersTlv)?;
+        let (params_tlv, params_used) = decode_tlv(rest).map_err(AlgIdError::BadParametersTlv)?;
         if params_used != rest.len() {
             return Err(AlgIdError::TrailingElements);
         }
+        // Identifier only (X.690 §8.1.5, §8.1.2, §10.2); the parameters' contents stay opaque.
+        validate_identifier_form(params_tlv.tag).map_err(AlgIdError::ParametersForm)?;
         Some(&rest[..params_used])
     };
 
@@ -201,7 +217,7 @@ mod proofs {
     /// `decode_sequence_tlv` call the impl makes (return plumbing; the no-over-read rides on that
     /// primitive's own lid, per this crate's SEQUENCE convention). Non-vacuity is pinned by the
     /// observed-red control: mutating the exact-tiling check at `parse_algorithm_identifier` (the
-    /// `params_used != rest.len()` guard, `x509_algorithm_identifier.rs:136`) reds claim 4 below
+    /// `params_used != rest.len()` guard, `x509_algorithm_identifier.rs:150`) reds claim 4 below
     /// while `parse_algorithm_identifier_never_panics` stays green — precisely the property this
     /// promotion adds.
     ///
@@ -216,7 +232,13 @@ mod proofs {
     ///    (tag+length+value, verbatim) at the OID's offset, again pointer + length identity;
     /// 4. the OID field and the optional `parameters` TLV exactly tile the SEQUENCE content (nothing
     ///    uncovered) — the property the exact-tiling check enforces and the observed-red control
-    ///    mutates.
+    ///    mutates;
+    /// 5. an accepted `parameters` TLV carries a legal DER identifier: it is not the reserved
+    ///    end-of-contents identifier (UNIVERSAL 0, X.690 §8.1.5, stated from the literal tag), and it
+    ///    passes [`validate_identifier_form`] (the impossible primitive/constructed forms of §8.1.2 /
+    ///    §10.2). Contents are not constrained. The `00 00` half is stated independently of the
+    ///    implementation; the form half re-states the called check, so its table is decided by the
+    ///    `identifier_form` proofs, not here.
     #[kani::proof]
     #[kani::unwind(20)]
     fn parse_faithful() {
@@ -258,16 +280,19 @@ mod proofs {
                 // algo_content.len()`.
                 None => assert!(rest.is_empty()),
                 Some(params) => {
-                    let (_params_tlv, params_used) =
+                    let (params_tlv, params_used) =
                         decode_tlv(rest).expect("a present parameters field re-decodes as a TLV");
                     // (4) Exact field tiling: the OID and the optional parameters exactly cover the
                     //     SEQUENCE content -- the property the `params_used != rest.len()` guard
-                    //     enforces (`x509_algorithm_identifier.rs:136`) and the observed-red control
+                    //     enforces (`x509_algorithm_identifier.rs:150`) and the observed-red control
                     //     mutates.
                     assert!(params_used == rest.len());
+                    // (5) Legal identifier: never end-of-contents (literal), and form-checked.
+                    assert!(!(params_tlv.tag.class == Class::Universal && params_tlv.tag.number == 0));
+                    assert!(validate_identifier_form(params_tlv.tag).is_ok());
                     // `parameters` stores the RAW TLV encoding (tag + length + value, verbatim), not
                     // just the content octets -- so the identity check is against `rest`'s own front,
-                    // not `_params_tlv.value`.
+                    // not `params_tlv.value`.
                     assert!(core::ptr::eq(params.as_ptr(), rest.as_ptr()));
                     assert!(params.len() == params_used);
                 }
@@ -424,5 +449,71 @@ mod tests {
             parse_algorithm_identifier(&bytes),
             Err(AlgIdError::BadSeq(SequenceError::Tlv(TlvError::Truncated)))
         );
+    }
+
+    // --- S4b / G5: the parameters' identifier must be a legal DER identifier (X.690 §8.1.5,
+    //     §8.1.2, §10.2); the parameters' contents stay opaque. ---
+
+    /// Ed25519-shaped OID `06 03 2b 65 70` followed by the parameters TLV `params`, inside a
+    /// SEQUENCE with a short-form length.
+    fn algid_with_params(params: &[u8]) -> Vec<u8> {
+        let mut out = vec![0x30, (5 + params.len()) as u8, 0x06, 0x03, 0x2b, 0x65, 0x70];
+        out.extend_from_slice(params);
+        out
+    }
+
+    #[test]
+    fn rejects_end_of_contents_parameters() {
+        // Parameters `00 00` is the reserved end-of-contents identifier (X.690 §8.1.5): framed as a
+        // TLV, never legal DER.
+        let bytes = algid_with_params(&[0x00, 0x00]);
+        assert_eq!(
+            parse_algorithm_identifier(&bytes),
+            Err(AlgIdError::ParametersForm(FormError::ReservedIdentifier))
+        );
+    }
+
+    #[test]
+    fn rejects_constructed_primitive_only_parameters() {
+        // Parameters `21 00` is a CONSTRUCTED BOOLEAN (UNIVERSAL 1): a primitive-only type
+        // (X.690 §8.1.2, §10.2).
+        let bytes = algid_with_params(&[0x21, 0x00]);
+        assert_eq!(
+            parse_algorithm_identifier(&bytes),
+            Err(AlgIdError::ParametersForm(FormError::MustBePrimitive))
+        );
+    }
+
+    #[test]
+    fn rejects_primitive_constructed_only_parameters() {
+        // Parameters `10 00` is a PRIMITIVE SEQUENCE (UNIVERSAL 16): a constructed-only type.
+        let bytes = algid_with_params(&[0x10, 0x00]);
+        assert_eq!(
+            parse_algorithm_identifier(&bytes),
+            Err(AlgIdError::ParametersForm(FormError::MustBeConstructed))
+        );
+    }
+
+    #[test]
+    fn accepts_octet_string_parameters_with_valid_identifier() {
+        // The conforming neighbour: a primitive OCTET STRING `04 02 aa bb` as parameters.
+        let bytes = algid_with_params(&[0x04, 0x02, 0xaa, 0xbb]);
+        let (algid, used) = parse_algorithm_identifier(&bytes).unwrap();
+        assert_eq!(used, 11);
+        assert_eq!(algid.algorithm_oid, &[0x2b, 0x65, 0x70]);
+        assert_eq!(algid.parameters, Some(&[0x04, 0x02, 0xaa, 0xbb][..]));
+    }
+
+    #[test]
+    fn accepts_empty_integer_and_empty_oid_parameters_contents_stay_opaque() {
+        // `02 00` (an empty INTEGER) and `06 00` (an empty OID) have a legal identifier and one
+        // framed TLV; their contents are not examined (PROF-opaque-contents-not-der-checked), so
+        // both are still accepted.
+        for params in [[0x02u8, 0x00], [0x06, 0x00]] {
+            let bytes = algid_with_params(&params);
+            let (algid, used) = parse_algorithm_identifier(&bytes).unwrap();
+            assert_eq!(used, 9);
+            assert_eq!(algid.parameters, Some(&params[..]));
+        }
     }
 }
