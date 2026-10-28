@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/utc_time.rs",
+  "checked": "utc_time::proofs::encode_is_total_exact_oracle",
+  "claim": "PM/utc_time",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/utc_time"
+  },
+  "produced_at": "2026-10-28T11:15:23.869410+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:de23314ca5564f1326d18a0f99625b9a67f6ffc1b5d420529852a8c1f7d3b4ba3f2802c8ca8ef475f0fbd19628a0810bb1c5c00de98cfb4d615848f98f3ad610",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "utc_time"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness utc_time::proofs::encode_is_total_exact_oracle"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

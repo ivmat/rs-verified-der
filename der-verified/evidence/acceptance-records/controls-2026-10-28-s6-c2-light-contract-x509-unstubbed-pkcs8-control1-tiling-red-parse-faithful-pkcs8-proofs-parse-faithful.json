@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/pkcs8.rs",
+  "checked": "pkcs8::proofs::parse_faithful",
+  "claim": "PM/pkcs8",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/pkcs8"
+  },
+  "produced_at": "2026-10-28T11:15:25.657507+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:da87e59f0ab7c9a6cf1589ac4b8c55aa4709caa1f90f53f5d8d2b45db4dcc6f705541ecafb4c50f4de8030c460acce9498b2e41f74739108e1100cf8966ceecb",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "pkcs8"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness pkcs8::proofs::parse_faithful"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

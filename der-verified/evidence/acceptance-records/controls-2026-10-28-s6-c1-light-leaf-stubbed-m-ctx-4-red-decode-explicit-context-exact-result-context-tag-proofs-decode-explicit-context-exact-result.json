@@ -1,0 +1,46 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/context_tag.rs",
+  "checked": "context_tag::proofs::decode_explicit_context_exact_result",
+  "claim": "PM/context_tag",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/context_tag"
+  },
+  "produced_at": "2026-10-28T11:15:23.292516+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:97213d1753f871afe14f18da057ad66a887f56a2986df23676f75a84f941df1c627c06f100801aa5ce4fe78cfeea1fb328744578ff5c13291b22a3f7cf1fe3c1",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "context_tag"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness context_tag::proofs::decode_explicit_context_exact_result"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

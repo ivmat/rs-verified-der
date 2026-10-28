@@ -1,18 +1,18 @@
 # Vendored acceptance closure
 
-`acceptance/` is a complete, byte-for-byte export of the acceptance 0.3.2
+`acceptance/` is a complete, byte-for-byte export of the acceptance 0.4.0
 consumer closure. It is generated material. Do not edit any file below that
 directory by hand.
 
 - Source: public repository `https://github.com/ivmat/acceptance-format`
-  (family version 0.3.2; this commit carries no git tag in that repository)
-- Source commit: `455ca4f84ada3fc51eed30942696f34d118e1a59`
+  (family version 0.4.0, tag `v0.4.0`)
+- Source commit: `3dbd403d0929a5398c43f93bd41a31e3365e82cd`
 - Closure inventory: `acceptance/CLOSURE.json`
 
-The inventory records the SHA-256 the exporter computed from the source checkout at `455ca4f`
+The inventory records the SHA-256 the exporter computed from the source checkout at `3dbd403`
 (`source_dirty=false`). The closure verifier confirms the vendored tree still matches that
 inventory; it does not by itself prove identity to the upstream commit. Identity to upstream is
-established by comparing all 20 listed files against a fresh checkout of `455ca4f` at vendoring
+established by comparing all 22 listed files against a fresh checkout of `3dbd403` at vendoring
 time; repeat that comparison on every re-vendor.
 
 The closure supplies its own verifier. It checks every listed file hash, the
@@ -30,7 +30,8 @@ bytecode caches. Run vendored Python with bytecode writing disabled.
    ```sh
    PYTHONDONTWRITEBYTECODE=1 python3 -B gates/vendor/acceptance/export_closure.py verify \
      --dest gates/vendor/acceptance \
-     --expect-commit 455ca4f84ada3fc51eed30942696f34d118e1a59 --require-clean
+     --expect-commit 3dbd403d0929a5398c43f93bd41a31e3365e82cd --require-clean \
+     --expect-family-version 0.4.0
    ```
 
 3. Re-emit `der-verified/acceptance.toml` and its projected evidence records

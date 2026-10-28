@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/generalized_time.rs",
+  "checked": "generalized_time::proofs::decode_is_exactly_the_reference",
+  "claim": "PM/generalized_time",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/generalized_time"
+  },
+  "produced_at": "2026-10-28T11:15:24.066833+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:5b074f4d49fa52d2636963b565de024303a83ab1c591b44acd8de4027e6fff2077282dd7b146df5e30da0fe4f91cfe958d274daf4b799e09df8a45415cbea44c",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "generalized_time"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness generalized_time::proofs::decode_is_exactly_the_reference"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

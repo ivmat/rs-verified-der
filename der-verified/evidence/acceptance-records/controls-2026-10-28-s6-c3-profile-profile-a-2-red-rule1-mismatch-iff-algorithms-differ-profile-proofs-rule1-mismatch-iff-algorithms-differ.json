@@ -1,0 +1,46 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/profile.rs",
+  "checked": "profile::proofs::rule1_mismatch_iff_algorithms_differ",
+  "claim": "PM/profile",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/profile"
+  },
+  "produced_at": "2026-10-28T11:15:25.926158+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:a10b448ca209d61e4f562a59ec12e25e985f7c777a77678923b50cceeee42cdd2dcfec4e33ec1e97ab692829cce53991f1fb76eb20be10b4f0960e127914dfe5",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "profile"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness profile::proofs::rule1_mismatch_iff_algorithms_differ"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

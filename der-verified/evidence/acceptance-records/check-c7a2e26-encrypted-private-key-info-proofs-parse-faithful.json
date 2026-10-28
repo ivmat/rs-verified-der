@@ -1,0 +1,37 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md §4 per-module row, §8.1 histogram); the harnesses that declare no unwind bound must unroll to completion. No global unwind override was passed.",
+  "checked": "encrypted_private_key_info::proofs::parse_faithful",
+  "claim": "PM/encrypted_private_key_info",
+  "produced_at": "2026-10-28T11:15:19.420539+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:05f3019d40b068cba105a56fd2362e51f4f72a4ab7802aa1e5f5c9201ef010c78e55b2f9487633f301c44ab9efc1cc303a5db7d3052954514e238b9a5d3a8f86",
+  "subject": {
+    "commit": "c7a2e26",
+    "repo": "rs-verified-der",
+    "unit": "encrypted_private_key_info"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/restricted_string.rs",
+  "checked": "restricted_string::proofs::encode_is_exact_printable",
+  "claim": "PM/restricted_string",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/restricted_string"
+  },
+  "produced_at": "2026-10-28T11:15:24.432244+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:2b209fba59560a34f7edeb6d80b53ea0524a840dd0f35ce4e385d65a0abdb310b3bfc478b508f282ea4e92a0b2117fb1577da7742a0a2337271ae1e5430a6796",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "restricted_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness restricted_string::proofs::encode_is_exact_printable"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/bit_string.rs",
+  "checked": "bit_string::proofs::encode_rejects_exactly_the_non_canonical",
+  "claim": "PM/bit_string",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/bit_string"
+  },
+  "produced_at": "2026-10-28T11:15:23.595041+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:97e1954a16ffa20c7b16dc7ada63a45668645c0e5966677c0f203a94f4252b3fccb56d71bbe5841b42302b7971948bd933e68f49d673893bbb561ac54c6010ae",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "bit_string"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness bit_string::proofs::encode_rejects_exactly_the_non_canonical"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

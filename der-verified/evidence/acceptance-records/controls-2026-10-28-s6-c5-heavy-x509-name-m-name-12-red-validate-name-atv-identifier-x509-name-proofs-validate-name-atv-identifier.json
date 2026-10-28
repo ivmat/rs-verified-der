@@ -1,0 +1,46 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/x509_name.rs",
+  "checked": "x509_name::proofs::validate_name_atv_identifier",
+  "claim": "PM/x509_name",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/x509_name"
+  },
+  "produced_at": "2026-10-28T11:15:27.330238+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:e85da1aea659f13d9e97697f911e938109c59d1b5151c353c36b7ea9a6b35995a33bfdda295ad2ddcce51f1cd2b2f043dce1f2f8e377154f9d62f1f0073b2efc",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "x509_name"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness x509_name::proofs::validate_name_atv_identifier"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

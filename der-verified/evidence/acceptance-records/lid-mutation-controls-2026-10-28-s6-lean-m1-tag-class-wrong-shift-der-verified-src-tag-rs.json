@@ -1,0 +1,38 @@
+{
+  "checked": "der-verified/src/tag.rs",
+  "claim": "PM/lean-tag",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/lean-tag"
+  },
+  "produced_at": "2026-10-28T11:15:30.370792+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:4ad7797c558fadffd0ab00d14d06ed83244bb7a64f53fd5e3047768ac26eaf9cf9d3777ebe2470db25a1a95939972fc7afaa140b138be197f0e2e5e1eb78c86c",
+  "subject": {
+    "commit": "c7a2e26",
+    "repo": "rs-verified-der",
+    "unit": "der-verified/src/tag.rs"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "aeneas",
+        "version": "45061fa1a5b4bad876f17c03d3a5544d818622e6"
+      },
+      {
+        "name": "charon",
+        "version": "40ee060a8df43f4e7e0842d3f05387b0a4426aaf"
+      }
+    ],
+    "features": null,
+    "flags": [
+      "lake build DerVerified (via lean/)",
+      "one planted mutation per run, reverted byte-identical after"
+    ],
+    "name": "lean4",
+    "version": "leanprover/lean4:v4.30.0-rc2"
+  }
+}

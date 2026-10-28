@@ -3,14 +3,20 @@
 
 The validator is fully vendored so the gate is reproducible offline. Before it
 runs, the closure verifier checks CLOSURE.json, every manifested source file,
-the source commit, and clean export provenance. The manifest's generated
-header must name the same protocol commit.
+the source commit, the family version, and clean export provenance. The manifest's
+generated header must name the same protocol commit.
+
+The manifest has one claim per requirement. Its `[spec].inventory` is a mirror of
+docs/requirements/der.inventory.toml kept beside the manifest (core.md B6: a pointer
+must stay inside the repository, and a package unpacked from der-verified/ must still
+resolve it). The mirror must be byte-identical to the canonical file.
 """
 import os
 import pathlib
 import re
 import subprocess
 import sys
+import tomllib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PACKAGE = ROOT / "der-verified"
@@ -21,11 +27,14 @@ VALIDATOR = VENDOR / "format_acceptance" / "tools" / "check_acceptance.py"
 CLOSURE = VENDOR / "CLOSURE.json"
 VENDOR_DOC = ROOT / "gates" / "vendor" / "VENDOR.md"
 STORE = PACKAGE / "evidence" / "acceptance-records"
+INVENTORY = ROOT / "docs" / "requirements" / "der.inventory.toml"
+INVENTORY_MIRROR = PACKAGE / "der.inventory.toml.vendored-copy"
 # Public ivmat/acceptance-format commit the vendored closure is pinned to (family
-# version 0.3.2; this commit carries no git tag in that repository).
-PINNED_PROTOCOL_COMMIT = "455ca4f84ada3fc51eed30942696f34d118e1a59"
+# version 0.4.0; tag v0.4.0 in that repository).
+PINNED_PROTOCOL_COMMIT = "3dbd403d0929a5398c43f93bd41a31e3365e82cd"
+PINNED_FAMILY_VERSION = "0.4.0"
 _MANIFEST_PIN_RE = re.compile(
-    r"^# Checked against acceptance 0\.3\.2, ivmat/acceptance-format commit "
+    r"^# Checked against acceptance 0\.4\.0, ivmat/acceptance-format commit "
     r"([0-9a-f]{40})$",
     re.MULTILINE,
 )
@@ -50,6 +59,8 @@ def main():
         (CLOSURE, "closure manifest"),
         (VENDOR_DOC, "vendor note"),
         (STORE, "projected evidence store"),
+        (INVENTORY, "canonical requirements inventory"),
+        (INVENTORY_MIRROR, "requirements inventory mirror"),
     ):
         if not path.exists():
             return fail(f"{label} missing at {path.relative_to(ROOT)}")
@@ -64,6 +75,7 @@ def main():
     verified = run_vendored([
         sys.executable, "-B", str(EXPORTER), "verify", "--dest", str(VENDOR),
         "--expect-commit", PINNED_PROTOCOL_COMMIT, "--require-clean",
+        "--expect-family-version", PINNED_FAMILY_VERSION,
     ])
     verified_output = (verified.stdout + verified.stderr).strip()
     if verified.returncode != 0:
@@ -73,7 +85,7 @@ def main():
     match = _MANIFEST_PIN_RE.search(text)
     if not match:
         return fail(
-            "acceptance.toml does not declare its acceptance 0.3.2 protocol commit in "
+            "acceptance.toml does not declare its acceptance 0.4.0 protocol commit in "
             "the generated header"
         )
     declared = match.group(1)
@@ -83,6 +95,21 @@ def main():
             f"the verified closure is pinned to {PINNED_PROTOCOL_COMMIT!r}; re-emit the "
             "manifest or re-vendor the closure rather than editing either to agree"
         )
+
+    if INVENTORY_MIRROR.read_bytes() != INVENTORY.read_bytes():
+        return fail(
+            f"{INVENTORY_MIRROR.relative_to(ROOT)} differs from "
+            f"{INVENTORY.relative_to(ROOT)}; the mirror is a byte copy of the canonical "
+            "inventory (core.md B6), regenerate it with the manifest"
+        )
+    spec = tomllib.loads(text).get("spec", {})
+    for key in ("inventory", "path"):
+        pointed = (MANIFEST.parent / spec.get(key, "")).resolve()
+        if pointed != INVENTORY_MIRROR.resolve():
+            return fail(
+                f"acceptance.toml [spec].{key} is {spec.get(key)!r}, not the inventory mirror "
+                f"{INVENTORY_MIRROR.name!r}"
+            )
 
     first_line = next((line for line in text.splitlines() if line.strip()), "")
     if "DO NOT HAND-EDIT" not in first_line.upper():

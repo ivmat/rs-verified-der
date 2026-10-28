@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/set_of.rs",
+  "checked": "set_of::proofs::tlv_entry_enforces_ordering_exactly",
+  "claim": "PM/set_of",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/set_of"
+  },
+  "produced_at": "2026-10-28T11:15:26.644975+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:1b21d498bb3770d84fdc5d3f18fa33dc56b82b49b9b27df4b46b680b9dfc8a636e6d1a4492604b5bae3928b3404d191c3b4049253c9e589d8b37e33a335626ff",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "set_of"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness set_of::proofs::tlv_entry_enforces_ordering_exactly"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

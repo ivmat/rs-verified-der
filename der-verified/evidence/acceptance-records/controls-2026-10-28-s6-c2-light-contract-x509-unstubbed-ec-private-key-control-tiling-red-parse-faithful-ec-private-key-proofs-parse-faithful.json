@@ -1,0 +1,45 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/ec_private_key.rs",
+  "checked": "ec_private_key::proofs::parse_faithful",
+  "claim": "PM/ec_private_key",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/ec_private_key"
+  },
+  "produced_at": "2026-10-28T11:15:25.772734+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:84a212862a4f4920911ae63aaeec44958a4012d14fcd1d114b9d446c99041c2abced8ae70088d3927e51fa167a4e922a63f1fcda0f2aa982788217c8c8214fce",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "ec_private_key"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness ec_private_key::proofs::parse_faithful"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}

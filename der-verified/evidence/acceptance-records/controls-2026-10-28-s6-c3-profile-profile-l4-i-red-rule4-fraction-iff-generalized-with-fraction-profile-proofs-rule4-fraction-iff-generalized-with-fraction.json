@@ -1,0 +1,46 @@
+{
+  "bound": "per-harness: each harness declares its own symbolic buffer width and #[kani::unwind(N)] (PROOF_MANIFEST.md section 4 per-module row); a targeted single-harness run changes no bound.",
+  "carry_over_file": "der-verified/src/generalized_time.rs (mutated) and der-verified/src/profile.rs (harness)",
+  "checked": "profile::proofs::rule4_fraction_iff_generalized_with_fraction",
+  "claim": "PM/profile",
+  "control": {
+    "expectation": "red",
+    "kind": "mutation",
+    "observed": "red",
+    "of_claim": "PM/profile"
+  },
+  "produced_at": "2026-10-28T11:15:26.024261+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "fail",
+  "source_record_hash": "record:sha-512:c007e867dcb0c218b5a39bbffea69602c63d50aa66592e5f093a5c2a5d8731c85e1c8c4aa05c0cb1d8e271fc8aaf3d4c786d71d923b5395d21189068b624e6f5",
+  "subject": {
+    "commit": "57242b5",
+    "repo": "rs-verified-der",
+    "unit": "profile"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "cbmc",
+        "version": "6.8.0"
+      },
+      {
+        "name": "cadical",
+        "version": "2.0.0"
+      },
+      {
+        "name": "cargo",
+        "version": "1.97.0"
+      }
+    ],
+    "features": [],
+    "flags": [
+      "-Z stubbing",
+      "--manifest-path der-verified/Cargo.toml",
+      "--exact",
+      "--harness profile::proofs::rule4_fraction_iff_generalized_with_fraction"
+    ],
+    "name": "kani",
+    "version": "0.67.0"
+  }
+}
