@@ -9,10 +9,10 @@
     "observed": "red",
     "of_claim": "PM/octet_string"
   },
-  "produced_at": "2026-10-28T11:15:23.787324+00:00",
+  "produced_at": "2026-10-28T15:12:35.307898+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "record:sha-512:b5ce6f15860431090af50163d6832557d9bea0152ae23f74cb14d5d01e48747b100becf9383d43870301b56c1afded9bc3f9acc6ffa3aba161b0698fd94e6abe",
+  "source_record_hash": "record:sha-512:1a253604acf90b154b33fb3d01b42d2853287a837387fbf41cb5ca87b7afc940804ee205edcad01887a4da61395bd42dd3e593cf0bb78a8547fd939bfe16c779",
   "subject": {
     "commit": "57242b5",
     "repo": "rs-verified-der",

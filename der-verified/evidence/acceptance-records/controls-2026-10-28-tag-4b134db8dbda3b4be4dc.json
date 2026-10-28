@@ -1,4 +1,5 @@
 {
+  "carry_over_file": "der-verified/src/tag.rs",
   "checked": "der-verified/src/tag.rs",
   "claim": "PM/lean-tag",
   "control": {
@@ -7,10 +8,10 @@
     "observed": "red",
     "of_claim": "PM/lean-tag"
   },
-  "produced_at": "2026-10-28T11:15:30.370792+00:00",
+  "produced_at": "2026-10-28T15:12:41.885879+00:00",
   "projection": "acceptance-evidence-projection/1",
   "result": "fail",
-  "source_record_hash": "record:sha-512:4ad7797c558fadffd0ab00d14d06ed83244bb7a64f53fd5e3047768ac26eaf9cf9d3777ebe2470db25a1a95939972fc7afaa140b138be197f0e2e5e1eb78c86c",
+  "source_record_hash": "record:sha-512:4e047bc5465de51d2744a42389a66fc4a347c36b0f7247446b8b3fc10fc5fd85065e86b76ad23e7a94ba2266b9227c0fc885d5e4f0377df074f82cc7e672c61b",
   "subject": {
     "commit": "c7a2e26",
     "repo": "rs-verified-der",

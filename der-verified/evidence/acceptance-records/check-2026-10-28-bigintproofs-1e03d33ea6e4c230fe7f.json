@@ -1,0 +1,36 @@
+{
+  "checked": "lean/BigIntProofs.lean",
+  "claim": "PM/lean-bigint",
+  "produced_at": "2026-10-28T15:12:41.794597+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:1d5221061a374fe93c68c8fc8ad0b5b7d0c582c8cc32f99dc829e482dec2d3a0cfc0ad0b4450da656dac8846535bb4a6b13a58e9f9d2623b3c304b5d5255ffa3",
+  "subject": {
+    "commit": "d3de34e",
+    "repo": "rs-verified-der",
+    "unit": "lean/BigIntProofs.lean"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "aeneas",
+        "version": "45061fa1a5b4bad876f17c03d3a5544d818622e6"
+      },
+      {
+        "name": "charon",
+        "version": "40ee060a8df43f4e7e0842d3f05387b0a4426aaf"
+      },
+      {
+        "name": "extraction-rust-toolchain",
+        "version": "nightly-2026-06-01"
+      }
+    ],
+    "features": null,
+    "flags": [
+      "lake build (via lean/check_lean.sh)",
+      "re-extract + drift check"
+    ],
+    "name": "lean4",
+    "version": "leanprover/lean4:v4.30.0-rc2"
+  }
+}

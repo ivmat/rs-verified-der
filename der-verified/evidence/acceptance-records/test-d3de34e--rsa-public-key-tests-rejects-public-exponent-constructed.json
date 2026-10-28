@@ -1,0 +1,42 @@
+{
+  "checked": "rsa_public_key::tests::rejects_public_exponent_constructed",
+  "claim": null,
+  "log_line": "test rsa_public_key::tests::rejects_public_exponent_constructed ... ok",
+  "produced_at": "2026-10-28T15:12:41.932585+00:00",
+  "projection": "acceptance-evidence-projection/1",
+  "result": "pass",
+  "source_record_hash": "record:sha-512:0b3ae61472ea6762d1e0eaf08f618407a2b11f4c1d0ffddbd3e53e1bc1ea679581284e88bdc216a08886ef3a14e00190500852119511fdc7cac76a937f9d3f0f",
+  "subject": {
+    "commit": "d3de34e3975f31e51a0d782abf51e91ab0a3e4aa",
+    "repo": "rs-verified-der",
+    "unit": "der-verified/src/rsa_public_key.rs"
+  },
+  "tool": {
+    "dependencies": [
+      {
+        "name": "rustc",
+        "version": "1.97.0 (2d8144b78 2026-07-07)"
+      }
+    ],
+    "features": null,
+    "flags": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "Cargo.toml",
+      "(the",
+      "cargo test (workspace)",
+      "stage",
+      "of",
+      "check.sh,",
+      "run",
+      "inside",
+      "the",
+      "floor",
+      "of",
+      "record)"
+    ],
+    "name": "cargo-test",
+    "version": "1.97.0 (c980f4866 2026-06-30)"
+  }
+}
