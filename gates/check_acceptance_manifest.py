@@ -102,7 +102,16 @@ def main():
             f"{INVENTORY.relative_to(ROOT)}; the mirror is a byte copy of the canonical "
             "inventory (core.md B6), regenerate it with the manifest"
         )
-    spec = tomllib.loads(text).get("spec", {})
+    manifest = tomllib.loads(text)
+    spec = manifest.get("spec", {})
+    assumptions = (ROOT / "ASSUMPTIONS.md").read_text(encoding="utf-8")
+    published_ids = set(re.findall(r"^- (A-[0-9]+):", assumptions, re.MULTILINE))
+    used_ids = {a for claim in manifest["claim"] for a in claim.get("assumptions", [])}
+    used_ids.update(re.findall(r"see (A-[0-9]+)", text))
+    if used_ids - published_ids:
+        return fail(f"assumption ids have no public definition: {sorted(used_ids - published_ids)}")
+    if "requirements inventory coverage rule of acceptance 0.4.0" not in text:
+        return fail("the generated header does not explain B19")
     for key in ("inventory", "path"):
         pointed = (MANIFEST.parent / spec.get(key, "")).resolve()
         if pointed != INVENTORY_MIRROR.resolve():
@@ -121,6 +130,8 @@ def main():
     cited = set()
     for record_match in re.finditer(r'^\s*record\s*=\s*"([^"]+)"', text, re.MULTILINE):
         relative = record_match.group(1)
+        if re.search(r"(?:^|[-/])s6(?:[-/]|$)|light-leaf|stubbed", relative):
+            return fail(f"record name is not neutral: {relative!r}")
         path = (MANIFEST.parent / relative).resolve()
         if not path.is_file():
             return fail(f"acceptance.toml cites a record that does not resolve: {relative!r}")
@@ -143,7 +154,7 @@ def main():
         )
 
     result = run_vendored([
-        sys.executable, "-B", str(VALIDATOR), "--strict", "--strict-weight", str(MANIFEST),
+        sys.executable, "-B", str(VALIDATOR), "--strict", "--strict-weight", "--root", str(ROOT), str(MANIFEST),
     ])
     output = (result.stdout + result.stderr).strip()
     if result.returncode != 0:

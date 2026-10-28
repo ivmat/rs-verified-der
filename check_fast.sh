@@ -58,6 +58,8 @@ echo "== acceptance-manifest gate (acceptance.toml vs the verified vendored clos
 # projected evidence store in BOTH
 # directions: every cited record resolves inside the store, and no projection sits there uncited.
 python3 "$ROOT/gates/check_acceptance_manifest.py"
+echo "== packed-crate acceptance gate (offline, strict) =="
+python3 "$ROOT/gates/test_package_acceptance.py"
 echo "== cargo test (workspace) =="
 cargo test --manifest-path "$ROOT/Cargo.toml"
 echo "== doctest-count gate: self-test (the gate's own gate; pure stdlib except its own two real-cargo tests) =="

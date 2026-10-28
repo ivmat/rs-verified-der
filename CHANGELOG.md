@@ -11,7 +11,7 @@ All notable changes to `der-verified` are documented here. The format is based o
 ## [0.3.0] - unreleased
 
 ### Changed (owner decisions G1–G7, 2026-10-27; see DECISIONS.md D37–D42)
-- **BREAKING (once): the five remaining public error enums are now `#[non_exhaustive]`** — `StringError`,
+- **BREAKING (once): the five affected error enums are now `#[non_exhaustive]`** — `StringError`,
   `Utf8Error`, `NameError`, `AlgIdError` and `SpkiError` (`ProfileError` already was). A `match` over one of them outside
   this crate needs a wildcard arm. This is the one-time break; later variants are then additive.
 - **BREAKING: stricter decoding, new variants in exhaustive error enums.**
@@ -20,8 +20,10 @@ All notable changes to `der-verified` are documented here. The format is based o
   - The header of an attribute value and of AlgorithmIdentifier parameters must pass the identifier-form check
     (no end-of-contents, no impossible primitive/constructed form): `NameError::AtvValueForm`,
     `AlgIdError::ParametersForm`, `SpkiError::AlgorithmParametersForm`. Contents stay opaque.
-- **`validate_profile` rules 5–7:** duplicate extension ids (P-12), empty issuer (P-13) and a repeated attribute type
-  in an issuer or subject RDN (P-14) are rejected. `ProfileError` gains four variants (non-exhaustive, additive).
+- **BREAKING: `validate_profile` rules 5–7:** duplicate extension ids (P-12), empty issuer (P-13) and a repeated attribute type
+  in an issuer or subject RDN (P-14) are rejected. These rules reject certificates previously accepted.
+  `ProfileError` gains four variants. The enum additions are additive because it is non-exhaustive;
+  the stricter profile rejection is behaviorally breaking.
   The Kani harnesses for the id comparison of these rules ran out of memory at 20 GB and are parked for S5
   (`docs/proof-work/s5-profile-helper-harnesses.md`); that comparison is decided by unit tests until then.
 - `decode_explicit_context` now documents that it does not check that the wrapper holds exactly one complete

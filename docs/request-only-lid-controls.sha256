@@ -1,0 +1,14 @@
+d21c27272be6ac515779446e5d941a3c5f839dd15dbb9be7db9e7dea202281c8  evidence/lid-mutation-controls-2026-08-29/M1-length-mutated.log
+8986229db501afb05ca4c61ef18ca0fabfea6980265dfc1d51334fa6fe5b9c3e  evidence/lid-mutation-controls-2026-08-29/M1-length-reverted.log
+5043d4750eea1fe472fb7d74cbbc12d93181203ab83948542c530b71b5192d7f  evidence/lid-mutation-controls-2026-08-29/M2-tag-mutated.log
+b44ebd7c7e3c108ece24928c1cabdc28bd3e4cb01f01dca27c8502eeb6b8f8dc  evidence/lid-mutation-controls-2026-08-29/M2-tag-reverted.log
+5d208894aefcb03e4fbf040289baa3b59196c90f46758c5092b4eb5bcd8fcecf  evidence/lid-mutation-controls-2026-08-29/M3-tlv-mutated.log
+21440125e9ca84b017a0e4aeeed1362876c5f466cf96d47a8e08ab4873772e81  evidence/lid-mutation-controls-2026-08-29/M3-tlv-reverted.log
+fffec9d623e9bd7b976da6ab24ab4c08a4b327dd97b69587f02dffa0cbb2541c  evidence/lid-mutation-controls-2026-08-29/M4-sequence-mutated.log
+bd43cb39979016061ac8acadf06d8fc46f13c2ef9a93a56ccefd46d84187374b  evidence/lid-mutation-controls-2026-08-29/M4-sequence-reverted.log
+edf37f53be0e11fae72f8e4e8fc8c873b8fefe4e2031db0ac27c8ec6bb5f4422  evidence/lid-mutation-controls-2026-08-29/M5-oid-mutated.log
+7ccf3fcf42a2395f1324a59e8705c4bfd0fe0d37a6b1b1b46f312824bb11e4af  evidence/lid-mutation-controls-2026-08-29/M5-oid-reverted.log
+adeeb440776eda7275e6f271b0d00a7d4d24060ac633a2bc3ee4cf3fe47c077c  evidence/lid-mutation-controls-2026-08-29/M6-bigint-mutated.log
+8b578ddc95336d3b1437a69422e17a057859a76b91d4ed891bdd248cbe24d1f0  evidence/lid-mutation-controls-2026-08-29/M6-bigint-reverted.log
+9c768e666ec32f991453c918d2d196b44eab7c22f18152f7543ccba7f03aed44  evidence/lid-mutation-controls-2026-08-29/README.md
+055608c8a256231c28397ca5db268831c7d7670c036273d12d7cb9041b6eacf4  evidence/lid-mutation-controls-2026-08-29/results.json

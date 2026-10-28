@@ -7,7 +7,7 @@
 A DER (X.690) encoding/decoding core in Rust **under formal verification**, with re-runnable
 evidence and an explicit claim-by-claim assurance map.
 
-**Status:** pre-1.0 (`0.3.0`). The acceptance 0.4.0 manifest has **876 requirement claims**: **5 A4**, **202 A3**, and **176 weighted**. It also records 120 evidenced A0 claims, 25 gaps, 305 excluded requirements, and 219 not-applicable requirements. Counts are inventory, not a coverage percentage. The API is unstable. Evaluate this crate as a building block with bounded and uneven evidence.
+**Status:** pre-1.0 (`0.3.0`). The acceptance 0.4.0 manifest has **876 requirement claims**: **2 A4**, **195 A3**, and **172 weighted**. It also records 130 evidenced A0 claims, 25 gaps, 305 excluded requirements, and 219 not-applicable requirements. Counts are inventory, not a coverage percentage. The API is unstable. Evaluate this crate as a building block with bounded and uneven evidence.
 
 ## Evidence at a glance
 
@@ -61,36 +61,36 @@ This generated summary reads one claim per requirement. Band, grade and weight a
 decided. The summary also lists declared limits and planned work.
 
 <!-- BEGIN GENERATED:map (gates/gen_verification_map.py) -->
-**207 of 876** claims reach A3 or better; **669** do not. The total includes excluded, gap and not-applicable requirements.
+**197 of 876** claims reach A3 or better; **679** do not. The total includes excluded, gap and not-applicable requirements.
 
 The acceptance axis is one claim per requirement. Counts are inventory, not a coverage percentage.
 
 | Status | Band | Grade | Weight | Claims |
 |---|---|---|---|---:|
-| evidenced | A0 | probe | unweighted | 38 |
+| evidenced | A0 | probe | unweighted | 48 |
 | evidenced | A0 | test-only | unweighted | 82 |
-| evidenced | A3 | contract | unweighted | 31 |
-| evidenced | A3 | contract | weighted | 171 |
-| evidenced | A4 | contract | weighted | 5 |
+| evidenced | A3 | contract | unweighted | 25 |
+| evidenced | A3 | contract | weighted | 170 |
+| evidenced | A4 | contract | weighted | 2 |
 | gap | A0 | not-covered | unweighted | 25 |
 | gap | A0 | out-of-scope | unweighted | 305 |
 | not-applicable | not-applicable | ungraded | unweighted | 219 |
 
-Weighted claims: **176**.
+Weighted claims: **172**.
 
 Band meanings:
-- A4 unbounded functional proof, kernel-checked, red mutation control — 5 claim(s)
-- A3 bounded functional contract, red mutation control — 202 claim(s)
+- A4 unbounded functional proof, kernel-checked, red mutation control — 2 claim(s)
+- A3 bounded functional contract, red mutation control — 195 claim(s)
 - A2 memory safety on the unsafe surface, with a control — 0 claim(s)
 - A1 non-vacuous but not state-exhaustive, and no functional control — 0 claim(s)
-- A0 ran or asserted, with NO control watched to fail — the claim is not done — 450 claim(s)
+- A0 ran or asserted, with NO control watched to fail — the claim is not done — 460 claim(s)
 
 Source inventory only; these module names carry no aggregate assurance band:
 `big_integer`, `bit_string`, `boolean`, `context_tag`, `ec_private_key`, `ecdsa_sig_value`, `encrypted_private_key_info`, `enumerated`, `generalized_time`, `identifier_form`, `integer`, `length`, `null`, `octet_string`, `oid`, `pkcs8`, `profile`, `restricted_string`, `rsa_private_key`, `rsa_public_key`, `sequence`, `set_of`, `tag`, `tlv`, `utc_time`, `utf8_string`, `x509_algorithm_identifier`, `x509_certificate`, `x509_extension`, `x509_name`, `x509_spki`, `x509_tbs_certificate`, `x509_validity`.
 
 Lean-lid source modules: `big_integer`, `length`, `oid`, `sequence`, `tag`, `tlv`.
 
-Read [`der-verified/acceptance.toml`](der-verified/acceptance.toml) for each requirement. Subject commit `c7a2e26`; generated `2026-10-28T11:17:41Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
+Read [`der-verified/acceptance.toml`](der-verified/acceptance.toml) for each requirement. Subject commit `c7a2e26`; generated `2026-10-28T12:00:02Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
 
 Declared limits and planned work:
 - Name constraints (RFC 5280 §4.2.1.10) (planned; source: `PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")`).
@@ -174,8 +174,10 @@ cargo kani -Z stubbing                          # 302 proof harnesses, needs a l
 ./check.sh          # full Kani floor; Lean runs only when its pinned toolchain is present
 ```
 
-`-Z stubbing` is required for the eight modular harnesses; their independently discharged contracts
-are listed in `PROOF_MANIFEST.md` §8.4. The Lean step re-extracts the shipped Rust, fails on drift or
+`-Z stubbing` is required for the 29 modular harnesses in the generated inventory.
+Their stub obligations are listed in `PROOF_MANIFEST.md` §8.4. The profile totality and precedence
+proofs remain conditional on `has_repeated_leading_oid` being total. Its totality is not discharged;
+its comparison results have unit-test evidence only. The Lean step re-extracts the shipped Rust, fails on drift or
 `sorry`, and requires the exact Aeneas/Charon/Lean pins below.
 
 ## Toolchain pins

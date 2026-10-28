@@ -37,6 +37,20 @@ class ReplayCliTests(unittest.TestCase):
         self.assertNotIn("== S1:", result.stdout)
         self.assertNotIn("L1 NOT RUN", result.stdout + result.stderr)
 
+    def test_manifest_control_rejects_tampered_current_record_without_proof_tools(self):
+        result = run("--manifest-control-only")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("record digest differs from declared record: hash", result.stdout)
+        self.assertIn("RESULT: S5 (validator, tampered record) REJECT", result.stdout)
+        self.assertNotIn("== S1:", result.stdout)
+        self.assertNotIn("== S3:", result.stdout)
+        self.assertNotIn("== L1:", result.stdout)
+
+    def test_manifest_only_and_lean_are_incompatible(self):
+        result = run("--manifest-control-only", "--with-lean")
+        self.assertEqual(result.returncode, 64)
+        self.assertNotIn("== S1:", result.stdout)
+
     def test_unknown_option_fails_before_replay_starts(self):
         result = run("--not-a-replay-mode")
         self.assertEqual(result.returncode, 64)

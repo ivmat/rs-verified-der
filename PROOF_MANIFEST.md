@@ -8,7 +8,7 @@ reader who is not going to read 302 proof harnesses and 6 Lean developments can 
 they are being offered, and where the guarantee stops.
 
 Its machine-readable companion is `der-verified/acceptance.toml`. It follows acceptance format
-0.3.2 with the Rust verification profile and names its exact validator-closure commit in the
+0.4.0 with the Rust verification profile and names its exact validator-closure commit in the
 generated header.
 
 > ## The rule this document is written under
@@ -212,7 +212,7 @@ axiom set of every proof is disclosed by `#print axioms` in the sources, and eac
 explains its own trust surface. **All 13 are specs for upstream `core` primitives Aeneas does not
 model** (`<[T]>::first`, `Option::is_some_and`, `Result::map_err`, `<usize as TryFrom<u32>>::try_from`,
 `&u8 & u8`), each read against the actual rustc source at the extraction toolchain's pinned nightly
-by `evidence/AXIOM-AUDIT-2026-08-18.md`. **No lid declares an axiom about `der-verified`'s own code.**
+by `evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`). **No lid declares an axiom about `der-verified`'s own code.**
 That was not true until 2026-08-19: four such axioms existed (`length_decode_used_le` ×2,
 `length_decode_total` ×2, in the `tlv` and `sequence` lids), and all four were replaced by proofs
 that day — see the audit's two discharge addenda, and `ASSUMPTIONS.md` §T for the tombstones. The
@@ -258,10 +258,8 @@ Full run evidence is kept outside git, available on request. The compact declara
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**The run evidence captured at `c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2` still speaks for HEAD** (the compact declaration `docs/proof-floor.json`). No build input it depends on has changed since the anchor `c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2`: `git diff c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2 -- check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs lean` is empty.
-
-This is a **sufficient** condition, not an iff. An empty diff over the L3 build inputs (`check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs`) since the anchor, with the §2 toolchain pins unchanged, means the Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty diff, or a moved pin, means re-run: it does not by itself show the evidence is wrong. The generator checks the diff only; whether a §2 pin moved is for the reader. Run the command rather than trusting this sentence.
-
+**No declared floor currently speaks for HEAD's verified source.** Re-run `./check.sh` and refresh the compact declaration, or treat every full-suite verdict in this document as a transcription again.
+- `docs/proof-floor.json` (at `c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
 <!-- END GENERATED:evidence-coverage -->
 
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
@@ -905,7 +903,7 @@ harness whose non-vacuity argument points somewhere other than at itself.
 bound**. They are left in place rather than deleted, because a cover reporting `0 of 1 satisfied`
 is, at each run, the machine-checked *signal* of the gap. As of the committed 2026-07-30 run that
 signal **is** read off an artifact rather than only reproduced on demand: all three appear in
-`evidence/check-b355f76.log` as `0 of 1 cover properties satisfied`, and no fourth harness does
+`evidence/check-b355f76.log` (kept outside git; available on request; SHA-256 `b964e004ad119bfc451efae90d110bbe3d08934202ee095ccdc2b5305d7073ce`) as `0 of 1 cover properties satisfied`, and no fourth harness does
 (§3.4). Each is paired with a companion positive-construction harness on a concrete input:
 
 <!-- BEGIN GENERATED:disclosed-vacuities (gates/gen_proof_manifest.py) -->
@@ -970,7 +968,7 @@ The name parser's accept path is witnessed by other harnesses, which use no stub
 `x509_name::validate_name_single_atv_exact` (backing `[u8; 11]`) and
 `x509_name::validate_name_two_atvs_exact` (backing `[u8; 19]`) call the real `validate_name`, and
 through it the real `validate_rdn`. Each has a `kani::cover` of the `Ok` result, and both covers are
-satisfied (`3 of 3` cover properties each in `evidence/check-d68eeca.log`). This is bounded-backing
+satisfied (`3 of 3` cover properties each in `evidence/check-d68eeca.log` (kept outside git; available on request; SHA-256 `8d6de999daf84ee5916b8c8d08755a71b2faa4181aac8217dc8cb61d37add323`)). This is bounded-backing
 evidence for those two structured shapes, not a proof over every input.
 
 The limitation that remains is for the TBS and certificate compositions. Their witnesses run under

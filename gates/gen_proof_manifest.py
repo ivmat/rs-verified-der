@@ -1344,7 +1344,7 @@ ADVISORY = {'pins-observed', 'evidence-coverage'}
 
 WORDNUM = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6,
            'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10, 'eleven': 11, 'twelve': 12,
-           'thirteen': 13, 'fourteen': 14, 'fifteen': 15, 'sixteen': 16}
+           'thirteen': 13, 'fourteen': 14, 'fifteen': 15, 'sixteen': 16, 'twenty-nine': 29}
 
 # Only documents that make *current-state* claims are guarded. CHANGELOG.md, DECISIONS.md and
 # DER-REMAINING-WORK.md are dated, append-only, point-in-time records: a historical count in
@@ -1384,6 +1384,9 @@ NUM = r'(?<![\w.])(\d+|%s)(?:\*\*|\*|`)?' % '|'.join(WORDNUM)
 NUM_CI = r'(?<![\w.])(\d+|(?i:%s))(?:\*\*|\*|`)?' % '|'.join(WORDNUM)
 
 GUARDS = [
+    ('harnesses', NUM + r'-harness Kani floor'),
+    ('harnesses', r'(?i:headline is)\s+"' + NUM + r'\s+of\s+\d+\s+harnesses'),
+    ('stub_harnesses', NUM_CI + r'\s+modular harnesses'),
     ('harnesses', NUM + r'\s+Kani harnesses'),
     ('harnesses', NUM + r'\s+proof harnesses'),
     ('harnesses', NUM + r'\s+`#\[kani::proof\]` harnesses'),
@@ -1461,7 +1464,14 @@ def guard_violations(f, docs=None, ci_count_docs=None):
         p = os.path.join(ROOT, doc)
         if not os.path.exists(p):
             continue
-        for lineno, line in enumerate(read_text(p).split('\n'), 1):
+        text = read_text(p)
+        closure = os.path.join(HERE, 'vendor', 'acceptance', 'CLOSURE.json')
+        version = json.loads(read_text(closure))['family_version']
+        for match in re.finditer(r'acceptance(?: format)?\s+(\d+\.\d+\.\d+)', text):
+            if match.group(1) != version:
+                bad.append((doc, text[:match.start()].count('\n') + 1,
+                            'acceptance_version', match.group(1), version, match.group(0)))
+        for lineno, line in enumerate(text.split('\n'), 1):
             for key, got, matched in guard_line_hits(line):
                 # "N of M harnesses" is a CI-coverage claim only in the two docs that make it; other
                 # docs use the same words for history (COVERAGE.md: "210 of 210 harnesses").

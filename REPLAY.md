@@ -14,7 +14,7 @@ lids that the acceptance manifest records.
 acceptance-manifest gate against the pinned vendored
 validator, and exactly ONE Kani proof harness (`boolean::proofs::one_octet_is_canonical`, chosen
 because BOOLEAN is the smallest module with a documented mutation control — see
-`evidence/MUTATION-CONTROLS-2026-08-23-fivemodule.md`). Then it shows that same harness and that
+`evidence/MUTATION-CONTROLS-2026-08-23-fivemodule.md` (kept outside git; available on request; SHA-256 `8484f1b1a6e9ac6160726ff5e2a06003096704531558bb036069a0b7e8a8c449`)). Then it shows that same harness and that
 same validator each REJECT a deliberately broken input: a one-line code mutation, and a
 one-byte-flipped evidence record.
 
@@ -23,11 +23,11 @@ re-extracts the shipped Rust through Charon and Aeneas and checks all six L4/L5 
 wrong toolchain is a failure, never a skip. This re-executes the current Lean baseline; it does not
 rerun every historical Lean mutation-control record that the acceptance manifest validates. L1 is
 accept-only: it seeds no Lean-side fault. The reject side is the six recorded controls under
-`evidence/lid-mutation-controls-2026-08-29/`; S2 hash-validates their public projections but does not
+`evidence/lid-mutation-controls-2026-08-29/` (kept outside git; available on request; SHA-256 file index `docs/request-only-lid-controls.sha256`, index SHA-256 `7bfdb5b112749acb3b48534b701599502ded2d2d575b99d888282223f00312cb`); S2 hash-validates their public projections but does not
 re-execute them. A green Lean run can refresh tracked `lean/lid-source-state.txt` when its recorded
 source hashes changed. Lean build state stays under ignored `lean/.lake/`.
 
-**It does not replay:** the full 203-harness Kani floor (`./check.sh`/`cargo kani -Z stubbing`,
+**It does not replay:** the full 302-harness Kani floor (`./check.sh`/`cargo kani -Z stubbing`,
 which needs ~24 GB RAM — see the README's "Verify it yourself" §1), any claim about the X.509 layer,
 or real-world certificate correctness. In the default mode it also does not execute Lean. One Kani
 harness passing is evidence about one bounded property of one primitive codec, not about the crate
@@ -57,6 +57,7 @@ demonstration of the *mechanism*, not a substitute for either.
 ```sh
 ./replay.sh               # default laptop replay; validates Lean records but does not run Lean
 ./replay.sh --with-lean   # also re-extracts and checks all six Lean lids; fail-closed
+./replay.sh --manifest-control-only  # S5 alone; no Kani or Lean
 ```
 
 The name is the default-mode budget, not a promise for the optional Lean mode. The measured

@@ -1535,6 +1535,39 @@ class LexicalCounting(unittest.TestCase):
         self.assertEqual(offenders, [], 'the lexical count would mis-credit these tokens')
 
 
+class DeliveryProseGuards(unittest.TestCase):
+    def test_new_count_phrases_are_guarded(self):
+        for text, expected in [
+            ('full 203-harness Kani floor', ('harnesses', 203)),
+            ('headline is "210 of 210 harnesses SUCCESSFUL"', ('harnesses', 210)),
+            ('the eight modular harnesses', ('stub_harnesses', 8)),
+            ('the 29 modular harnesses', ('stub_harnesses', 29)),
+        ]:
+            self.assertIn(expected, [(k, n) for k, n, _ in gen.guard_line_hits(text)])
+
+    def test_stale_version_and_counts_fail_the_existing_prose_gate(self):
+        f = facts()
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, 'current.md')
+            old_root = gen.ROOT
+            try:
+                gen.ROOT = directory
+                with open(path, 'w') as output:
+                    output.write('acceptance format\n0.3.2; full 203-harness Kani floor; '
+                                 'headline is "210 of 210 harnesses SUCCESSFUL"; '
+                                 'the eight modular harnesses\n')
+                bad = gen.guard_violations(f, docs=['current.md'], ci_count_docs=[])
+                self.assertEqual({row[2] for row in bad},
+                                 {'acceptance_version', 'harnesses', 'stub_harnesses'})
+                with open(path, 'w') as output:
+                    output.write('acceptance format 0.4.0; full %d-harness Kani floor; '
+                                 'the %d modular harnesses\n' %
+                                 (f['totals']['harnesses'], f['totals']['stub_harnesses']))
+                self.assertEqual(gen.guard_violations(f, docs=['current.md'], ci_count_docs=[]), [])
+            finally:
+                gen.ROOT = old_root
+
+
 class CiHarnessCountIsGated(unittest.TestCase):
     """"N of M harnesses run in CI" was hand-typed ("221 of 302") and went stale (the shard filters
     select 225). `ci_harnesses` is now derived from ci.yml's shard filters by qualified-name

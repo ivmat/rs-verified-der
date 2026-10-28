@@ -65,7 +65,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
 - **A2 · CBMC 6.8.0 and its SAT backend decide the queries correctly.** Underneath Kani sit CBMC's
   symbolic execution, its bit-precise encoding of the verification conditions, and the SAT solver
   that discharges them (CaDiCaL 2.0.0 by default — read from the committed run's own banner in
-  `evidence/check-69bbc9f.log`, not assumed). An encoding bug, an unsound simplification, or a
+  `evidence/check-69bbc9f.log` (kept outside git; available on request; SHA-256 `d1659f340b9fd8e0a3b2e97cc6c7054f26908c669c106fbdee02a35ac6ec641a`), not assumed). An encoding bug, an unsound simplification, or a
   solver that answers UNSAT where the formula is satisfiable all produce a green run over a false
   property, and no artifact in this repository would show it.
   **fails-if:** an upstream CBMC/CaDiCaL soundness advisory; a re-run under a different solver
@@ -80,7 +80,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   certificate accepted by `bv_decide`, would let a false theorem elaborate.
   **fails-if:** an upstream Lean/`bv_decide` soundness report at `leanprover/lean4:v4.30.0-rc2`;
   a lid theorem that still builds after its statement is mutated into a false one — measured for all
-  six lids in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (eleven planted mutations, eleven RED:
+  six lids in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (kept outside git; available on request; SHA-256 `06c0596c537ea322dfc492f69bd23db69333936059258279d8444a0f5f9c4ee6`) (eleven planted mutations, eleven RED:
   six in the original campaign, three in its first addendum for the `decode_length_used_le` copies,
   two in its second for the `length_decode_total` corollaries),
   which is a probe of the *lid's* oracle and only incidentally of the kernel.
@@ -107,7 +107,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   theorem that contradicts a Kani result on the overlapping (bounded) domain — the two lineages
   cross-check each other there, and a disagreement is the loudest signal available;
   a `--opaque` carve-out silently growing to cover a function a lid's theorem *mentions*
-  (audited by hand in `evidence/AXIOM-AUDIT-2026-08-18.md` §1b; not gated).
+  (audited by hand in `evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`) §1b; not gated).
   **load-bearing-for:** every ∀-length claim, and the crate's headline that six codecs are proven
   over inputs of any length.
 
@@ -128,7 +128,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
 - **A6 · The lids' declared axioms are what they claim to be: 13 characterisations of upstream
   `core` primitives, and nothing about this crate's own code.** The six lids declare **13** `axiom`s
   (17 until 2026-08-19; see the two tombstones below). They were audited once, by hand, against
-  upstream sources (`evidence/AXIOM-AUDIT-2026-08-18.md`), with this result:
+  upstream sources (`evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`)), with this result:
   - **13 are upstream-primitive specs** — characterisations of rustc `core` functions Aeneas does
     not model (`<[T]>::first`, `Option::is_some_and`, `Result::map_err`,
     `<usize as TryFrom<u32>>::try_from`, `&u8 & u8`), each verified faithful against the actual
@@ -298,7 +298,7 @@ is itself an assumption.
   accepted `length.decode_length` never reports consuming more bytes than its input holds
   (`decode_length s = ok (.Ok (v, l_used)) → l_used.val ≤ s.val.length`). Its warrant was a reading
   of `der-verified/src/length.rs:74-109` plus bounded Kani — true of the shipped code, but not
-  machine-checked. `evidence/AXIOM-AUDIT-2026-08-18.md` §2.7 named it the audit's one real residual.
+  machine-checked. `evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`) §2.7 named it the audit's one real residual.
   **Discharged 2026-08-19 by proof.** `LengthProofs.lean`'s `decode_length_used_le` (with
   `decode_length_used_le_spec`, `decode_length_loop_total`, `low7_eq_mod`) proves it as a branch walk
   over `decode_length`; the same proof, character-for-character, now stands in `TlvProofs.lean` and
@@ -309,8 +309,8 @@ is itself an assumption.
   certificate, no `sorryAx`, and no crate-code assumption.
   **Artifacts:** `lean/LengthProofs.lean` (§"The consumption bound"), the corresponding sections of
   `lean/TlvProofs.lean` / `lean/SequenceProofs.lean`; a green `lean/check_lean.sh` (re-extraction +
-  drift + sorry-gate); the discharge addendum in `evidence/AXIOM-AUDIT-2026-08-18.md`; and the
-  three planted-mutation negative controls in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md`
+  drift + sorry-gate); the discharge addendum in `evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`); and the
+  three planted-mutation negative controls in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (kept outside git; available on request; SHA-256 `06c0596c537ea322dfc492f69bd23db69333936059258279d8444a0f5f9c4ee6`)
   (M7–M9), which confirm the new statements are load-bearing rather than vacuous.
   **What did NOT change:** the security-relevant `used ≤ input.length` conclusion the `tlv`/`sequence`
   lids sell still comes from `decode_tlv`'s own runtime guard, exactly as before. This closed an
@@ -325,7 +325,7 @@ is itself an assumption.
   `der_length_extract.length.decode_length`, `der_tlv_extract.…` and `der_sequence_extract.…` are
   three distinct constants; the argument that a theorem about the first is a theorem about the other
   two was a hand argument backed by a namespace-normalised `diff` of the extracts
-  (`evidence/AXIOM-AUDIT-2026-08-18.md` §2.6), not by the kernel.
+  (`evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`) §2.6), not by the kernel.
   **Discharged 2026-08-19 by proof, in each lid's own namespace.** A6a's discharge left
   `decode_length_used_le_spec` — an **unhypothesised** Aeneas triple about *this* pass's
   `decode_length` — standing in every lid that carries a `length` extract (`LengthProofs`,
@@ -339,8 +339,8 @@ is itself an assumption.
   **Artifacts:** the `length_decode_total` theorems at the end of the consumption-bound section of
   `lean/TlvProofs.lean` and `lean/SequenceProofs.lean`, each with its own `#print axioms` line; a
   green `lean/check_lean.sh` (re-extraction + drift + `lake build` + sorry-gate) archived in
-  `evidence/`; the second discharge addendum in `evidence/AXIOM-AUDIT-2026-08-18.md`; and the two
-  planted-mutation negative controls in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (M10-M11),
+  `evidence/`; the second discharge addendum in `evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`); and the two
+  planted-mutation negative controls in `evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (kept outside git; available on request; SHA-256 `06c0596c537ea322dfc492f69bd23db69333936059258279d8444a0f5f9c4ee6`) (M10-M11),
   which confirm the corollary is load-bearing and cannot be strengthened into the false "always
   accepts" statement.
   **What did NOT change:** the fact was already proved, so no ∀-length claim got stronger. What
@@ -364,3 +364,20 @@ The log records the exit, harness results, launch tree state and Lean stage resu
 Control attests the 24 GB cap and the journal peak of 22.8 GB.
 The generator checks the declaration shape and the build-input diff. CI does not re-read local run logs.
 Full run evidence is kept outside git, available on request. Verify requested bytes against the recorded SHA-256.
+
+## Acceptance manifest assumption ids
+
+These ids resolve the `assumptions` fields in `der-verified/acceptance.toml`.
+They also resolve A-17 in the per-claim carry-over disclosures.
+They are distinct from the older A1-style ids above.
+
+- A-2: Lean's kernel and the bounded model checker's decision procedures are sound at the recorded versions.
+- A-3: The recorded compiler and elaborator implement their stated semantics. The proofs do not verify those tools.
+- A-5: Gates run as recorded. Logs, receipts, clocks and filesystems report the actual run.
+- A-6: Authors and reviewers record actual observations. Prose and ungated judgments can drift.
+- A-11: The virtual machine and its host execute the recorded tools without altering results. Records remain unsigned.
+- A-12: The local operating system and executable search path are uncompromised.
+- A-13: Package registries and toolchain channels supply the pinned bytes. Hashes check integrity where recorded.
+- A-16: Git objects and their content hashes identify the recorded source without a collision or hidden replacement.
+- A-17: File-level carry-over assumes the unchanged file determines the control result at the same toolchain.
+  Cross-file build inputs can invalidate this assumption. The consuming claim states its file and voiding condition.

@@ -165,7 +165,7 @@ closed here:
   was logged as open rather than claimed either way.
 
   **Resolved 2026-07-30: the status is UNSATISFIED.** The full-suite run committed at
-  `evidence/check-b355f76.log` reached a verdict for this harness — `VERIFICATION: SUCCESSFUL` with
+  `evidence/check-b355f76.log` (kept outside git; available on request; SHA-256 `b964e004ad119bfc451efae90d110bbe3d08934202ee095ccdc2b5305d7073ce`) reached a verdict for this harness — `VERIFICATION: SUCCESSFUL` with
   `0 of 1 cover properties satisfied` — under a `MemoryMax=22G` cgroup scope with the box otherwise
   idle. So it joins the other two as a *disclosed known-unsatisfiable* cover (`PROOF_MANIFEST.md`
   §8.2) rather than an unknown, and the reduced `[u8; 13]` buffer is the reason: two minimal

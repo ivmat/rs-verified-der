@@ -5,7 +5,7 @@ real X.509 parser differentials live. Codec evidence is machine-checkable and re
 clone, but it is **uneven**: read the shipped per-claim assurance manifest (`acceptance.toml`) before
 relying on any of it.
 
-**Status:** pre-1.0 (`0.3.0`). The acceptance 0.4.0 manifest has **876 requirement claims**: **5 A4**, **202 A3**, and **176 weighted**. It also records 120 evidenced A0 claims, 25 gaps, 305 excluded requirements, and 219 not-applicable requirements. Counts are inventory, not a coverage percentage. The API is unstable. Evaluate this crate as a building block with bounded and uneven evidence.
+**Status:** pre-1.0 (`0.3.0`). The acceptance 0.4.0 manifest has **876 requirement claims**: **2 A4**, **195 A3**, and **172 weighted**. It also records 130 evidenced A0 claims, 25 gaps, 305 excluded requirements, and 219 not-applicable requirements. Counts are inventory, not a coverage percentage. The API is unstable. Evaluate this crate as a building block with bounded and uneven evidence.
 
 
 Read "primitive" strictly: the `x509_*` layer is **structural framing composing the core codecs**,
@@ -42,17 +42,25 @@ Some of the evidence travels with the crate and some of it does not, so here is 
   ```
 - **`acceptance.toml`** — the proof envelope in machine-checkable form: every claim with its grade,
   its evidence, and whether it is *weighted*. It follows acceptance format 0.4.0 with the Rust
-  verification profile. **176 of 876 claims are weighted**. Each weighted claim carries a deciding recipe. Read each claim for its evidence and limits.
-- **All 1204 projected evidence records** in `evidence/acceptance-records/` — including the Lean-lid
+  verification profile. **172 of 876 claims are weighted**. Each weighted claim carries a deciding recipe. Read each claim for its evidence and limits.
+- **All 1197 projected evidence records** in `evidence/acceptance-records/` — including the Lean-lid
   records, so the Lean results are *readable and hash-checkable* here even though the proofs
   themselves are not.
 - **Where the full run evidence is.** The manifest and its evidence records are kept in the repository as a
   showcase. The full run evidence (run logs and control transcripts) is kept outside git and may be shared on
   request through other means. In the long term, acceptance evidence needs a channel that is separate from git.
   The acceptance format itself carries its own acceptance manifest, for completeness.
+- **`der.inventory.toml.vendored-copy`** supplies the pinned requirements inventory.
 - The manifest's `record` paths are relative to the manifest, so they resolve inside the unpacked
   crate. In a source checkout, `./check_fast.sh` verifies the pinned validator closure and checks
-  this manifest in strict mode.
+  this manifest in strict mode. Outside Git, use the validator from the source repository with an explicit root:
+
+  ```sh
+  python3 /path/to/source/gates/vendor/acceptance/format_acceptance/tools/check_acceptance.py \
+      --strict --strict-weight --root /path/to/unpacked-crate /path/to/unpacked-crate/acceptance.toml
+  ```
+
+  Assumption ids are defined in the source repository's `ASSUMPTIONS.md`.
 
 **Repository only** (not in the package):
 
@@ -81,10 +89,12 @@ key/signature containers — `rsa_public_key` (PKCS#1 `RSAPublicKey`), `ec_priva
 (SEC1 `ECPrivateKey`), `rsa_private_key` (PKCS#1 `RSAPrivateKey`), and `encrypted_private_key_info`
 (RFC 5958 `EncryptedPrivateKeyInfo`) — parse the same way: DER framing/canonicality only, key
 material exposed as opaque validated bytes, no cryptographic interpretation. **Typed profile
-layer (Kani-proven, no Lean lid):** the `profile` module checks
-four RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, the
-UTCTime/GeneralizedTime year-2050 encoding choice, and no fractional seconds in a GeneralizedTime); each is proven as a biconditional over symbolic
-field values, as is their documented precedence — see `PROOF_MANIFEST.md`.
+layer (bounded Kani evidence, no Lean lid):** the `profile` module checks seven RFC 5280 rules:
+signature-algorithm equality, extensions-require-v3, the year-2050 encoding choice, no fractional
+GeneralizedTime seconds, distinct extension ids, nonempty issuer, and distinct attribute types in each RDN.
+Rules 1–4 have bounded biconditional proofs. Rules 5 and 7 rely on unit tests for id comparison.
+Rule 6 has a bounded helper proof. Whole-profile totality and precedence proofs remain conditional
+on the undischarged totality of `has_repeated_leading_oid`. See `PROOF_MANIFEST.md`.
 **Out of scope:** signature/crypto verification, path/trust validation, curve-order range and low-S
 checks on `ECDSA-Sig-Value`, and every other RFC 5280 profile rule (name constraints, key usage, basic
 constraints, validity-against-clock).

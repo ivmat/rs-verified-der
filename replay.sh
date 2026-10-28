@@ -31,11 +31,13 @@ MODULE="boolean"
 MEM_CAP_KB=8000000        # ~8 GB
 KANI_TIMEOUT_S=300        # 5 minutes
 WITH_LEAN=0
+MANIFEST_CONTROL_ONLY=0
 
 usage() {
-    echo "usage: ./replay.sh [--with-lean]"
+    echo "usage: ./replay.sh [--with-lean | --manifest-control-only]"
     echo
     echo "  default      laptop-sized tests, manifest validation, one Kani harness, and controls"
+    echo "  --manifest-control-only  run S5 alone, without proof tools"
     echo "  --with-lean  also re-extract and check all six Lean lids; missing tools are a failure"
 }
 
@@ -49,6 +51,9 @@ while [ "$#" -gt 0 ]; do
             fi
             WITH_LEAN=1
             ;;
+        --manifest-control-only)
+            MANIFEST_CONTROL_ONLY=1
+            ;;
         -h|--help)
             usage
             exit 0
@@ -61,6 +66,11 @@ while [ "$#" -gt 0 ]; do
     esac
     shift
 done
+
+if [ "$WITH_LEAN" -eq 1 ] && [ "$MANIFEST_CONTROL_ONLY" -eq 1 ]; then
+    echo "replay.sh: --with-lean and --manifest-control-only cannot be combined" >&2
+    exit 64
+fi
 
 BASE_TMP="$(mktemp -d)"
 RESULTS="$BASE_TMP/results.tsv"
@@ -157,6 +167,7 @@ kani_install_hint() {
 }
 
 # ---------------------------------------------------------------------------
+if [ "$MANIFEST_CONTROL_ONLY" -eq 0 ]; then
 echo "== S1: cargo test -p der-verified --lib =="
 run_timed s1 cargo test -p der-verified --lib --manifest-path "$ROOT/Cargo.toml"
 if [ "$RC" -eq 0 ]; then
@@ -271,15 +282,24 @@ fi
 
 # ---------------------------------------------------------------------------
 echo
+fi
 echo "== S5: negative control B — tampered evidence record (temp copy, never touches tracked files) =="
 S5_DIR="$(mktemp -d)"
 cp -r "$ROOT/der-verified" "$S5_DIR/der-verified"
-rec="$S5_DIR/der-verified/evidence/acceptance-records/check-402719a-big-integer-proofs-empty-is-empty.json"
-if [ ! -f "$rec" ]; then
-    echo "S5 FAILED: expected evidence record not found at $rec — acceptance.toml's evidence" >&2
-    echo "store layout changed under this script." >&2
-    exit 1
-fi
+# Select a record cited by the current manifest. Do not pin a retired filename.
+rec="$(python3 - "$S5_DIR/der-verified" <<'PYSELECT'
+import pathlib, sys, tomllib
+root = pathlib.Path(sys.argv[1])
+manifest = tomllib.loads((root / "acceptance.toml").read_text())
+record = next(ev["record"] for claim in manifest["claim"]
+              if claim.get("weight") == "weighted" for ev in claim.get("evidence", [])
+              if "record" in ev)
+path = (root / record).resolve()
+if not path.is_relative_to(root.resolve()) or not path.is_file():
+    sys.exit("S5: cited record is not a file inside the package")
+print(path)
+PYSELECT
+)"
 before_sha="$(sha256sum "$rec" | cut -d' ' -f1)"
 python3 - "$rec" <<'PYEOF'
 import sys
@@ -295,8 +315,8 @@ if [ "$before_sha" = "$after_sha" ]; then
 fi
 
 run_timed s5 python3 -B "$ROOT/gates/vendor/acceptance/format_acceptance/tools/check_acceptance.py" \
-    --strict --strict-weight "$S5_DIR/der-verified/acceptance.toml"
-if [ "$RC" -ne 0 ] && grep -q 'record_hash MISMATCH' "$OUTLOG"; then
+    --strict --strict-weight --root "$S5_DIR/der-verified" "$S5_DIR/der-verified/acceptance.toml"
+if [ "$RC" -ne 0 ] && grep -q 'record digest differs from declared record: hash' "$OUTLOG"; then
     observed="REJECT"
 else
     observed="ACCEPT"
@@ -312,6 +332,11 @@ if [ "$observed" != "REJECT" ]; then
 fi
 rm -rf "$S5_DIR"
 S5_DIR=""
+
+if [ "$MANIFEST_CONTROL_ONLY" -eq 1 ]; then
+    echo "replay.sh: S5 observed the expected rejection."
+    exit 0
+fi
 
 # ---------------------------------------------------------------------------
 if [ "$WITH_LEAN" -eq 1 ] && [ "$MISSING_KANI" -eq 0 ]; then

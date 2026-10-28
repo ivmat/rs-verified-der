@@ -13,7 +13,7 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 [`README.md`](README.md)'s verification map are rebuilt from source by
 `gates/gen_proof_manifest.py`, and this file is written by hand.
 
-**Certified at `c7a2e26`.** The run used a clean tree at launch. Later delivery edits change documents, gates and acceptance files. Use the freshness command below to check the build inputs. Section 7 states the certification procedure.
+**Certified at `c7a2e26`.** The run used a clean tree at launch. Later delivery edits change documents, gates, acceptance files and Cargo package inclusion. The generated currency check conservatively detects that Cargo manifest change. Use the freshness command below to check the build inputs. Section 7 states the certification procedure.
 
 ---
 
@@ -40,7 +40,9 @@ documents are authoritative and this file has a bug: [`PROOF_MANIFEST.md`](PROOF
 
 ## 2. Weighted rows and admitted rows — read this before reading any row
 
-**Every claim on the declared spec axis is admitted to this table, including the ones no machine decides.**
+**This table selects consumer rules on the declared spec axis, including rules no machine decides.**
+The complete requirements inventory is `docs/requirements/der.inventory.toml`. The generated
+acceptance manifest has one claim per inventory item. This hand-written table does not replace it.
 A claim left out of a coverage table is a claim the reader has to infer from silence, which is the
 failure this file exists to prevent. But admission is not endorsement. Rows fall into two tiers, and
 the tier is visible beside the `strength` column.
@@ -69,8 +71,9 @@ combination, which is a fact about today's rows, not a rule about the tiers.
 **The split cannot be crossed by writing better prose.** A row becomes weighted when a deciding
 recipe is attached to it, and not before.
 
-**Of the 75 rows below, 36 are weighted and 39 are admitted**, with one (`DER-C-STR-2`) resting on
-symbolic harnesses while naming the fixture-shaped ones beside it that would be a probe alone.
+The row strengths below describe each recipe's scope. Current claim, band and weight totals come
+from the generated requirements summary in README.md and `der-verified/acceptance.toml`.
+`DER-C-STR-2` rests on symbolic harnesses and also names narrower fixture tests.
 
 **One row, one claim.** Where a single item genuinely carried two strengths, it is **split into two
 rows** rather than given a two-grade cell. There are two such splits, and both are load-bearing:
@@ -86,8 +89,7 @@ A cell reading *"proved; and also argued"* lets a reader take whichever half the
 precisely the failure this format exists to prevent. **The `DER-F-8` split was not in this file's
 first draft** — the row carried both grades at once until a checker refused it.
 
-**That more than half the rows are admitted is this table working, not failing.** The crate's own
-headline is "210 of 210 harnesses SUCCESSFUL". That is true, and it invites the reading that every
+The current proof floor is "302 of 302 harnesses SUCCESSFUL". That count can suggest that every
 *rule* is decided. Compare `DER-F-4` (weighted: a Lean lid over all input lengths) with
 `DER-X-BOUND` (admitted: a compositional argument nobody has machine-checked). Both sit under the
 same green check. This table's job is to stop them reading alike.
@@ -146,12 +148,12 @@ All commands run from the repository root at `c7a2e26` (or at any later commit f
 |---|---|---|
 | **G** | `DER_REQUIRE_LEAN=1 ./check.sh` | Exit 0 and Lean lid PASS. Floor B at `c7a2e26` runs all 302 harnesses and the six lids in one sequential pass. Needs at least 24 GB RAM. The environment flag makes an absent Lean stack fail the stage. |
 | **K** `<H>` | `cargo kani -Z stubbing --manifest-path der-verified/Cargo.toml --harness <H>` | `VERIFICATION:- SUCCESSFUL` for that one harness (note Kani's literal spelling, with the dash). Re-derives the row from source. Seven modules are HEAVY (>7 GB peak, up to ~20 GB): `set_of`, `sequence`, `x509_name`, `x509_tbs_certificate`, `x509_certificate`, `x509_extension`, `rsa_private_key` — see `gates/tiers.txt`. |
-| **R** `<H>` | Request the full run evidence kept outside git. Check its raw SHA-256 against §1. Read the `Checking harness <H>` block at `c7a2e26`. | The block records the verdict and cover tally. All heavy harnesses are in the same pass. Use this recipe only when the freshness check in §1 passes. |
+| **R** `<H>` | Request the full run evidence (kept outside git; available on request; raw SHA-256 `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`). Read the `Checking harness <H>` block at `c7a2e26`. | The block records the verdict and cover tally. All heavy harnesses are in the same pass. Use this recipe only when the freshness check in §1 passes. |
 | **N** `<thm>` | `sh lean/check_lean.sh`, then read `<thm>` in `lean/<X>Proofs.lean` | **Require the literal `lean lid: PASS (sorry-free)`.** The lid re-extracts from the shipped `.rs` and fails closed on drift. |
 | **T** `<filter>` | `cargo test --manifest-path Cargo.toml <filter>` | `test result: ok`. Point evidence only. |
 | **A** `<pattern>` | a grep that **must return nothing**, with its positive control | Used only by `not-covered` rows. A grep-zero is a claim about your pattern, so each A-recipe carries the control input that *would* match. See the warning below. |
 | **E** `<pattern>` | an absence check **scoped to the implementation region**, with two positive controls: `sed -n '1,/^mod tests/p' der-verified/src/profile.rs \| grep -Eic '<pattern>'` | **0**, where the same pattern class finds a rule that *is* enforced (control 1) and the unscoped file does not return 0 (control 2). See the warning below for why both controls are needed. |
-| **D** `<doc §>` | open the cited section and read the argument | `inspection-argued` rows only. There is nothing to run. |
+| **D** `<doc §>` | Read the cited source document. For a request-only artifact, request it and verify its stated SHA-256 first. | `inspection-argued` rows only. There is nothing to run. |
 
 > ### Absence checks are the weakest recipe here, and this file got one wrong twice
 >
@@ -253,7 +255,7 @@ in §6.3. When recipe **R** shows a `0 of N cover properties satisfied` line, re
 | `DER-C-ENUM-1` | ENUMERATED **content** follows the INTEGER rules (§8.4) | done | **CONTRACT** (bounded) (delegation proved over symbolic content; inherits `DER-C-INT-1`) | `K enumerated::proofs::decode_delegates_to_integer` · `K enumerated::proofs::encode_delegates_to_integer` |
 | `DER-C-ENUM-2` | ENUMERATED uses identifier UNIVERSAL 10 | done | **test-only** — the tag is a constant checked by a concrete unit test; no harness asserts it | `T enumerated::tests` |
 | `DER-C-UTF8` | UTF8String content is well-formed UTF-8; ill-formed input is rejected with its position (§8.23) | done | **CONTRACT** (bounded) (oracle is `core`'s own `str::from_utf8`) | `K utf8_string::proofs::validate_iff_std` · `K utf8_string::proofs::ill_formed_reports_position` · `K utf8_string::proofs::constructed_form_is_rejected` |
-| `DER-C-STR-1` | PrintableString / IA5String / NumericString / VisibleString accept exactly their charset (§8.23, X.680) | done | **CONTRACT** (bounded) (biconditional against an independent charset oracle, all four types) | `K restricted_string::proofs::validate_iff_all_in_charset_printable` (and `_ia5`, `_numeric`, `_visible`) · `K restricted_string::proofs::charset_exactly_matches_oracle_printable` (×4) |
+| `DER-C-STR-1` | PrintableString / NumericString / VisibleString accept their repertoires; IA5String also excludes ESC (§8.23, X.680, X.690 Table 3) | done | **CONTRACT** (bounded) (bounded repertoire equivalence, with a separate IA5 ESC exclusion) | `K restricted_string::proofs::validate_iff_all_in_charset_printable` (and `_ia5`, `_numeric`, `_visible`) · `T ia5` · source details in `docs/requirements/evidence/restricted_string.toml` |
 | `DER-C-STR-2` | Those four types reject the constructed form and require their own tag | done | **CONTRACT** (bounded) — *at the typed parser*. The label rests on the `accepted_identifier_*` harnesses, which are fully symbolic; the `constructed_form_*` and `wrong_tag_*` harnesses beside them are fixture-shaped and would be PROBE alone | `K restricted_string::proofs::accepted_identifier_is_canonical_printable` (×4 — rules out high-tag forms, wrong class/number **and** the constructed form) · `K restricted_string::proofs::constructed_form_is_rejected_printable` (×4) |
 | `DER-C-UTC` | UTCTime is exactly `YYMMDDHHMMSSZ` — 13 octets, mandatory seconds, `Z` terminator, field ranges (§11.8) | done | **CONTRACT** (bounded) (biconditional against a separate canonical-form oracle) | `K utc_time::proofs::accepted_iff_canonical_oracle` · `K utc_time::proofs::not_zulu_is_classified` · `K utc_time::proofs::full_year_pivot_is_correct` |
 | `DER-C-GEN` | GeneralizedTime is `YYYYMMDDHHMMSS[.fff]Z` — mandatory seconds, `Z`, canonical fraction with no trailing zeros (§11.7) | done | **CONTRACT** (bounded) (biconditional oracle) | `K generalized_time::proofs::accepted_iff_canonical_oracle` · `K generalized_time::proofs::fraction_trailing_zero_is_classified` · `K generalized_time::proofs::bad_fraction_separator_is_classified` |
@@ -278,7 +280,7 @@ rows `partial`. **The key-format rows (`DER-K-*`: pkcs8, epki, rsa_public_key, e
 ecdsa_sig_value) additionally carry a `*_parse_faithful` functional contract (2026-09-17):** on any
 accepted symbolic input it proves the decode is *faithful* — exact envelope consumption, field
 sub-slice identity, and exact field tiling — with an observed-red control (see
-`evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git, available on request)). That lifts
+`evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`)). That lifts
 their strength to `CONTRACT` (bounded-backing, `0..=16` octets) for structural faithfulness; they stay
 `partial` on the rule axis because full *value* conformance (e.g. that an OID names a known algorithm,
 or a modulus is a valid key) is still not decided. **Two `x509_*` framing sub-modules now also carry a
@@ -288,8 +290,8 @@ cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`) remain p
 
 | id | structure (RFC 5280 unless noted) | status | strength | verify |
 |---|---|---|---|---|
-| `DER-X-ALGID` | `AlgorithmIdentifier` §4.1.1.2 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: OID sub-slice identity + **canonical-OID conformance** (`validate_oid`) + parameters raw-TLV identity/classification + exact tiling; 2 observed-red controls (tiling + canonicality). Rule-axis `partial`, but the canonical-OID value property IS proven | `K x509_algorithm_identifier::proofs::parse_faithful` · `K …::parse_algorithm_identifier_never_panics` · `D evidence/contract-controls-2026-09-17/x509algid/` |
-| `DER-X-SPKI` | `SubjectPublicKeyInfo` §4.1.2.7 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: BIT STRING classification + value identity + exact tiling; 2 observed-red controls (tiling + classification). Delegated `algorithm` field is plumbing-checked here, its correctness riding on `DER-X-ALGID`'s contract | `K x509_spki::proofs::parse_faithful` · `K x509_spki::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/x509spki/` |
+| `DER-X-ALGID` | `AlgorithmIdentifier` §4.1.1.2 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: OID sub-slice identity + **canonical-OID conformance** (`validate_oid`) + parameters raw-TLV identity/classification + exact tiling; 2 observed-red controls (tiling + canonicality). Rule-axis `partial`, but the canonical-OID value property IS proven | `K x509_algorithm_identifier::proofs::parse_faithful` · `K …::parse_algorithm_identifier_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `x509algid`) |
+| `DER-X-SPKI` | `SubjectPublicKeyInfo` §4.1.2.7 — framing | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: BIT STRING classification + value identity + exact tiling; 2 observed-red controls (tiling + classification). Delegated `algorithm` field is plumbing-checked here, its correctness riding on `DER-X-ALGID`'s contract | `K x509_spki::proofs::parse_faithful` · `K x509_spki::proofs::parse_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `x509spki`) |
 | `DER-X-NAME` | `Name` / `RDNSequence` §4.1.2.4 — framing | partial | **CONTRACT** (bounded-backing) — exact `Result` and exact error payload for single-ATV RDNs, two single-ATV RDNs and one RDN with two ATVs of different encoded lengths (1-octet OIDs), **except** the inner payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail), which is not pinned; equal-length ATV pairs (solver tool limit) and RDNs with more than two ATVs are **not covered**; the composition harness is modular (stubs `validate_rdn`) and is discharged by the heavy `validate_rdn_never_panics`, which has no cover of its own. See §6.3 | `K x509_name::proofs::validate_never_panics` (stubs `validate_rdn`) · `K x509_name::proofs::validate_rdn_never_panics` (**no cover at all**) · `K x509_name::proofs::validate_name_single_atv_exact` · `K x509_name::proofs::validate_name_two_rdns_exact` · `K x509_name::proofs::validate_name_two_atvs_exact` · `K x509_name::proofs::validate_name_two_atvs_unsorted`. **Added after the `d05d3f2` row text was written (full floor now at `c7a2e26`):** exact-result and exact-error harnesses with no stubs, for single-ATV RDNs, two single-ATV RDNs and one RDN with two ATVs of different encoded lengths, with the same `BadOuterSeq` inner-payload exception (14 `validate_name_*` harnesses in all, see PROOF_MANIFEST.md §5). **Not covered:** two ATVs of equal encoded length (solver tool limit) and RDNs with more than two ATVs. `validate_rdn_never_panics` is a heavy harness included in the single 24 GB pass at `c7a2e26`; disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-X-VALID` | `Validity` §4.1.2.5 — framing | partial | **CONTRACT** (bounded-backing, skeletons `≤47` octets) — exact `Result` and exact error payload for both field encodings and `GeneralizedTime` fractions of 0 to 3 digits; a `GeneralizedTime` failure is pinned only at `BadLength`, the outer-envelope `BadOuterSeq` payload is not pinned, the year-2050 rule is not enforced; **cover UNSATISFIED** for `parse_never_panics` at `[u8; 16]` (disclosed, witnessed by `parse_validity_ok_path_witnessed`) — see §6.3 | `R x509_validity::proofs::parse_never_panics` (`0 of 1 cover`) · `K x509_validity::proofs::parse_validity_ok_path_witnessed` (companion witness, no stubs) · `K x509_validity::proofs::parse_validity_faithful` (and `_uu`/`_ug`/`_gu`/`_gg`) · `K x509_validity::proofs::parse_validity_rejects_field_content`. **Added after the `d05d3f2` row text was written (full floor now at `c7a2e26`):** 10 exact-result harnesses (skeletons ≤47 bytes, `GeneralizedTime` fractions 0 to 3 digits). The `parse_never_panics` cover is still `0 of 1` at `d68eeca` (disclosed, witnessed by the companion above); disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-X-EXT-1` | `Extension` / `Extensions` §4.1.2.9 — framing | partial | **CONTRACT** (bounded-backing) — `parse_extension` exact over `≤16` octets fully symbolic; `validate_extensions` over at most two members with 1-octet OIDs and empty values (`extnValue` uninterpreted); the `Ok` cover of `validate_extensions_never_panics` is **UNSATISFIED** at 13 octets (disclosed, witnessed by `validate_extensions_ok_path_witnessed`); both heavy harnesses ran in the single 24 GB pass at `c7a2e26` — see §6.3 | `R x509_extension::proofs::validate_extensions_never_panics` (`0 of 1 cover`) · `K x509_extension::proofs::validate_extensions_ok_path_witnessed` · `K x509_extension::proofs::parse_extension_faithful` · `K x509_extension::proofs::validate_extensions_structured_two_members` · `K x509_extension::proofs::validate_extensions_rejects_outer_envelope`. **Added after the `d05d3f2` row text was written (full floor now at `c7a2e26`):** `parse_extension` ≤16 bytes fully symbolic; `validate_extensions` at most two members with 1-octet OIDs and empty values; `extnValue` uninterpreted. The two `validate_extensions_*` harnesses cited above as `R`/`K` ran in the single 24 GB pass at `c7a2e26`; disclosures: PROOF_MANIFEST.md §6.2 |
@@ -299,12 +301,12 @@ cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`) remain p
 | `DER-X-TBS-2` | DER `DEFAULT` omission for `version`: a present `[0]` encoding v1 is rejected (§11.5) | done | **test-only** — one concrete unit test; no harness asserts it | `T x509_tbs_certificate::tests` — `TbsCertificateError::VersionMustBeOmitted` |
 | `DER-X-CERT` | `Certificate` §4.1 — outermost composition | partial | **PROBE** (bounded) (panic-freedom, 1 stub, Ok-tail cover **satisfied**) — but see `DER-X-BOUND` | `K x509_certificate::proofs::parse_certificate_never_panics` |
 | `DER-X-BOUND` | **Panic-freedom at realistic input sizes** | **partial** | **inspection-argued** · ⚠ **UNWEIGHTED** | `D PROOF_MANIFEST.md` §8.1 — `x509_certificate` panic-freedom is proved at **≤12 bytes**; a real certificate is ~170 bytes. `rsa_private_key` at **≤20 bytes** vs ~317. Real-size panic-freedom *"rests on an un-machine-checked compositional argument"*. |
-| `DER-K-PKCS8` | PKCS#8 `PrivateKeyInfo` (RFC 5208 §5) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: exact consumption + sub-slice identity + exact field tiling; + observed-red control (rule-axis `partial`: structural faithfulness, not full value conformance) | `K pkcs8::proofs::parse_faithful` · `K pkcs8::proofs::parse_never_panics` · `K pkcs8::proofs::parse_ok_path_witnessed` · `D evidence/contract-controls-2026-09-17/pkcs8/` |
-| `DER-K-EPKI` | `EncryptedPrivateKeyInfo` (RFC 5958 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K encrypted_private_key_info::proofs::parse_faithful` · `K encrypted_private_key_info::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/epki/` |
-| `DER-K-RSAPUB` | `RSAPublicKey` (RFC 8017 §A.1.1) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K rsa_public_key::proofs::parse_faithful` · `K rsa_public_key::proofs::parse_strict_never_panics` · `D evidence/contract-controls-2026-09-17/rsa/` |
+| `DER-K-PKCS8` | PKCS#8 `PrivateKeyInfo` (RFC 5208 §5) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode: exact consumption + sub-slice identity + exact field tiling; + observed-red control (rule-axis `partial`: structural faithfulness, not full value conformance) | `K pkcs8::proofs::parse_faithful` · `K pkcs8::proofs::parse_never_panics` · `K pkcs8::proofs::parse_ok_path_witnessed` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `pkcs8`) |
+| `DER-K-EPKI` | `EncryptedPrivateKeyInfo` (RFC 5958 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K encrypted_private_key_info::proofs::parse_faithful` · `K encrypted_private_key_info::proofs::parse_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `epki`) |
+| `DER-K-RSAPUB` | `RSAPublicKey` (RFC 8017 §A.1.1) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K rsa_public_key::proofs::parse_faithful` · `K rsa_public_key::proofs::parse_strict_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `rsa`) |
 | `DER-K-RSAPRIV` | `RSAPrivateKey` (RFC 8017 §A.1.2) | partial | **CONTRACT** (bounded-backing, backing `≤44` octets) for the two-prime structure — exact `Result` from the symbolic-content skeletons plus perturbation harnesses; the multi-prime member walk covers one member of three 1-octet INTEGERs with concrete member content only; behaviour at real size (~317 octets) is not machine-checked (compositional argument, see `DER-X-BOUND`); `BadOuterSeq` payload not pinned; no RSA arithmetic | `K rsa_private_key::proofs::parse_never_panics` (4 stub applications across its harnesses) · `K rsa_private_key::proofs::parse_faithful_two_prime_s1` · `K rsa_private_key::proofs::parse_faithful_two_prime_s2` · `K rsa_private_key::proofs::parse_multi_prime_faithful`. **Added after the `d05d3f2` row text was written (full floor now at `c7a2e26`):** exact `Result` for the two-prime structure (backing ≤44 bytes) and a multi-prime member walk over one member of three 1-octet INTEGERs with concrete member content; not covered: more than one member, multi-octet member INTEGERs, the strict entry point on a multi-prime input. Real-size (~317 bytes) panic-freedom is still the un-machine-checked compositional argument; disclosures: PROOF_MANIFEST.md §6.2 |
-| `DER-K-ECPRIV` | `ECPrivateKey` (RFC 5915 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode incl. both `[0]`/`[1]` optionals + observed-red control (rule-axis `partial`) | `K ec_private_key::proofs::parse_faithful` · `K ec_private_key::proofs::parse_never_panics` · `D evidence/contract-controls-2026-09-17/ec/` |
-| `DER-K-ECDSASIG` | `ECDSA-Sig-Value` (RFC 3279 §2.2.3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K ecdsa_sig_value::proofs::parse_faithful` · `K ecdsa_sig_value::proofs::parse_strict_never_panics` · `D evidence/contract-controls-2026-09-17/ecdsa/` |
+| `DER-K-ECPRIV` | `ECPrivateKey` (RFC 5915 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode incl. both `[0]`/`[1]` optionals + observed-red control (rule-axis `partial`) | `K ec_private_key::proofs::parse_faithful` · `K ec_private_key::proofs::parse_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `ec`) |
+| `DER-K-ECDSASIG` | `ECDSA-Sig-Value` (RFC 3279 §2.2.3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K ecdsa_sig_value::proofs::parse_faithful` · `K ecdsa_sig_value::proofs::parse_strict_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `ecdsa`) |
 | `DER-X-L4` | An unbounded (Lean) lid over **any** X.509 structural module | **not-covered** | **not-covered** | `D gates/map_declared.txt` row `x509_structural_lid` → `DER-REMAINING-WORK.md` §3. All seven `x509_*` modules are Kani-only. |
 
 **Disclosed exclusions of the exact-result harnesses (`x509_validity`, `rsa_private_key`, `x509_name`).** These are stated
@@ -317,14 +319,16 @@ No other claim in this document is widened by these statements. See also `PROOF_
 ### 5.4 RFC 5280 profile rules
 
 The `profile` module is the crate's only *semantic* layer, and — unusually for this crate — its rules
-are proved as **biconditionals**, which is stronger than the structural layer beneath it.
+have bounded proofs for rules 1–4 and selected helpers. Rules 5 and 7 use unit tests for id comparison.
+Whole-profile totality and precedence remain conditional on the unproved totality of
+`has_repeated_leading_oid`. This also qualifies `DER-P-4` and whole-function recipes in `DER-P-11`.
 
 | id | rule | status | strength | verify |
 |---|---|---|---|---|
 | `DER-P-1` | The inner `signature` and outer `signatureAlgorithm` must be identical (§4.1.1.2) | **partial** | **PROBE** (bounded) — a biconditional, but **monomorphic in slice length**: the OIDs are always 2 bytes and the parameters 1 byte. Since this rule is *about* the algorithm identifiers, that bound is on the rule itself, not incidental | `K profile::proofs::rule1_mismatch_iff_algorithms_differ` |
 | `DER-P-2` | Extensions may appear only in a v3 certificate (§4.1.2.1, §4.1.2.9) | done | **CONTRACT** (bounded) — biconditional over the rule's **full** domain: symbolic `version: u8` (all 256 values, not just 0/1/2) and symbolic extensions-present | `K profile::proofs::rule2_requires_v3_iff_extensions_present_and_not_v3` |
 | `DER-P-3` | Dates through 2049 use UTCTime; 2050 onward use GeneralizedTime (§4.1.2.5) | done | **CONTRACT** (bounded) (biconditional, plus a proof that UTCTime *cannot* denote ≥2050) | `K profile::proofs::rule3_generalized_too_early_iff_year_le_2049` · `K profile::proofs::utc_time_can_never_denote_2050_or_later` |
-| `DER-P-4` | Error precedence follows declaration order (determinism of the reported violation) | done | **CONTRACT** (bounded) | `K profile::proofs::error_precedence_follows_declaration_order` |
+| `DER-P-4` | Error precedence follows declaration order (determinism of the reported violation) | done | **CONTRACT** (bounded, conditional on `has_repeated_leading_oid` totality) | `K profile::proofs::error_precedence_follows_declaration_order` |
 | `DER-P-5` | Basic constraints (§4.2.1.9) | **not-covered** | **not-covered** | `E 'basic_?constraints'` → 0 in the implementation region; controls 6 and 14 as shown in §4. `gates/map_declared.txt` row `basic_constraints`. **The absence-grep this row used to name was unsound; see §4.** |
 | `DER-P-6` | Key usage (§4.2.1.3) | **not-covered** | **not-covered** | `E 'key_usage'` → 0 in the implementation region, **sharing only control 1** (`ExtensionsRequireV3`, scoped → 6) with `DER-P-5`. **Control 2 does not apply here**: `key_usage` also returns 0 unscoped (`grep -ic 'key_usage' der-verified/src/profile.rs` → 0) — profile.rs's `mod tests` carries no key-usage fixture at all (unlike `EXT_BASIC_CONSTRAINTS_DEFAULT`, reused generically across `DER-P-5`'s tests), so there is no fixture-shaped false positive for a second control to rule out, and scoping is not what produced this zero. `gates/map_declared.txt` row `key_usage`. |
 | `DER-P-7` | Name constraints (§4.2.1.10) | **not-covered** | **not-covered** | `E 'name_constraint'` → 0 in the implementation region, **sharing only control 1** (`ExtensionsRequireV3`, scoped → 6) with `DER-P-5`. **Control 2 does not apply here**: `name_constraint` also returns 0 unscoped (`grep -ic 'name_constraint' der-verified/src/profile.rs` → 0) — profile.rs's `mod tests` carries no name-constraints fixture at all, so there is no fixture-shaped false positive for a second control to rule out, and scoping is not what produced this zero. `gates/map_declared.txt` row `name_constraints`. |
@@ -332,6 +336,10 @@ are proved as **biconditionals**, which is stronger than the structural layer be
 | `DER-P-9` | Certificate-path / trust validation; signature and crypto verification | **not-covered** | **out-of-scope** | `D README.md` scope section — *"Out of scope (not implemented, not proven)"*. `gates/map_declared.txt` rows `path_validation`, `crypto_verification`. |
 | `DER-P-10` | String canonicalisation / name-comparison rules; OID semantics | **not-covered** | **out-of-scope** | `D PROOF_MANIFEST.md` §6.2 |
 | `DER-P-11` | A GeneralizedTime in `validity` must not carry fractional seconds (§4.1.2.5.2) — enforced by `validate_profile` since 0.2.0 | done | **CONTRACT** (bounded) — per-field biconditional (reference computed from the fraction window length, not from `require_no_fraction`); the fraction is a symbolic 0..=4-octet window (a 4-octet backing; lengths above 4 are covered by unit tests, not proved) and the rule reads emptiness only. Precedence relative to rules 1–3 is pinned by `DER-P-4` | `K profile::proofs::rule4_fraction_iff_generalized_with_fraction` · `K profile::proofs::validate_profile_is_exactly_the_documented_precedence` |
+
+| `DER-P-12` | Extension ids must be distinct (§4.2) | done | **test-only** for the real id comparison; envelope walk proof uses a stub | `T rules_5_to_7_end_to_end_on_specimens` · `T duplicate_extension` · `K profile::proofs::extensions_repeat_an_id_decides_on_the_envelope` (conditional) |
+| `DER-P-13` | Issuer Name must be nonempty (§4.1.2.4) | done | **CONTRACT** for the bounded empty-Name helper; whole-profile composition remains conditional | `K profile::proofs::name_is_empty_iff_exactly_30_00` · `T empty_issuer` |
+| `DER-P-14` | Attribute types must be distinct within each issuer or subject RDN (X.501 §9.3) | done | **test-only** for the real id comparison; RDN walk proof uses a stub | `T rules_5_to_7_end_to_end_on_specimens` · `T repeated_attribute` · `K profile::proofs::name_has_repeated_attribute_type_decides_on_the_walk` (conditional) |
 
 ### 5.5 Crate-wide safety and hygiene
 
@@ -342,7 +350,7 @@ are proved as **biconditionals**, which is stronger than the structural layer be
 | `DER-S-3` | Every public entry point is named by a harness | **partial** | **mechanical** | 84 public entry points; **83 harnessed, 1 not**: `Charset::tag_number` (symbolically executed inside the four `wrong_tag_is_classified_*` harnesses, not named by one). The ten wrappers/helpers listed here before 2026-10-02 now have exact-delegation / biconditional harnesses (`PROOF_MANIFEST.md` §4.1). Re-derive with `python3 gates/gen_proof_manifest.py --json`. |
 | `DER-S-4` | The documentation's counts match the source | done | **mechanical** | `python3 gates/gen_proof_manifest.py --check` and `python3 gates/gen_verification_map.py --check` — each gate has its own self-test, run first, in `check.sh` |
 | `DER-S-5a` | The Lean lids contain no `sorry` | done | **mechanical** | `N` — `check_lean.sh` fails closed on `sorryAx` or a `declaration uses 'sorry'` warning, and was negative-tested by injecting one |
-| `DER-S-5b` | The lids assume no axiom about this crate's own code (13 declared axioms, all specs for upstream `core` primitives) | done | **inspection-argued** · ⚠ **UNWEIGHTED** | `D evidence/AXIOM-AUDIT-2026-08-18.md`. Nothing *mechanically* keeps a crate-code assumption out of a future lid — this property is reviewed, not gated, so the format declines to vouch for it |
+| `DER-S-5b` | The lids assume no axiom about this crate's own code (13 declared axioms, all specs for upstream `core` primitives) | done | **inspection-argued** · ⚠ **UNWEIGHTED** | `D evidence/AXIOM-AUDIT-2026-08-18.md` (kept outside git; available on request; SHA-256 `ab15554cfb804a6f77e07db45be767cfaf201844ee87cd366f97089cddd532bb`). Nothing *mechanically* keeps a crate-code assumption out of a future lid — this property is reviewed, not gated, so the format declines to vouch for it |
 
 ---
 
@@ -402,7 +410,7 @@ tests. Second, the two *composition* harnesses are stated relative to the rule a
 mutation that broke it; they witness the composition, not the rule's content.
 
 **The harnesses behind these rows are mutation-controlled, and the controls documented a real miss.**
-`evidence/MUTATION-CONTROLS-2026-08-25-identifier-form.md` records two rounds. Round 2 was
+`evidence/MUTATION-CONTROLS-2026-08-25-identifier-form.md` (kept outside git; available on request; SHA-256 `1cda59b322a645efc78562969b33da7fa084a15f508412b785c1fedac1d5d73d`) records two rounds. Round 2 was
 **preregistered** — predictions hashed and locked before the runs — and every prediction matched
 *harness-for-harness*, not merely in count. The load-bearing one is **M6**: reverting the `31..=36`
 arm (the high-tag universal types DATE, TIME-OF-DAY, DATE-TIME, DURATION, OID-IRI, RELATIVE-OID-IRI)
@@ -502,7 +510,7 @@ The outermost parsers are proved panic-free on buffers **an order of magnitude s
 input**: `x509_certificate` at ≤12 bytes against a ~170-byte certificate, `rsa_private_key` at ≤20
 bytes against a ~317-byte key. Real-size panic-freedom rests on a compositional argument that is
 written down and reviewed but **not machine-checked**. This is the single largest gap between what
-"210/210 verified" sounds like and what it is.
+"302/302 verified" sounds like and what it is.
 
 **The ≤12-byte bound is a CI-time floor, not a capability ceiling (measured 2026-09-17).** The same
 `x509_certificate` outer-framing harness (TBS parser stubbed) was re-run at increasing buffer/unwind
@@ -541,7 +549,7 @@ uncovered semantics, and three covers are still unsatisfied (§6.3), with the sm
 TBS-stubbed, so the inner-structure compositional gap stays open.)
 
 That is not a defect; it is the honest cost curve — those are the 7–20 GB harnesses, and the crate
-says so. It is invisible in "210 of 210", and visible in one glance here.
+says so. It is invisible in "302 of 302", and visible in one glance here.
 
 ---
 
