@@ -1,6 +1,6 @@
 {
-  "commit": "c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2",
-  "raw_sha256": "d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0",
+  "commit": "d3de34e3975f31e51a0d782abf51e91ab0a3e4aa",
+  "raw_sha256": "c9a7bcee16edece30aee44572f7b1b1d617f6639bd057a5effbf7e7347d225d7",
   "successful": 302,
   "failed": 0,
   "covers_unsatisfied": 3,
@@ -8,8 +8,8 @@
   "check_exit": 0,
   "lean_lid": "PASS",
   "memory_cap": "24G",
-  "peak_memory": "22.8 GB",
-  "start": "2026-10-28T07:59:04Z",
-  "end": "2026-10-28T10:55:02Z",
+  "peak_memory": "22.6 GB",
+  "start": "2026-10-28T12:07:23Z",
+  "end": "2026-10-28T15:04:45Z",
   "provenance": "Counts are transcribed from the pinned raw log. Full logs are kept outside git, available on request."
 }

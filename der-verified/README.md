@@ -12,7 +12,7 @@ Read "primitive" strictly: the `x509_*` layer is **structural framing composing 
 not proven to the same bar (see Scope below). The crate's name should not be read as claiming more
 than that.
 
-The floor of record at `c7a2e26` verifies all 302 harnesses in one pass at a 24 GB cap. It returns exit 0 and Lean lid PASS. Full logs are kept outside git, available on request.
+The floor of record at `d3de34e` verifies all 302 harnesses in one pass at a 24 GB cap. It returns exit 0 and Lean lid PASS. Full logs are kept outside git, available on request.
 
 - **L3 — Kani** (bounded model checking): 302 proof harnesses over 33 modules establish default
   safety checks (memory safety, no panics, no overflow) on their bounded domains; functional claims

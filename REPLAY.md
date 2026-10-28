@@ -1,6 +1,6 @@
 # The ten-minute replay
 
-Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+Full run evidence is kept outside git, available on request. The certified floor is `d3de34e`; its raw log SHA-256 is `c9a7bcee16edece30aee44572f7b1b1d617f6639bd057a5effbf7e7347d225d7`. See [the evidence policy](evidence/README.md).
 
 A bounded, laptop-sized companion to the full proof floor. Run it when you want to *watch* the
 gates work — accept a real result, then reject a seeded fault and a tampered evidence record —
@@ -22,9 +22,10 @@ one-byte-flipped evidence record.
 re-extracts the shipped Rust through Charon and Aeneas and checks all six L4/L5 lids. An absent or
 wrong toolchain is a failure, never a skip. This re-executes the current Lean baseline; it does not
 rerun every historical Lean mutation-control record that the acceptance manifest validates. L1 is
-accept-only: it seeds no Lean-side fault. The reject side is the six recorded controls under
-`evidence/lid-mutation-controls-2026-08-29/` (kept outside git; available on request; SHA-256 file index `docs/request-only-lid-controls.sha256`, index SHA-256 `7bfdb5b112749acb3b48534b701599502ded2d2d575b99d888282223f00312cb`); S2 hash-validates their public projections but does not
-re-execute them. A green Lean run can refresh tracked `lean/lid-source-state.txt` when its recorded
+accept-only: it seeds no Lean-side fault. The reject side is the Lean mutation controls that the current acceptance manifest cites (today:
+the `tag` lid controls); S2 hash-validates their public projections but does not re-execute them. The
+six older lid-file controls under `evidence/lid-mutation-controls-2026-08-29/` are not cited by the current manifest
+(kept outside git; available on request; SHA-256 file index `docs/request-only-lid-controls.sha256`, index SHA-256 `7bfdb5b112749acb3b48534b701599502ded2d2d575b99d888282223f00312cb`). A green Lean run can refresh tracked `lean/lid-source-state.txt` when its recorded
 source hashes changed. Lean build state stays under ignored `lean/.lake/`.
 
 **It does not replay:** the full 302-harness Kani floor (`./check.sh`/`cargo kani -Z stubbing`,
@@ -111,6 +112,6 @@ The default mode replays **one codec's one bounded property, plus the manifest c
 `--with-lean` mode adds the six current L4/L5 Lean lids. Neither mode runs the full proof floor
 (302 Kani harnesses across 33 modules), proves X.509 or certificate-chain correctness, or reruns
 every historical control record. S4 and S5 watch the Kani harness and manifest validator reject real
-faults. L1 is accept-only; its six recorded Lean controls are validated by S2 rather than rerun. This
+faults. L1 is accept-only; the Lean controls the manifest cites are validated by S2 rather than rerun. This
 is not a substitute for `./check.sh`. See `PROOF_MANIFEST.md` for the actual proof envelope and
 `ASSUMPTIONS.md` for what all of it stands on.

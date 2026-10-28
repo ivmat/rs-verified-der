@@ -11,7 +11,7 @@ evidence and an explicit claim-by-claim assurance map.
 
 ## Evidence at a glance
 
-The floor of record at `c7a2e26` verifies all 302 harnesses in one pass at a 24 GB cap. It returns exit 0 and Lean lid PASS. Full logs are kept outside git, available on request.
+The floor of record at `d3de34e` verifies all 302 harnesses in one pass at a 24 GB cap. It returns exit 0 and Lean lid PASS. Full logs are kept outside git, available on request.
 
 - **L3 — Kani:** 302 proof harnesses over 33 modules establish default safety checks on their
   bounded domains; functional claims vary by harness and are listed in the proof manifest.
@@ -90,7 +90,7 @@ Source inventory only; these module names carry no aggregate assurance band:
 
 Lean-lid source modules: `big_integer`, `length`, `oid`, `sequence`, `tag`, `tlv`.
 
-Read [`der-verified/acceptance.toml`](der-verified/acceptance.toml) for each requirement. Subject commit `c7a2e26`; generated `2026-10-28T12:00:02Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
+Read [`der-verified/acceptance.toml`](der-verified/acceptance.toml) for each requirement. Subject commit `d3de34e`; generated `2026-10-28T15:12:43Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
 
 Declared limits and planned work:
 - Name constraints (RFC 5280 §4.2.1.10) (planned; source: `PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")`).
