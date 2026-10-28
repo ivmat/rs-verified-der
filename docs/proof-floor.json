@@ -1,0 +1,15 @@
+{
+  "commit": "c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2",
+  "raw_sha256": "d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0",
+  "successful": 302,
+  "failed": 0,
+  "covers_unsatisfied": 3,
+  "file": "docs/proof-floor.json",
+  "check_exit": 0,
+  "lean_lid": "PASS",
+  "memory_cap": "24G",
+  "peak_memory": "22.8 GB",
+  "start": "2026-10-28T07:59:04Z",
+  "end": "2026-10-28T10:55:02Z",
+  "provenance": "Counts are transcribed from the pinned raw log. Full logs are kept outside git, available on request."
+}

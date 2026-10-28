@@ -78,7 +78,7 @@ class ManifestReading(unittest.TestCase):
         claims, prov = gen.read_manifest()
         self.assertTrue(claims)
         for c in claims:
-            self.assertIn(c['band'], gen.BAND_ORDER)
+            self.assertIn(c['band'], gen.BAND_ORDER + ['not-applicable'])
             self.assertTrue(c['grade'])
             self.assertIn(c['weight'], ('weighted', 'unweighted'))
         self.assertEqual(prov['claims_total'], len(claims))
@@ -133,30 +133,47 @@ class ClaimPlacement(unittest.TestCase):
         finally:
             gen.read_manifest = real
 
-    def test_the_manifest_lid_claims_match_the_tree_lid_set(self):
-        # Not a mock: the REAL crate's PM/lean-* claims must name exactly the modules
-        # gen_proof_manifest derives a Lean lid for -- if these diverge, the map and
-        # PROOF_MANIFEST.md would tell a reader two different stories about the same six codecs.
-        claims, _prov = gen.read_manifest()
-        lids = {gen.lid_module(c['id']) for c in claims if gen.lid_module(c['id'])}
-        self.assertEqual(lids, gen.gpm.l4_module_set())
-        self.assertEqual(lids, {'length', 'big_integer', 'oid', 'tag', 'tlv', 'sequence'})
+    def test_requirements_axis_matches_every_inventory_item(self):
+        facts = gen.compute()
+        self.assertTrue(facts['requirements_axis'])
+        self.assertEqual(len(facts['claims']), 876)
+        self.assertEqual(facts['source_lids'], gen.gpm.l4_module_set())
 
-    def test_compute_raises_when_the_manifest_and_the_tree_disagree_about_lids(self):
-        real_l4 = gen.gpm.l4_module_set
+    def test_a_missing_requirement_fails(self):
+        real = gen.read_manifest
         try:
-            gen.gpm.l4_module_set = lambda: real_l4() | {'boolean'}
+            gen.read_manifest = lambda: (real()[0][1:], real()[1])
             with self.assertRaises(SystemExit):
                 gen.compute()
         finally:
-            gen.gpm.l4_module_set = real_l4
+            gen.read_manifest = real
+
+    def test_not_applicable_has_no_assurance_band(self):
+        claims, _ = gen.read_manifest()
+        rows = [c for c in claims if c['status'] == 'not-applicable']
+        self.assertTrue(rows)
+        self.assertTrue(all(c['band'] == 'not-applicable' for c in rows))
+
+    def test_summary_counts_every_claim_once(self):
+        facts = gen.compute()
+        text = '\n'.join(gen.render_map(facts))
+        counts = [int(line.rsplit('|', 2)[1]) for line in text.splitlines()
+                  if line.startswith('| ') and line.rsplit('|', 2)[1].strip().isdigit()]
+        self.assertEqual(sum(counts), len(facts['claims']))
+        self.assertNotIn(':::a3', text)
 
 
 class BandColouring(unittest.TestCase):
     """The anti-overclaim line: colour follows the band, and only the band."""
 
     def _facts(self):
-        return copy.deepcopy(gen.compute())
+        roster = gen.roster_from_tiers()
+        modules = {m: claim('PM/' + m, 'A3') for m in roster}
+        lids = {m: claim('PM/lean-' + m, 'A4') for m in gen.gpm.l4_module_set()}
+        return {'roster': roster, 'by_module': modules, 'by_lid': lids,
+                'claims': list(modules.values()) + list(lids.values()),
+                'declared': gen.read_declared(),
+                'provenance': {'commit': 'abc1234', 'dirty': False, 'generated_at': 'fixture'}}
 
     def test_every_module_is_drawn_under_its_own_manifest_band(self):
         facts = self._facts()
@@ -488,9 +505,9 @@ class GateExitCode(unittest.TestCase):
         # committed README without the manifest ever saying so. The test repaints the lowest band
         # group present as A4 (the manifest need not contain any A0 group).
         text = real_readme()
-        low = next((b for b in ('A0', 'A1', 'A2', 'A3') if f'{b} · grade:' in text), None)
+        low = next((b for b in ('A0', 'A1', 'A2', 'A3') if f'| {b} |' in text), None)
         self.assertIsNotNone(low, 'the README map shows no band below A4 to hand-upgrade')
-        drifted = text.replace(f'{low} · grade:', 'A4 · grade:', 1)
+        drifted = text.replace(f'| {low} |', '| A4 |', 1)
         self.assertNotEqual(drifted, text)
         code, err = self._check(drifted)
         self.assertEqual(code, 1)

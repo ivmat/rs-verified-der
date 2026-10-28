@@ -1,5 +1,7 @@
 # The ten-minute replay
 
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+
 A bounded, laptop-sized companion to the full proof floor. Run it when you want to *watch* the
 gates work — accept a real result, then reject a seeded fault and a tampered evidence record —
 without provisioning the ~24 GB machine the full `./check.sh` Kani run needs. Add `--with-lean`

@@ -1,5 +1,7 @@
 # Proof manifest — `der-verified`
 
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+
 This is the **honest proof envelope** for this crate: what is machine-checked, over what domain,
 under what assumptions and stubs — and, given equal weight, **what is not**. It exists so that a
 reader who is not going to read 302 proof harnesses and 6 Lean developments can still know what
@@ -248,142 +250,28 @@ module (§7) they are the *only* evidence that exists.
 ### 3.4 Run evidence — what has actually been executed, and when
 
 <!-- BEGIN GENERATED:evidence (gates/gen_proof_manifest.py) -->
-| Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an unsatisfied cover |
-|---|---|---:|---:|---:|
-| `evidence/check-0e327b7.log` | `0e327b7` | 191 | 0 | 3 |
-| `evidence/check-24ddb69.log` | `24ddb69` | 191 | 0 | 3 |
-| `evidence/check-28e1429.log` | `28e1429` | 171 | 0 | 3 |
-| `evidence/check-42c8165-heavy-x509_extension-validate_extensions_never_panics.log` | `42c8165` | 1 | 0 | 1 |
-| `evidence/check-42c8165-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` | `42c8165` | 1 | 0 | 0 |
-| `evidence/check-42c8165-heavy-x509_name-validate_rdn_never_panics.log` | `42c8165` | 1 | 0 | 0 |
-| `evidence/check-42c8165.log` | `42c8165` | 294 | 0 | 2 |
-| `evidence/check-461f751.log` | `461f751` | 171 | 0 | 3 |
-| `evidence/check-69bbc9f.log` | `69bbc9f` | 191 | 0 | 3 |
-| `evidence/check-953a1a2.log` | `953a1a2` | 191 | 0 | 3 |
-| `evidence/check-b355f76.log` | `b355f76` | 164 | 0 | 3 |
-| `evidence/check-ba40709.log` | `ba40709` | 171 | 0 | 3 |
-| `evidence/check-bffab69.log` | `bffab69` | 203 | 0 | 3 |
-| `evidence/check-d05d3f2.log` | `d05d3f2` | 210 | 0 | 3 |
-| `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_never_panics.log` | `d68eeca` | 1 | 0 | 1 |
-| `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` | `d68eeca` | 1 | 0 | 0 |
-| `evidence/check-d68eeca-heavy-x509_name-validate_rdn_never_panics.log` | `d68eeca` | 1 | 0 | 0 |
-| `evidence/check-d68eeca.log` | `d68eeca` | 295 | 0 | 2 |
-| `evidence/check-ea8dad4-remainder.log` | `ea8dad4` | 8 | 0 | 2 |
-| `evidence/check-ea8dad4.log` | `ea8dad4` | 162 | 0 | 0 |
-| `evidence/check-ffcea81.log` | `ffcea81` | 191 | 0 | 3 |
-| `evidence/check_tractable-67c1f80.log` | `67c1f80` | 143 | 0 | 1 |
+Full run evidence is kept outside git, available on request. The compact declaration in `docs/proof-floor.json` records the floor. These counts are transcribed from the pinned raw log; this gate validates the declaration and renders it without reading local logs.
 
-Every column here is read out of the committed log itself, so this table is reproducible from the tree alone and is gate-enforced. Whether a given run still speaks for HEAD needs `git`, which a tarball or shallow clone may not have — that question is answered separately just below, and is advisory for exactly that reason.
+| Certified commit | Raw log SHA-256 | `SUCCESSFUL` | `FAILED` | unsatisfied covers |
+|---|---|---:|---:|---:|
+| `c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2` | `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0` | 302 | 0 | 3 |
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No committed run currently speaks for HEAD's verified source.** Re-run `./check.sh` and commit the log, or treat every full-suite verdict in this document as a transcription again.
-- `evidence/check-0e327b7.log` (at `0e327b7`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-24ddb69.log` (at `24ddb69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-28e1429.log` (at `28e1429`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-42c8165-heavy-x509_extension-validate_extensions_never_panics.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-42c8165-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-42c8165-heavy-x509_name-validate_rdn_never_panics.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-42c8165.log` (at `42c8165`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-461f751.log` (at `461f751`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-69bbc9f.log` (at `69bbc9f`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-953a1a2.log` (at `953a1a2`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-b355f76.log` (at `b355f76`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-ba40709.log` (at `ba40709`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-bffab69.log` (at `bffab69`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-d05d3f2.log` (at `d05d3f2`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_never_panics.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-d68eeca-heavy-x509_extension-validate_extensions_ok_path_witnessed.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-d68eeca-heavy-x509_name-validate_rdn_never_panics.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-d68eeca.log` (at `d68eeca`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-ea8dad4-remainder.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-ea8dad4.log` (at `ea8dad4`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check-ffcea81.log` (at `ffcea81`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
-- `evidence/check_tractable-67c1f80.log` (at `67c1f80`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+**The run evidence captured at `c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2` still speaks for HEAD** (the compact declaration `docs/proof-floor.json`). No build input it depends on has changed since the anchor `c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2`: `git diff c7a2e26a0382a55aaf9fce36ceeaa81d5290a9f2 -- check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs lean` is empty.
+
+This is a **sufficient** condition, not an iff. An empty diff over the L3 build inputs (`check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs`) since the anchor, with the §2 toolchain pins unchanged, means the Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty diff, or a moved pin, means re-run: it does not by itself show the evidence is wrong. The generator checks the diff only; whether a §2 pin moved is for the reader. Run the command rather than trusting this sentence.
+
 <!-- END GENERATED:evidence-coverage -->
 
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
 in this document a reader cannot check from the source alone:
 
-- **The current floor at `d68eeca` (2026-10-10) is a SPLIT floor: there is no single-run 298-harness floor at this commit.**
-  `evidence/check-d68eeca.log` is the MAIN half: one capped (`MemoryMax=20G`) `check.sh` pass in which the
-  `cargo kani` stage ran **295 harnesses** (a temporary copy of `check.sh` with the kani line restricted
-  by `--exact --harness`; `check.sh` itself is unchanged), with the L4 Lean lid and every document gate in the same
-  pass — `Complete - 295 successfully verified harnesses, 0 failures, 295 total.` The other **3**
-  (`x509_extension::validate_extensions_never_panics`, `x509_extension::validate_extensions_ok_path_witnessed`,
-  `x509_name::validate_rdn_never_panics`; kept out of the 20 GiB pass because earlier measurements approached or
-  exceeded 20 GiB) ran separately, one at a time, at `MemoryMax=24G`, at the same commit with the same toolchain.
-  Their measured peaks under that cap, read from the `peak memory:` header line of each companion log, are **20.1G**,
-  **16.5G** and **17.3G** respectively (the `>20 GB peak each` phrase in those headers is the earlier estimate, not
-  the measurement). Their logs are `evidence/check-d68eeca-heavy-<module>-<harness>.log`,
-  each ending `Complete - 1 successfully verified harnesses, 0 failures, 1 total.` The floor is 295 + 3 = 298, all
-  `SUCCESSFUL`. `check.sh`'s own summary line `L3 kani floor: GREEN` refers to the 295-harness restricted stage only.
-  The two logs of the extension pair are also the sat-twin evidence of `evidence/planted-twins-2026-10-10/`.
-- **The verdict is now read off a committed artifact, not transcribed.** The previous single-pass run was
-  **2026-09-18 at commit `d05d3f2`** (`evidence/check-d05d3f2.log`) — `Complete - 210 successfully
-  verified harnesses, 0 failures, 210 total.`, `cargo test` green (530 + 34), every document gate
-  and the strict lid-staleness gate green in the same pass, `check.sh exit: 0`, 1h14m19s wall
-  (peak memory not captured for this run — the header says so rather than inventing a figure). The
-  three unsatisfied covers are again exactly the three §8.2 discloses.
-  **This run is a single end-to-end pass covering BOTH the L3 Kani floor and the L4 Lean lid** —
-  `== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==` with `lean lid: PASS (sorry-free)`
-  in the same process — which is the stronger arrangement the earlier 2026-08-19 `24ddb69` VM run
-  could not achieve (that clean-room VM had no Aeneas/Charon/Lean stack, so its lid stage `SKIP`ped
-  and its L4 came from a separate artifact over the same bytes). It ran on the maintainer's own box
-  under the 2026-09-18 relaxation of the estate's box-Kani rule — as a memory-capped detached
-  systemd `--user` service — for the same provenance reason `check-bffab69.log` did: this box owns
-  the Aeneas/Charon/Lean stack, so a single run covering both floors cannot also be clean-room. The
-  earlier single-process run covering both was **2026-08-11 at `ffcea81`** (`evidence/check-ffcea81.log`,
-  191/191 with `lean lid: PASS (sorry-free)` in the same pass, ~63m at 21.0 GB under `MemoryMax=22G`). The first such run, described
-  below, was `./check.sh`
-  end-to-end on **2026-07-30** at commit `b355f76` — `cargo kani -Z stubbing` over all 164 harnesses
-  **sequentially** (no `-j`; parallel harnesses multiply peak RSS), inside a `MemoryMax=22G`
-  cgroup scope, 52 minutes wall — and the log is in this repository. It reports **164
-  `VERIFICATION: SUCCESSFUL`, 0 `FAILED`**, and the `cargo test` and **L4 Lean** stages green in the
-  same run (`lean lid: PASS (sorry-free)`, 1704 `lake` jobs). Every number in the table above is
-  derived from that file by this manifest's generator, not typed.
-- **Three harnesses reported `0 of 1 cover properties satisfied`, and they are exactly the three
-  §8.2 discloses** (`x509_extension::validate_extensions_never_panics`,
-  `x509_tbs_certificate::parse_tbs_certificate_never_panics`, `x509_validity::parse_never_panics`).
-  That is the useful part of committing a log: the disclosed-vacuity table is no longer a promise
-  about what a re-run would show. Nothing undisclosed appeared, and no disclosed gap had quietly
-  become satisfiable. One of the three had previously never been *determined* at all — that harness
-  had only ever OOM-ed past the slicing stage, so its cover's SAT/UNSAT status was unknown (see
-  `docs/verification-cost.md`); it is now determined, and UNSATISFIED.
-- **Each run has a committed distillation and a local raw log, deliberately.**
-  `evidence/check-b355f76.log` is a distillation — per-harness verdicts, cover satisfaction, timings,
-  stage banners. The *complete* raw log (`check-b355f76.log.gz` and its siblings) is kept **LOCAL**,
-  not committed (owner 2026-09-18: raw gate logs stay out of the repo — `evidence/raw/` is gitignored;
-  each raw log is available on request). The distillation stays checkable rather than trusted because
-  the distilled file's own header states the exact `grep` that produced it, plus the raw log's byte
-  count and sha256 — so a raw log provided on request can be verified byte-for-byte against the header
-  it was distilled from. (Historic distilled headers written before 2026-09-18 say the raw was
-  "committed alongside"; that was true when written — see `evidence/README.md`.)
-- **Which run currently speaks for HEAD is derived, not asserted in prose.** It is stated in the
-  advisory region just above §3.4's table, computed as `git diff <anchor> -- <build inputs>` being
-  empty. The build inputs are the L3 closure (`check.sh`, `der-verified/src`, `der-verified/Cargo.toml`,
-  `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`, `.cargo`, `der-verified/build.rs`) plus `lean/` for the
-  L4 lid, not the two source trees alone. The anchor is the run's capture commit (`d68eeca` for the split
-  floor) or, when that commit is not part of the published history, the published commit with the identical tree. An empty diff with the §2 toolchain pins unchanged is a **sufficient** condition for the
-  evidence to still apply, never an iff: anything else means re-run, not that the evidence is wrong. A
-  split floor is named as one set (the main log and every companion log together). That region is
-  deliberately *advisory*: it needs git history, which a tarball or a shallow clone may not have, and
-  making `./check.sh` depend on the reader's environment is the exact defect the `pins-observed` split
-  fixed. Every count in the evidence table itself is read out of the committed log and stays
-  gate-enforced.
-- **Why derived rather than written down:** a sentence saying "the run at X still covers HEAD" rots
-  the moment a source commit lands, and it rots toward over-claiming. The earlier version of this
-  bullet named two specific commits and had to be rewritten by hand at the next run; this one cannot
-  go stale, because nothing states it.
-- **What this supersedes.** The previous entry here cited a 2026-07-21/22 run transcribed in
-  `DER-REMAINING-WORK.md`, and had to disclose that `der-verified/src/` had changed after it —
-  `tag.rs`'s behaviour-preserving high-tag-loop refactor (`0c2948a`) and the additive `profile`
-  module (`d65e7f0`, `6bcb8be`) — so that the 164/164 figure was "not a single run at the current
-  HEAD" but a full-suite run plus a targeted re-run of the one changed module. That caveat is
-  **closed**: the committed run covers `tag.rs` and `profile` as they now stand, in one pass. The
-  older, narrower point remains true and worth keeping: no proof of equivalence between the old and
-  new `decode_tag` exists — the old body extracted as a bodyless axiom, so there was never an
-  ∀-length statement about it to equate against.
+- **The floor of record is `c7a2e26` (2026-10-28).** Unchanged `./check.sh` ran all 302 harnesses in one sequential pass. It returned exit 0 and Lean lid PASS. The heavy harnesses ran in this pass.
+- **Cost:** 2 h 56 min, 07:59:04Z to 10:55:02Z, at a 24 GB cap with no swap. The journal records peak 22.8 GB.
+- **Exactly three covers remain unsatisfied.** They are the three disclosed in §8.2: `x509_validity::parse_never_panics`, `x509_tbs_certificate::parse_tbs_certificate_never_panics`, and `x509_extension::validate_extensions_never_panics`. Their concrete twins reach the covers. Six real targeted logs confirm baseline `0 of 1` and twin `1 of 1`.
+- **Full run evidence is kept outside git, available on request.** The raw floor log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. The declaration in `docs/proof-floor.json` and the acceptance projection stay committed. CI reads those files and never requires local run logs.
+- **Freshness uses the build-input closure.** Run `git diff c7a2e26 -- check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs lean`. An empty diff, with the §2 toolchain pins unchanged, is sufficient for the floor to apply. The generated currency region remains advisory because shallow clones may lack the capture commit.
 - **Reproducing the full L3 floor needs a large machine.** Two harnesses dominate:
   `x509_extension::validate_extensions_never_panics` peaked ~20.5 GiB (~10 min) and
   `x509_name::validate_rdn_never_panics` ~17.1 GiB (~14 min). Below roughly 24 GB of available RAM
@@ -392,54 +280,7 @@ in this document a reader cannot check from the source alone:
   pinned count, so read the workflow for the exact set), sharded across four 7 GB runners; the
   remainder is a local-milestone check. See `docs/verification-cost.md` for the per-harness numbers.
 
-**At `d05d3f2`, L3 and L4 were witnessed by the same single run, which removed the separate-artifact drift
-argument earlier versions of this bullet had to make. At `d68eeca` the lean-lid stage ran in the same pass as the
-295-harness main half of the split floor, and the 3 heavy harnesses ran separately, so there is no single-run L3
-floor at that commit (§3.4).** The `d05d3f2` run set `DER_REQUIRE_LEAN=1`,
-so the L4 lean-lid stage ran in the same pass as the L3 floor — an absent Aeneas/Charon/Lean stack
-would have *failed* it, not skipped — and printed `lean-lid-status: PASS` / `lean lid: PASS
-(sorry-free)`. The six extracted codecs are `length`, `big_integer`, `oid`, `tag`, `tlv` and
-`sequence`; the lid **re-extracts each from the shipped `.rs` and fails closed on drift**, so its
-PASS at `d05d3f2` concerns exactly the bytes shipped at that commit — including the 2026-09 tag-lid
-value-semantics rewrite, which this run's lid stage covers. Because the lid re-extracts and
-drift-gates on every run, L4 currency is established by the committed run itself and does not rest on
-a hand-tracked "last full pass at commit X, nothing changed since" argument (which rots toward
-over-claiming the moment a lid source lands — the exact defect the derived HEAD-currency check in
-§3.4 replaced).
-
-**Public CI is the one piece of run evidence a third party can inspect without a large machine.**
-`.github/workflows/ci.yml` runs `cargo test`, `cargo clippy -D warnings`, and the memory-tractable
-Kani share on every push. Its most recent recorded conclusion before this commit was **success at
-`bd318e2`** (2026-07-26). Three limits on what that buys you: it covers roughly 136 of the 164
-harnesses, not the two heavy ones; a harness reporting an unsatisfied `cover` passes CI exactly as it
-passes locally (§6.1); and it never runs the L4 lids. CI is a floor under regressions in the tractable
-share, not a substitute for the full gate.
-
-**Negative controls — the evidence that these oracles can go RED at all.** A green run is only as
-meaningful as the oracle's ability to fail, and a suite nobody has watched fail is a suite whose
-green is unmeasured. Four campaigns are recorded, and each says in its own words what it does *not*
-cover: `evidence/MUTATION-CONTROLS-2026-08-18.md` (a planted defect in each of `length`, `tag`,
-`tlv`, `integer` and `big_integer`, each caught by the harness whose documented job is to catch it,
-each reverted byte-identically and re-run green);
-`evidence/MUTATION-CONTROLS-2026-08-19-oid-sequence.md` (the same protocol extended to `oid` and
-`sequence` — the two remaining ∀-length-lidded DER base codecs — run on a disposable host from a
-fresh clone of the published commit, and carrying two deliberately **predicted-GREEN** runs that
-identify which harness in each pair is actually load-bearing);
-`evidence/PLANTED-SATISFIED-TWINS-2026-08-18.md`
-(for the three disclosed-unsatisfiable covers of §8.2, a twin that *is* satisfiable at the same
-bound, so "unsatisfiable" is distinguished from "cover never fires here"); and
-`evidence/LID-MUTATION-CONTROLS-2026-08-19.md` (for the L4 lineage: **eleven** mutations across the
-six lids — six theorem statements, two independent oracle predicates, and, in that file's two dated
-addenda, the three copies of the `decode_length_used_le` consumption bound and the two
-`length_decode_total` corollaries that between them replaced the lids' four crate-code axioms —
-each confirmed to fail `lake build`, each reverted
-byte-identically, with the affected lids force re-elaborated green afterwards). These are
-samples, not sweeps: no automated mutation tooling is wired into this repository, in either lineage.
-
-**What is not recorded anywhere, and would be worth recording.** The exact Kani version and flags of
-the 2026-07-21/22 full-suite run; whether that run's per-harness `cover` satisfaction was captured
-rather than just `SUCCESSFUL`; and whether the post-refactor `tag` re-run recorded cover satisfaction.
-Under §6.1 those are different facts, and only the coarse one was written down.
+**At `c7a2e26`, L3 and L4 were witnessed by one pass.** The run set `DER_REQUIRE_LEAN=1`. An absent Lean stack would fail the stage. The stage printed `lean-lid-status: PASS` and `lean lid: PASS (sorry-free)`. The lids cover `length`, `big_integer`, `oid`, `tag`, `tlv`, and `sequence`. The source-state gate confirms all six hashes. Full logs are kept outside git, available on request.
 
 ## 4. Entry points — covered, and not covered
 
@@ -617,9 +458,9 @@ This is the list that decides whether the rest of the document is worth anything
 | `ecdsa_sig_value` | bounded, structural only: DER framing and canonicality of `SEQUENCE { r INTEGER, s INTEGER }`. **No curve-order range check** (`1 <= r,s <= n-1` needs a curve identifier this container does not carry), **no low-S policy** (protocol profile, not DER validity), **no cryptographic interpretation** |
 | `rsa_private_key` | bounded-backing evidence for the two-prime structure (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**): the S1/S2 symbolic-content skeletons and the perturbation harnesses decide the exact `Result`, with backing **≤ 44 bytes**. The multi-prime **member walk** is covered for **one member of three 1-octet INTEGERs**. `parse_multi_prime_faithful` has symbolic content for all three member INTEGERs; the `parse_multi_prime_rejects_*` harnesses have concrete member content and one symbolic framing octet or selector (the perturbed octet, field or element count); like `identifier_form`'s fixture harnesses, these are not part of the contract claim beyond that shape. **Not covered: more than one member, multi-octet member INTEGERs, the strict entry point on a multi-prime input.** The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. Panic-freedom is proven **≤ 20 bytes** (`parse_never_panics`/`parse_strict_never_panics`); a real two-prime `RSAPrivateKey` is **~317 bytes** — panic-freedom beyond 20 bytes is **not machine-checked**: it rests on an un-machine-checked compositional argument (each field decoder proven panic-free on its own) plus a single concrete 317-byte fixture (`parse_ok_2prime_witnessed`) and `#[cfg(test)]` examples, not a symbolic proof over the real-size domain. No RSA arithmetic (`n = p*q`, CRT-parameter consistency, primality) is checked — every key-material INTEGER is opaque, comparison-only content. `rsa_private_key` is in the **HEAVY** tier (`gates/tiers.txt`): its harnesses are not run by the public CI, only by `./check.sh` on a machine with at least 24 GB of RAM |
 | `x509_spki` | bounded, structural only: no key parsing, no key validity, no algorithm/key agreement check |
-| `x509_name` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**); no name-constraint semantics, no string canonicalisation/comparison rules. Covered: single-ATV RDNs; two single-ATV RDNs; one RDN with two ATVs of **different** encoded lengths (the ordering is then decided at the length octet — the general comparison is `set_of::cmp_padded`'s claim, not this module's); 1-octet OIDs; zero-length values outside the framing harnesses; OID lengths `0x03`/`0x83` are excluded. **Not covered: two ATVs of equal encoded length (a solver tool limit — the fully symbolic harness exceeds the memory budget under one global unwind bound — disclosed in the harness comments) and RDNs with more than two ATVs.** The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. The composition proof `validate_never_panics` is **modular** (`validate_rdn` stubbed — §8.4); the stub is discharged by `validate_rdn_never_panics`, a **heavy** harness (kept out of the 20 GiB-capped main floor because earlier measurements approached or exceeded 20 GiB; run separately in a 24 GiB window, where its measured peak was 16.3G, §3.4) |
+| `x509_name` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**); no name-constraint semantics, no string canonicalisation/comparison rules. Covered: single-ATV RDNs; two single-ATV RDNs; one RDN with two ATVs of **different** encoded lengths (the ordering is then decided at the length octet — the general comparison is `set_of::cmp_padded`'s claim, not this module's); 1-octet OIDs; zero-length values outside the framing harnesses; OID lengths `0x03`/`0x83` are excluded. **Not covered: two ATVs of equal encoded length (a solver tool limit — the fully symbolic harness exceeds the memory budget under one global unwind bound — disclosed in the harness comments) and RDNs with more than two ATVs.** The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. The composition proof `validate_never_panics` is **modular** (`validate_rdn` stubbed — §8.4); the stub is discharged by `validate_rdn_never_panics`, a **heavy** harness included in the single 24 GB pass at `c7a2e26` (§3.4) |
 | `x509_validity` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**), no comparison against a clock. Three distinct size concepts matter here. The backing buffer of the skeleton harnesses is `[u8; 47]` (**skeletons ≤ 47 bytes**); it is built as `[0u8; 47]` or in a helper, so the §4 column does not list it. The fully symbolic arrays are small: `parse_never_panics` is a fully symbolic `[u8; 16]` with a symbolic length `0..=16`, and `parse_validity_rejects_field_content` has one fully symbolic 13-octet field. The widest `[u8; N]` the §4 row shows (32) is the **concrete** specimen of `parse_validity_ok_path_witnessed`, not a symbolic domain. The per-harness domains of the skeleton harnesses are: concrete TLV framing with symbolic content, identifier or length octets (the `parse_validity_rejects_*` harnesses), each symbolic time field restricted to its literal specification range, and an outer tail of at most 3 octets; inputs are symbolic within that skeleton, not over every 47-byte string. `GeneralizedTime` fractions are covered for 0 to 3 digits with no trailing zero. A `GeneralizedTime` failure inside the validity parse is pinned only at `BadLength`; other `GeneralizedTime` content errors belong to the `generalized_time` module's own proofs and are not re-pinned through the validity mapping (`map_err`). The payload of `BadOuterSeq` for the outer envelope (the inner `SequenceError::Tlv(_)` detail) is not pinned by the exact-result harnesses. The RFC 5280 year-2050 encoding rule is **not enforced**. The `Ok` cover of `parse_never_panics` is **known-unsatisfiable at `[u8; 16]`** and disclosed (§8.2); its companion `parse_validity_ok_path_witnessed` witnesses the same path |
-| `x509_extension` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**); extension *contents* are never interpreted (`extnValue` is uninterpreted) and `critical` is peeked, not acted on. `parse_extension` is covered **≤ 16 bytes, fully symbolic**. `validate_extensions` is covered for **at most two members, each with a 1-octet OID and an empty value**, and `validate_extensions_never_panics` runs at a reduced `[u8; 13]`; its `Ok` cover is **known-unsatisfiable at 13 bytes** and disclosed (§8.2), and its companion `validate_extensions_ok_path_witnessed` witnesses the same path. The two `validate_extensions_*` harnesses named here are **heavy**: they are kept out of the 20 GiB-capped main floor because earlier measurements approached or exceeded 20 GiB, and run separately in a 24 GiB window, where their measured peaks were 20G (`validate_extensions_never_panics`) and 16.7G (`validate_extensions_ok_path_witnessed`) (§3.4) |
+| `x509_extension` | bounded-backing evidence (**CONTRACT SURFACE / bounded-backing evidence, not an unrestricted proof**); extension *contents* are never interpreted (`extnValue` is uninterpreted) and `critical` is peeked, not acted on. `parse_extension` is covered **≤ 16 bytes, fully symbolic**. `validate_extensions` is covered for **at most two members, each with a 1-octet OID and an empty value**, and `validate_extensions_never_panics` runs at a reduced `[u8; 13]`; its `Ok` cover is **known-unsatisfiable at 13 bytes** and disclosed (§8.2), and its companion `validate_extensions_ok_path_witnessed` witnesses the same path. The two `validate_extensions_*` harnesses named here are **heavy**: they ran in the single 24 GB pass at `c7a2e26` (§3.4) |
 | `x509_tbs_certificate` | bounded, structural only, and **modular** (two stubs; three in the witness harness — §8.4). Its `never_panics` cover is **known-unsatisfiable at `[u8; 10]`** and disclosed (§8.2). No cross-field RFC 5280 rule is checked here — that is `profile`'s job |
 | `x509_certificate` | panic-freedom is proven **≤ 12 bytes** (`parse_certificate_never_panics`, **modular** — `parse_tbs_certificate` stubbed, §8.4); a real certificate is **~170 bytes** (this module's own test fixture) — panic-freedom beyond 12 bytes is **not machine-checked at this composition**: it rests on an un-machine-checked compositional argument (`decode_tlv`'s proven no-over-read contract plus each delegated sub-parser's own separate panic-freedom proof), not a symbolic proof over the real-size domain. No signature check, no path building |
 | `profile` | bounded, and over symbolic *field values* rather than symbolic DER bytes — it decodes nothing (§7). Each of the four value-level RFC 5280 cross-field rules is proven as a biconditional, plus their precedence and totality. Rules 5 to 7 (P-12 to P-14, byte-span walks): the `validate_profile` harnesses stub the three helpers (glue and order proven for any helper outcome); the framing walks have bounded harnesses, but the id comparison is decided by **unit tests only** (its Kani harnesses ran out of memory; parked for S5, §7) No Lean lid, so no ∀-length statement |
@@ -1089,7 +930,8 @@ that the deep glue is *exercised* rests on the witness sibling, not on the symbo
 halves are stated because either alone would mislead.
 
 <!-- BEGIN DISCLOSED:unreachable-checks -->
-These are property checks that Kani reports as UNREACHABLE in a harness whose evidence records per-check status: the three heavy harnesses run alone at 24 GiB (`evidence/check-d68eeca-heavy-*.log`). Kani also reports unreachable checks for most other harnesses, as the `(N unreachable)` count on each `** 0 of M failed` line in `evidence/check-d68eeca.log`. That log keeps only the summary lines, so those checks are counted there but not named. An unreachable check is not a failure. It means that harness's inputs never reach that code. The code's safety rests on the harnesses named in the last column; those safety references are themselves bounded harnesses (or the named lid), each with its own declared domain (§4, §8.1), so the reference carries the code over that domain and not beyond it.
+These are property checks that Kani reports as UNREACHABLE. The local floor log at `c7a2e26` keeps the three heavy harness blocks verbatim. Its raw log hash appears in §3.4. Full run evidence is kept outside git, available on request. An unreachable check is not a failure. The harness inputs do not reach that code. The safety references below apply only over their stated domains (§4, §8.1).
+
 
 | Harness | Check | Kani status | Location | Why the harness does not reach it | Safety of that code is carried by |
 |---|---|---|---|---|---|

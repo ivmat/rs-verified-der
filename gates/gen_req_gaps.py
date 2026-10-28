@@ -585,6 +585,7 @@ def main(argv: list[str] | None = None) -> int:
     root = args.root.resolve()
     req = root / "docs" / "requirements"
     inventory_path = args.inventory or req / "der.inventory.toml"
+    # These are committed requirement maps. Root evidence/ holds local run files and is never read.
     evidence_dir = args.evidence_dir or req / "evidence"
     obligations_path = args.obligations or req / "obligations.toml"
     out_path = args.out or req / "test-gaps.md"

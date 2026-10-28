@@ -1,5 +1,7 @@
 # TODO / open issues
 
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+
 Tracked roadmap for `der-verified`. Grouped by theme; check items off as they land. See
 `PROOF_MANIFEST.md` for what is currently proven and `DECISIONS.md` for the rationale behind each
 scope boundary referenced below.

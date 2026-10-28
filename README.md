@@ -7,14 +7,11 @@
 A DER (X.690) encoding/decoding core in Rust **under formal verification**, with re-runnable
 evidence and an explicit claim-by-claim assurance map.
 
-**Status:** pre-1.0 (`0.3.0`). Today **37 of 39** manifest claims reach the target assurance band A3
-or better; **2 do not** (both are A1: the full-certificate and TBS-certificate parsers,
-`x509_certificate` and `x509_tbs_certificate`, whose evidence is stub-mediated, bounded
-panic-freedom only; none are A0). The crate is therefore not uniformly formally verified and is not
-done. Proofs are bounded except for the selected Lean properties below; the API is unstable, with no
-production deployment record. Evaluate it as a building block, not a hardened parser.
+**Status:** pre-1.0 (`0.3.0`). The acceptance 0.4.0 manifest has **876 requirement claims**: **5 A4**, **202 A3**, and **176 weighted**. It also records 120 evidenced A0 claims, 25 gaps, 305 excluded requirements, and 219 not-applicable requirements. Counts are inventory, not a coverage percentage. The API is unstable. Evaluate this crate as a building block with bounded and uneven evidence.
 
 ## Evidence at a glance
+
+The floor of record at `c7a2e26` verifies all 302 harnesses in one pass at a 24 GB cap. It returns exit 0 and Lean lid PASS. Full logs are kept outside git, available on request.
 
 - **L3 — Kani:** 302 proof harnesses over 33 modules establish default safety checks on their
   bounded domains; functional claims vary by harness and are listed in the proof manifest.
@@ -29,7 +26,7 @@ Read [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) for the exact properties, bounds, 
 [`acceptance.toml`](der-verified/acceptance.toml) for every claim's evidence, grade and weight. The
 manifest and [records](der-verified/evidence/acceptance-records/) ship in the crate; the
 [crate README](der-verified/README.md) explains what remains repository-only. The manifest follows
-acceptance format 0.3.2 with the Rust verification profile; its generated header names the exact
+acceptance format 0.4.0 with the Rust verification profile; its generated header names the exact
 validator-closure commit.
 
 ## Scope
@@ -59,63 +56,51 @@ compositional argument plus concrete witnesses, not a symbolic proof over real-s
 
 ## Verification map
 
-This generated map grades evidence, not tools. Above A0 requires an observed-red control; grade is a
-separate axis (`contract`, `probe`, or `ungraded`). The map is per module; use
+This generated summary reads one claim per requirement. Band, grade and weight are separate fields. Use
 [`COVERAGE.md`](COVERAGE.md) when the question is whether a particular DER or RFC 5280 rule is
-decided. White dashed boxes are declared non-claims.
+decided. The summary also lists declared limits and planned work.
 
 <!-- BEGIN GENERATED:map (gates/gen_verification_map.py) -->
-**Colour is the assurance BAND, not the tool.** Target: band **A3** or better on every claim. Today **37 of 39** claims reach A3 or better, and **2** do not — so this crate is not done, and the picture is drawn to show that rather than to hide it.
+**207 of 876** claims reach A3 or better; **669** do not. The total includes excluded, gap and not-applicable requirements.
 
-```mermaid
-flowchart TB
-    classDef a4 fill:#12633c,stroke:#08301d,color:#ffffff
-    classDef a3_5 fill:#5fa877,stroke:#2f6146,color:#ffffff
-    classDef a3 fill:#9ed0a8,stroke:#3f7a4c,color:#0d2a15
-    classDef a2 fill:#d99b1c,stroke:#6f4f0c,color:#241a04
-    classDef a1 fill:#f2dda6,stroke:#8a6d2f,color:#3a2c08
-    classDef a0 fill:#9b9b9b,stroke:#4d4d4d,color:#111111
-    classDef unrated fill:#ffffff,stroke:#4d4d4d,stroke-dasharray: 3 3,color:#111111
-    classDef noclaim fill:#ffffff,stroke:#8a8a8a,stroke-dasharray: 5 4,color:#333333
+The acceptance axis is one claim per requirement. Counts are inventory, not a coverage percentage.
 
-    subgraph crypto_layer["cryptographic layer — outside the fence, not verified"]
-        direction LR
-        style crypto_layer stroke-dasharray: 6 4
-        crypto_out_of_scope["no claim — deliberately out of scope<br/>Certificate-path / trust validation · Signature / crypto verification"]:::noclaim
-    end
-    subgraph profile_layer["RFC 5280 profile rules"]
-        direction LR
-        profile_a3_contract_weighted["A3 · grade: contract · weighted<br/>profile"]:::a3
-        profile_planned["no claim — planned<br/>Basic constraints (RFC 5280 §4.2.1.9) · Key usage (RFC 5280 §4.2.1.3) · Name constraints (RFC 5280 §4.2.1.10) · Validity-against-clock (RFC 5280 §4.1.2.5)"]:::noclaim
-    end
-    subgraph structural_layer["X.509 structural composition"]
-        direction LR
-        structural_a3_contract_weighted["A3 · grade: contract · weighted<br/>x509_algorithm_identifier · x509_extension · x509_name · x509_spki<br/>x509_validity"]:::a3
-        structural_a1_probe_unweighted["A1 · grade: probe · unweighted<br/>x509_certificate · x509_tbs_certificate"]:::a1
-        structural_planned["no claim — planned<br/>X.509 structural-module Lean lid (L4)"]:::noclaim
-    end
-    subgraph codecs_layer["DER content codecs"]
-        direction LR
-        codecs_a3_contract_weighted["A3 · grade: contract · weighted<br/>big_integer · bit_string · boolean · context_tag<br/>ec_private_key · ecdsa_sig_value · encrypted_private_key_info · enumerated<br/>generalized_time · identifier_form · integer · null<br/>octet_string · oid · pkcs8 · restricted_string<br/>rsa_private_key · rsa_public_key · sequence · set_of<br/>utc_time · utf8_string"]:::a3
-        codecs_out_of_scope["no claim — deliberately out of scope<br/>General SET (X.690 §10.3)"]:::noclaim
-    end
-    subgraph framing_layer["tag / length / TLV framing base"]
-        direction LR
-        framing_a3_contract_weighted["A3 · grade: contract · weighted<br/>length · tag · tlv"]:::a3
-    end
-    subgraph lid_layer["unbounded Lean-lid claims — SEPARATE claims (PM/lean-*), each proven over inputs of ANY length"]
-        direction LR
-        lid_a4_contract_weighted["A4 · grade: contract · weighted<br/>big_integer · length · oid · sequence<br/>tag · tlv"]:::a4
-    end
+| Status | Band | Grade | Weight | Claims |
+|---|---|---|---|---:|
+| evidenced | A0 | probe | unweighted | 38 |
+| evidenced | A0 | test-only | unweighted | 82 |
+| evidenced | A3 | contract | unweighted | 31 |
+| evidenced | A3 | contract | weighted | 171 |
+| evidenced | A4 | contract | weighted | 5 |
+| gap | A0 | not-covered | unweighted | 25 |
+| gap | A0 | out-of-scope | unweighted | 305 |
+| not-applicable | not-applicable | ungraded | unweighted | 219 |
 
-    crypto_layer -.-> profile_layer --> structural_layer --> codecs_layer --> framing_layer
+Weighted claims: **176**.
 
-    subgraph legend["Legend"]
-        legend_all["colour = assurance BAND: what a reader may assume without re-running anything<br/>A4 unbounded functional proof, kernel-checked, red mutation control — 6 claim(s)<br/>A3 bounded functional contract, red mutation control — 31 claim(s)<br/>A2 memory safety on the unsafe surface, with a control — 0 claim(s)<br/>A1 non-vacuous but not state-exhaustive, and no functional control — 2 claim(s)<br/>A0 ran or asserted, with NO control watched to fail — the claim is not done — 0 claim(s)<br/>white dashed = no claim in the manifest (planned · wall · out of scope), DECLARED<br/>grade is a SEPARATE axis: contract = decides a functional postcondition · probe = spot-check, typically panic-freedom · ungraded = no graded oracle"]:::unrated
-    end
-```
+Band meanings:
+- A4 unbounded functional proof, kernel-checked, red mutation control — 5 claim(s)
+- A3 bounded functional contract, red mutation control — 202 claim(s)
+- A2 memory safety on the unsafe surface, with a control — 0 claim(s)
+- A1 non-vacuous but not state-exhaustive, and no functional control — 0 claim(s)
+- A0 ran or asserted, with NO control watched to fail — the claim is not done — 450 claim(s)
 
-Bands, grades and claim ids come from [`der-verified/acceptance.toml`](der-verified/acceptance.toml) — the generated acceptance/0 manifest for subject commit `3ce8a55`, generated `2026-10-10T17:35:43Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
+Source inventory only; these module names carry no aggregate assurance band:
+`big_integer`, `bit_string`, `boolean`, `context_tag`, `ec_private_key`, `ecdsa_sig_value`, `encrypted_private_key_info`, `enumerated`, `generalized_time`, `identifier_form`, `integer`, `length`, `null`, `octet_string`, `oid`, `pkcs8`, `profile`, `restricted_string`, `rsa_private_key`, `rsa_public_key`, `sequence`, `set_of`, `tag`, `tlv`, `utc_time`, `utf8_string`, `x509_algorithm_identifier`, `x509_certificate`, `x509_extension`, `x509_name`, `x509_spki`, `x509_tbs_certificate`, `x509_validity`.
+
+Lean-lid source modules: `big_integer`, `length`, `oid`, `sequence`, `tag`, `tlv`.
+
+Read [`der-verified/acceptance.toml`](der-verified/acceptance.toml) for each requirement. Subject commit `c7a2e26`; generated `2026-10-28T11:17:41Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
+
+Declared limits and planned work:
+- Name constraints (RFC 5280 §4.2.1.10) (planned; source: `PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")`).
+- Key usage (RFC 5280 §4.2.1.3) (planned; source: `PROOF_MANIFEST.md:538`).
+- Basic constraints (RFC 5280 §4.2.1.9) (planned; source: `PROOF_MANIFEST.md:538`).
+- Validity-against-clock (RFC 5280 §4.1.2.5) (planned; source: `PROOF_MANIFEST.md:538`).
+- X.509 structural-module Lean lid (L4) (planned; source: `DER-REMAINING-WORK.md:157-165 ("All X.509 structural modules (x509_*) are Kani-only — no L4 lid... still the crate's one open breadth item")`).
+- Signature / crypto verification (out-of-scope; source: `README.md:47-48 ("Out of scope (not implemented, not proven): signature/crypto verification...")`).
+- Certificate-path / trust validation (out-of-scope; source: `README.md:47-48 ("...certificate-path or trust validation...")`).
+- General SET (X.690 §10.3) (out-of-scope; source: `README.md:49-50 ("general SET (§10.3)"); DECISIONS.md:463 (D13 — "general SET (§10.3) stays out of scope")`).
 <!-- END GENERATED:map -->
 
 ## Strict decoding

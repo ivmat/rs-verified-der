@@ -1191,14 +1191,14 @@ class HeadCoverageFact(unittest.TestCase):
         f = {'evidence': [{'file': 'evidence/x.log', 'commit': 'abc1234',
                            'covers_head_source': False, 'failed': 0}]}
         out = '\n'.join(gen.r_evidence_coverage(f))
-        self.assertIn('No committed run currently speaks for HEAD', out)
+        self.assertIn('No declared floor currently speaks for HEAD', out)
         self.assertIn('superseded', out)
 
     def test_coverage_region_ignores_a_log_that_recorded_failures(self):
         # A run with FAILED verdicts must never be read as establishing anything.
         f = {'evidence': [{'file': 'evidence/x.log', 'commit': 'abc1234',
                            'covers_head_source': True, 'failed': 2}]}
-        self.assertIn('No committed run currently speaks for HEAD',
+        self.assertIn('No declared floor currently speaks for HEAD',
                       '\n'.join(gen.r_evidence_coverage(f)))
 
     def test_coverage_region_reports_unknown_rather_than_defaulting_to_yes(self):
@@ -1270,8 +1270,22 @@ class HeadCoverageFact(unittest.TestCase):
         out = '\n'.join(gen.r_evidence_coverage(f))
         self.assertEqual(out.count('still speaks for HEAD'), 2)
 
+    def test_local_run_files_do_not_change_the_manifest(self):
+        from unittest.mock import patch
+        before = gen.evidence_facts()
+        with tempfile.TemporaryDirectory() as box:
+            local = os.path.join(box, 'evidence')
+            os.mkdir(local)
+            with open(os.path.join(local, 'check-bad.log'), 'w') as out:
+                out.write('VERIFICATION:- FAILED\n')
+            with patch.object(gen, 'ROOT', box), patch.object(gen, 'verified_source_unchanged_since', return_value=None):
+                facts_with_local = gen.evidence_facts()
+                os.rename(local, local + '-kept')
+                self.assertEqual(facts_with_local, gen.evidence_facts())
+        self.assertEqual(before, gen.evidence_facts())
+
     def test_no_evidence_says_so(self):
-        self.assertIn('No committed run log', '\n'.join(gen.r_evidence_coverage({'evidence': []})))
+        self.assertIn('No floor declaration', '\n'.join(gen.r_evidence_coverage({'evidence': []})))
 
     def test_coverage_region_is_advisory_so_a_git_less_clone_still_passes(self):
         # The regression this whole split exists to prevent.

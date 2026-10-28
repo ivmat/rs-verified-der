@@ -1,5 +1,7 @@
 # der-verified — contestable decisions ledger
 
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+
 A complete list of the **non-obvious / could-go-both-ways** design and adjudication calls in this
 repo — the ones a competent reviewer might dispute. Each entry records the call, the tension, the
 evidence (with online consensus where researched), a verdict, and a confidence. Policy: **where an

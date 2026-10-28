@@ -1,5 +1,7 @@
 # der-verified — remaining verification work (map for the driver)
 
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+
 **Status as of 2026-07-21, after Task A (x509_validity cover-vacuity close, commit `cd4a365`).**
 Not committed by this pass (uncommitted map file — driver commits). Sources: `PROOF_MANIFEST.md`,
 `docs/verification-cost.md`, `TODO.md`, `METHODS-APPLICATION-ANALYSIS-2026-07-21.md`, and a direct

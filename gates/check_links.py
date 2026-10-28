@@ -14,7 +14,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SKIP_PREFIX = ("lean/",)
+SKIP_PREFIX = ("lean/", "evidence/")
 SKIP_DIR_ANY = {"target", "node_modules", "lake-packages"}
 MD_LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")  # [text](target)
 
@@ -40,7 +40,11 @@ def resolvable(md_file: pathlib.Path, target: str) -> bool:
     t = target.split("#", 1)[0].strip()
     if not t or t.startswith(("http://", "https://", "mailto:")):
         return True
-    return (md_file.parent / t).resolve().exists()
+    resolved = (md_file.parent / t).resolve()
+    # Local run files must not make a committed link pass on one machine only.
+    if resolved.is_relative_to(ROOT / "evidence") and resolved != ROOT / "evidence" / "README.md":
+        return False
+    return resolved.exists()
 
 
 def main() -> int:

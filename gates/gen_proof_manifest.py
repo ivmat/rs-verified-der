@@ -22,7 +22,7 @@ numbers only sit underneath it as evidence. Two consequences are deliberate:
     `mod proofs` name this `pub fn`?). It is a lower bound on attention, not a proof that
     the entry point's behaviour is characterised.
   * The pass/fail verdict of the proofs themselves is NOT derivable here. It comes from a
-    committed run log (`evidence/`), or the manifest says plainly that there is none.
+    compact floor declaration (`docs/proof-floor.json`). Full logs stay outside git.
 
 MODES
 -----
@@ -48,7 +48,7 @@ import check_tier_parity as ctp   # noqa: E402  (CI shard-filter parsing; one pa
 SRC = os.path.join(ROOT, 'der-verified', 'src')
 LEAN = os.path.join(ROOT, 'lean')
 MANIFEST = os.path.join(ROOT, 'PROOF_MANIFEST.md')
-EVIDENCE = os.path.join(ROOT, 'evidence')
+FLOOR = os.path.join(ROOT, 'docs', 'proof-floor.json')
 # The L3 (Kani) build inputs: everything `./check.sh`'s Kani stage compiles or is configured by. A
 # change OUTSIDE these (docs, gates, CI) cannot invalidate a proof run; a change INSIDE them can, and
 # does so silently unless derived. Source alone is NOT the closure: the Cargo manifests, the lockfile,
@@ -754,40 +754,20 @@ def toolchain_facts():
 
 
 def evidence_facts():
-    """Read the committed L3/L4 run evidence, if any. Absence is itself reported."""
-    out = []
-    if os.path.isdir(EVIDENCE):
-        for f in sorted(os.listdir(EVIDENCE)):
-            p = os.path.join(EVIDENCE, f)
-            if not os.path.isfile(p):
-                continue
-            # Only a Kani run log, by the `check*.log` naming this directory has always used.
-            # This filter is not tidiness. Every column below is a REGEX COUNT over the file's
-            # text, and the table it feeds is gate-enforced -- so a prose note dropped in here
-            # that merely *quotes* `0 of 1 cover properties satisfied`, or that mentions
-            # `VERIFICATION: SUCCESSFUL` while explaining what one means, is counted as if it
-            # were a run and silently moves a published number. That happened on 2026-08-03:
-            # a written record of a floor run reported "1 unsatisfied cover" from its own prose.
-            # A run log earns a row; writing *about* runs does not.
-            if not (f.startswith('check') and f.endswith('.log')):
-                continue
-            text = read_text(p, errors='replace')
-            commit = (re.search(r'^#\s*commit:\s*([0-9a-f]{7,40})', text, re.M) or
-                      [None, 'unrecorded'])[1]
-            out.append({
-                'file': 'evidence/' + f,
-                'commit': commit,
-                # Whether this run still speaks for HEAD is a DERIVED fact, not a judgement: it does
-                # exactly when no path the run verified has changed since. Docs/gates/CI commits
-                # landing after a run therefore do not invalidate it, and a source commit does --
-                # automatically, with no prose to update. `unknown` when git cannot answer (a
-                # tarball, a shallow clone, an unrecorded commit).
-                'covers_head_source': verified_source_unchanged_since(commit),
-                'successful': len(re.findall(r'VERIFICATION:- ?SUCCESSFUL|VERIFICATION: SUCCESSFUL', text)),
-                'failed': len(re.findall(r'VERIFICATION:- ?FAILED|VERIFICATION: FAILED', text)),
-                'covers_unsatisfied': len(re.findall(r'0 of \d+ cover propert', text)),
-            })
-    return out
+    """Read the compact declaration. Never inspect local run logs."""
+    declaration = json.loads(read_text(FLOOR))
+    required = {'commit', 'raw_sha256', 'successful', 'failed', 'covers_unsatisfied', 'file'}
+    if not required <= declaration.keys():
+        raise ValueError('incomplete proof-floor declaration')
+    if not re.fullmatch(r'[0-9a-f]{40}', declaration['commit']):
+        raise ValueError('proof-floor commit must be a full SHA')
+    if not re.fullmatch(r'[0-9a-f]{64}', declaration['raw_sha256']):
+        raise ValueError('proof-floor raw_sha256 must be a SHA-256 digest')
+    for key in ('successful', 'failed', 'covers_unsatisfied'):
+        if type(declaration[key]) is not int or declaration[key] < 0:
+            raise ValueError('proof-floor counts must be nonnegative integers')
+    declaration['covers_head_source'] = verified_source_unchanged_since(declaration['commit'])
+    return [declaration]
 
 
 def verified_source_unchanged_since(commit):
@@ -1239,31 +1219,14 @@ def r_oracles(f):
 
 
 def r_evidence(f):
-    ev = f['evidence']
-    if not ev:
-        return [
-            '**No raw proof-run log is committed in this repository.** Every full-suite verdict '
-            'quoted here and in `DER-REMAINING-WORK.md` is a prose transcription of a run on the '
-            'maintainer\'s machine. That is the weakest form of evidence in this document, and '
-            'committing raw logs under `evidence/` — which this script then reads and reports in '
-            'this table — is an open item (`TODO.md`).',
-            '',
-            'It does not follow that no third-party-inspectable evidence exists: the repository\'s '
-            'public CI runs `cargo test`, clippy and the memory-tractable share of the Kani floor '
-            'on every push, and those logs are machine-readable and public. What CI covers, and '
-            'what it does not, is stated below — the point of this note is only that nothing is '
-            'committed *in-tree*.',
-        ]
-    L = ['| Committed log | At commit | `SUCCESSFUL` | `FAILED` | harnesses reporting an '
-         'unsatisfied cover |', '|---|---|---:|---:|---:|']
-    for e in ev:
-        L.append('| `%s` | `%s` | %d | %d | %d |' % (e['file'], e['commit'], e['successful'],
-                                                     e['failed'], e['covers_unsatisfied']))
-    L += ['',
-          'Every column here is read out of the committed log itself, so this table is reproducible '
-          'from the tree alone and is gate-enforced. Whether a given run still speaks for HEAD needs '
-          '`git`, which a tarball or shallow clone may not have — that question is answered '
-          'separately just below, and is advisory for exactly that reason.']
+    L = ['Full run evidence is kept outside git, available on request. The compact declaration '
+         'in `docs/proof-floor.json` records the floor. These counts are transcribed from the pinned raw log; '
+         'this gate validates the declaration and renders it without reading local logs.', '',
+         '| Certified commit | Raw log SHA-256 | `SUCCESSFUL` | `FAILED` | unsatisfied covers |',
+         '|---|---|---:|---:|---:|']
+    for e in f['evidence']:
+        L.append('| `%s` | `%s` | %d | %d | %d |' %
+                 (e['commit'], e['raw_sha256'], e['successful'], e['failed'], e['covers_unsatisfied']))
     return L
 
 
@@ -1273,7 +1236,9 @@ def _live_sentence(commit, group):
     main = 'evidence/check-%s.log' % commit
     mains = [e for e in group if e['file'] == main]
     rest = [e for e in group if e['file'] != main]
-    if mains and rest:
+    if len(group) == 1 and 'raw_sha256' in group[0]:
+        listing = 'the compact declaration `%s`' % group[0]['file']
+    elif mains and rest:
         kind = ('heavy-harness companion logs'
                 if all('-heavy-' in e['file'] for e in rest) else 'further logs')
         listing = ('a SPLIT floor of %d logs, read together: the main half `%s` and its %d %s %s'
@@ -1294,7 +1259,7 @@ def _live_sentence(commit, group):
 
 
 def r_evidence_coverage(f):
-    """ADVISORY region: does a committed run still speak for HEAD's verified source?
+    """ADVISORY region: does the declared floor still speak for HEAD's verified source?
 
     Derived with `git`, therefore NOT byte-compared. This distinction is the same one `pins` versus
     `pins-observed` draws, and for the same reason: a reader with no git history legitimately cannot
@@ -1306,7 +1271,7 @@ def r_evidence_coverage(f):
     """
     ev = f['evidence']
     if not ev:
-        return ['No committed run log, so nothing to date against HEAD.']
+        return ['No floor declaration, so nothing to date against HEAD.']
     live = [e for e in ev if e['covers_head_source'] and not e['failed']]
     stale = [e for e in ev if e['covers_head_source'] is False]
     unknown = [e for e in ev if e['covers_head_source'] is None]
@@ -1332,8 +1297,8 @@ def r_evidence_coverage(f):
                  % ' '.join(L3_BUILD_INPUTS))
         L.append('')
     else:
-        L.append('**No committed run currently speaks for HEAD\'s verified source.** Re-run '
-                 '`./check.sh` and commit the log, or treat every full-suite verdict in this '
+        L.append('**No declared floor currently speaks for HEAD\'s verified source.** Re-run '
+                 '`./check.sh` and refresh the compact declaration, or treat every full-suite verdict in this '
                  'document as a transcription again.')
     for e in stale:
         L.append('- `%s` (at `%s`) is superseded: verified source changed after it. It is kept as a '

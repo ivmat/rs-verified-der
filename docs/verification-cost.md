@@ -1,5 +1,7 @@
 # Verification cost & tractability
 
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](../evidence/README.md).
+
 This note records the **cost profile** of the crate's Kani proof suite — how long each harness takes and
 which ones are resource-heavy — so the expensive harnesses are visible up front rather than discovered
 by a stalled `./check.sh`. It answers a practical question for contributors: *"I ran `cargo kani` and it's

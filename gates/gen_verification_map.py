@@ -197,14 +197,16 @@ def read_manifest(path=ACCEPTANCE):
         cid = c.get('id')
         if not cid:
             raise SystemExit('gen_verification_map: %s has a claim with no id' % path)
-        band = c.get('band') or 'A0'
-        if band not in BAND_ORDER:
+        band = c.get('band') or ('not-applicable' if c.get('status') == 'not-applicable' else 'A0')
+        if band not in BAND_ORDER and band != 'not-applicable':
             raise SystemExit(
                 'gen_verification_map: claim %r carries band %r, which this renderer has no colour '
                 'for (known: %s) — add it to BAND_ORDER/BAND_STYLE rather than drawing it as '
                 'something it is not.' % (cid, band, ', '.join(BAND_ORDER)))
         claims.append({
             'id': cid,
+            'status': c.get('status', 'evidenced'),
+            'item': c.get('item', ''),
             'band': band,
             'grade': c.get('grade') or 'ungraded',
             'weight': c.get('weight') or 'unweighted',
@@ -355,6 +357,21 @@ def compute():
     not an ordinary drift `--check` should merely report and move past."""
     roster = roster_from_tiers()
     claims, provenance = read_manifest()
+    if any(c['id'].startswith('REQ/') for c in claims):
+        if not all(c['id'].startswith('REQ/') for c in claims):
+            raise SystemExit('gen_verification_map: mixed requirements and module axes')
+        inventory_path = os.path.join(ROOT, 'docs', 'requirements', 'der.inventory.toml')
+        with open(inventory_path, 'rb') as source:
+            inventory = tomllib.load(source)
+        expected = {'REQ/' + row['id'] for row in inventory['item']}
+        if {c['id'] for c in claims} != expected or len(claims) != len(expected):
+            raise SystemExit('gen_verification_map: requirements claims differ from inventory')
+        tree_lids = gpm.l4_module_set()
+        if tree_lids - roster:
+            raise SystemExit('gen_verification_map: Lean lid absent from module roster')
+        return {'requirements_axis': True, 'roster': roster, 'claims': claims,
+                'by_module': {}, 'by_lid': {}, 'declared': read_declared(),
+                'source_lids': tree_lids, 'provenance': provenance}
     by_module, by_lid, unmapped = split_claims(claims, roster)
 
     if unmapped:
@@ -428,8 +445,39 @@ def _sorted_group_keys(keys):
     return sorted(keys, key=lambda k: (BAND_ORDER.index(k[0]), k[1], k[2]))
 
 
+def render_requirements(f):
+    """Show every requirement by status, band, grade and weight. Do not infer module bands."""
+    from collections import Counter
+    claims, prov = f['claims'], f['provenance']
+    at, total = target_progress(claims)
+    lines = ['**%d of %d** claims reach A3 or better; **%d** do not. '
+             'The total includes excluded, gap and not-applicable requirements.' % (at, total, total - at), '',
+             'The acceptance axis is one claim per requirement. Counts are inventory, not a coverage percentage.', '',
+             '| Status | Band | Grade | Weight | Claims |', '|---|---|---|---|---:|']
+    groups = Counter((c.get('status', 'evidenced'), c['band'], c['grade'], c['weight']) for c in claims)
+    for key, count in sorted(groups.items()):
+        lines.append('| %s | %s | %s | %s | %d |' % (*key, count))
+    lines += ['', 'Weighted claims: **%d**.' % sum(c['weight'] == 'weighted' for c in claims), '',
+              'Band meanings:']
+    counts = band_counts(claims)
+    for band in LEGEND_LADDER:
+        lines.append('- %s %s — %d claim(s)' % (band, BAND_MEANING[band], counts.get(band, 0)))
+    lines += ['', 'Source inventory only; these module names carry no aggregate assurance band:',
+              ', '.join('`%s`' % m for m in sorted(f['roster'])) + '.', '',
+              'Lean-lid source modules: ' + ', '.join('`%s`' % m for m in sorted(f['source_lids'])) + '.', '',
+              'Read [`der-verified/acceptance.toml`](der-verified/acceptance.toml) for each requirement. '
+              'Subject commit `%s`%s; generated `%s`. %s' %
+              (prov['commit'], ' (subject tree DIRTY)' if prov['dirty'] else '', prov['generated_at'], BAND_RULE_SENTENCE)]
+    lines += ['', 'Declared limits and planned work:']
+    for row in f['declared']:
+        lines.append('- %s (%s; source: `%s`).' % (row['label'], row['class'], row['source']))
+    return lines
+
+
 def render_map(facts=None):
     f = facts or compute()
+    if f.get('requirements_axis'):
+        return render_requirements(f)
     roster, by_module, by_lid = f['roster'], f['by_module'], f['by_lid']
     declared, prov, claims = f['declared'], f['provenance'], f['claims']
 

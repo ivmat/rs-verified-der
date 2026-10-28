@@ -1,5 +1,7 @@
 # Assumptions — the trusted base of `der-verified`
 
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+
 **Every machine-checked claim in this crate stands on things that are assumed, not proven. This file
 is the list, stated loudly rather than left to be inferred from the corners of other documents.**
 `PROOF_MANIFEST.md` says what is proven and over what domain; this file says what has to be true for
@@ -354,3 +356,11 @@ list above shrinkable without making it quietly editable.
 **Where the rest of the envelope lives:** `PROOF_MANIFEST.md` (what is proven, over what bounds,
 with what stubs, and what is *not* proven), `DECISIONS.md` (why the profile is narrowed the way it
 is), `evidence/` (the run logs and the control campaigns these entries cite).
+
+## Compact floor declaration
+
+The counts in `docs/proof-floor.json` are transcribed from the pinned floor-B raw log at `c7a2e26`.
+The log records the exit, harness results, launch tree state and Lean stage result.
+Control attests the 24 GB cap and the journal peak of 22.8 GB.
+The generator checks the declaration shape and the build-input diff. CI does not re-read local run logs.
+Full run evidence is kept outside git, available on request. Verify requested bytes against the recorded SHA-256.
