@@ -25,3 +25,13 @@ was gitignored. The dated per-log headers are left as written rather than rewrit
 is the standing disclosure that supersedes the "committed alongside" wording for every distilled log
 in this directory. The `check-d05d3f2.log` header (2026-09-18 onward) already states the current
 "kept LOCAL / available on request" wording directly.
+
+## Where the full run evidence is (owner ruling 2026-10-28)
+
+The acceptance manifest (`der-verified/acceptance.toml`) and its projected evidence records (`der-verified/evidence/acceptance-records/`) are kept in this
+repository as a showcase. The full run evidence behind them is kept outside git: the run logs and the control transcripts of the delivery runs of 2026-10-27 and
+2026-10-28. It may be shared on request through other means. The pins in the records (commit, log sha256) let a reader check any file that is shared.
+In the long term, acceptance evidence needs a channel that is separate from git. The acceptance format itself carries its own acceptance manifest, so that
+the format is complete in the same way.
+
+Evidence files committed before this ruling stay as they are.

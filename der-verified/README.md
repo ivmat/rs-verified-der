@@ -50,6 +50,10 @@ Some of the evidence travels with the crate and some of it does not, so here is 
 - **All 893 evidence records** in `evidence/acceptance-records/` — including the Lean-lid
   records, so the Lean results are *readable and hash-checkable* here even though the proofs
   themselves are not.
+- **Where the full run evidence is.** The manifest and its evidence records are kept in the repository as a
+  showcase. The full run evidence (run logs and control transcripts) is kept outside git and may be shared on
+  request through other means. In the long term, acceptance evidence needs a channel that is separate from git.
+  The acceptance format itself carries its own acceptance manifest, for completeness.
 - The manifest's `record` paths are relative to the manifest, so they resolve inside the unpacked
   crate. In a source checkout, `./check_fast.sh` verifies the pinned validator closure and checks
   this manifest in strict mode.
