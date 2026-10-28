@@ -9,3 +9,7 @@ __pycache__/
 
 # Raw full-gate logs stay LOCAL (owner 2026-09-18: too big for repo; distilled logs are the committed evidence, raw available on request)
 evidence/raw/
+
+# Run evidence stays local. Keep the policy in the public tree.
+evidence/*
+!evidence/README.md
