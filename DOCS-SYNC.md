@@ -1,136 +1,73 @@
-# Docs-sync checklist
+# Updating documentation
 
-**Rule: any code/proof/feature change MUST be accompanied by a docs-sync pass in the same change (or
-the next one, immediately) — not deferred indefinitely.** This crate's whole pitch is "the proofs are
-the product, not a badge"; a stale count or an undocumented capability quietly breaks that promise for
-anyone reading the docs instead of re-running `./check.sh`. Docs are part of the deliverable, not an
-afterthought.
+A code, proof or feature change MUST include a docs-sync pass in the same change
+(or the immediate next one). Use simple technical English,
+keep each fact in one authoritative place, and link to detail instead of copying it.
+Do not turn the active backlog into a run diary.
 
-**Honesty rule, always:** never invent a number. If you can't confirm a count by grepping/counting the
-actual source, mark it `≈`/TODO rather than assert it. Counts in this crate's docs are *inventory*, not
-a coverage guarantee (`PROOF_MANIFEST.md`'s own framing) — keep that distinction sharp whenever you
-edit a count.
+## Sources of truth
 
-## Quick lookup: change → docs to touch
-
-| Kind of change | Docs to update |
+| Question | Source |
 |---|---|
-| **Kani harness added/removed** (any module) | Re-count with `grep -rE '#\[kani::proof(_for_contract)?' der-verified/src` and update the total + per-module count in: `README.md` (top bullet + CI section if the module's shard changed), `der-verified/README.md`, `PROOF_MANIFEST.md` (top note, "L3 floor" bullet, per-module inventory table, and the assumption count if `kani::assume` changed too), `docs/why-verified.md`, `docs/verification-cost.md` (cost tiers table if the harness is slow/heavy). |
-| **`#[test]` added/removed** | Re-count with `grep -rc '#\[test\]'` and update the total in: `README.md`, `der-verified/README.md`, `PROOF_MANIFEST.md` (top note + "tests are not proofs" footer), `docs/why-verified.md`. |
-| **New Lean lid (or a lid's trust-axiom count changes)** | `PROOF_MANIFEST.md` (the L4/L5 table — add a row; update the "N codecs" framing in the section header and the top inventory note; update the axiom-count prose on any *other* lid whose trust surface changed as a side effect — e.g. de-opaquing a shared dependency), `README.md` (L4/L5 bullet + "Verify it yourself" section 2 heading), `der-verified/README.md`, `docs/why-verified.md`, `der-verified/src/lib.rs`'s crate-doc "Verification" paragraph, `TODO.md` (check off / log the item), `DER-REMAINING-WORK.md` (append an UPDATE block, don't rewrite history). |
-| **New module/feature** (e.g. a new codec, a new validation layer) | `README.md` scope section, `der-verified/README.md` scope section, `PROOF_MANIFEST.md` (add to per-module inventory table; if it's NOT backed by Kani/Lean, say so explicitly — don't let a tested-only feature borrow the crate's proof-grade framing), `der-verified/src/lib.rs` crate-doc module list, `CHANGELOG.md` (`[Unreleased]` entry), `DER-REMAINING-WORK.md` / `TODO.md` (roadmap — check off if it closes an open item, add follow-ups if it doesn't fully close it). |
-| **Trust-axiom count changes on an existing lid** (e.g. de-opaquing a shared dependency) | `PROOF_MANIFEST.md`'s L4/L5 table entry for every lid that shares the affected axiom (check ALL lids that reference it, not just the one you touched), `CHANGELOG.md`. |
-| **CI shard / sharding change** (`.github/workflows/ci.yml`) | `README.md`'s "Continuous integration" section (harness counts per shard, heavy-tier module list) — re-derive shard totals from the current per-module Kani counts, don't just trust the old number. |
-| **Any scope narrowing/decision** (a design fork, a deliberate limitation) | `DECISIONS.md` (new dated `## Dxx` entry, append-only — never edit past entries' content, only add), `PROOF_MANIFEST.md`'s "Deliberate deviations" / "What is NOT proven" sections if it changes the fence. |
-| **A cover-vacuity finding (opened or closed)** | The `// VACUITY-DISCLOSED:` registry line in the module (see below — the gate counts these), `DER-REMAINING-WORK.md` §4, `docs/verification-cost.md`'s cover-retrofit section. |
-| **Anything the manifest gate covers** (harness, `pub fn`, bound, stub, cover, lid, pin) | Run `python3 gates/gen_proof_manifest.py --write`; it rewrites `PROOF_MANIFEST.md`'s generated regions. Then read the diff — the *prose* claims around the regenerated numbers are hand-written and the script cannot update them for you. |
-| **A security-relevant fix or new disclosed assumption** | `SECURITY.md` if it changes reporting scope; `PROOF_MANIFEST.md`'s assumptions section. |
+| What remains open? | [TODO.md](TODO.md) |
+| What is proved, with which bounds and assumptions? | [PROOF_MANIFEST.md](PROOF_MANIFEST.md), [ASSUMPTIONS.md](ASSUMPTIONS.md) |
+| Which requirements have evidence? | [Requirements inventory](docs/requirements/der.inventory.toml), [evidence maps](docs/requirements/evidence/README.md), [acceptance manifest](der-verified/acceptance.toml) |
+| Which run is recorded? | [Proof-floor declaration](docs/proof-floor.json), [evidence policy](evidence/README.md) |
+| Why was a scope or design decision made? | [DECISIONS.md](DECISIONS.md) |
+| What shipped? | [CHANGELOG.md](CHANGELOG.md) |
 
-## How to get the authoritative numbers (don't guess, and don't hand-grep either)
+## Counts and generated regions
 
-**One command. It is the source of truth for every count in this repo's docs:**
+Use the generator rather than hand-grepping Rust attributes or copying old prose counts:
 
 ```sh
-python3 gates/gen_proof_manifest.py --json     # all derived facts, per module and crate-wide
-python3 gates/gen_proof_manifest.py --write     # regenerate PROOF_MANIFEST.md's generated regions
-python3 gates/gen_proof_manifest.py --check     # the gate (runs in check.sh + check_fast.sh)
-python3 gates/test_gen_proof_manifest.py        # the gate's own tests (same two scripts)
+python3 gates/gen_proof_manifest.py --json
+python3 gates/gen_proof_manifest.py --check
+python3 gates/gen_verification_map.py --check
 ```
 
-It derives, from source: harness counts (total and per module), `pub fn` entry points and which of
-them no harness names, symbolic buffer widths, unwind depths, `kani::assume` counts split into
-harness preconditions vs stub-body postconditions, `kani::cover` counts, `#[kani::stub]`
-applications, the disclosed cover-vacuity registry, Lean lid theorem and axiom counts, toolchain
-pins, and the `#[test]` total.
+When the corresponding inputs changed, regenerate with `--write`, then review the diff.
+Never hand-edit generated regions. The proof manifest's `pins-observed` region records the
+regenerating machine; `--check` deliberately excludes it. Do not treat that environmental
+diff as new evidence or widen the exclusion to suppress a failure.
 
-**Do not go back to hand-grepping.** The naive greps this file used to recommend are wrong in ways
-that are invisible until someone checks:
+The count guard scans the explicit `GUARDED_DOCS` list in `gates/gen_proof_manifest.py`.
+`docs/archive/` is outside that list, so historical counts are not checked against current
+source. Preserve that distinction if the scan is broadened. The guard recognizes
+specific prose patterns, not every possible assertion. Prefer
+linking to the proof manifest over repeating counts. Keep measured runtime and memory
+figures dated; source counts cannot refresh a measurement.
 
-- `grep -rE '#\[test\]' . | wc -l` counts `#[test]` **mentioned inside doc comments** — `lib.rs`
-  has exactly one such mention, so the naive grep says 310 where `cargo test` runs 309.
-- `grep '#\[kani::unwind(' | wc -l` likewise counts unwind depths quoted in prose (12 such
-  mentions), and the attribute may sit either above or below `#[kani::proof]`.
-- `grep 'kani::cover'` counts prose mentions too (2 of them).
+## Change checklist
 
-The script strips comment lines before counting, and that stripping is pinned by a committed test
-(`gates/test_gen_proof_manifest.py`, run by `check.sh`/`check_fast.sh`). If you need a number it does
-not derive, **add it to the script** rather than grepping by hand — that is the point. And when you
-change the script, add the case to its test file: an ad-hoc check you ran once is not a gate.
-
-**One region of the manifest is deliberately NOT gate-enforced.** `pins-observed` records the rustc,
-Kani, Aeneas and Charon that the *regenerating machine* had installed. `--write` rewrites it;
-`--check` skips it, because a reader's toolchain is a property of their run, not of the crate —
-byte-comparing it made `./check.sh` fail for every third party before a proof ran. Consequences for
-a docs-sync pass: (a) a `--write` diff that touches **only** that line is environmental noise, not a
-content change — do not build a claim on it; (b) never widen `ADVISORY` in the script to quiet a
-failing gate, since everything else in it is derived from the tree and must stay enforced (there is
-a test asserting the set stays exactly `{'pins-observed'}`).
-
-Never accept a stale doc's own number as ground truth for a new doc's number. If a count can't be
-derived cheaply (exact wall-clock/RAM figures need a real proof run), leave the old measurement in
-place but flag it as *not re-measured this pass* rather than silently repeating it as current — see
-`docs/verification-cost.md` for the pattern.
-
-### The count-claim guard
-
-`--check` also scans `README.md`, `der-verified/README.md`, `docs/*.md`, `PROOF_MANIFEST.md` and
-`der-verified/src/lib.rs` for count-claims in prose (`"164 Kani harnesses"`, `"309 tests"`,
-`"six codecs"`, …) and fails if any disagrees with source. So a stale count in a secondary document
-now breaks the gate instead of quietly misinforming a reader. `CHANGELOG.md`, `DECISIONS.md` and
-`DER-REMAINING-WORK.md` are deliberately **not** guarded: they are dated, append-only records where
-a historical count is correct *as history*.
-
-If you add a new prose phrasing for a count, add its pattern to `GUARDS` in the script.
-
-#### ⚠ The guard is a phrase list, so its PASS is not coverage (measured 2026-08-03)
-
-That last sentence used to read as housekeeping. It is the whole exposure, and it has now been paid
-for once: adding 11 tests took the total to 320 and **three current-state count-claims stayed at 309
-while `--check` reported PASS**.
-
-| line | why the guard could not see it |
+| Change | Review/update |
 |---|---|
-| `README.md:17` | `- **309** unit and regression tests` — the emphasis markers sit between the number and the space, so `NUM + r'\s+unit and regression tests'` never matched |
-| `der-verified/README.md:12` | same shape, in the README **published to crates.io** |
-| `docs/why-verified.md:44` | says *"concrete and regression tests"*; the guard only knew *"unit and regression tests"* |
+| Harness, test, bound, stub, cover, tool pin or Lean lid | Generated proof manifest; affected requirement/evidence mappings; nearby scope prose |
+| New capability or changed behavior | API docs, requirement scope, README summary, changelog, relevant decision |
+| Changed assumption or known limitation | Assumptions, proof manifest, relevant coverage rows; security guidance if affected |
+| CI or verification policy | Documented commands, tiers, replay behavior and cost claims |
+| Work completed or new follow-up | Reconcile TODO; remove completed tasks rather than appending contradictory updates |
+| Documents moved or archived | Update links and plain-text citations, including `gates/map_declared.txt`; regenerate its README projection |
 
-Both causes are fixed — `NUM` now consumes a trailing `**`/`*`/`` ` ``, and the *concrete* variant is
-a guard of its own. Each of the three was re-staled individually afterwards and the gate went **rc=1**
-on each, then rc=0 with all three correct; the crates.io README was found *by* the widened guard, not
-by hand.
-
-**What is not fixed, and cannot be by this mechanism.** The guard still only knows the phrasings
-someone thought to list. Its PASS line counts the **documents scanned**, not the claims covered, so
-"6 guarded count-claims current" says nothing about how many claims exist in those 6 files. Prefer
-citing a number **once**, in `PROOF_MANIFEST.md`, and linking to it — a count that appears in one
-place cannot go stale in another. Where a document must restate one, use an already-guarded phrasing
-verbatim rather than a fresh wording.
-
-### Disclosing a cover-vacuity finding
-
-A harness whose `kani::cover` is known-unsatisfiable at its bound must carry, next to the narrative,
-one declarative line the script can count:
+Known-unsatisfiable covers retain their source registry entry:
 
 ```rust
 // VACUITY-DISCLOSED: <finding harness> -> witness <positive-construction harness>
 ```
 
-Kani reports such a harness as `VERIFICATION: SUCCESSFUL` with `0 of 1 cover properties satisfied`
-— it does **not** fail. Without this registry the gap is invisible to every gate, and
-`PROOF_MANIFEST.md` would silently understate it.
+Kani can report success with an unsatisfied cover. Preserve the limitation and its witness;
+do not infer accept-path reachability from success alone.
 
-## Append-only documents — don't rewrite history
+## History and evidence
 
-`DECISIONS.md` and `DER-REMAINING-WORK.md` are dated, point-in-time records (a decisions ledger and a
-work-status log, respectively). When their content goes stale, **append an `UPDATE <date>` note**
-pointing at what changed, rather than editing the old prose to read as if it were always current. This
-preserves the audit trail. `CHANGELOG.md` follows Keep-a-Changelog: put unreleased work under
-`## [Unreleased]`, never edit a shipped version's entry.
+Keep dated decisions and shipped changelog entries as history; add an explicit correction
+when needed. Archive superseded status narratives with a clear date and a link to current
+sources. [The archive](docs/archive/README.md) is not an additional work queue.
 
-## Docs in scope for a sync pass
+Acceptance records, inventory mirrors and vendored validator files have hash and packaging
+contracts. Do not delete or rewrite them as documentation cleanup. Evidence regeneration
+uses the explicit [release workflow](docs/release.md), not an ordinary push or docs edit.
+Development checks report historical snapshot integrity and current applicability separately.
 
-`README.md` · `der-verified/README.md` · `PROOF_MANIFEST.md` (the most important — the honest proof
-envelope) · `CHANGELOG.md` · `DER-REMAINING-WORK.md` · `TODO.md` · `DECISIONS.md` · `SECURITY.md` ·
-`docs/verification-cost.md` · `docs/why-verified.md` · `der-verified/src/lib.rs`'s crate-level doc
-comment (module list + "Verification" paragraph) · each module's own doc comment, if the change
-affects that module's claims specifically.
+Run the relevant existing checks after editing and report what was actually run. Link and
+projection checks establish documentation consistency, not Kani or Lean proof success.

@@ -37,6 +37,7 @@ import argparse
 import difflib
 import json
 import os
+import pathlib
 import re
 import subprocess
 import sys
@@ -790,7 +791,18 @@ def verified_source_unchanged_since(commit):
                              + VERIFIED_PATHS, capture_output=True, text=True, timeout=30)
         if out.returncode != 0:
             return None
-        return out.stdout.strip() == ''
+        changed = set(out.stdout.splitlines())
+        if changed == {'lean/lid-source-state.txt'}:
+            # A validated hash cache is a result of verification, not a proof/build input.
+            import check_lid_staleness as lid
+            try:
+                lid.validate_source_state(read_text(os.path.join(ROOT, 'lean/lid-source-state.txt')),
+                    read_text(os.path.join(ROOT, 'lean/check_lean.sh')),
+                    lambda name: pathlib.Path(ROOT, name).read_bytes())
+            except (OSError, ValueError, lid.ParseError):
+                return False
+            return True
+        return not changed
     except Exception:
         return None
 
@@ -1220,7 +1232,7 @@ def r_oracles(f):
 
 def r_evidence(f):
     L = ['Full run evidence is kept outside git, available on request. The compact declaration '
-         'in `docs/proof-floor.json` records the floor. These counts are transcribed from the pinned raw log; '
+         'in `docs/proof-floor.json` records the floor. The declaration records counts from the pinned raw log; '
          'this gate validates the declaration and renders it without reading local logs.', '',
          '| Certified commit | Raw log SHA-256 | `SUCCESSFUL` | `FAILED` | unsatisfied covers |',
          '|---|---|---:|---:|---:|']
@@ -1248,9 +1260,10 @@ def _live_sentence(commit, group):
         listing = '%d logs, read together: %s' % (len(group), ', '.join(files))
     else:
         listing = 'the log `%s`' % group[0]['file']
-    anchor = anchor_commit(commit)
+    anchor = group[0].get('source_anchor') or anchor_commit(commit)
     out = ('**The run evidence captured at `%s` still speaks for HEAD** (%s). No build input it '
-           'depends on has changed since the anchor `%s`: `git diff %s -- %s` is empty.'
+           'depends on has changed since the anchor `%s`: `git diff %s -- %s` is empty apart from '
+           'a possible `lean/lid-source-state.txt` cache update whose roster and source hashes validate.'
            % (commit, listing, anchor, anchor, ' '.join(VERIFIED_PATHS)))
     if anchor != commit:
         out += (' (`%s` is the published-history commit whose tree is identical to the capture '
@@ -1291,7 +1304,7 @@ def r_evidence_coverage(f):
         L.append('This is a **sufficient** condition, not an iff. An empty diff over the L3 build '
                  'inputs (`%s`) since the anchor, with the §2 toolchain pins unchanged, means the '
                  'Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty '
-                 'diff, or a moved pin, means re-run: it does not by itself show the evidence is '
+                 'diff beyond that validated state cache, or a moved pin, means re-run: it does not by itself show the evidence is '
                  'wrong. The generator checks the diff only; whether a §2 pin moved is for the '
                  'reader. Run the command rather than trusting this sentence.'
                  % ' '.join(L3_BUILD_INPUTS))

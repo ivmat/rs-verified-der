@@ -11,7 +11,9 @@ evidence and an explicit claim-by-claim assurance map.
 
 ## Evidence at a glance
 
-The floor of record at `d3de34e` verifies all 302 harnesses in one pass at a 24 GB cap. It returns exit 0 and Lean lid PASS. Full logs are kept outside git, available on request.
+The [proof-floor declaration](docs/proof-floor.json) identifies the recorded full run,
+results and raw-log digest. Recorder-generated memory fields state when they were not measured.
+Full logs are available on request.
 
 - **L3 — Kani:** 302 proof harnesses over 33 modules establish default safety checks on their
   bounded domains; functional claims vary by harness and are listed in the proof manifest.
@@ -28,6 +30,11 @@ manifest and [records](der-verified/evidence/acceptance-records/) ship in the cr
 [crate README](der-verified/README.md) explains what remains repository-only. The manifest follows
 acceptance format 0.4.0 with the Rust verification profile; its generated header names the exact
 validator-closure commit.
+
+These are recorded acceptance snapshots. New snapshots are prepared explicitly for releases.
+Ordinary CI validates their integrity and reports
+current-source applicability; it does not regenerate them. CHANGED or UNKNOWN means the
+record must not be read as acceptance of current source. See the [release workflow](docs/release.md).
 
 ## Scope
 
@@ -63,6 +70,8 @@ decided. The summary also lists declared limits and planned work.
 <!-- BEGIN GENERATED:map (gates/gen_verification_map.py) -->
 **197 of 876** claims reach A3 or better; **679** do not. The total includes excluded, gap and not-applicable requirements.
 
+This is the recorded acceptance snapshot, not a claim that current source is accepted. Run `python3 gates/release_evidence.py status` for current applicability.
+
 The acceptance axis is one claim per requirement. Counts are inventory, not a coverage percentage.
 
 | Status | Band | Grade | Weight | Claims |
@@ -93,14 +102,14 @@ Lean-lid source modules: `big_integer`, `length`, `oid`, `sequence`, `tag`, `tlv
 Read [`der-verified/acceptance.toml`](der-verified/acceptance.toml) for each requirement. Subject commit `d3de34e`; generated `2026-10-28T15:12:43Z`. A band above A1 needs a mutation control naming the claim that was watched to fail; without one a claim stops at A1 (and an ungraded claim at A0).
 
 Declared limits and planned work:
-- Name constraints (RFC 5280 §4.2.1.10) (planned; source: `PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")`).
-- Key usage (RFC 5280 §4.2.1.3) (planned; source: `PROOF_MANIFEST.md:538`).
-- Basic constraints (RFC 5280 §4.2.1.9) (planned; source: `PROOF_MANIFEST.md:538`).
-- Validity-against-clock (RFC 5280 §4.1.2.5) (planned; source: `PROOF_MANIFEST.md:538`).
-- X.509 structural-module Lean lid (L4) (planned; source: `DER-REMAINING-WORK.md:157-165 ("All X.509 structural modules (x509_*) are Kani-only — no L4 lid... still the crate's one open breadth item")`).
-- Signature / crypto verification (out-of-scope; source: `README.md:47-48 ("Out of scope (not implemented, not proven): signature/crypto verification...")`).
-- Certificate-path / trust validation (out-of-scope; source: `README.md:47-48 ("...certificate-path or trust validation...")`).
-- General SET (X.690 §10.3) (out-of-scope; source: `README.md:49-50 ("general SET (§10.3)"); DECISIONS.md:463 (D13 — "general SET (§10.3) stays out of scope")`).
+- Name constraints (RFC 5280 §4.2.1.10) (planned; source: `TODO.md §Scope and API decisions`).
+- Key usage (RFC 5280 §4.2.1.3) (planned; source: `TODO.md §Scope and API decisions`).
+- Basic constraints (RFC 5280 §4.2.1.9) (planned; source: `TODO.md §Scope and API decisions`).
+- Validity-against-clock (RFC 5280 §4.1.2.5) (planned; source: `TODO.md §Scope and API decisions`).
+- X.509 structural-module Lean lid (L4) (planned; source: `TODO.md §Proofs and tests`).
+- Signature / crypto verification (out-of-scope; source: `README.md §Scope`).
+- Certificate-path / trust validation (out-of-scope; source: `README.md §Scope`).
+- General SET (X.690 §10.3) (out-of-scope; source: `README.md §Scope`).
 <!-- END GENERATED:map -->
 
 ## Strict decoding
@@ -191,8 +200,11 @@ its comparison results have unit-test evidence only. The Lean step re-extracts t
 
 ## Continuous integration
 
-[GitHub Actions](.github/workflows/ci.yml) runs hygiene and parity gates, tests, clippy, and the
-memory-tractable **225 of 302** Kani harnesses. The remaining heavy modules are a local milestone via
+[GitHub Actions](.github/workflows/ci.yml) runs the local fast checks, package validation,
+tests, clippy and MSRV checks on every run. It runs the memory-tractable **225 of 302** Kani harnesses
+on every main push and on PRs with changes outside the documented prose allowlist.
+A documentation-only PR explicitly reports that Kani was not run. See [CI selection and limits](docs/ci.md).
+The remaining heavy modules are a local milestone via
 `./check.sh`; the full floor needs roughly 24 GB available (largest harness peaks ~20 GB). Indicative shard timings and
 memory measurements live in [`docs/verification-cost.md`](docs/verification-cost.md).
 
@@ -201,6 +213,8 @@ explained in [`docs/why-verified.md`](docs/why-verified.md#a-war-story-the-proof
 
 ## Documentation
 
+- [`TODO.md`](TODO.md) — the active backlog and deferred proposals.
+- [`docs/archive/README.md`](docs/archive/README.md) — historical status, outside the current reading path.
 - [`docs/why-verified.md`](docs/why-verified.md) — why a verified DER decoder, the two-layer
   (Kani + Aeneas→Lean) approach, the honesty envelope, and the modular-proof war story.
 - [`COVERAGE.md`](COVERAGE.md) — the per-rule coverage ledger: one row per X.690 / RFC 5280 rule,

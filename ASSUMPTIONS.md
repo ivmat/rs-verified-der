@@ -1,6 +1,7 @@
 # Assumptions — the trusted base of `der-verified`
 
-Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+The [proof-floor declaration](docs/proof-floor.json) identifies the recorded run and its log digest.
+Full logs are available on request; see [the evidence policy](evidence/README.md).
 
 **Every machine-checked claim in this crate stands on things that are assumed, not proven. This file
 is the list, stated loudly rather than left to be inferred from the corners of other documents.**
@@ -272,7 +273,7 @@ axioms characterising *upstream* primitives — the tools' surface, not ours.
   enforced where a caller opts in, and the fence stays exactly as stated. What changed is that the
   supported way to reject those inputs is now a verified entry point rather than only a
   hand-written per-call-site check. Whether to wire the check into `decode_tlv_strict` itself is
-  open (D34, `DER-REMAINING-WORK.md`).
+  open (D34, `TODO.md`).
 
 ## 3. Out of focus — parked, not gone
 
@@ -359,9 +360,9 @@ is), `evidence/` (the run logs and the control campaigns these entries cite).
 
 ## Compact floor declaration
 
-The counts in `docs/proof-floor.json` are transcribed from the pinned floor-B raw log at `c7a2e26`.
-The log records the exit, harness results, launch tree state and Lean stage result.
-Control attests the 24 GB cap and the journal peak of 22.8 GB.
+The recorder derives the counts in [the proof-floor declaration](docs/proof-floor.json) from its
+pinned raw log. The declaration identifies the run, log digest and results; recorder-generated
+memory fields say `not measured by recorder`.
 The generator checks the declaration shape and the build-input diff. CI does not re-read local run logs.
 Full run evidence is kept outside git, available on request. Verify requested bytes against the recorded SHA-256.
 

@@ -9,8 +9,10 @@ generated header must name the same protocol commit.
 The manifest has one claim per requirement. Its `[spec].inventory` is a mirror of
 docs/requirements/der.inventory.toml kept beside the manifest (core.md B6: a pointer
 must stay inside the repository, and a package unpacked from der-verified/ must still
-resolve it). The mirror must be byte-identical to the canonical file.
+resolve it). The mirror is hash-validated as part of the recorded snapshot. Equality with the
+current canonical inventory belongs to the separate applicability/release check.
 """
+import argparse
 import os
 import pathlib
 import re
@@ -51,7 +53,20 @@ def run_vendored(command):
     return subprocess.run(command, capture_output=True, text=True, env=env)
 
 
-def main():
+def validate_snapshot(root=ROOT, package=None):
+    """Check the issued snapshot, independently of current-source applicability."""
+    root = pathlib.Path(root).resolve()
+    ROOT = root
+    PACKAGE = pathlib.Path(package).resolve() if package else root / "der-verified"
+    MANIFEST = PACKAGE / "acceptance.toml"
+    VENDOR = root / "gates/vendor/acceptance"
+    EXPORTER = VENDOR / "export_closure.py"
+    VALIDATOR = VENDOR / "format_acceptance/tools/check_acceptance.py"
+    CLOSURE = VENDOR / "CLOSURE.json"
+    VENDOR_DOC = root / "gates/vendor/VENDOR.md"
+    STORE = PACKAGE / "evidence/acceptance-records"
+    INVENTORY = root / "docs/requirements/der.inventory.toml"
+    INVENTORY_MIRROR = PACKAGE / "der.inventory.toml.vendored-copy"
     for path, label in (
         (MANIFEST, "manifest"),
         (EXPORTER, "vendored closure verifier"),
@@ -63,7 +78,7 @@ def main():
         (INVENTORY_MIRROR, "requirements inventory mirror"),
     ):
         if not path.exists():
-            return fail(f"{label} missing at {path.relative_to(ROOT)}")
+            return fail(f"{label} missing at {os.path.relpath(path, ROOT)}")
 
     vendor_note = VENDOR_DOC.read_text(encoding="utf-8")
     if PINNED_PROTOCOL_COMMIT not in vendor_note:
@@ -96,12 +111,6 @@ def main():
             "manifest or re-vendor the closure rather than editing either to agree"
         )
 
-    if INVENTORY_MIRROR.read_bytes() != INVENTORY.read_bytes():
-        return fail(
-            f"{INVENTORY_MIRROR.relative_to(ROOT)} differs from "
-            f"{INVENTORY.relative_to(ROOT)}; the mirror is a byte copy of the canonical "
-            "inventory (core.md B6), regenerate it with the manifest"
-        )
     manifest = tomllib.loads(text)
     spec = manifest.get("spec", {})
     assumptions = (ROOT / "ASSUMPTIONS.md").read_text(encoding="utf-8")
@@ -154,13 +163,29 @@ def main():
         )
 
     result = run_vendored([
-        sys.executable, "-B", str(VALIDATOR), "--strict", "--strict-weight", "--root", str(ROOT), str(MANIFEST),
+        sys.executable, "-B", str(VALIDATOR), "--strict", "--strict-weight", "--root", str(PACKAGE), str(MANIFEST),
     ])
     output = (result.stdout + result.stderr).strip()
     if result.returncode != 0:
         return fail(f"vendored validator rejected acceptance.toml:\n{output}")
     summary = output.splitlines()[-1] if output else "(no output)"
-    print(f"PASS check_acceptance_manifest: {summary}")
+    print(f"PASS recorded acceptance integrity: {summary}")
+    return 0
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--require-current', action='store_true',
+                        help='refuse unless the recorded subject still covers current inputs')
+    args = parser.parse_args(argv)
+    result = validate_snapshot()
+    if result:
+        return result
+    from release_evidence import applicability
+    status = applicability(ROOT)
+    print(f"ACCEPTANCE {status['state']}: {status['reason']}")
+    if args.require_current and status['state'] != 'APPLICABLE':
+        return fail('release requires applicable evidence; no acceptance generation was run')
     return 0
 
 

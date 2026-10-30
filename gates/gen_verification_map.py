@@ -360,12 +360,13 @@ def compute():
     if any(c['id'].startswith('REQ/') for c in claims):
         if not all(c['id'].startswith('REQ/') for c in claims):
             raise SystemExit('gen_verification_map: mixed requirements and module axes')
-        inventory_path = os.path.join(ROOT, 'docs', 'requirements', 'der.inventory.toml')
+        # The map summarizes the issued snapshot, not today's evolving requirements.
+        inventory_path = os.path.join(os.path.dirname(ACCEPTANCE), 'der.inventory.toml.vendored-copy')
         with open(inventory_path, 'rb') as source:
             inventory = tomllib.load(source)
         expected = {'REQ/' + row['id'] for row in inventory['item']}
         if {c['id'] for c in claims} != expected or len(claims) != len(expected):
-            raise SystemExit('gen_verification_map: requirements claims differ from inventory')
+            raise SystemExit('gen_verification_map: requirements claims differ from recorded inventory')
         tree_lids = gpm.l4_module_set()
         if tree_lids - roster:
             raise SystemExit('gen_verification_map: Lean lid absent from module roster')
@@ -452,6 +453,8 @@ def render_requirements(f):
     at, total = target_progress(claims)
     lines = ['**%d of %d** claims reach A3 or better; **%d** do not. '
              'The total includes excluded, gap and not-applicable requirements.' % (at, total, total - at), '',
+             'This is the recorded acceptance snapshot, not a claim that current source is accepted. '
+             'Run `python3 gates/release_evidence.py status` for current applicability.', '',
              'The acceptance axis is one claim per requirement. Counts are inventory, not a coverage percentage.', '',
              '| Status | Band | Grade | Weight | Claims |', '|---|---|---|---|---:|']
     groups = Counter((c.get('status', 'evidenced'), c['band'], c['grade'], c['weight']) for c in claims)

@@ -1,6 +1,7 @@
 # Verification cost & tractability
 
-Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](../evidence/README.md).
+The [proof-floor declaration](proof-floor.json) identifies the recorded run and its log digest.
+Full logs are available on request; see [the evidence policy](../evidence/README.md).
 
 This note records the **cost profile** of the crate's Kani proof suite — how long each harness takes and
 which ones are resource-heavy — so the expensive harnesses are visible up front rather than discovered
@@ -140,7 +141,7 @@ runs in ~0.5 GB. Without that split the monolithic harness exceeds ~100 GB. The 
 > the gap was previously visible only in prose. Cover satisfaction is *disclosed*, not *enforced*.
 
 
-The 2026-07-21 cover-retrofit pass (`METHODS-APPLICATION-ANALYSIS-2026-07-21.md`) added
+The 2026-07-21 cover-retrofit pass (recorded in [the archived work log](archive/der-work-history-2026-10-28.md)) added
 `kani::cover`s to the crate's symbolic `never_panics` harnesses to check the manifest's "exercises
 the REAL glue" claims were machine-witnessed, not just prose. Two open items from that pass were
 closed here:

@@ -1,6 +1,7 @@
 # Coverage ledger — what this crate decides, and what it does not
 
-Full run evidence is kept outside git, available on request. The certified floor is `d3de34e`; its raw log SHA-256 is `c9a7bcee16edece30aee44572f7b1b1d617f6639bd057a5effbf7e7347d225d7`. See [the evidence policy](evidence/README.md).
+The [proof-floor declaration](docs/proof-floor.json) identifies the recorded run and its log digest.
+Full logs are available on request; see [the evidence policy](evidence/README.md).
 
 **What this is.** One table saying, per *encoding rule*, whether this crate decides that rule, how
 strongly, and the exact command you run to check the answer yourself. It is the consumer-side view:
@@ -309,7 +310,7 @@ cert-*composition* modules (`x509_certificate`, `x509_tbs_certificate`) remain p
 | `DER-K-RSAPRIV` | `RSAPrivateKey` (RFC 8017 §A.1.2) | partial | **CONTRACT** (bounded-backing, backing `≤44` octets) for the two-prime structure — exact `Result` from the symbolic-content skeletons plus perturbation harnesses; the multi-prime member walk covers one member of three 1-octet INTEGERs with concrete member content only; behaviour at real size (~317 octets) is not machine-checked (compositional argument, see `DER-X-BOUND`); `BadOuterSeq` payload not pinned; no RSA arithmetic | `K rsa_private_key::proofs::parse_never_panics` (4 stub applications across its harnesses) · `K rsa_private_key::proofs::parse_faithful_two_prime_s1` · `K rsa_private_key::proofs::parse_faithful_two_prime_s2` · `K rsa_private_key::proofs::parse_multi_prime_faithful`. **Added after the `d05d3f2` row text was written (full floor now at `d3de34e`):** exact `Result` for the two-prime structure (backing ≤44 bytes) and a multi-prime member walk over one member of three 1-octet INTEGERs with concrete member content; not covered: more than one member, multi-octet member INTEGERs, the strict entry point on a multi-prime input. Real-size (~317 bytes) panic-freedom is still the un-machine-checked compositional argument; disclosures: PROOF_MANIFEST.md §6.2 |
 | `DER-K-ECPRIV` | `ECPrivateKey` (RFC 5915 §3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode incl. both `[0]`/`[1]` optionals + observed-red control (rule-axis `partial`) | `K ec_private_key::proofs::parse_faithful` · `K ec_private_key::proofs::parse_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `ec`) |
 | `DER-K-ECDSASIG` | `ECDSA-Sig-Value` (RFC 3279 §2.2.3) | partial | **CONTRACT** (bounded-backing `0..=16`B) — faithful decode + observed-red control (rule-axis `partial`) | `K ecdsa_sig_value::proofs::parse_faithful` · `K ecdsa_sig_value::proofs::parse_strict_never_panics` · `D evidence/CONTRACT-CONTROLS-2026-09-17.md` (kept outside git; available on request; SHA-256 `34e49d9556bca6a85caf6fd74dce8ba3d08ddb79444c89dbf80672f3ffbdead1`) (section `ecdsa`) |
-| `DER-X-L4` | An unbounded (Lean) lid over **any** X.509 structural module | **not-covered** | **not-covered** | `D gates/map_declared.txt` row `x509_structural_lid` → `DER-REMAINING-WORK.md` §3. All seven `x509_*` modules are Kani-only. |
+| `DER-X-L4` | An unbounded (Lean) lid over **any** X.509 structural module | **not-covered** | **not-covered** | `D gates/map_declared.txt` row `x509_structural_lid` → `TODO.md` §Proofs and tests. All seven `x509_*` modules are Kani-only. |
 
 **Disclosed exclusions of the exact-result harnesses (`x509_validity`, `rsa_private_key`, `x509_name`).** These are stated
 limits of the evidence, not exhaustive mapping proofs. (1) In `x509_validity`, a `GeneralizedTime` failure is pinned only at
@@ -379,7 +380,7 @@ scope gap, not a bug.
 deliberately: a permissive framing reader is load-bearing for recursive parsing. So the rules are
 enforced for callers who opt in to `identifier_form::decode_tlv_form_checked` /
 `decode_tlv_form_checked_strict`, and for nobody else. Whether to wire the check into
-`decode_tlv_strict` is open ([`DER-REMAINING-WORK.md`](DER-REMAINING-WORK.md) R3), as is recursion
+`decode_tlv_strict` is open ([`TODO.md`](TODO.md) R3), as is recursion
 into the children of a constructed TLV (R4) — the module decides one identifier, not a tree.
 
 **`decode_tlv_form_checked` is not a DER validator, and it was renamed to stop implying it was.** It
@@ -462,7 +463,7 @@ through the real `validate_rdn` (bounded-backing evidence for those two shapes).
 remains is for the TBS and certificate compositions, whose witnesses run under stubs and cover the
 glue only; their accept path is evidenced by `#[test]` cases.
 
-[`DER-REMAINING-WORK.md`](DER-REMAINING-WORK.md) R2 records a further open residual: seven structural
+[`TODO.md`](TODO.md) R2 records a further open residual: seven structural
 harnesses were widened to symbolic input length in 2026-08-23; only the two rewritten by D33 got
 covers. **The other five have none, so nothing witnesses that their widened loops iterate at all.** A
 review asked for those covers before publish; the maintainer disclosed rather than fixed, and
@@ -614,7 +615,7 @@ production-code survivors after filtering `proofs::` mutants (which `cargo test`
 - **Disclosed residual — not equivalent, but no fast unit test distinguishes it:** `tlv.rs:110`
   `value.len() > u32::MAX as usize` is distinguishable from `>=`/`==` only by a `value` slice of
   length exactly `u32::MAX` (~4 GiB), impractical in a fast test. A Kani harness or a VM-run property
-  test is the appropriate closer (see [`DER-REMAINING-WORK.md`](DER-REMAINING-WORK.md)).
+  test is the appropriate closer (see [`TODO.md`](TODO.md)).
 
 The equivalent-mutant rationale for the **lid-covered** modules (`length`, `tlv`) is recorded here
 rather than inline: a comment inside an Aeneas-extracted function shifts the extracted model's
@@ -622,6 +623,6 @@ embedded source spans and would (correctly) trip the Lean-lid drift gate.
 
 **Related documents.** [`PROOF_MANIFEST.md`](PROOF_MANIFEST.md) — what is machine-checked, per module,
 with bounds and stubs. [`ASSUMPTIONS.md`](ASSUMPTIONS.md) — the trusted base everything here stands
-on. [`DER-REMAINING-WORK.md`](DER-REMAINING-WORK.md) — open residuals, including the ones cited above.
+on. [`TODO.md`](TODO.md) — open residuals, including the ones cited above.
 [`DECISIONS.md`](DECISIONS.md) — why scope boundaries are where they are. [`SECURITY.md`](SECURITY.md)
 — reporting scope.

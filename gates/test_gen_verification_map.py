@@ -139,6 +139,22 @@ class ClaimPlacement(unittest.TestCase):
         self.assertEqual(len(facts['claims']), 876)
         self.assertEqual(facts['source_lids'], gen.gpm.l4_module_set())
 
+    def test_new_development_requirements_do_not_rewrite_the_recorded_axis(self):
+        original = gen.ROOT
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                inventory = os.path.join(directory, 'docs', 'requirements')
+                os.makedirs(inventory)
+                with open(os.path.join(inventory, 'der.inventory.toml'), 'w') as stream:
+                    stream.write('[[item]]\nid = "new-development-requirement"\n')
+                gen.ROOT = directory
+                facts = gen.compute()
+                self.assertTrue(facts['requirements_axis'])
+                self.assertEqual(len(facts['claims']), 876)
+                self.assertNotIn('REQ/new-development-requirement', {c['id'] for c in facts['claims']})
+        finally:
+            gen.ROOT = original
+
     def test_a_missing_requirement_fails(self):
         real = gen.read_manifest
         try:

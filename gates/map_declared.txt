@@ -27,11 +27,11 @@
 #
 # Comment lines (leading `#`) and blank lines are ignored. Column order is fixed; do not reorder.
 
-planned	name_constraints	profile	Name constraints (RFC 5280 §4.2.1.10)	PROOF_MANIFEST.md:538 ("Not covered at all: name constraints, key usage, basic constraints, validity-against-clock, path validation")
-planned	key_usage	profile	Key usage (RFC 5280 §4.2.1.3)	PROOF_MANIFEST.md:538
-planned	basic_constraints	profile	Basic constraints (RFC 5280 §4.2.1.9)	PROOF_MANIFEST.md:538
-planned	validity_against_clock	profile	Validity-against-clock (RFC 5280 §4.1.2.5)	PROOF_MANIFEST.md:538
-planned	x509_structural_lid	structural	X.509 structural-module Lean lid (L4)	DER-REMAINING-WORK.md:157-165 ("All X.509 structural modules (x509_*) are Kani-only — no L4 lid... still the crate's one open breadth item")
-out-of-scope	crypto_verification	crypto	Signature / crypto verification	README.md:47-48 ("Out of scope (not implemented, not proven): signature/crypto verification...")
-out-of-scope	path_validation	crypto	Certificate-path / trust validation	README.md:47-48 ("...certificate-path or trust validation...")
-out-of-scope	general_set	codecs	General SET (X.690 §10.3)	README.md:49-50 ("general SET (§10.3)"); DECISIONS.md:463 (D13 — "general SET (§10.3) stays out of scope")
+planned	name_constraints	profile	Name constraints (RFC 5280 §4.2.1.10)	TODO.md §Scope and API decisions
+planned	key_usage	profile	Key usage (RFC 5280 §4.2.1.3)	TODO.md §Scope and API decisions
+planned	basic_constraints	profile	Basic constraints (RFC 5280 §4.2.1.9)	TODO.md §Scope and API decisions
+planned	validity_against_clock	profile	Validity-against-clock (RFC 5280 §4.1.2.5)	TODO.md §Scope and API decisions
+planned	x509_structural_lid	structural	X.509 structural-module Lean lid (L4)	TODO.md §Proofs and tests
+out-of-scope	crypto_verification	crypto	Signature / crypto verification	README.md §Scope
+out-of-scope	path_validation	crypto	Certificate-path / trust validation	README.md §Scope
+out-of-scope	general_set	codecs	General SET (X.690 §10.3)	README.md §Scope

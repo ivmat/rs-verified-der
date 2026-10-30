@@ -12,7 +12,10 @@ Read "primitive" strictly: the `x509_*` layer is **structural framing composing 
 not proven to the same bar (see Scope below). The crate's name should not be read as claiming more
 than that.
 
-The floor of record at `d3de34e` verifies all 302 harnesses in one pass at a 24 GB cap. It returns exit 0 and Lean lid PASS. Full logs are kept outside git, available on request.
+The repository's [proof-floor declaration](../docs/proof-floor.json)
+identifies the recorded full run, results and raw-log digest. Recorder-generated memory fields state
+when they were not measured.
+Full logs are available on request.
 
 - **L3 — Kani** (bounded model checking): 302 proof harnesses over 33 modules establish default
   safety checks (memory safety, no panics, no overflow) on their bounded domains; functional claims
@@ -61,6 +64,11 @@ Some of the evidence travels with the crate and some of it does not, so here is 
   ```
 
   Assumption ids are defined in the source repository's `ASSUMPTIONS.md`.
+
+  This is a recorded snapshot. Validation outside Git checks its records, not current-source
+  applicability. Repository development checks report that distinction; official release
+  preparation requires matching source and a separate release-validation receipt. See the
+  [release workflow](https://github.com/ivmat/rs-verified-der/blob/main/docs/release.md).
 
 **Repository only** (not in the package):
 

@@ -1,6 +1,7 @@
 # der-verified — contestable decisions ledger
 
-Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+The [proof-floor declaration](docs/proof-floor.json) identifies the recorded run and its log digest.
+Full logs are available on request; see [the evidence policy](evidence/README.md).
 
 A complete list of the **non-obvious / could-go-both-ways** design and adjudication calls in this
 repo — the ones a competent reviewer might dispute. Each entry records the call, the tension, the
@@ -2298,8 +2299,8 @@ a design choice.
 ## D37 — Profile rules P-12, P-13, P-14: duplicate extension ids, empty issuer, repeated RDN attribute type (2026-10-27)  ·  landed
 
 **Context.** `validate_extensions`, `validate_name` and `set_of` accept a repeated extnID, an empty issuer Name and a
-repeated attribute type in one RDN. RFC 5280 §4.2, RFC 5280 §4.1.2.4 and X.501 §9.3 forbid these. Owner decisions
-G1, G2, G3 = A (2026-10-27, `owner-drafts` packet in the control repo).
+repeated attribute type in one RDN. RFC 5280 §4.2, RFC 5280 §4.1.2.4 and X.501 §9.3 forbid these.
+The 2026-10-27 design review selected the profile-rule placement recorded below.
 
 **Decision.** The three checks are profile rules in `profile::validate_profile` (rules 5–7, after the existing four),
 not structural parser checks. This keeps the heavy `x509_name` and `x509_extension` harnesses unchanged. New
@@ -2315,7 +2316,7 @@ variants; the enum is `#[non_exhaustive]`).
 
 **Context.** X.690 Table 3 (§8.23.5.3) allows no explicit escape sequences in IA5String. §8.23.9 a)–f) forbids ISO 2022
 announcer, designation, invocation and shift sequences in UTF8String, and allows the other C0/C1 controls. Both decoders
-accepted these controls. Owner decision G4 = A.
+accepted these controls. The 2026-10-27 design review selected the rejection policy below.
 
 **Decision.** IA5String rejects the octet 0x1B (`StringError::Ia5Escape`). UTF8String rejects U+001B, U+000E, U+000F,
 U+008E and U+008F (`Utf8Error::ForbiddenControl`). Every other well-formed value stays accepted, including CR, LF, TAB,
@@ -2330,7 +2331,7 @@ change for downstream exhaustive matches.
 ## D39 — Identifier-form check on opaque value headers (2026-10-27)  ·  landed
 
 **Context.** ATV values and AlgorithmIdentifier parameters were framed as one TLV and nothing more, so `00 00`
-(end-of-contents) and impossible primitive/constructed forms were accepted (X.690 §8.1.5, §8.1.2.5). Owner decision G5 = A.
+(end-of-contents) and impossible primitive/constructed forms were accepted (X.690 §8.1.5, §8.1.2.5).
 
 **Decision.** `identifier_form::validate_identifier_form` is applied to the header of the ATV value
 (`NameError::AtvValueForm`) and of the AlgorithmIdentifier parameters (`AlgIdError::ParametersForm`, mapped by SPKI as
@@ -2345,7 +2346,7 @@ re-measured at the next full run.
 
 **Context.** `context_tag::decode_explicit_context` returns a wrapper's contents without checking that they are one
 complete encoding (`A0 00`, `A0 01 FF` and `A0 04 02 01 05 AA` are accepted). X.690 §8.14.2–§8.14.3 require exactly one.
-Owner decision G6 = A.
+The 2026-10-27 design review assigned completeness to the callers.
 
 **Decision.** Completeness is decided by the callers, each of which decodes its inner value strictly: the TBS version `[0]`
 (`VersionInnerTrailing` / `BadVersionInnerTlv`), the `ec_private_key` `[0]`/`[1]` wrappers (`InnerTrailing` / `InnerTlv`), and
@@ -2356,15 +2357,15 @@ the TBS extensions `[3]` (through `validate_extensions`). The helper's doc state
 ## D41 — Basic constraints, key usage and name constraints are out of this milestone (2026-10-27)  ·  settled
 
 **Context.** Profile rules for basicConstraints, keyUsage and nameConstraints need decoders for those extension values (new
-modules and proofs). RFC 5280 §4.2.1 extension semantics are outside the structural scope. Owner decision G7 = A.
+modules and proofs). RFC 5280 §4.2.1 extension semantics are outside the structural scope.
 
 **Decision.** PROF-P-5/6/7 are `excluded` for this milestone. A later milestone may add them as a scope of their own.
 
 ## D42 — `#[non_exhaustive]` on the five remaining error enums, and version 0.3.0 (2026-10-27)  ·  landed
 
 **Context.** `ProfileError` was already `#[non_exhaustive]`, but `StringError`, `Utf8Error`, `NameError`, `AlgIdError` and
-`SpkiError` were exhaustive, so every new variant (D38, D39) was a breaking change. Owner word 2026-10-27: route A
-acceptance; "non_exhaustive + 0.3.0"; "push-ready main only"; fold the doc fixes in before the final proof run.
+`SpkiError` were exhaustive, so every new variant (D38, D39) was a breaking change. The 2026-10-27
+decision selected `#[non_exhaustive]` and version 0.3.0 so later variants can be additive.
 
 **Decision.** The five enums are marked `#[non_exhaustive]` and carry the same doc sentence as `ProfileError`. The crate
 version is 0.3.0 (the stricter decoding of D37–D39 is already breaking, so this release carries the one-time break).

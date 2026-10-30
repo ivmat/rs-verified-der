@@ -11,6 +11,11 @@
 # gate running to notice — gates/check_lid_staleness.py is the cheap per-commit tripwire for that.
 set -eu
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+echo "== CI change-selection self-test (pure stdlib) =="
+python3 "$ROOT/gates/test_ci_changes.py"
+echo "== proof capture/reuse and release lifecycle self-tests (isolated fixtures; no real proofs) =="
+python3 "$ROOT/gates/test_proof_runs.py"
+python3 "$ROOT/gates/test_release_evidence.py"
 echo "== hygiene gate (doc links; pure stdlib) =="
 python3 "$ROOT/gates/check_links.py"
 echo "== requirements-tree gate: self-test (the gate's own gate; pure stdlib) =="

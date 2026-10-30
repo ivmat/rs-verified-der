@@ -92,6 +92,15 @@ sh "$ROOT/lean/check_lean.sh"
 LID_STATUS="$(cat "$LID_STATUS_FILE" 2>/dev/null || echo UNKNOWN)"
 rm -f "$LID_STATUS_FILE"
 [ -n "$LID_STATUS" ] || LID_STATUS=UNKNOWN
+# The isolated proof recorder may stage only the exact verified Lean state output.
+# The helper validates the linked checkout/context, source hashes and all changed paths.
+# Ordinary invocations retain the existing index-divergence refusal.
+if [ -n "${DER_PROOF_CAPTURE_CONTEXT:-}" ]; then
+  python3 "$ROOT/gates/proof_runs.py" stage-state --lean-status "$LID_STATUS" || {
+    echo "stage-state refused" >&2
+    exit 1
+  }
+fi
 echo "== lid-staleness gate: self-test (the gate's own gate; pure stdlib) =="
 python3 "$ROOT/gates/test_check_lid_staleness.py"
 echo "== lid-staleness gate --strict (after the Lean gate, which just refreshed the state on green) =="

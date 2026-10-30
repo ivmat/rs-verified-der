@@ -71,6 +71,19 @@ def parse_state(text: str):
     return entries
 
 
+def validate_source_state(state_text, script_text, read_source):
+    """Validate a nonsemantic source-hash cache; this does not establish a Lean run."""
+    entries = parse_state(state_text)
+    expected = {f'der-verified/src/{name.strip()}' for match in _CHECK_DRIFT_RE.finditer(script_text)
+                for name in match.group(1).split('/') if name.strip()}
+    if not expected or {entry['path'] for entry in entries} != expected:
+        raise ParseError('source-state cache has the wrong source roster')
+    if any(entry['pending'] or hashlib.sha256(read_source(entry['path'])).hexdigest() != entry['hash']
+           for entry in entries):
+        raise ParseError('source-state cache has pending or incorrect hashes')
+    return entries
+
+
 def derive_expected_paths():
     """Return the set of repo-relative lid-source paths derived from `lean/check_lean.sh`'s own
     `check_drift <Model> "<file>"` calls -- check_lean.sh stays the single source of truth for

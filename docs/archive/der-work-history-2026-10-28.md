@@ -1,0 +1,570 @@
+> Historical snapshot archived on 2026-10-28 from public commit `3f32d94`.
+> This document contains superseded status statements. Use [TODO.md](../../TODO.md)
+> for active work and [the proof manifest](../../PROOF_MANIFEST.md) for current claims.
+> Plain-text paths below are relative to the original repository root.
+
+# der-verified — historical verification work
+
+Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](../../evidence/README.md).
+
+**Status as of 2026-07-21, after Task A (x509_validity cover-vacuity close, commit `cd4a365`).**
+This map was not committed in that historical pass. Sources: `PROOF_MANIFEST.md`,
+`docs/verification-cost.md`, `TODO.md`, and a direct grep of `der-verified/src/*.rs`.
+
+**UPDATE 2026-07-24 (docs-sync pass, no proofs re-run — see commits below):** two things landed
+since the "5 lids" state this file's body describes throughout (left unedited below as an honest
+point-in-time record; read this note as the current summary instead):
+
+- **A 6th L4/L5 lid landed on `tag`** (commit `0c2948a`), closing exactly the "Next valuable lid"
+  item #1 this file flagged in §3: the `tag.rs` D25-style refactor to fully de-opaque `decode_tag`.
+  New `lean/TagProofs.lean` proves `tag_decode_total` + `tag_decode_used_bounds` ∀-length. This
+  **discharged the 4 `tag_decode_*` trust-axiom instances** `tlv`'s and `sequence`'s lids previously
+  assumed about `decode_tag` — their disclosed trust surface drops from 7 axioms to 6 each (per the
+  commit's own message; not independently re-verified by this docs-sync pass — see `PROOF_MANIFEST.md`
+  for the current, corrected axiom-count framing). Der's Lean track is now **6 lids**: `length`,
+  `big_integer`, `oid`, `tag`, `tlv`, `sequence`. §3's remaining "next valuable lid" items (#2, an
+  X.509 structural-module lid) are still open.
+- **A new `profile` module landed** (commits `d65e7f0`, `6bcb8be`) — a first slice of the typed
+  profile-validation layer this file's "API/scope" counterpart in `TODO.md` had flagged as open:
+  three RFC 5280 cross-field rules (signature-algorithm equality, extensions-require-v3, and the
+  UTCTime/GeneralizedTime year-2050 encoding choice), **tested (`#[test]`) only — no Kani harness,
+  no Lean lid**. This is new *breadth*, not a Kani/Lean-proof item, so it doesn't change this file's
+  Kani/Lean inventory sections directly, but see `PROOF_MANIFEST.md`'s dedicated section for the
+  honest framing of what grade of evidence backs it.
+- The Kani harness count referenced throughout this file as **164** is unchanged and still current
+  (re-confirmed by static grep on 2026-07-24; `profile` itself contributes 0 Kani harnesses).
+
+**UPDATE 2026-07-22: §3's next-valuable-lid item is CLOSED — landed as the 4th L4 lid, on `tlv`
+(DECISIONS.md D27, `lean/TlvProofs.lean`, `decode_tlv_structure`).** Priority-1 pick from §3 below:
+the first L4 coverage on the crate's structural *composition* layer (not another leaf codec) —
+`decode_tlv`'s structural/no-over-read correctness, ∀-length. Required a one-line behavior-
+preserving source fix (`tlv.rs`'s point-free `.map_err(TlvError::Tag)` → an explicit closure, to
+unblock an Aeneas naming-clash on extraction — a *different* pre-flight issue than §3's flagged
+depth-2-return rule, though `decode_tag`'s own early-return-in-a-loop shape was also hit and
+disclosed via an assumed spec rather than refactored in this pass). 7 disclosed assumed specs (2
+of which restate an already-`sorry`-free-proved `LengthProofs.lean` fact, working around a
+duplicate-extraction Lean-namespace collision, not new unverified trust). `check_lean.sh`
+extended (drift-guard + cfg-split guard for `tlv.rs`) and confirmed **non-vacuous** via a
+sorry-injection test (fails closed, then reverted). Full `sh check_lean.sh`: green, 1700 jobs,
+`PASS (sorry-free)`. Der's Lean track is now **4 lids**: `length`, `big_integer`, `oid`, `tlv`.
+Next, if pursued: the larger `sequence`/consumer-walk lid (§3's item 1's OTHER half — a genuinely
+bigger separate piece, since `sequence` walks an unbounded child count, a loop `decode_tlv` itself
+lacks), or a D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` (would leanen `tlv`'s
+own trust surface too).
+
+**UPDATE 2026-07-22 (later same day): the `sequence`/consumer-walk lid flagged above is ALSO
+CLOSED — landed as the 5th L4/L5 lid (DECISIONS.md D28, `lean/SequenceProofs.lean`,
+`decode_sequence_structure`).** The crate's first **unbounded-LOOP** lid: `decode_sequence`'s
+structural/no-over-read correctness, ∀-length AND ∀-children (`tlv::decode_tlv`, composed here, is
+itself loop-free — Kani's own `#[kani::unwind(16)]`-capped harness is inherently bounded on BOTH
+buffer width and trip count; this lid removes both caps). Required the SAME map_err name-clash fix
+as D27, this time in `sequence.rs` (`decode_sequence_tlv`'s `.map_err(SequenceError::Tlv)`), plus a
+genuinely NEW Aeneas limitation surfaced and worked around: the `Iterator` trait's `step_by`/
+`enumerate`/`take` default-method fields are not auto-filled by Aeneas for a hand-written `impl
+Iterator` that only defines `next` (as `Elements` does) — a real codegen gap for user-defined
+iterators (library iterators get hand-specialized adapters in Aeneas's own Std; a user type gets
+none). Fixed by a documented, re-runnable `check_lean.sh` patch step that fills the three fields
+with Aeneas's own generic default-method combinators (inert scaffolding — none of the three is ever
+called by the functions this lid proves anything about). Reuses the SAME 7 disclosed assumed specs
+as `tlv`'s D27 lid (restated for this pass's own extraction namespace, per the established
+duplicate-extraction-namespace pattern). Proved via `loop.spec_decr_nat` with measure
+`iter.rest.length`, strictly decreasing every accepted child — the mechanism that lets the
+induction close for *any* number of children. `check_lean.sh` extended (drift-guard + cfg-split
+guard for `sequence.rs` + the Iterator-fields patch step) and confirmed **non-vacuous** via a
+sorry-injection test at BOTH the single-file `lake build` level and the full-gate level (fails
+closed both times, then reverted). Full `sh check_lean.sh`: green, 1702 jobs, `PASS (sorry-free)`.
+Der's Lean track is now **5 lids**: `length`, `big_integer`, `oid`, `tlv`, `sequence`. Next, if
+pursued: a D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` (would leanen both `tlv`'s
+and `sequence`'s trust surfaces).
+
+**UPDATE 2026-07-21/22 (dedicated 32 GB box, no other worker, 28 GB cgroup cap):** both items in
+§2's "Cloud Kani" table below are now CLOSED locally — neither needed a cloud box after all; the
+prior OOMs were shared-box working-set pressure, not a genuine >32 GB wall.
+`x509_name::validate_rdn_never_panics` converged `VERIFICATION: SUCCESSFUL` (peak RSS ~17.1 GiB,
+wall ~851 s / ~14.2 min) — no cover on this harness (by design; the cover lives on its sibling
+`validate_never_panics`, itself cheap/green, `1 of 1` satisfied). `x509_extension::validate_extensions_never_panics`
+ALSO converged `VERIFICATION: SUCCESSFUL` this time (peak RSS ~20.5 GiB, wall ~602 s / ~10 min) —
+but surfaced a genuine, previously-undetermined **cover vacuity** (`0 of 1 cover properties
+satisfied`): the module's own doc-comment arithmetic for the 13-octet buffer was wrong (a real
+two-`Extension` `Extensions` needs 16 octets, not 13), so the walk's claimed "genuine second
+iteration" never co-occurs with a real `Ok` at that buffer size. Closed the same way as the two
+prior vacuities (positive-construction witness, no stub needed): new harness
+`x509_extension::validate_extensions_ok_path_witnessed` on a concrete, hand-built minimal
+two-`Extension` `Extensions` (16 octets) — `VERIFICATION: SUCCESSFUL`, `1 of 1 cover properties
+satisfied`, peak RSS ~16.7 GiB, wall ~201 s. A full crate-wide `cargo kani -Z stubbing` re-run
+(164 harnesses, sequential, same 28 GB cap) afterwards: **164/164 SUCCESSFUL, 0 failures** — the
+only three `0 of 1` (vacuous, unsatisfiable-by-design) covers remaining are the three
+already-documented ones (`x509_validity::parse_never_panics`, `x509_tbs_certificate::parse_tbs_certificate_never_panics`,
+and now `x509_extension::validate_extensions_never_panics`), each immediately preceded in the run
+by its own `1 of 1`-satisfied positive-construction witness sibling. **Der's two remaining heavy
+items are now fully closed, local, no cloud needed.**
+
+## 1. Local Kani (cheap, doable on the 32 GB box under the ~12 GB shared-box cap) — anything left?
+
+**No open local-Kani work identified.** The 2026-07-21 cover-retrofit swept every proof module:
+23 of 25 source modules with `#[kani::proof]` now also carry `kani::cover` (the 2 without —
+`boolean`, `null` — have **no `kani::assume`** narrowing their domain at all: they exhaustively
+characterize a 1-byte input space via `assert!` biconditionals, so a cover would be redundant, not
+a gap; this is a checked negative, not an oversight). `x509_validity` and `x509_tbs_certificate`
+each had one vacuous `Ok`-tail cover (the T6/T2-COROLLARY-A finding); both are now closed by a
+positive-construction companion harness (tbs: `d2dc80d`; validity: `cd4a365`, this pass).
+
+One small, genuinely-open, low-priority item surfaced while mapping this (not fixed in this pass,
+out of Task A/B's scope): `enumerated::proofs::decode_delegates_to_integer` has an
+`assume(n >= 1 && n <= 8)` narrowing the symbolic length, with no `kani::cover` confirming a
+representative spread of `n` (or both `Ok`/`Err` outcomes) is actually reachable through the
+delegation. Likely benign — `enumerated` is a thin re-tag of `integer`, whose own proofs already
+cover this shape — but it is the one remaining `assume`-without-`cover` pattern in the crate found
+during this scoping pass. Cheap to check (single small proof, no stubs, sub-second historically for
+this module) if a genuinely exhaustive local-Kani close-out is pursued.
+
+Everything else in the local-Kani tier is measured fast (sub-second to tens of seconds; the `set_of`
+/`sequence`/`utf8_string` family runs 79–256 s but is TIME-heavy, not RAM-heavy, and already green —
+see `docs/verification-cost.md`).
+
+## 2. Cloud Kani — RESOLVED, neither needs cloud (both closed locally, 2026-07-21/22)
+
+**Superseded by the 2026-07-21/22 dedicated-box pass (see the UPDATE note at the top of this
+file).** Both harnesses previously suspected to need a bigger-than-32GB box turned out to be
+shared-box working-set artifacts, not genuine >32 GB walls — on a DEDICATED 32 GB box (28 GB
+cgroup cap, no other worker), both converged:
+
+| Harness | Peak RSS (dedicated box) | Wall | Status |
+|---|---|---|---|
+| `x509_name::proofs::validate_rdn_never_panics` | **~17.1 GiB** | ~851 s (~14.2 min) | `VERIFICATION: SUCCESSFUL`, 0 of 300 failed. No `kani::cover` on this harness itself (by design — the cover lives on sibling `validate_never_panics`, which is cheap: ~5.6 s, `1 of 1 cover properties satisfied`). |
+| `x509_extension::proofs::validate_extensions_never_panics` | **~20.5 GiB** | ~602 s (~10 min) | `VERIFICATION: SUCCESSFUL`, 0 of 255 failed — BUT surfaced a genuine, previously-undetermined cover vacuity: `0 of 1 cover properties satisfied`. The module's own "13 octets leaves room for a genuine second iteration" doc-comment claim was arithmetically wrong (two minimal `Extension`s + envelope = 16 octets, not 13). Closed the same way as the `x509_validity`/`x509_tbs_certificate` precedent: a new positive-construction witness harness, `validate_extensions_ok_path_witnessed`, on a concrete hand-built 16-octet two-`Extension` `Extensions` — `VERIFICATION: SUCCESSFUL`, `1 of 1 cover properties satisfied`, ~16.7 GiB peak RSS, ~201 s wall. No stub needed (same shallow-composition pattern as `x509_validity`'s witness). |
+
+Neither needed a code change to converge — same harness, same buffer, same unwind bound as
+originally written; just isolation from shared-box memory pressure via a per-harness `systemd-run
+--scope -p MemoryMax=28G -p MemorySwapMax=0` cgroup cap. Both solvers (cadical default, kissat via
+T7) had previously been tried on the shared box and OOM'd around 16–19 GB; the true peaks (~17.1
+and ~20.5 GiB) fit comfortably under a real 28 GB cap. **No cloud run is needed for der.** A
+full crate-wide re-run afterwards (164 harnesses, sequential, same cap) confirms **164/164
+SUCCESSFUL, 0 failures**, with exactly the three expected (and now all closed-via-witness) vacuous
+covers remaining as an honest record — see §4. No other der harness is RAM-walled; the
+`set_of`/`sequence` family (79–256 s, ~5 GB) is TIME-heavy but not RAM-walled and was never a cloud
+candidate.
+
+## 3. Lean lids (Aeneas/Charon/Lean) — existing coverage + next lid
+
+**5 sorry-free lids exist today** (D27 landed `tlv`, D28 landed `sequence` — both superseding this
+section's earlier "3 lids"/"next lid" framing, kept below only for the historical trail), all
+gate-enforced (`lean/check_lean.sh` fails closed on any `sorryAx`/"uses 'sorry'"), each
+re-extracting from the shipped `.rs` (drift-guarded, not a stale snapshot):
+
+| Codec | Lean file | Property (∀-length, unbounded) |
+|---|---|---|
+| `length` (§8.1.3) | `lean/LengthProofs.lean` | every branch of `decode_length`; round-trip canonicality (also proves both `encode_length` loops) |
+| `big_integer` (§8.3) | `lean/BigIntProofs.lean` | minimality biconditional + encode-side round-trip/canonicality |
+| `oid` (§8.19) | `lean/OidProofs.lean` | canonical-form biconditional (validate side) |
+| `tlv` (§8.1, composing `tag`+`length`) | `lean/TlvProofs.lean` | `decode_tlv`'s structural/no-over-read correctness, ∀-length (D27) |
+| `sequence` (§8.9/§8.10, composing `tag`+`length`+`tlv`) | `lean/SequenceProofs.lean` | `decode_sequence`'s structural/no-over-read correctness, ∀-length AND ∀-children — the crate's first unbounded-LOOP lid (D28) |
+
+**All X.509 structural modules (`x509_*`) are Kani-only — no L4 lid.** Still the crate's one open
+*breadth* item (not a defect — a deliberate, disclosed scope boundary per `PROOF_MANIFEST.md`'s L4
+section).
+
+**Next valuable lid, if pursued:**
+1. A D25-style refactor of `tag.rs` to fully de-opaque `decode_tag` (currently a bodyless Aeneas
+   axiom in both `tlv`'s and `sequence`'s lids, the early-return-in-a-loop shape) — would leanen
+   both existing composition-layer lids' trust surfaces and unlock a standalone `tag` lid.
+2. An X.509 structural-module lid (bigger scope, no consumer-walk precedent yet at that layer).
+3. Pre-flight check before either: audit the candidate's control flow for a depth-2-nested `return`,
+   because Aeneas can silently emit a bodyless axiom for that shape (`oid`'s extraction needed this
+   refactor per D25), AND for
+   a hand-written `impl Iterator`/similar trait impl relying on default methods (the D28-discovered
+   `step_by`/`enumerate`/`take` codegen gap — same disclosed-patch workaround pattern applies).
+
+No Lean work is blocked on Task A/B; this is a clean scoping item if L4/L5 breadth is pursued.
+
+## 4. Vacuity findings — open?
+
+**None open.** All three `kani::cover`-vacuity findings found across the 2026-07-21 cover-retrofit
+and the 2026-07-21/22 dedicated-box heavy-harness pass are now closed:
+
+- `x509_tbs_certificate::parse_tbs_certificate_never_panics`'s `Ok`-tail cover (UNSATISFIABLE at
+  `[u8; 10]`) — closed by `parse_tbs_certificate_ok_path_witnessed` (commit `d2dc80d`, prior pass):
+  3 `#[kani::stub]`s needed (`validate_name`, `validate_extensions`, `parse_validity`), ~11.3 GB
+  peak RSS / ~206 s wall.
+- `x509_validity::parse_never_panics`'s `Ok`-tail cover (UNSATISFIABLE at `[u8; 16]`) — closed by
+  `parse_validity_ok_path_witnessed` (commit `cd4a365`, **this pass, Task A**): **no stubs needed**
+  (shallow call graph — one outer `decode_tlv` + at most two `decode_time_tlv` calls, each a single
+  inlined leaf time-decoder), ~0.58 GB peak RSS / ~6 s wall.
+- `x509_extension::validate_extensions_never_panics`'s `Ok`-plus-second-iteration cover
+  (UNSATISFIABLE at `[u8; 13]`, only DETERMINED on the 2026-07-21/22 dedicated-box run — previously
+  the harness OOM'd on the shared box before reaching any verdict at all) — closed by
+  `validate_extensions_ok_path_witnessed` (this pass, Task B/dedicated-box pass): **no stub
+  needed** (same shallow-composition pattern as `x509_validity`'s witness), concrete 16-octet
+  two-`Extension` `Extensions` fixture, ~16.7 GiB peak RSS / ~201 s wall.
+
+Total: exactly **three** cover-vacuity findings have ever existed in this crate, all now closed by
+a companion positive-construction witness harness, each left alongside its original (unmodified,
+honestly-"0 of 1"-reporting) symbolic harness per the project's stated convention (a cover
+reporting non-satisfaction IS the machine-checked evidence of the gap, not a bug to hide).
+
+`x509_certificate::parse_certificate_never_panics` (the third, outermost modular-stub harness in
+the DAG, stubbing `parse_tbs_certificate`) was checked directly during the earlier Task B pass:
+`cargo kani --harness x509_certificate::proofs::parse_certificate_never_panics` → `VERIFICATION:
+SUCCESSFUL`, **`1 of 1 cover properties satisfied`** (~48 s, cheap). **No vacuity gap here** — at
+`[u8; 12]` with a symbolic length and ONE stub (`parse_tbs_certificate`, returning a nondet
+`Result`), the happy path IS reachable, unlike `x509_tbs_certificate`/`x509_validity`/
+`x509_extension`, whose deeper unstubbed compositions pushed the arithmetic floor for a real `Ok`
+past their harnesses' buffers.
+
+## Summary for dispatch
+
+- **Local Kani:** done, crate-wide. A full sequential `cargo kani -Z stubbing` re-run of all 164
+  harnesses under a 28 GB cgroup cap (2026-07-21/22, dedicated box): **164/164 SUCCESSFUL, 0
+  failures.** One optional micro-check remains (`enumerated`'s unguarded `assume`) if a fully
+  exhaustive close-out is pursued — not a real gap.
+- **Cloud Kani:** RESOLVED — **neither heavy harness needs a cloud box.** Both
+  `x509_name::validate_rdn_never_panics` (~17.1 GiB peak, ~14.2 min) and
+  `x509_extension::validate_extensions_never_panics` (~20.5 GiB peak, ~10 min) converge
+  `VERIFICATION: SUCCESSFUL` under a dedicated 28 GB cap; the prior OOMs were shared-box working-set
+  pressure, not a genuine >32 GB wall. Der's cloud-candidate list is now empty.
+- **Lean:** both `tlv` (D27) and `sequence` (D28) consumer-correctness lids are now landed
+  (5 sorry-free lids total). Next, if pursued: a D25-style `tag.rs` refactor to fully de-opaque
+  `decode_tag` — owner-scoped, not urgent.
+- **Vacuity:** closed (tbs, validity, and now extensions); `x509_certificate` checked directly —
+  not vacuous (`1 of 1` cover already satisfied). Total: exactly 3 findings ever existed, all now
+  closed.
+
+---
+
+## UPDATE 2026-07-30 — proof-manifest pass (docs + gate only; no proofs run)
+
+The FV slot on this machine was held by another repo's grind, so **no Kani or Lean run happened in
+this pass.** Everything below is derived from source or from committed records. Three corrections and
+three new items:
+
+**Corrections to this file's body (left unedited above, per the append-only rule):**
+
+1. **§1's cover-coverage figure is wrong.** It says "23 of 25 source modules with `#[kani::proof]`
+   now also carry `kani::cover` (the 2 without — `boolean`, `null`)". Derived from source at
+   `bd318e2`: it is **22 of 25**, and there are **three** modules without a cover — `boolean` and
+   `null` as described, plus **`enumerated`**, whose single `assume`-narrowed harness
+   (`decode_delegates_to_integer`) is the residual §1 itself flags further down. The prose and the
+   count contradicted each other; the count was the wrong one.
+2. **The `#[test]` total is 309, not 310.** A naive `grep -rE '#\[test\]'` counts the `#[test]`
+   *mentioned inside* `lib.rs`'s crate-doc prose. `cargo test` runs 309 unit tests + 1 doc-test.
+   `DOCS-SYNC.md` now warns about this class of miscount, and the gate derives it correctly.
+3. **The unwind histogram circulated in the 2026-07-21 methods analysis was inflated** by the same
+   mechanism — 12 `#[kani::unwind(N)]` mentions in comments were counted as attributes (157 vs the
+   real 145). The real distribution is in `PROOF_MANIFEST.md` §8.1, script-derived.
+
+**New:**
+
+4. **`PROOF_MANIFEST.md` is now generated and gated.** `gates/gen_proof_manifest.py` derives every
+   number in it from source; `--check` runs in `check.sh` and `check_fast.sh` and fails on drift,
+   including drift in count-claims made in `README.md`/`docs/`. Negative-tested five ways (added
+   harness, new `pub fn` before and after the proof modules, drifted doc count, deleted region
+   marker) — all fail closed.
+5. **The three cover-vacuity findings now carry machine-countable registry lines**
+   (`// VACUITY-DISCLOSED: <harness> -> witness <harness>`, comment-only). Kani does not fail a
+   harness for an unsatisfied cover, so before this the gaps were prose-only and invisible to every
+   gate.
+6. **A run-provenance gap is now stated in the manifest (§3.4) rather than glossed.** The last
+   recorded full-suite run is the 2026-07-21/22 164/164; `der-verified/src/tag.rs` changed after it
+   (`0c2948a`, behaviour-preserving, with that commit recording a targeted `tag` re-run), the
+   additive `profile` module landed, and **no full-suite re-run at HEAD has been recorded.** There is
+   also **no committed raw proof-run log anywhere in the repo** — every verdict in the docs is a
+   prose transcription. Two open items follow from that, both cheap:
+   - re-run `./check.sh` at HEAD on a ≥24 GB box (needs ~21 GiB for the two heavy harnesses) and
+     **commit the raw log under `evidence/`** — the generator already reads that directory and will
+     report the verdict in the manifest automatically;
+   - close the `enumerated::decode_delegates_to_integer` cover residual (item 1 above).
+
+**Still open, unchanged:** the `enumerated` cover; a 4th-and-beyond L4 lid on an X.509 structural
+module; `profile`'s Kani/Lean coverage (it is `#[test]`-only by design so far).
+
+### UPDATE 2026-07-30 (later) — second-model review round 2
+
+A cross-family adversarial pass (kimi-k3, brief: "find every sentence that claims more than the
+evidence supports") returned 1 BLOCKER, 10 MAJOR, 20 MINOR, 8 NIT against the manifest. All were
+accepted; the substantive ones are recorded here because several are *verification* facts, not prose
+facts:
+
+7. **The stub-semantics slide (BLOCKER).** A `kani::cover` satisfied inside a stub-bearing harness
+   witnesses that the caller's glue is reachable *given a fabricated `Ok` from the stubbed
+   sub-parser* — not that the real sub-parser ever accepts. Two consequences that were previously
+   described in vocabulary a reader would over-read:
+   - `x509_tbs_certificate::parse_tbs_certificate_ok_path_witnessed` stubs THREE callees, so unlike
+     the `x509_validity` and `x509_extension` witnesses (unstubbed) its "gap closed" is narrower.
+     The manifest now derives and prints a "does the witness itself use `#[kani::stub]`?" column.
+   - `x509_name::validate_never_panics`'s `1 of 1` cover does **not** witness `validate_rdn`: it
+     stubs it. `validate_rdn`'s panic-freedom is proved unconditionally, but its postcondition
+     (`2 ≤ used ≤ len`) is asserted under `if let Ok(..)`, and **no Kani artifact witnesses that the
+     real `validate_rdn` ever returns `Ok`.** Sound (the stub over-approximates), but the accept path
+     of the name/TBS/certificate composition is `#[test]`-evidenced only.
+8. **Oracle/specification trust was never disclosed.** 9 hand-written reference predicates
+   (`is_minimal_oracle`, `cmp_padded_oracle`, `oracle_wellformed_utf8`, the 4 charset oracles, the 2
+   time canonicality oracles) are the specification side of the crate's strongest properties. A wrong
+   oracle yields a machine-checked proof of the wrong thing, and nothing gates oracle fidelity.
+   New manifest §8.3 inventories the full helper surface (derived by exclusion, not by naming
+   convention) and states what de-tautologisation does and does not mitigate.
+9. **A second small gap inside the wrapper gap:** nothing machine-checks that each
+   `restricted_string` per-charset wrapper passes its *own* `Charset`. A transposed constant would
+   satisfy every proof cited for them, because each proof is about the delegate *given* a charset.
+   `#[test]`-covered only.
+10. **Entry-point detection was undercounting a third time:** trait-impl methods carry no `pub`
+    keyword, so `Iterator::next` on `Elements` was invisible. 67 → 68 entry points. The three
+    undercounts found so far were all in the same direction (understating the gap).
+11. **Under-claimed, now claimed.** The L4 verdict recorded at `0c2948a` still concerns HEAD's bytes
+    (no extracted source file changed since; the shims `#[path]`-include modules rather than
+    importing the crate). And public CI — `cargo test` + clippy + ~136 harnesses — was **success at
+    `bd318e2`**; those logs are machine-readable and third-party-inspectable, which the manifest had
+    wrongly disclaimed. CI does not run the L4 lids, does not run the two heavy harnesses, and passes
+    a harness with an unsatisfied cover exactly as a local run does.
+12. **Still unrecorded, cheap to fix next run:** the Kani version and exact flags of the 2026-07-21/22
+    full-suite run, and whether per-harness *cover satisfaction* was captured rather than just
+    `SUCCESSFUL`. Under Kani's semantics those are different facts and only the coarse one was
+    written down.
+
+## UPDATE 2026-07-30 (later still) — §4's `enumerated` cover residual is CLOSED
+
+Not a vacuity *disclosure* (nothing here is known-unsatisfiable); the opposite — the one place §8.2 of
+`PROOF_MANIFEST.md` said a harness's non-vacuity "rests on a sibling module's proofs rather than on its
+own witness" now witnesses itself.
+
+`enumerated::decode_delegates_to_integer` proves an **agreement** — that `decode_enumerated` returns
+literally what `crate::integer::decode_integer` returns — over an 8-octet buffer with symbolic length
+`assume(n >= 1 && n <= 8)`. An agreement property is exactly the shape that survives vacuity: it would
+hold just as well if both sides only ever rejected, or if only one width were ever explored. Five
+covers now pin that the delegation is genuinely exercised:
+
+| Cover | Why this one |
+|---|---|
+| `r.is_ok() && n == 1` | accept at the narrow end of the assumed range |
+| `r.is_ok() && n >= 2 && n <= 7` | accept at an INTERMEDIATE width — added after a second-model review objected that two endpoints are not "a spread" |
+| `r.is_ok() && n == 8` | accept at full width — the accumulator loop runs to the `i64` fence |
+| `matches!(r, Ok(v) if v < 0)` | a negative two's-complement value survives the re-tag |
+| `r == Err(IntError::NonMinimal)` | the rejection path is reached *through* the delegation |
+
+Result: `VERIFICATION: SUCCESSFUL`, **0 of 138 checks failed, 5 of 5 cover properties satisfied**,
+0.229 s (Kani 0.67.0, `-Z stubbing`, single-harness run, capped at 12 GB — peak nowhere near it).
+
+**Read the five as REACHABILITY witnesses, not as the property.** The agreement is proven symbolically
+for every `n` in `1..=8`; no width is unproven because of what the cover list happens to name. The
+endpoint-only first version drew exactly that misreading from the second-model reviewer ("a bug specific
+to an intermediate length would be missed" — it would not, the assert is verified over the whole range),
+but the objection to the *word* "spread" was fair, hence the intermediate cover.
+
+**Deliberately not covered:** the other two `IntError` variants. `Empty` requires `n == 0` (excluded by
+the assumption) and `TooLarge` requires `n > 8` (excluded by the buffer width), so a cover for either
+would be **known-unsatisfiable** — and Kani reports such a harness as `VERIFICATION: SUCCESSFUL` with
+`0 of 1 cover properties satisfied`, so no gate would catch it. The harness carries that reasoning
+in-line so a later "completeness" edit does not silently reintroduce a vacuity gap. `integer`'s own
+harnesses classify both variants over their own domains.
+
+Crate-wide effect on the §8.2 audit: `kani::cover` statements 47 → **52**; modules carrying a cover
+22 → **23** of 25 (the remaining two, `boolean` and `null`, are deliberate — they have no `assume` at
+all and characterise a 1-octet space exhaustively by biconditional); `assume`-narrowed-without-a-cover
+harnesses 83 → **82**. `x509_name::validate_rdn_never_panics` is now the crate's **only** harness whose
+non-vacuity argument points somewhere other than at itself.
+
+## UPDATE 2026-07-30 (evening) — the first COMMITTED full-gate run: `evidence/check-b355f76.log`
+
+Everything above this line that quotes a full-suite verdict is a **prose transcription** of a run on
+the maintainer's box. As of this entry that is no longer the best evidence available: `./check.sh` ran
+end-to-end at commit `b355f76` and the log is in the repository.
+
+| | |
+|---|---|
+| Kani | **164 `VERIFICATION: SUCCESSFUL`, 0 `FAILED`** (all 164 harnesses, sequential, no `-j`) |
+| `cargo test` | 309 passed + 1 doctest |
+| L4 Lean | `lean lid: PASS (sorry-free)`, 1704 `lake` jobs — same run |
+| Unsatisfied covers | **3**, and exactly the three `PROOF_MANIFEST.md` §8.2 discloses |
+| Wall / cap | 52 min under `MemoryMax=22G MemorySwapMax=0`, box otherwise idle |
+| Artifacts | `evidence/check-b355f76.log` (distilled, committed) + the complete raw log kept LOCAL (owner 2026-09-18: `evidence/raw/` is gitignored; available on request; byte count + sha256 in the distilled header) |
+
+**Three things this run settles that prose could not:**
+
+1. **The disclosed-vacuity table is now checked, not promised.** Three harnesses reported
+   `0 of 1 cover properties satisfied` and no fourth did. Nothing undisclosed appeared; no disclosed
+   gap had quietly become satisfiable.
+2. **`x509_extension::validate_extensions_never_panics`'s cover status is DETERMINED — UNSATISFIED.**
+   It had only ever OOM-ed past the slicing/SSA stage (both `cadical` and `kissat`), so
+   `docs/verification-cost.md` logged it as *not determined* rather than claiming either way. It
+   reached a verdict this time. That doc is updated.
+3. **§2's "no full-suite run exists at the current commit" caveat is closed.** The run covers
+   `tag.rs` post-`0c2948a` and the additive `profile` module in one pass, so the 164/164 figure is a
+   single run rather than a full-suite run plus a targeted re-run of the one module that had changed.
+   The narrower point survives and is worth keeping: no proof of equivalence between the old and new
+   `decode_tag` exists — the old body extracted as a bodyless axiom, so there was never an ∀-length
+   statement to equate against.
+
+**What it does NOT settle.** The log is at `b355f76`, and HEAD has since moved to `4fee951` (the
+proof-manifest gate fix + running that gate in CI). Neither commit touches verified source:
+`git diff b355f76..HEAD -- der-verified/src lean` is empty, which is the precise condition under which
+this run's verdicts still concern HEAD's bytes. Re-run that command rather than trusting this
+sentence — if it prints anything, the run needs repeating.
+
+**A trap worth banking, found while building the distillation.** Kani INDENTS its per-harness summary
+lines (` ** 0 of 1 cover properties satisfied`). The first version of the distilling filter was
+anchored at column 0, so it silently dropped **every** unsatisfied-cover line — the distilled log
+claimed 0 where the raw log had 3. A committed evidence file that understates the crate's own
+disclosed vacuities would have been worse than committing nothing. Caught by cross-checking the
+distilled counts against the raw log, which is now a step the distiller performs and prints on every
+run. The second version then broke the same count a different way: its explanatory header quoted the
+literal string the counter greps for, inflating 164 to 165. Header text is data to the next grep.
+
+## UPDATE 2026-07-31 — `profile` is Kani-proven; the last cheap unproven entry point is closed
+
+`TODO.md`'s "`profile` has no Kani harness and no Lean lid" item is closed on the Kani half. Six
+harnesses, and what matters is the *form* of the statements rather than the count:
+
+| Harness | Statement |
+|---|---|
+| `rule1_mismatch_iff_algorithms_differ` | §4.1.1.2 as a **biconditional**, over symbolic OID bytes and symbolic present/absent `parameters` on both sides |
+| `rule2_requires_v3_iff_extensions_present_and_not_v3` | §4.1.2.1/§4.1.2.9 as a biconditional over **all 256** `version` values |
+| `rule3_generalized_too_early_iff_year_le_2049` | §4.1.2.5.2 per field, plus `notBefore`-wins-when-both-are-bad |
+| `error_precedence_follows_declaration_order` | the documented rule order, with all four violations independently symbolic |
+| `validate_profile_never_panics` | totality over every profile-relevant field combination |
+| `utc_time_can_never_denote_2050_or_later` | the §4.1.2.5.1 `1950..=2049` window rule 3's structural half rests on |
+
+Biconditionals matter here because the one-directional alternative ("a malformed certificate is
+rejected") is satisfied by an implementation that rejects too much, and a profile layer that rejects
+conforming certificates is a real defect, not a safe one.
+
+**Cost, and the generalisable reason for it:** ~0.52 s of solve time for all six, ~205 MB peak RSS,
+1.4 s wall — the cheapest module in the crate. `profile` decodes nothing, so a harness takes a symbolic
+*value* (an `AlgorithmIdentifier` pair, a `version` byte, an `Option` of extension bytes, two `Time`
+arms) rather than a symbolic *buffer* plus a parse. Symbolic bytes plus a parser is what makes the
+`x509_*` and `set_of` families cost 10–20 GB. Consequence: `profile` went into CI's `codecs-b` shard
+(CI now covers 143 of 171 harnesses), not the heavy local-milestone tier.
+
+**A silent assumption found and discharged.** `profile`'s rule 3 leans on "a `Time::Utc` value can
+never denote a year >= 2050, **by construction**" — which is true of `full_year_rfc5280`'s codomain
+only when `year2 <= 99`. `full_year_pivot_is_correct` *assumes* that; nothing proved it. And
+`UtcTime`'s fields are `pub`, so `UtcTime { year2: 200, .. }` maps to `2100` — the "by construction"
+claim held for decoder output, not for all values of the type, and said so nowhere.
+`utc_time::decode_postcondition_fields_in_range` now proves the decoder postcondition over symbolic
+content, so the two compose into an unconditional statement about decoder output; the hand-constructed
+case is disclosed in `PROOF_MANIFEST.md` §7 instead of left implicit. This is the kind of gap that
+survives a test suite indefinitely: the existing `#[test]` looped `year2` over `0..=99` and so could
+never have exposed it.
+
+**A trap for the methods notes: a missing `#[kani::unwind]` mimics an intractable harness exactly.**
+`rule1` compares two `AlgorithmIdentifier`s whose `parameters` is an `Option<&[u8]>`. Unbounded, with
+that `Option`'s presence symbolic, CBMC unwound `memcmp` past **18,000 iterations** and the run was
+OOM-killed inside its 14 GB cgroup scope (exit 143). That symptom — long run, climbing memory, a kill —
+is what a genuinely heavy harness looks like, and it invites the wrong fix (shrink the bound, shelve the
+harness). `#[kani::unwind(4)]`: **0.119 s**, and CBMC's unwinding assertion — a *checked* property, not
+an assumption — passes at 4, so the bound costs no generality. Three sibling harnesses passed unbounded
+only because their `Option` presence happened to be concrete; all six now carry explicit bounds.
+Heuristic: when a *value-level* harness (no symbolic buffer, no parser) blows up, suspect a missing loop
+bound before suspecting the solver.
+
+**Still open for `profile`:** no Lean lid. Its harnesses are bounded proofs over field values, so there
+is no ∀-length statement. Lower value than the codec lids — the module decodes nothing, so "any length"
+is not the axis its correctness turns on — but it is what keeps `profile` below the L4/L5 grade.
+
+## UPDATE 2026-08-24 — §4 reopens with TWO new open residuals, both from the `no_over_read` fix (D33)
+
+§4 said "None open" for cover-vacuity. That is still true of the three historical cover findings, but
+the `sequence`/`set_of` `no_over_read` correction (`DECISIONS.md` D33) leaves two residuals open, and
+they are recorded here rather than left to be rediscovered.
+
+**R1 — CLOSED 2026-10-09: `set_of::no_over_read` observes the shared child-walk cursor.**
+`decode_set_of` now uses `sequence::Elements`, retiring its duplicated offset walk. A crate-visible
+read-only view of the iterator's remaining suffix lets production recover each whole child encoding
+for §11.6 comparison. `set_of::no_over_read` drives a harness-owned `Elements` instance through
+the iterator and accessor that production uses (that production makes the same calls is a source-inspection statement); `refactored_walk_matches_previous_walk` checks that the production
+decoder returns exactly the previous shipped walk's results over fully symbolic content of `0..=8` octets. Per accepted child, the cursor harness pins its advance
+to an independent one-step `decode_tlv` from its own offset, including the empty-value case that
+value equality alone cannot decide.
+
+Behaviour is held fixed by a proof-local copy of the previous shipped walk and the exact-result
+`refactored_walk_matches_previous_walk` harness over the existing symbolic bound. Lean's
+`elements_next_progress` proves one accepted `Elements` step for a remaining slice of any length;
+it does not prove exhaustion of the SET OF loop. The explicit cursor check covers symbolic lengths
+`0..=6` (up to three minimum-size children), while SET OF loop exhaustion and
+ordering/error/count glue remain bounded at the existing `0..=8` oracle/equivalence domains.
+Evidence placeholder: `evidence/check-<sha>.log`; required harnesses are
+`set_of::proofs::no_over_read`, `set_of::proofs::refactored_walk_matches_previous_walk`, and the
+retained SET OF regression set. Claim-named controls observed red for both new mechanisms: making
+production's cursor-delta span one octet short is rejected by
+`set_of::proofs::unsorted_children_are_rejected`, and making `Elements::next` advance one octet
+short is rejected by `set_of::proofs::no_over_read` at the exact-offset assertion. Their evidence
+records belong beside the green harness record under the same placeholder convention.
+
+**R2 — the widened structural harnesses still carry no covers of their own (anti-vacuity residual).**
+The 2026-08-23 structural-sibling sweep widened seven harnesses to symbolic input length. D33 added
+covers to the two it rewrote; the remainder (`tlv`, `octet_string`, and the other siblings) still
+have none, so nothing witnesses that their widened loops iterate at all. The `len == 0` negative
+controls from that sweep do **not** close this: they target the *sibling* harnesses and merely force
+input below DER's two-octet framing floor, so they negative-control the framing precondition rather
+than the structural assertions.
+
+A second-model review asked for these covers to be added before publish. They were not. The review
+that gated the work offered "add covers **or** disclose their absence"; disclosure was chosen so the
+publish carried a narrow, fully-reviewed proof-integrity change rather than a broader harness sweep
+landed without the same scrutiny. That is a judgement call, recorded as one — the covers are owed.
+
+*Fix, when taken:* one cover per widened harness witnessing a second loop iteration, run as its own
+pass so any that come back UNSATISFIABLE are investigated as findings rather than absorbed into an
+unrelated change. Note the trap: an unsatisfied cover does not fail Kani, so a new UNSAT cover here
+would show up only as a new entry in the run log's disclosed-unsatisfied set (`PROOF_MANIFEST.md`
+§8.2), which currently stands at exactly three.
+
+**What neither residual changes.** No claim in `README.md`, `PROOF_MANIFEST.md` or the module docs
+now rests on the corrected harnesses proving more than they do; the asymmetry between `sequence` and
+`set_of` is stated in both docstrings and in §8.3 rather than smoothed over.
+
+## UPDATE 2026-08-25 — §6.3's two-rule residual is DECIDED (D34), with one open question left behind
+
+`identifier_form` now decides the primitive/constructed-form rule and the EOC exclusion — the two
+X.690 rules `PROOF_MANIFEST.md` §6.3 recorded as enforced in no verified layer. 10 Kani harnesses;
+four are stated over the complete input domain (symbolic `u32` tag number × 4 classes × both forms),
+not a bounded buffer. Mutation controls in `evidence/` confirm each theorem is non-vacuous and that
+the three mutations kill distinct, predicted subsets.
+
+**R3 (OPEN, owner call) — should the check be wired into `decode_tlv_strict`?**
+
+The module is additive: `tag`, `tlv`, `sequence` behave exactly as before, so the residual is closed
+only for callers who opt into `decode_tlv_form_checked` / `decode_tlv_form_checked_strict`. Wiring it into
+`decode_tlv_strict` is where a consumer would most want it, and is deliberately not done here:
+
+- it is a **behavioural change to a Lean-lidded shipped function** — `tlv.rs` is in the lid set, so
+  it forces re-extraction of `DerTlvExtract` and `DerSequenceExtract` and risks the `TlvProofs` /
+  `SequenceProofs` developments;
+- it changes what every existing caller accepts, including the `x509_*` and `pkcs8` parsers, which
+  today do their own per-field tag checks;
+- D33's precedent: a behavioural change to a shipped decoder is not bundled into other work.
+
+Cost if taken: re-extraction + lid repair (unknown, possibly a day), plus a re-run of the full gate
+and a review of every call site. Benefit: the default entry point becomes DER-strict. **Not a
+correctness residual — a product decision.**
+
+**R4 (OPEN, small) — `identifier_form` decides one identifier, not a tree.** The children of an
+accepted constructed TLV are unchecked. A recursive `validate_der_tree` built on `sequence::Elements`
++ `validate_identifier_form` would close that; it needs a recursion/unwind story for the nesting
+depth, so it is a real (if modest) proof-engineering task rather than a wrapper.
+
+## UPDATE 2026-08-30 — the negative controls are current again; two docs overclaims closed
+
+**Controls.** The eleven mutated control legs for `length`, `tag`, `integer`, `big_integer` and
+`oid` were re-witnessed at `402719a` (`evidence/mutation-controls-2026-08-30-five-modules/`, D35).
+All five modules now hold a current, self-describing RED leg — a defect actually observed to make
+the harness fail — rather than only a GREEN reverted leg. Predictions are preregistered and the
+campaign runner is committed. **Cost, since the old estimate deterred this for weeks: 13.8 s CPU, 267 MB
+peak for all 17 legs, on an ordinary machine.**
+
+**Docs.** Two overclaims closed. The front page said "every public codec carries machine-checkable
+evidence"; it now says **primitive** codec, and names the `x509_*` layer as structural framing not
+proven to the same bar. Both READMEs gained a **Security considerations** section stating the thing
+a security reader asks first and that no proof here answers: the harnesses are bounded, so
+**resource exhaustion on deeply nested untrusted input is a live residual surface**, and callers
+must bound input size and nesting depth themselves. Both gained a **Status** line (pre-1.0, API
+unstable, no production deployment record).
+
+**Still open, and now written down rather than implied.**
+
+- **R5 (OPEN) — no recursion-depth or total-work bound.** The Security-considerations text pushes
+  this onto the caller, which is honest but is not a fix. R4 above (a recursive `validate_der_tree`)
+  is the proof-engineering half; a depth/work limit in the decode path is the engineering half. They
+  are related but not the same task, and neither is done.
+- **(OPEN) — the x509/pkcs8/rsa family has no mutation controls at all.** Every module with a
+  current negative control is a primitive. The composed layer's harnesses have never been watched to
+  fail, so nothing yet distinguishes them from harnesses that cannot fail. This is the largest
+  remaining evidence gap in the crate and the obvious next campaign.

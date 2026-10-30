@@ -1,0 +1,13 @@
+# PARSER FIXTURE ONLY: two harness excerpts, not evidence of a complete run.
+# Grammar copied from raw check-bffab69.log, sha256 b77bafa9ef8189f6662a543ee792d36a1c30bdc9f5bdeff867a1837c907a9925.
+# Stage/completion lines are copied solely to exercise framing. Never cite this fixture as proof.
+== cargo kani :: der-verified (L3 proof floor) ==
+Checking harness big_integer::proofs::encode_never_panics...
+ ** 2 of 2 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+Checking harness x509_extension::proofs::validate_extensions_never_panics...
+ ** 0 of 1 cover properties satisfied
+VERIFICATION:- SUCCESSFUL
+== lean-lid skip-guard gate: self-test (the gate's own gate; pure stdlib) ==
+lean-lid-status: PASS
+== check.sh: PASS (L3 kani floor: GREEN; L4 lean lid: PASS) ==

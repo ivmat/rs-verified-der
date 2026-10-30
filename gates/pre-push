@@ -12,7 +12,7 @@
 # push boundary is where the crate's central claim — "a committed full-suite run speaks for HEAD" —
 # is either true or a lie, and this gate is what makes publishing that claim deliberate.
 #
-# THREE RULES, all fail-closed:
+# FOUR RULES, all fail-closed:
 #
 #   1. remote-verification trap — this repo may push only to $ALLOWED_SLUG. A payload gate that
 #      ignores the destination is walked around by adding a remote.
@@ -23,12 +23,15 @@
 #      push says NOTHING about whether any proof holds. What they do catch is the amended-sha case:
 #      docs that drifted from the source they describe, in the bytes that would actually land.
 #
-#   3. full-suite receipt, when the destination is PUBLIC — a receipt at
-#      evidence/push-receipts/<sha>.receipt containing 'full-suite: GREEN @ <sha>', with an mtime
-#      NEWER than that commit. Receipts are deliberately NOT tracked (see that directory's README):
-#      committing one would change the sha it certifies. Visibility is resolved LIVE via `gh`
-#      precisely so that a private->public flip cannot happen without this gate noticing; when `gh`
-#      cannot answer, the DECLARED visibility below is used, and it is 'public' — the strict side.
+#   3. full-suite push receipt, when the destination is PUBLIC — the legacy receipt at
+#      evidence/push-receipts/<sha>.receipt must contain 'full-suite: GREEN @ <sha>' and
+#      must not predate the commit. This is a separate publication-policy gate: the text
+#      receipt is not a trusted proof registration.
+#
+#   4. trusted completed evidence — branch pushes need an exact captured full run or
+#      explicitly named carry-over across prose-only changes. Tags need release validation
+#      bound to the peeled target commit and remote tag ref. The Git-local proof store is
+#      populated only by the isolated actual-run recorder, never by copied text receipts.
 #
 # SELF-CONTAINED ON PURPOSE. This repo is public: this file sources no private library, names no
 # machine-specific path, and hard-codes nothing but its own destination slug.
@@ -51,10 +54,14 @@ store="$ROOT/evidence/push-receipts"
 
 slug_of() {
     local url="$1"
-    url="${url%.git}"; url="${url%/}"
     case "$url" in
-        *github.com*) url="${url##*github.com}"; url="${url#:}"; url="${url#/}" ;;
+        https://github.com/*) url="${url#https://github.com/}" ;;
+        ssh://git@github.com/*) url="${url#ssh://git@github.com/}" ;;
+        git@github.com:*) url="${url#git@github.com:}" ;;
+        *) return 1 ;;
     esac
+    url="${url%/}"; url="${url%.git}"
+    [ "$url" = "$ALLOWED_SLUG" ] || return 1
     printf '%s\n' "$url"
 }
 
@@ -71,13 +78,17 @@ block() {
         echo "$(date -Is) OVERRIDE label=$LABEL remote=$remote_url :: $*" >> "$store/overrides.log" 2>/dev/null \
             && echo "  OVERRIDE USED — logged to evidence/push-receipts/overrides.log" \
             || echo "  OVERRIDE USED — NOT logged (could not write the override log)"
-        echo "  (The session that produced the work must not override its own gate.)"
+        echo "  (The author of the pushed change must not override this gate.)"
         echo ""
         return 0
     fi
     # Only the remedy that matches the failure — a remedy that does not fit the refusal teaches
     # people to ignore the refusal.
     case "$*" in
+        *"proof-run ref"*)
+            echo "  TO CLEAR THIS: do not push refs/der-proof-runs/*. Push named branches or tags"
+            echo "  only; do not use --mirror or a refs/*:refs/* refspec. See docs/ci.md."
+            ;;
         *"remote-verification trap"*)
             echo "  TO CLEAR THIS: push to the declared destination. If a NEW destination is genuinely"
             echo "  wanted, edit ALLOWED_SLUG in gates/pre-push deliberately — do not add a remote to"
@@ -91,6 +102,15 @@ block() {
             echo "         sha=\$(git rev-parse HEAD)"
             echo "         printf 'full-suite: GREEN @ %s\\n' \"\$sha\" > evidence/push-receipts/\$sha.receipt"
             echo "    3. push, and do NOT amend afterwards — an amend changes the sha and voids the receipt."
+            echo "  This legacy text receipt clears only the publication-policy gate; it is not a"
+            echo "  trusted proof registration. Capture/verify trusted evidence separately as below."
+            echo "    python3 gates/proof_runs.py record"
+            ;;
+        *evidence*)
+            echo "  TO CLEAR THIS: capture a real full run with python3 gates/proof_runs.py record"
+            echo "  at the intended source commit. Branch carry-over is checked, never relabelled."
+            echo "  Release tags also need gates/release_evidence.py validation of the exact target."
+            echo "  See docs/ci.md and docs/release.md; legacy text receipts are not registrations."
             ;;
         *)
             echo "  TO CLEAR THIS: fix the failure above AT THE PUSHED SHA (this gate ran against the"
@@ -98,41 +118,81 @@ block() {
             ;;
     esac
     echo ""
-    echo "  Visible, logged override (not for the session that produced the work):"
+    echo "  Visible, logged override (not for the author of the pushed change):"
     echo "    FV_PUSH_GATE_OVERRIDE=1 git push ..."
     echo "=============================================================================="
     return 1
 }
 
+# stdin: "<local ref> <local sha> <remote ref> <remote sha>" per ref. Read it once, up front, so the
+# proof-ref refusal below runs before any rule that the override can clear.
+push_lines=""
+if [ ! -t 0 ]; then
+    push_lines="$(cat)"
+fi
+
+# --- rule 0: local proof-run refs ----------------------------------------------------------------
+# Local proof-run refs hold recorder source retention for THIS clone only. They are never pushed to
+# any destination (public, private or not allowed), deleted or not. This refusal does not call
+# block(), so FV_PUSH_GATE_OVERRIDE cannot clear it and nothing is written to the override log.
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+    [ -z "${local_sha:-}" ] && continue
+    case "${_remote_ref:-}|${_local_ref:-}" in
+        refs/der-proof-runs/*|*"|refs/der-proof-runs/"*)
+            echo ""
+            echo "=============================================================================="
+            echo " PUSH REFUSED — $LABEL push gate (no override applies)"
+            echo "=============================================================================="
+            echo "  BLOCKED: proof-run ref: refs/der-proof-runs/* is local-only and is never pushed to any destination (mirror or wildcard refspec offered '${_remote_ref:-}')"
+            echo ""
+            echo "  TO CLEAR THIS: do not push refs/der-proof-runs/*. Push named branches or tags"
+            echo "  only; do not use --mirror or a refs/*:refs/* refspec. See docs/ci.md."
+            echo "=============================================================================="
+            exit 1 ;;
+    esac
+done <<< "$push_lines"
+
 # --- rule 1: destination ------------------------------------------------------------------------
-slug="$(slug_of "$remote_url")"
+slug="$(slug_of "$remote_url")" || slug=""
 if [ "$slug" != "$ALLOWED_SLUG" ]; then
     block "remote-verification trap: this repo may only push to $ALLOWED_SLUG" \
-          "attempted destination: remote '$remote_name' -> $remote_url (parsed as '$slug')"
+          "attempted remote '$remote_name' is not an exact supported GitHub destination"
     exit $?
 fi
 
 # --- the pushed shas ----------------------------------------------------------------------------
-# stdin: "<local ref> <local sha> <remote ref> <remote sha>" per ref. Deletions carry no payload.
+# Deletions carry no payload. Proof-run refs were already refused by rule 0.
 shas=""
+push_pairs=()
 saw_ref_line=0
-if [ ! -t 0 ]; then
+if [ -n "$push_lines" ]; then
     while read -r _local_ref local_sha _remote_ref _remote_sha; do
         [ -z "${local_sha:-}" ] && continue
         saw_ref_line=1
         [ "$local_sha" = "$zero" ] && continue
+        if [[ ! "$local_sha" =~ ^[0-9a-f]{40}$ ]] || ! git check-ref-format "$_remote_ref"; then
+            block "invalid pushed object or remote ref"; exit 1
+        fi
+        pair="$local_sha $_remote_ref"
+        case " ${push_pairs[*]} " in
+            *" $pair "*) ;;
+            *) push_pairs+=("$pair") ;;
+        esac
         case " $shas " in
             *" $local_sha "*) ;;
             *) shas="$shas $local_sha" ;;
         esac
-    done
+    done <<< "$push_lines"
 fi
 if [ -z "$shas" ]; then
     # git always passes <remote> <url>; args plus zero ref lines is the up-to-date no-op push.
+    # A deletions-only push still has ref lines, so (as before) it is gated at HEAD.
     if [ "$#" -ge 2 ] && [ "$saw_ref_line" -eq 0 ]; then
         exit 0
     fi
     shas="$(git rev-parse HEAD)"     # deletions-only push, or a direct invocation: gate HEAD
+    direct_ref="$(git symbolic-ref --quiet HEAD 2>/dev/null || echo refs/heads/direct-check)"
+    push_pairs+=("$shas $direct_ref")
 fi
 
 # --- rule 2: document gates at each pushed sha ---------------------------------------------------
@@ -159,7 +219,7 @@ for sha in $shas; do
     git worktree prune >/dev/null 2>&1 || true
 done
 
-# --- rule 3: full-suite receipt, if the destination is public ------------------------------------
+# --- public-only rules 3 and 4 ---------------------------------------------------------------
 visibility="$DECLARED_VISIBILITY"
 if command -v gh >/dev/null 2>&1; then
     v="$(timeout 20 gh repo view "$slug" --json visibility -q .visibility 2>/dev/null | tr -d '[:space:]')"
@@ -173,6 +233,7 @@ else
 fi
 
 if [ "$visibility" = "public" ]; then
+    # Rule 3 remains independent of trusted proof registration.
     for sha in $shas; do
         rec="$store/$sha.receipt"
         if [ ! -f "$rec" ]; then
@@ -180,12 +241,38 @@ if [ "$visibility" = "public" ]; then
         elif ! grep -qF "full-suite: GREEN @ $sha" "$rec"; then
             msgs+=("$sha: evidence/push-receipts/$sha.receipt does not contain the line 'full-suite: GREEN @ $sha'")
         else
-            c_ts="$(git show -s --format=%ct "$sha" 2>/dev/null || echo 0)"
-            r_ts="$(stat -c %Y "$rec" 2>/dev/null || stat -f %m "$rec" 2>/dev/null || echo 0)"
-            if [ "${r_ts:-0}" -lt "${c_ts:-0}" ]; then
+            # Peel to the commit: for an annotated tag object `git show` prints the tag header,
+            # which is not a number. A timestamp that is not a plain integer is a refusal.
+            c_ts="$(git show -s --format=%ct "$sha^{commit}" 2>/dev/null)" || c_ts=""
+            r_ts="$(stat -c %Y "$rec" 2>/dev/null || stat -f %m "$rec" 2>/dev/null)" || r_ts=""
+            if [[ ! "$c_ts" =~ ^[0-9]+$ ]] || [[ ! "$r_ts" =~ ^[0-9]+$ ]]; then
+                msgs+=("$sha: could not read numeric commit/receipt timestamps for the receipt staleness check, so it refuses")
+            elif [ "$r_ts" -lt "$c_ts" ]; then
                 msgs+=("$sha: the receipt is OLDER than the commit — it must be the LAST act before the push; an amend or rebase voids it")
             fi
         fi
+    done
+
+    # Rule 4 executes the verifier committed in the pushed object, not mutable working-tree code.
+    for pair in "${push_pairs[@]}"; do
+        read -r sha remote_ref <<< "$pair"
+        echo "== $LABEL push gate: trusted evidence for $sha -> $remote_ref =="
+        wt="$(mktemp -d "$(dirname "$ROOT")/.der-prepush-proof-XXXXXX" 2>/dev/null)" \
+            || wt="$(mktemp -d "${TMPDIR:-/tmp}/der-prepush-proof-XXXXXX")" \
+            || { msgs+=("$sha: could not create a pushed-verifier worktree dir"); continue; }
+        if git worktree add --detach --quiet "$wt" "$sha" >/dev/null 2>&1; then
+            # Pass immutable object ID and REMOTE ref. An annotated tag is peeled by the
+            # verifier; pushing HEAD:refs/tags/vX cannot borrow branch-only carry-over.
+            (
+                cd "$wt" \
+                && python3 -B gates/proof_runs.py verify --commit "$sha" --ref "$remote_ref"
+            ) || msgs+=("$sha -> $remote_ref: trusted proof/release evidence FAILED")
+            git worktree remove --force "$wt" >/dev/null 2>&1 || rm -rf "$wt"
+        else
+            rmdir "$wt" 2>/dev/null || true
+            msgs+=("$sha: could not create detached worktree for the pushed verifier")
+        fi
+        git worktree prune >/dev/null 2>&1 || true
     done
 fi
 
@@ -194,5 +281,9 @@ if [ "${#msgs[@]}" -gt 0 ]; then
     exit $?
 fi
 
-echo "$LABEL push gate: OK — $slug ($visibility), document gates green at:$shas"
+if [ "$visibility" = "public" ]; then
+    echo "$LABEL push gate: OK — $slug ($visibility), document gates, full-suite receipt and trusted evidence gates green at:$shas"
+else
+    echo "$LABEL push gate: OK — $slug ($visibility), document gates green at:$shas; the public-only receipt and trusted-evidence gates (rules 3 and 4) did NOT run"
+fi
 exit 0

@@ -1,516 +1,83 @@
-# TODO / open issues
+# Open work
 
-Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+This is the single active backlog, reconciled on 2026-10-28. Items below are proposals,
+not commitments or evidence of completed verification. Current claims belong in
+[PROOF_MANIFEST.md](PROOF_MANIFEST.md), [the requirements inventory](docs/requirements/der.inventory.toml)
+and [acceptance.toml](der-verified/acceptance.toml). The
+[proof-floor declaration](docs/proof-floor.json) identifies the recorded run;
+[the evidence policy](evidence/README.md) explains how to request its logs.
 
-Tracked roadmap for `der-verified`. Grouped by theme; check items off as they land. See
-`PROOF_MANIFEST.md` for what is currently proven and `DECISIONS.md` for the rationale behind each
-scope boundary referenced below.
+The acceptance 0.4.0 migration, requirement-level mapping, full recorded floor, and
+`set_of` shared-walk refactor are complete. Earlier status and scoping notes are in
+[the archive index](docs/archive/README.md).
 
-## Open after the requirements pass (2026-10-27)
+## Proofs and tests
 
-The requirements tree (`docs/requirements/der.inventory.toml`), the evidence map (`docs/requirements/evidence/`) and the
-test-gap report (`docs/requirements/test-gaps.md`) are in place: every testable requirement row has its tests. Open items:
+- [ ] Discharge `has_repeated_leading_oid` totality and helper comparison obligations.
+  Profile totality and precedence proofs remain conditional on the helper's totality;
+  concrete tests do not discharge it. See [the helper-proof plan](docs/proof-work/s5-profile-helper-harnesses.md).
+- [ ] **R2 — structural reachability:** add appropriate accept-path covers to
+  `tlv::decode_tlv_structure`, both OCTET STRING structural/identifier harnesses,
+  `sequence::accepted_identifier_is_canonical_0x30`, and
+  `set_of::accepted_identifier_is_canonical_0x31`. For a harness that exercises a child
+  walk, witness a second iteration as well; the TLV structural harness has no loop.
+  Investigate each unsatisfied cover;
+  Kani success alone does not show it was reached. See [COVERAGE.md §6.3](COVERAGE.md#63-three-harnesses-cannot-witness-their-own-happy-path).
+- [ ] Add observed-red controls for `x509_certificate` and `x509_tbs_certificate`;
+  the current projected record store has none for these modules. Preserve the existing
+  controls for the other X.509 and key-container modules and assess remaining gaps
+  per requirement in [acceptance.toml](der-verified/acceptance.toml).
+- [ ] Explore an unbounded Lean proof for `profile` and for an X.509 structural module.
+  These are separate projects; neither is covered by the existing codec lids.
+- [ ] Add external vectors and differential tests, including relevant x509-limbo and
+  Wycheproof DER/ECDSA cases. Refresh mutation testing for changed code, retaining the
+  [existing survivor dispositions](COVERAGE.md). Add a proof or suitable large-input test
+  for `encode_tlv_into` at `value.len() == u32::MAX` (~4 GiB): the `>` guard differs
+  from `>=` or `==` there. A fast unit test cannot allocate the required value; see
+  [the disclosed boundary residual](COVERAGE.md).
+- [ ] Refresh per-harness cost measurements where source changes have invalidated old
+  figures, including `x509_name::validate_rdn_never_panics`. Keep historical measurements dated.
+- [ ] Run the documented replay in a pristine environment as a release-readiness check.
 
-**Before the next release or push**
-- [ ] Full fresh proof run at the release commit: every Kani harness (split floor at 20 GB plus the heavy harnesses at
-      24 GB) and the Lean lids. Six Lean-lid source files are marked PENDING after test-only edits
-      (`lean/lid-source-state.txt`), so `check.sh --strict` fails until a green Lean run.
-- [ ] Re-measure `x509_name::proofs::validate_rdn_never_panics` (about 17 GB before; `validate_rdn` now checks each attribute
-      value's identifier form).
-- [ ] Regenerate the acceptance manifest for the new source (it still describes the proof run at `d68eeca`), and decide
-      between the 0.3.2 format at the new commit and the 0.4.0 uplift with the requirements inventory.
+## Scope and API decisions
 
-**Proofs**
-- [ ] The three profile helper harnesses that exceed 20 GB: [`docs/proof-work/s5-profile-helper-harnesses.md`](docs/proof-work/s5-profile-helper-harnesses.md)
-      (plan: stub `decode_tlv` with its proven postcondition, as DECISIONS D26 does for `validate_rdn`). Until then
-      `profile::proofs::validate_profile_never_panics` is conditional on `has_repeated_leading_oid` being total (shown by
-      tests only).
+- [ ] **R3 — identifier-form checking:** decide whether the base strict TLV API should
+  enforce the checks currently available through the opt-in `identifier_form` API.
+  This changes accepted input and requires call-site review and proof work.
+- [ ] **R4/R5 — nested input:** decide whether to add tree-wide validation and explicit
+  depth/work limits. They are distinct changes; current APIs leave input-size and
+  nesting limits to callers.
+- [ ] Decide whether PKCS#8 attribute members should be decoded and validated rather
+  than returned as opaque content.
+- [ ] Resolve UTF8String CSI-introduced control sequences against X.690 §8.23.9 e.
+- [ ] Decide whether the public EXPLICIT-context primitive should require exactly one
+  inner TLV. Current in-crate callers perform their own inner-value checks.
+- [ ] Consider basic constraints, key usage, name constraints and validity-against-clock
+  as separate profile extensions. They are outside the current profile coverage.
+- [ ] Review `no_std` support together with optional OID-arc materialization: the latter
+  needs an allocation policy. Any chosen configuration needs its own build/proof checks.
+  Guard against Kani selecting the test/std configuration: consider a
+  `#[cfg(all(kani, test))] compile_error!(...)` check rather than assuming it never does.
+- [ ] Review public API coherence before the next release that changes the API.
 
-**Tests**
-- [ ] External test vectors (x509-limbo, Wycheproof DER/ECDSA cases) and differential runs against other DER parsers on
-      the same inputs.
-- [ ] Mutation testing over the whole suite (for example `cargo-mutants`); today each new test was checked red by a manual
-      mutation.
+## Verification workflow — separate approval required
 
-**Scope decisions still open**
-- [ ] PKCS#8 attribute members are not decoded, so their values are not checked at all (the `[0]` wrapper is
-      context-specific). Decide whether to walk them.
-- [ ] UTF8String accepts CSI-introduced control sequences (X.690 §8.23.9 e); only ESC, SO, SI, SS2 and SS3 are rejected.
-- [ ] Basic constraints, key usage and name constraints (PROF-P-5/6/7) are excluded for now; a later milestone may add them.
+- [ ] Exercise the new CI workflow's hosted pass/fail paths and adopt `CI result` as
+  a required check before publication. Local fixture tests do not establish hosted behavior.
+- [ ] Capture a real completed run with the committed recorder before relying on the new
+  push/release gate. Historical declarations and legacy receipts cannot register that run.
+  Review the explicit producer bundle through [the release workflow](docs/release.md).
+- [ ] Provision and test Lean CI separately if pursued. The bounded CI change selection
+  and fast-check parity are described in [CI selection and limits](docs/ci.md);
+  the public release producer and future Lean CI remain separate work.
 
-**Docs**
-- [ ] `COVERAGE.md` keeps its hand-written `DER-C-*` rows next to the generated inventory; decide whether the inventory
-      replaces them.
+## Documentation and inventory
 
-## Known limitations (verification)
-
-- [x] **`x509_name::validate_never_panics` — RESOLVED via a modular proof (DECISIONS.md D26).** The
-      monolithic harness blew up (>100 GB in CBMC symbolic execution: `set_of::cmp_padded` re-derived
-      over symbolic content). Split into `validate_rdn_never_panics` (the heavy SET-OF/ATV layer at
-      one-RDN scale, ~17 GB) + `validate_never_panics` stubbing `validate_rdn` with its proven
-      postcondition (~510 MB). Same theorem, now compositional; `./check.sh` completes end-to-end
-      (161/161 Kani at the time — now 171/171 — + the L4 lids). The same review also fixed a
-      pre-existing fixed-vs-symbolic input length gap across all modular harnesses.
-- [x] Record, per harness, the wall-clock/solver cost so the intractable ones are visible up front —
-      [`docs/verification-cost.md`](docs/verification-cost.md) (cost tiers, the heavy `set_of` §11.6
-      family, the two harnesses that need a >16 GB box, and a measured solver-selection note).
-
-## Open, and surfaced by the 2026-07-30 proof-manifest pass
-
-- [x] **`PROOF_MANIFEST.md` is generated from source and gated** —
-      [`gates/gen_proof_manifest.py`](gates/gen_proof_manifest.py) derives every number in it, and
-      `--check` runs in `check.sh`/`check_fast.sh`, and is itself tested by
-      [`gates/test_gen_proof_manifest.py`](gates/test_gen_proof_manifest.py) — 18 committed tests
-      covering both failure directions (over-strict: an unfamiliar toolchain must pass;
-      over-lenient: a drifted count or declared pin must still fail). The five negative checks this
-      line used to cite were run by hand during the pass and never committed; treat only the tests
-      in that file as gated. Restructured around
-      the publication checklist's five headings; now states which entry points no harness names, what
-      is not proven per module, the non-vacuity audit, and the provenance of the L3 verdict.
-- [x] **Ran `./check.sh` end-to-end and committed the log under `evidence/`** (2026-07-30, at commit
-      `b355f76`): **164 `VERIFICATION: SUCCESSFUL`, 0 `FAILED`**, `cargo test` 309 green and the L4
-      Lean gate `PASS (sorry-free)` (1704 `lake` jobs) in the same run — 52 min wall, sequential
-      harnesses, `MemoryMax=22G` cgroup scope. Per run: a committed distilled per-harness verdict log
-      (what the generator parses) plus the complete raw log kept LOCAL (owner 2026-09-18:
-      `evidence/raw/` is gitignored; available on request), with the distilling `grep` and the raw
-      log's byte count + sha256 stated in the distilled file's header, so the projection is checkable
-      against the raw (on request) rather than trusted. **Exactly three harnesses reported an
-      unsatisfied cover, and they are exactly the three §8.2 discloses** — one of which
-      (`x509_extension`) had never previously reached a verdict at all. This closes the old
-      "164/164 is not a single run at HEAD" caveat: the run covers `tag.rs` and `profile` as they
-      stand. Every verdict in the docs was a prose transcription before this.
-- [x] **Closed the `enumerated` cover residual, then widened the harness domain after review.** The
-      harness proves an *agreement* between `decode_enumerated` and `decode_integer`, which would hold
-      even if both sides only ever rejected — so it needed its own witnesses. Final shape: a 9-octet
-      buffer with symbolic length `0..=9` (the wrapper's WHOLE reachable input space, not `integer`'s
-      `1..=8`) and **7 of 7** covers satisfied, including `Err(Empty)` and `Err(TooLarge)` reached
-      *through the delegation* — an intermediate version excluded those two lengths and explained them
-      away by pointing at `integer`'s harnesses, which a second-model review correctly called stopping
-      one byte short. `encode_delegates_to_integer` gained 3 covers of its own for the same reason, so
-      `x509_name::validate_rdn_never_panics` is now genuinely the crate's only harness whose
-      non-vacuity argument points elsewhere (`PROOF_MANIFEST.md` §8.2). Three overclaims in the first
-      version's prose were retracted in the same pass — see the manifest.
-- [x] **Make the evidence reproducible on a laptop.** `check_tractable.sh` closes this, and the claim
-      is now **measured rather than asserted** (2026-08-02). The test run was deliberately *not* "record
-      the peak on a 30 GB box" — that answers the wrong question. It was run under a cap set to a
-      modest laptop, because what a stranger needs to know is whether it *completes* on their machine:
-      ```
-      systemd-run --user --scope -p MemoryMax=8G -p MemoryHigh=7G -p MemorySwapMax=0 -- sh ./check_tractable.sh
-      Complete - 143 successfully verified harnesses, 0 failures, 143 total.
-      Elapsed (wall clock): 6:15.29     Maximum resident set size: 2,838,608 KB (2.71 GB)     rc=0
-      ```
-      **2.71 GB peak, 6m15s, 143/143** — comfortably inside the 8 GB cap and well under the script's own
-      "~7 GB" estimate, so the header comment is conservative rather than optimistic. The one disclosed
-      unsatisfied cover appeared exactly once, as `PROOF_MANIFEST.md` §8.2 predicts; more would have been
-      a new finding. ⚠ Still the LIGHT tier only — a green run here is the CI-sized share, **not** the
-      full floor, which remains a large-box milestone (`gates/tiers.txt`, gated by
-      `gates/check_tier_parity.py`).
-- [x] **`profile` is now Kani-proven** (six harnesses; still no Lean lid, which is the remaining gap).
-      It was the largest single unproven public entry point in the crate; `validate_profile` is now
-      named by a harness, so the manifest's unharnessed-entry-point count drops 12 → 11. Each of the
-      three RFC 5280 cross-field rules is proven as a **biconditional** (the rule fires exactly when it
-      should — rule 2 over all 256 `version` values, not just 0/1/2), plus the documented precedence
-      with all four violations independently symbolic, plus totality. Cheapest module in the crate:
-      ~0.52 s solve, ~205 MB peak, because the harnesses take a symbolic *value* rather than a symbolic
-      DER buffer — so it went into CI's `codecs-b` shard, not the heavy tier.
-      Two things fell out of it: `utc_time::decode_postcondition_fields_in_range` now proves the
-      decoder postcondition (`year2 <= 99`) that `profile`'s "a `Time::Utc` can never denote 2050 or
-      later, by construction" was silently resting on (`UtcTime`'s fields are `pub`, and a
-      hand-written `year2: 200` maps to 2100); and a missing `#[kani::unwind]` was found to mimic an
-      intractable harness exactly — see `docs/verification-cost.md`.
-- [ ] **A Lean lid for `profile`** — the remaining evidence gap for that module. Its harnesses are
-      bounded proofs over field *values*; there is no ∀-length statement. Lower value than the codec
-      lids (the module decodes nothing, so "any length" is not the axis its correctness turns on), but
-      it is what keeps `profile` below the L4/L5 grade.
-
-## Verification breadth
-
-- [x] **A 4th L4 (Aeneas→Lean) lid — landed on `tlv` (DECISIONS.md D27).** The first L4 lid on the
-      crate's structural *composition* layer (composing `tag` + `length`), not another leaf codec:
-      `decode_tlv`'s structural/no-over-read correctness, ∀-length (`lean/TlvProofs.lean`). Required a
-      one-line behavior-preserving source fix (`tlv.rs`'s point-free `map_err` → explicit closures, to
-      unblock an Aeneas naming clash) — re-verified by Kani + tests. 7 disclosed assumed specs (2 of
-      which restate an already-proved `LengthProofs.lean` fact, worked around a duplicate-extraction
-      namespace collision, not new trust). `check_lean.sh` extended + confirmed non-vacuous
-      (sorry-injection test). The lids now cover `length`, `big_integer`, `oid`, `tlv`; the larger
-      `sequence`/consumer-walk lid (a loop over an unbounded child count) and a `tag.rs` D25-style
-      refactor to fully de-opaque `decode_tag` remain open, larger, separate items.
-- [x] **A 5th L4/L5 (Aeneas→Lean) lid — landed on `sequence` (DECISIONS.md D28).** The larger
-      `sequence`/consumer-walk lid flagged above: `decode_sequence`'s structural/no-over-read
-      correctness, ∀-length AND ∀-children (`lean/SequenceProofs.lean`) — the crate's first
-      **unbounded-LOOP** lid (`tlv::decode_tlv` is itself loop-free). Required the SAME map_err
-      name-clash fix as D27, this time in `sequence.rs`, plus a documented `check_lean.sh` patch step
-      working around a genuine Aeneas codegen gap (the `Iterator` trait's `step_by`/`enumerate`/`take`
-      defaults aren't filled for a user-defined `impl Iterator` that only defines `next`) — filled with
-      Aeneas's own generic default-method combinators, inert for this lid's scope. Same 7 disclosed
-      assumed specs as `tlv`'s lid (restated for the new extraction pass's namespace). `check_lean.sh`
-      extended + confirmed non-vacuous (sorry-injection test, both at the `lake build` and full-gate
-      level). The lids now cover `length`, `big_integer`, `oid`, `tlv`, `sequence`; a `tag.rs`
-      D25-style refactor to fully de-opaque `decode_tag` remains open, a separate item.
-- [x] **A 6th L4/L5 (Aeneas→Lean) lid — landed on `tag` (commit `0c2948a`).** The `tag.rs` D25-style
-      refactor flagged above: `decode_tag`'s high-tag loop refactored (return-inside-loop →
-      break-with-`Result`, behaviour-preserving) to unblock Aeneas extraction, then proved
-      `tag_decode_total` + `tag_decode_used_bounds` ∀-length in a new `lean/TagProofs.lean`.
-      **Discharged the 4 `tag_decode_*` trust-axiom instances** the `tlv`/`sequence` lids previously
-      assumed about `decode_tag` (their disclosed trust surface drops from 7 axioms to 6 each). The
-      lids now cover `length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence` — six total.
-- [ ] Add the L4/L5 Lean job to CI if a hosted runner can provision the pinned Aeneas/Charon/Lean
-      stack (currently a local-milestone check — see the README).
-      ⊕ **SCOPED 2026-08-03. The `if` is the whole item, and it now has numbers.** Installed footprint
-      on the reference box: **1.8 GB** for Aeneas+Charon and **2.7 GB** for the Lean toolchain under
-      `elan` — ~4.5 GB, which fits a standard hosted runner's disk. Size is not the obstacle. The
-      obstacle is that both pins are built *from source* (Charon in Rust, Aeneas in OCaml), so without
-      a warm cache every run pays that build before it proves anything.
-      ⚠ **And the honest blocker is not cost, it is verifiability.** A CI workflow cannot be exercised
-      on this box, and pushing to the public repo is owner-gated — so writing the job would produce a
-      gate whose failing direction has never been seen, on a repo whose whole claim is that its checks
-      are re-runnable. This crate has already been bitten twice by exactly that (`check_kb`-style
-      vacuity, and the L4 lid sitting UNRUN for four commits — see `evidence/FLOOR-2026-08-03.md` §3).
-      **A green that has never been watched to go red is not the deliverable here.** Land it in a
-      session that can push and watch a real run fail.
-- [ ] **Map the standard-compliance part of `acceptance.toml` to a shared X.690 requirement list.**
-      Today the manifest's `clause` is the module (`PM/<module>`), and its own header says so: *"not a
-      real enumerated spec-clause inventory"*. `COVERAGE.md` has rule rows, but with this repo's own ids
-      (`DER-*`) and section-level references (§8.14, not §8.14.3). The target is one
-      implementation-neutral list of X.690 (2021) requirements, ids by clause number (`X690-8.14.3`),
-      with a completeness census over §8, §10 and §11 (every "shall" sentence mapped to a row, or
-      classed as not testable or out of scope). The same list can then be applied to any DER
-      implementation in any language. Here each claim names the list row(s) it covers; a Rust claim
-      may cover a narrower row than the list states. Formal proofs cannot cover every requirement:
-      the mapping records, per requirement, proof / test / neither, and the requirements no proof
-      decides get tests that fail when the requirement is broken (with an observed-red control).
-      `COVERAGE.md` rows gain the list ids next to
-      `DER-*`. **The acceptance-manifest mapping itself comes later**; first the list.
-      - [x] **The inventory is in this repo:** [`docs/requirements/der.inventory.toml`](docs/requirements/der.inventory.toml); it supersedes the legacy list.
-            v2: 212 rows (183 X.690, 23 X.680, 2 each RFC 5280 / 7468 / 4648), ids by clause number
-            (`X690-8.23.9a` for list item a), `-a` for a further sentence of the same clause), force
-            `shall` / `shall-not`. Every v1 id is kept; one v1 title was corrected (`X690-8.1.3.6.1`).
-      - [x] **Census of every "shall" sentence in X.690 (2021) §8–§12:** 179 sentences, all
-            classified (73 mapped, 80 rows added, 1 not testable, 25 out of scope: CER-only §9,
-            BER options DER removes by §10.1/§10.2/§11.1, §12 transfer syntax). Plus six testable
-            declarative rules without "shall" (e.g. §11.3.2.4, §8.20.4, §8.5.7.5). Independently
-            reviewed; no title copies the ITU-T text (rows carry the clause number and a short
-            paraphrase).
-      - [ ] **Still a slice (`slice = true`):** declarative rules without "shall" are not censused
-            systematically, and the X.680 / RFC rows are retained selections. Close both before
-            calling the list complete.
-      - [x] `DER-C-CTX-2` (§8.14.3, exactly one inner TLV per EXPLICIT wrapper) is enumerated in
-            `COVERAGE.md`: enforced at every in-crate call site, test-only, delegated at the
-            public primitive.
-      ⚠ **First known partial row:** against X.690 §8.14.3 (EXPLICIT: the contents octets are the
-      complete base encoding), `DER-C-CTX` decodes within the wrapper length, but an `Ok` does not
-      require the value octets to be exactly one complete inner TLV — that check is the caller's.
-      The mapping must show this row as partial. Follow-up candidate: prove at the explicit-context
-      entry point that the wrapper holds exactly one complete inner TLV.
-- [ ] **Source-comment slip in `context_tag.rs` (module docs):** they call EXPLICIT "§8.14.2" and
-      IMPLICIT "§8.14.3". In X.690 (2021), §8.14.3 is the explicit case ("If implicit tagging … was
-      not used") and §8.14.4 the implicit one. Fix with the next change to `der-verified/src`
-      (a source edit moves the proof floor's freshness anchor).
-- [ ] **Push gate: accept a docs-only push without a full re-run when the floor is provably fresh.**
-      `gates/pre-push` rule 3 demands a full-suite receipt for every pushed sha, so a push that
-      changes only documentation costs a full `./check.sh` run (hours, ≥24 GiB). The question the
-      gate should ask is whether the committed floor evidence still speaks for the pushed sha, and
-      `gates/gen_proof_manifest.py` already answers it mechanically (`L3_BUILD_INPUTS` /
-      `VERIFIED_PATHS`, the anchor logic, and the "still speaks for HEAD" freshness sentence).
-      Proposed: rule 3 passes a sha that has either a full receipt, or a freshness check run in the
-      detached worktree at that sha proving (a) every build input is byte-identical to the floor
-      anchor, (b) the anchor's committed logs all end in 0 failures and together cover every
-      harness, (c) the anchor is an ancestor of the pushed sha. One source for the build-input
-      list (no copy in the hook). Tests must be watched failing: a `der-verified/src` change, a
-      `lean/` change, a tampered log trailer, a harness-count shortfall, a non-ancestor anchor,
-      each refused. Until this lands, a docs-only push either re-runs the suite or uses the logged
-      override on the owner's explicit word (first such case: 2026-10-15, docs-only, 0 build
-      inputs changed since `d68eeca`).
-- [ ] **State three delegated scopes in `COVERAGE.md`** (found by an independent audit of every
-      composite parser for the EXPLICIT-wrapper / tiling defect class on 2026-10-15; result: no such
-      defect, every malformed input rejected). Today they are documented only in module docs:
-      RSASSA-PSS parameters are never decoded (only the raw `parameters` TLV, `DER-X-ALGID`);
-      PKCS#8 `attributes` contents are fully opaque, including their framing (`pkcs8.rs` docs; the
-      `DER-K-PKCS8` row does not say so); the ECPrivateKey `parameters` CHOICE arm is not checked
-      (`ec_private_key.rs` docs; the `DER-K-ECPRIV` row does not say so).
-- [ ] **BIT STRING clause numbers in source comments and `DECISIONS.md` (X.690 2021 numbering).** The
-      shared list's census found three wrong citations; `COVERAGE.md` rows `DER-C-BITS-1..3` are
-      corrected (unused-bits count 0..7 is §8.6.2.2; zero padding bits is §11.2.1; the empty bit
-      string is §8.6.2.3; there is no §11.2.2.1). Still to fix with the next change to
-      `der-verified/src`: `bit_string.rs` module docs and comments (lines 3, 5, 7, 76, 78, 81, 104,
-      539, 560, 614) and `lib.rs` line 27. `DECISIONS.md` (append-only) says "§11.2.2 bundles two
-      different rules": in the 2021 edition they are §11.2.1 (zero padding) and §11.2.2 (trailing
-      zero removal for NamedBitList); add a dated note rather than editing the record.
-- [ ] **`COVERAGE.md` §2 row count is stale:** it says "Of the 75 rows below, 36 are weighted and
-      39 are admitted"; the ledger in §5 has 78 rows (77 before `DER-C-CTX-2`). Recount both tiers.
-
-## API / scope
-
-- [x] **A typed / profile API layer enforcing cross-field RFC 5280 rules — first slice landed
-      (commits `d65e7f0`, `6bcb8be`).** New `profile` module, built on top of (not inside) the
-      structural `x509_*` parsers: `signatureAlgorithm == tbsCertificate.signature` (§4.1.1.2);
-      `version` v3-required-if-extensions (§4.1.2.1/§4.1.2.9); UTCTime `≤ 2049` /
-      GeneralizedTime `≥ 2050` encoding choice (§4.1.2.5). **Tested (`#[test]`) only so far — no
-      Kani harness or Lean lid yet.** Still open, not yet covered by this layer: name constraints,
-      key usage, basic constraints, path validation.
-- [ ] `oid`: optionally materialize arcs (allocation-aware) — currently validate-only.
-      ⊕ **SCOPED 2026-08-03 — this is a DESIGN decision, not a task, and it collides with two others.**
-      Materializing arcs needs `alloc`. The crate's own module docs already rule that out in terms:
-      `x509_name.rs` says an owned tree *"would need `alloc` … which this heap-free crate forbids"*,
-      and `big_integer` is deliberately built on the same "validate, don't materialize" stance. So
-      this item cannot be implemented without either breaking that invariant or introducing an
-      `alloc` feature gate — and an `alloc` gate interacts directly with the `no_std` item below and
-      with what "allocation-free decode paths" means in the README's offer. **Owner's call on the
-      crate's shape, not something to land quietly under a checkbox.**
-- [ ] **`no_std` support (later).** The crate is already `#![forbid(unsafe_code)]`, allocation-free on
-      decode paths, and near-`core`-only (one `std::` use). Making it `#![no_std]` (gated on a `std`
-      feature) would make a zero-dep, formally-verified DER core usable in embedded / bootloader /
-      kernel contexts. Low priority; a strong differentiator when done.
-      ⊕ **SCOPED 2026-08-03, deliberately NOT landed.** "Later" is not a size, so it was measured:
-      * **Exactly one `std::` path in all of `der-verified/src`** — `utf8_string.rs:507`, inside a
-        `#[test]` assertion *message*, not library code.
-      * **All 25 `Vec`/`String`/`vec!`/`Box` occurrences are inside `#[cfg(test)]` modules** (test
-        builders like `der_length`, `wrap`, `build_certificate`). None is reachable from a non-test
-        build. Zero dependencies; no `std::error`, no `std::io`.
-      * **26 `#[cfg(test)]` modules and 26 `#[cfg(kani)]` proof modules, and they are disjoint** — so
-        `#![cfg_attr(not(test), no_std)]` would put the Kani floor on the *shipped* configuration,
-        not on a std one.
-      * **The claim would be checkable, which it was not before today:** `thumbv7em-none-eabi` is now
-        installed here, so `cargo build --target thumbv7em-none-eabi` is a gate that fails the moment
-        anything pulls `std` back in — the same shape of fix the MSRV declaration got.
-      ⛔ **Why not landed:** it is a `der-verified/src` change, so it invalidates the committed proof
-      evidence (`VERIFIED_PATHS` in `gates/gen_proof_manifest.py`) and owes its own fresh L3+L4 floor
-      run and its own review — release time that 0.1.1 does not have scheduled, to buy a capability
-      nothing is waiting on. **Sequencing, not capability.**
-      ✅ **CORRECTION 2026-08-30 (this line previously said the opposite).** It used to read that the
-      L3 floor "cannot currently be run to completion on this box", citing
-      `evidence/FLOOR-2026-08-03.md`. That was stale, and it was the reason given for deferring. The
-      2026-08-03 OOM was a *computed* 20 GiB `MemoryMax` cap sitting **below** this crate's ~22 GiB
-      requirement — an envelope mistake, not a hardware ceiling. The floor has since completed on this
-      same box **twice**, both under a *fixed* `MemoryMax=22G`:
-      * 191/191 harnesses, **21.0 GB** peak — `evidence/check-ffcea81.log`, committed `ca0754f`,
-        2026-08-11.
-      * 203/203 harnesses, **20.8 GB** peak — measured 2026-08-30 during the acceptance-manifest
-        release work.
-      The 20 GiB figure is a trap worth stating plainly, because it was fallen into a *third* time on
-      2026-08-30 before this correction was written: a 20 G cap OOM-kills this crate's floor after
-      ~50 minutes. Use the fixed **22 G** cap.
-      ⚠ Unsettled, and the reason the change must carry its own guard: **whether `cargo kani` sets
-      `cfg(test)`**. If it ever did, `#![cfg_attr(not(test), no_std)]` would silently verify the std
-      configuration. Ship it with `#[cfg(all(kani, test))] compile_error!(...)` rather than resting on
-      the assumption.
-
-## 0.1.0 release checklist
-
-`0.0.0` is published (name reservation). For the first *real* release:
-
-> **Reconciled 2026-07-31 against the actual tree — most of this list was already done.**
-> `der-verified/Cargo.toml` already declares `version = "0.1.0"` and `rust-version = "1.70"`, and
-> `lib.rs` already carries `#![deny(missing_docs)]`; 0.1.0 was published to crates.io on 2026-07-13.
-> The rustdoc item listed five broken intra-doc links; four had already been fixed and the fifth
-> (`profile` → the private `check_time_encoding_year`) was fixed in the profile-proofs pass, so
-> `cargo doc` is now warning-free. Items are checked off accordingly rather than left implying work
-> that no longer exists.
-
-- [x] Bump `version` to `0.1.0` in `der-verified/Cargo.toml`.
-- [x] **Fixed rustdoc intra-doc links** — `cargo doc --no-deps` is warning-free as of 2026-07-31.
-      The last one was `profile`'s module doc linking to the private `check_time_encoding_year`.
-- [x] `#![deny(missing_docs)]` is in `lib.rs`, and the crate doc carries a runnable example
-      (`lib.rs`'s doctest passes in `cargo test`).
-- [x] Add `CHANGELOG.md` (Keep-a-Changelog) with the 0.1.0 entry. **Was already done and this line
-      was stale** — `CHANGELOG.md` was added by the release commit `1b2dc54` ("release: der-verified
-      0.1.0") itself, carries the Keep-a-Changelog header and SemVer statement, and has `[0.1.0]`,
-      `[0.0.0]` and `[Unreleased]` sections with release-tag links. Closed by looking, 2026-08-03.
-      Second item in three days that was parked while being answerable in one command.
-- [x] MSRV declared: `rust-version = "1.70"` in `der-verified/Cargo.toml`. **Not** CI-checked
-      against that exact toolchain — CI builds on the pinned channel, so the MSRV is a declaration,
-      not a verified claim. That check is still open.
-- [x] Confirm CI is green on the public repo and that docs.rs builds cleanly. **Measured
-      2026-08-03.** Public CI: the `CI` workflow's most recent run is `conclusion: success` on
-      `f6bda7b`, which is HEAD — so the green is *at* HEAD, not merely somewhere in history; the five
-      most recent runs are all `success`. docs.rs: `https://docs.rs/crate/der-verified/0.1.0/status.json`
-      returns `{"doc_status":true,"version":"0.1.0"}` (HTTP 200), and `0.0.0` likewise. Locally
-      `cargo doc --no-deps` is warning-free.
-      ⊕ **CLOSED 2026-08-03 (later) — the failing direction IS now exhibited.** The warning this
-      line used to carry was right: the probe had only ever been seen say `true`. Fixed by
-      measurement, not by relabelling. docs.rs publishes its own list of recent FAILED builds at
-      `https://docs.rs/releases/failures`; `status.json` for four crates taken from it returns
-      **HTTP 200 with `"doc_status":false`** — `core-nightly/2015.1.7`, `deno/2.9.4`,
-      `bevy_wgpu/0.5.0`, `polars-lazy/0.54.4`. So the probe discriminates **three** states, not two:
-      built-clean (`200` + `true`), built-and-FAILED (`200` + `false`), and nonexistent (no response
-      at all). `der-verified` 0.1.0 and 0.0.0 both return `200` + `true` against that control.
-      Evidence: `evidence/docsrs-probe-2026-08-03.log`.
-      ⚠ Two residuals, stated rather than glossed: the `false` cases are *other people's* crates, so
-      what has been watched to fail is the **probe**, not this crate's docs build; and the HTTP `000`
-      on a nonexistent version is **this box's egress behaviour**, not a documented docs.rs response
-      — on a box with unrestricted egress that case is likely a 404, and that path is untested here.
-- [ ] Final public-API review (0.1.0 is the API you're committing to; breaking changes still allowed
-      pre-1.0 but keep it coherent).
-      ⊕ **Confirmed 2026-08-03 as owner-gated, not worked.** It is a judgement about what the crate
-      commits to, and it is the one remaining item that is *supposed* to sit with a person. Flagged
-      because it now has a deadline shape it did not have: the stated next application target is
-      Open Internet Stack with this crate as the exhibit.
-- [x] `cargo publish` the 0.1.0. **DONE — measured 2026-08-02, not inferred.** This box's egress
-      blocks the crates.io JSON API (`curl .../api/v1/crates/der-verified` → HTTP **000**), but the
-      **sparse index** is reachable, and `cargo search der-verified` returns
-      `der-verified = "0.1.0"`. Controlled three ways before believing it: `cargo search serde`
-      returns a live current version (positive), a nonsense crate name returns **nothing**
-      (negative, so it discriminates), and `--offline` **errors** with *"attempting to make an HTTP
-      request"* (so it is a live query, not a cache). This item was the outlier — the `## Publishing`
-      section below and line 133 both already recorded the 2026-07-13 publication, so `TODO.md`
-      contradicted itself rather than contradicting the README.
-
-## Publishing
-
-- [x] crates.io prep done: `publish = false` removed, package metadata filled (`authors`, `readme`,
-      description, license, keywords, categories), crate README added, crate name `der-verified`
-      confirmed available. Version deliberately kept at `0.0.0` (name-reservation / initial release
-      per owner) — bump for the first real release.
-- [x] `repository` URL confirmed = `https://github.com/ivmat/rs-verified-der`.
-- [x] Published `der-verified` to crates.io — 0.0.0 (name reservation) then 0.1.0 (2026-07-13).
-- [x] Reproducibility: the full L3+L4 toolchain (Kani + Aeneas/Charon/Lean) was rebuilt from scratch
-      and `./check.sh` is green end-to-end (2026-07-12). A pristine-container run is still nice-to-have
-      before a tagged release.
-
-## Good first issues
-
-- [x] More reject-differential test vectors (non-canonical encodings a lax parser would accept).
-      **Done 2026-08-03 — 309 → 320 tests.** ⚠ **The headline result is how little was missing.** A
-      module-by-module sweep of the obvious BER-versus-DER divergences — non-minimal long-form
-      lengths, indefinite length, non-minimal INTEGER/ENUMERATED, BOOLEAN content outside
-      `0x00`/`0xFF`, BIT STRING unused-bit rules, non-minimal or unterminated OID arcs, SET OF
-      ordering and duplicates, UTCTime/GeneralizedTime fractional seconds and non-`Z` zones,
-      non-shortest UTF-8, trailing bytes — found **every one already covered**, usually by a concrete
-      vector *and* an independent Kani oracle.
-      The real gap was narrower and structural: `octet_string` alone had *concrete* specimens for a
-      **non-minimal high-tag identifier** (§8.1.2.4.2) and a **non-minimal long-form length**
-      (§8.1.3) reaching it through its own public entry point. Both properties are proven generically
-      for all TLVs by `tag`/`length` harnesses, but no sibling TLV-composing module exercised them at
-      its own door. The 11 new vectors close that for `utf8_string`, `restricted_string`, `sequence`,
-      `set_of`, `context_tag`, `x509_extension` and `x509_algorithm_identifier`.
-      Each asserts the **exact** error variant, never `.is_err()`. Controlled by feeding
-      `set_of::rejects_non_minimal_length` the *canonical* `31 00` instead of the non-minimal
-      `31 81 00`: it fails with `left: Ok(([], 2))`, so the test discriminates non-minimal from
-      minimal rather than rejecting everything. **No crate defect found** — nothing accepted anything
-      DER forbids.
-- [x] Rustdoc usage examples per module (they double as doctests). **Done 2026-08-03 — 1 doctest →
-      27.** Every one of the 26 modules outside `lib.rs` gained a `# Examples` block in its `//!`
-      documentation. The byte specimens are lifted from each module's own passing `#[cfg(test)]`
-      fixtures rather than invented, so an example cannot assert a DER encoding the crate's own tests
-      do not already agree with.
-      **Watched to fail before being trusted:** every example is self-checking (each carries at least
-      one `assert`), and flipping a single expected value in `boolean`'s example takes the suite to
-      `26 passed; 1 failed`, rc=101 — so `27 passed` is a real check and not a compile-only pass.
-      Documentation-only: all **414** inserted lines are `//!` lines and there are zero deletions, so
-      no body, signature, test or `#[kani::…]` harness moved. `cargo doc --no-deps` stays
-      warning-free, `cargo clippy --all-targets -D warnings` is rc=0, and `check_fast.sh` (hygiene +
-      proof-manifest self-test + proof-manifest gate + workspace tests) is rc=0.
-- [x] A "why / threat-model" writeup covering what a verified decoder buys you —
-      [`docs/why-verified.md`](docs/why-verified.md).
-
-## Sweep candidate: leaf-module harnesses predating the symbolic-input-length convention
-
-- [x] **The crate's heavier modules (`x509_certificate.rs`, `x509_tbs_certificate.rs`,
-      `x509_name.rs`, `x509_extension.rs`) already use a symbolic `len: usize = kani::any();
-      kani::assume(len <= buf.len()); let input = &buf[..len];` before parsing — so a
-      `never_panics`-style harness's "any input up to N octets" claim holds at every length in the
-      domain, not just the full buffer. `ecdsa_sig_value.rs` and `rsa_public_key.rs` had the older,
-      narrower pattern (`let buf: [u8; 16] = kani::any(); parse(&buf)`, proving only the single
-      length 16) and were fixed in D32 (2026-08-07). A positively-controlled grep across
-      `der-verified/src` for the *fixed* pattern, checked against whether the crate's established
-      `let len: usize = kani::any();`/`kani::assume(len <= buf.len())` idiom appears near each hit
-      (confirmed present for the four known-good files above, confirming the grep discriminates),
-      found the candidate list triaged below. **Done 2026-08-23 (`953a1a2`) — 6 widened, 5 recorded
-      no-ops:**
-      - **Widened** to the symbolic-length idiom, all six re-verified green with covers SATISFIED,
-        non-vacuity negative-controlled on `tlv::decode_tlv_never_panics`
-        (`kani::assume(len == 0)` flips its `Ok` cover UNSATISFIABLE):
-        `tlv::decode_tlv_never_panics`, `restricted_string::decode_never_panics`,
-        `octet_string::decode_never_panics`, `utf8_string::decode_never_panics`,
-        `sequence::iterate_never_panics`, `set_of::iterate_never_panics`.
-      - **Triaged as no-ops** (already on the symbolic-length idiom; recorded, not changed):
-        `x509_algorithm_identifier`, `x509_spki`, `context_tag`,
-        `x509_extension::parse_extension_never_panics`, `x509_validity::parse_never_panics` — the
-        last **keeps its disclosed §8.2 Ok-cover vacuity note as-is**; it is a no-op for this sweep,
-        not a fix.
-      - The candidate list's per-module harness counts (e.g. "`restricted_string.rs` (5
-        harnesses)") turned out to describe the *file*, not all of which were on the old pattern;
-        each module got exactly one widened harness above except the five no-ops. See
-        `953a1a2`'s commit message for the full per-harness cover counts.
-
-- [x] **Structural/property siblings still on the old fixed-buffer pattern** (named follow-up from
-      the sweep above; not covered by `953a1a2` because those harnesses assert *structural*
-      properties, not bare panic-freedom, so widening them needs the same per-module care, not a
-      mechanical copy). **Done 2026-08-23** (`3e31ac9`, `fb77513`, `82e2c79`, `6068a75`): all seven
-      widened to the symbolic-length idiom and re-verified SUCCESSFUL —
-      `tlv::decode_tlv_structure`, `octet_string::accepted_content_is_the_tlv_value`,
-      `octet_string::accepted_identifier_is_canonical_0x04`, `sequence::no_over_read`,
-      `sequence::accepted_identifier_is_canonical_0x30`, `set_of::no_over_read`,
-      `set_of::accepted_identifier_is_canonical_0x31`. `sequence`/`set_of` ran HEAVY tier (detached
-      `systemd-run --user` scope under the R-0009 fv_slot). One non-vacuity negative control per
-      module (`kani::assume(len == 0)` flips the module's `iterate_never_panics`/
-      `decode_*_never_panics` Ok cover UNSATISFIABLE — watched RED, reverted byte-identical, then
-      GREEN again): `tlv` already covered by `953a1a2`; `octet_string`, `sequence`, `set_of` each
-      freshly negative-controlled this session.
-      - **⚠ Reopened in part, 2026-08-24 (`DECISIONS.md` D33).** External review of this sweep found
-        that two of the seven — `sequence::no_over_read` and `set_of::no_over_read` — proved a
-        **duplicated `decode_tlv` walk**, not the shipped decode path. Confirmed and corrected
-        before publish; both now drive shipped code with a separate oracle. The widening itself was
-        fine; what was wrong predated it. Two residuals stay open, see below.
-
-- [ ] **Covers for the widened structural harnesses** (`DER-REMAINING-WORK.md` UPDATE 2026-08-24,
-      R2). D33 added covers to the two harnesses it rewrote; the other five widened in the sweep
-      above still have none, so nothing witnesses that their widened loops iterate at all. The
-      `len == 0` negative controls do **not** close this — they target the *sibling* harnesses and
-      only force input below DER's two-octet framing floor. A reviewer asked for these before
-      publish; disclosure was chosen instead, deliberately and on the record. One cover per
-      harness, run as its own pass so an UNSATISFIABLE result is investigated, not absorbed.
-
-- [ ] **Refactor `decode_set_of` onto `sequence::Elements`** (`DER-REMAINING-WORK.md`
-      UPDATE 2026-08-24, R1). It currently runs its own inline walk — a duplication in *shipped*
-      code — whose cursor is a local, which is exactly why `set_of::no_over_read` cannot make the
-      per-child claim its `sequence` sibling now makes. Behavioural change to a shipped decoder:
-      needs its own harness pass and its own review, not a bundle with a proof-integrity fix.
-
-## SCOPING NOTE (not a build): what a `profile` Lean lid would need
-
-`profile` is the only harnessed module with **no Lean lid** (PROOF_MANIFEST.md §7): its six
-harnesses are bounded proofs over already-materialized *values* (an `AlgorithmIdentifier` pair, a
-`version: u8`, an `Option` of extension bytes, two `Time` CHOICE arms and their years), not
-∀-length statements over raw DER bytes, so it does not carry the L4/L5 grade the six lidded codecs
-(`length`, `big_integer`, `oid`, `tag`, `tlv`, `sequence`) do. This is a **scoping note only** —
-estimating what a value-bounded lid would cost, not building one.
-
-- **The value-level framing is only skin-deep.** `AlgorithmIdentifier<'a>` carries
-  `algorithm_oid: &'a [u8]` and `parameters: Option<&'a [u8]>`; `Time<'a>`'s `Generalized` arm
-  carries a borrowed fraction-digit slice (`x509_algorithm_identifier.rs`, `x509_validity.rs`).
-  `validate_profile`'s rule 1 (`Certificate.signatureAlgorithm == tbsCertificate.signature`) is a
-  derived `PartialEq` over those slices, so an unbounded Lean statement about it still bottoms out
-  in **unbounded byte-slice equality** — exactly the object D27/D28 already built machinery for.
-  A "value-bounded" lid is not a smaller problem than D27/D28's byte-level ones; it is the *same*
-  problem (slice equality, `Option` matching, enum-tag comparison) with the DER-decoding steps
-  already discharged elsewhere and out of scope.
-- **D27/D28-pattern refactor this would need, concretely:**
-  1. Extract `AlgorithmIdentifier`, `Time`, `Validity` and `validate_profile` itself through
-     Charon → Aeneas (new namespace, likely `der_profile_extract`, mirroring D28's
-     `der_sequence_extract` workaround for the duplicate-extraction-namespace issue D27 first hit).
-  2. Expect the **same `map_err` point-free name-clash fix** D27 and D28 both needed
-     (`decode_sequence_tlv`'s `.map_err(SequenceError::…)` pattern broke extraction identically in
-     both prior lids) — `validate_profile`'s own error-construction call sites should be audited
-     for the same point-free shape before extraction is attempted, not discovered mid-lid.
-  3. State the six existing Kani biconditionals as unbounded Lean theorems over the *value* domain
-     (no `∀`-length quantifier over a byte buffer is needed for `version`/`extensions`-presence/
-     precedence — those are already exhaustive over their finite domains) **plus** a genuinely new
-     `∀`-length statement over `algorithm_oid`/`parameters`/fraction-digit slice equality, which is
-     where the D27/D28-style unbounded reasoning actually lives.
-- **Expected assumed-spec count.** D27's `tlv` lid and D28's `sequence` lid each disclosed the
-  **same 7 assumed specs** (the crate-code axioms were later discharged in `d27e344`/`6f85e13`, but
-  the *specs-for-upstream-`core`-primitives* count is the relevant precedent here). A `profile` lid
-  does no byte-level decoding of its own, so it needs **no new specs for `decode_tag`/
-  `decode_length`/`decode_tlv`-class primitives** — those are already covered by the tlv/sequence
-  lids' trust base and profile only consumes their *output values*. The likely net-new surface is
-  narrower: specs for slice `PartialEq`/`Eq` (if Aeneas's derived-equality extraction needs one,
-  which D27/D28 did not require for the primitives they touched — this is the open question) plus
-  whatever `Option`/enum-tag comparison needs. **Best estimate: 0–2 net-new assumed specs**, not
-  the 7 D27/D28 each disclosed — most of the trust base D27/D28 built is reusable here, unlike a
-  from-scratch lid.
-- **Not scoped here:** which Lean file the extraction would land in, unwind/recursion-limit
-  choices for the `∀`-length slice-equality lemma, or whether `AlgorithmIdentifier`'s `Copy` +
-  lifetime shape extracts cleanly through Charon on the first attempt (D26/D27/D28 each hit at
-  least one extraction surprise; assume this one will too, and do not schedule it as a fixed-cost
-  item on that basis).
+- [ ] Reconcile the legacy `DER-*` coverage ledger with the requirements inventory before
+  deciding whether a generated view can replace it. Preserve rule-level scope and caveats.
+- [ ] Check inventory completeness beyond the earlier selected standards/“shall” census;
+  do not reuse its old `slice = true` status as a description of the current inventory.
+- [ ] Correct X.690 clause citations in `context_tag.rs`, `bit_string.rs` and crate docs
+  during an approved source change. Record corrections to historical decisions explicitly.
+- [ ] Make delegated RSASSA-PSS parameters, PKCS#8 attributes and ECPrivateKey parameter
+  semantics clear in the coverage ledger where its summary omits them.

@@ -1,6 +1,7 @@
 # The ten-minute replay
 
-Full run evidence is kept outside git, available on request. The certified floor is `d3de34e`; its raw log SHA-256 is `c9a7bcee16edece30aee44572f7b1b1d617f6639bd057a5effbf7e7347d225d7`. See [the evidence policy](evidence/README.md).
+The [proof-floor declaration](docs/proof-floor.json) identifies the recorded run and its log digest.
+Full logs are available on request; see [the evidence policy](evidence/README.md).
 
 A bounded, laptop-sized companion to the full proof floor. Run it when you want to *watch* the
 gates work — accept a real result, then reject a seeded fault and a tampered evidence record —

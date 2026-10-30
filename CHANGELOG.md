@@ -1,6 +1,7 @@
 # Changelog
 
-Full run evidence is kept outside git, available on request. The certified floor is `c7a2e26`; its raw log SHA-256 is `d8ec85a0c7c072f49e51c072bc3d19739e93937ec6ce4a4f8e79b9509bbaddd0`. See [the evidence policy](evidence/README.md).
+The [proof-floor declaration](docs/proof-floor.json) identifies the recorded run and its log digest.
+Full logs are available on request; see [the evidence policy](evidence/README.md).
 
 All notable changes to `der-verified` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
@@ -10,7 +11,7 @@ All notable changes to `der-verified` are documented here. The format is based o
 
 ## [0.3.0] - unreleased
 
-### Changed (owner decisions G1–G7, 2026-10-27; see DECISIONS.md D37–D42)
+### Changed (2026-10-27; see public decisions D37–D42 in DECISIONS.md)
 - **BREAKING (once): the five affected error enums are now `#[non_exhaustive]`** — `StringError`,
   `Utf8Error`, `NameError`, `AlgIdError` and `SpkiError` (`ProfileError` already was). A `match` over one of them outside
   this crate needs a wildcard arm. This is the one-time break; later variants are then additive.
