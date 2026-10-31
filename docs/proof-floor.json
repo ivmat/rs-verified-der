@@ -1,15 +1,15 @@
 {
-  "commit": "d3de34e3975f31e51a0d782abf51e91ab0a3e4aa",
-  "raw_sha256": "c9a7bcee16edece30aee44572f7b1b1d617f6639bd057a5effbf7e7347d225d7",
-  "successful": 302,
-  "failed": 0,
-  "covers_unsatisfied": 3,
-  "file": "docs/proof-floor.json",
   "check_exit": 0,
+  "commit": "0c392a31f9835258c19aa9e1ab3b210d19948a25",
+  "covers_unsatisfied": 3,
+  "failed": 0,
+  "file": "docs/proof-floor.json",
+  "finished_ns": 1793420124680264188,
   "lean_lid": "PASS",
-  "memory_cap": "24G",
-  "peak_memory": "22.6 GB",
-  "start": "2026-10-28T12:07:23Z",
-  "end": "2026-10-28T15:04:45Z",
-  "provenance": "Counts are transcribed from the pinned raw log. Full logs are kept outside git, available on request."
+  "memory_cap": "not measured by recorder",
+  "peak_memory": "not measured by recorder",
+  "provenance": "Derived from an isolated completed full run by proof_runs.py; local trust registration is separate.",
+  "raw_sha256": "1b14a04f3a5324c624ba500cb5b91494b89f78aaee78e3f749b2388ce69fe300",
+  "started_ns": 1793409342772989298,
+  "successful": 302
 }

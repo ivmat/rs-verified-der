@@ -255,12 +255,14 @@ Full run evidence is kept outside git, available on request. The compact declara
 
 | Certified commit | Raw log SHA-256 | `SUCCESSFUL` | `FAILED` | unsatisfied covers |
 |---|---|---:|---:|---:|
-| `d3de34e3975f31e51a0d782abf51e91ab0a3e4aa` | `c9a7bcee16edece30aee44572f7b1b1d617f6639bd057a5effbf7e7347d225d7` | 302 | 0 | 3 |
+| `0c392a31f9835258c19aa9e1ab3b210d19948a25` | `1b14a04f3a5324c624ba500cb5b91494b89f78aaee78e3f749b2388ce69fe300` | 302 | 0 | 3 |
 <!-- END GENERATED:evidence -->
 
 <!-- BEGIN GENERATED:evidence-coverage (gates/gen_proof_manifest.py) -->
-**No declared floor currently speaks for HEAD's verified source.** Re-run `./check.sh` and refresh the compact declaration, or treat every full-suite verdict in this document as a transcription again.
-- `docs/proof-floor.json` (at `d3de34e3975f31e51a0d782abf51e91ab0a3e4aa`) is superseded: verified source changed after it. It is kept as a dated record, not as a current claim.
+**The run evidence captured at `0c392a31f9835258c19aa9e1ab3b210d19948a25` still speaks for HEAD** (the compact declaration `docs/proof-floor.json`). No build input it depends on has changed since the anchor `0c392a31f9835258c19aa9e1ab3b210d19948a25`: `git diff 0c392a31f9835258c19aa9e1ab3b210d19948a25 -- check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs lean` is empty apart from a possible `lean/lid-source-state.txt` cache update whose roster and source hashes validate.
+
+This is a **sufficient** condition, not an iff. An empty diff over the L3 build inputs (`check.sh der-verified/src der-verified/Cargo.toml Cargo.toml Cargo.lock rust-toolchain.toml .cargo der-verified/build.rs`) since the anchor, with the §2 toolchain pins unchanged, means the Kani evidence still applies; `lean/` joins that list for the L4 lid. A non-empty diff beyond that validated state cache, or a moved pin, means re-run: it does not by itself show the evidence is wrong. The generator checks the diff only; whether a §2 pin moved is for the reader. Run the command rather than trusting this sentence.
+
 <!-- END GENERATED:evidence-coverage -->
 
 The precise provenance of the L3 verdict, stated plainly because "the proofs pass" is the one claim
