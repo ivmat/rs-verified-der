@@ -588,7 +588,7 @@ First functional release.
 
 - Initial name-reservation release on crates.io.
 
-[0.2.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.2.0
+[0.2.0]: https://github.com/ivmat/rs-verified-der/tree/9a991591054d2b3ca309006c5f3dd54a1d26a346
 [0.1.1]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.1.0
 [0.0.0]: https://github.com/ivmat/rs-verified-der/releases/tag/v0.0.0
