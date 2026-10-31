@@ -6,6 +6,9 @@
 # stay independent. `tlv.rs` composes `crate::tag` + `crate::length`, so this shim exposes
 # all three as sibling modules under the same crate root (matching der-verified's own
 # `crate::tag` / `crate::length` paths used inside tlv.rs).
+# Own workspace root: stays independent of any enclosing Cargo workspace (e.g. a checkout nested under another repo).
+[workspace]
+
 [package]
 name = "der-tlv-extract"
 version = "0.0.0"

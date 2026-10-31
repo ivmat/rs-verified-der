@@ -3,6 +3,9 @@
 # never enters the Kani gate. Pinned to Charon's nightly; re-exposes the SAME
 # big_integer.rs (no copy → no drift). A SEPARATE crate from `lean/extract` (the
 # length shim) so each module's extracted model + drift-check stay independent.
+# Own workspace root: stays independent of any enclosing Cargo workspace (e.g. a checkout nested under another repo).
+[workspace]
+
 [package]
 name = "der-bigint-extract"
 version = "0.0.0"

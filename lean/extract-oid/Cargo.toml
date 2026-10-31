@@ -4,6 +4,9 @@
 # oid.rs (no copy → no drift). A SEPARATE crate from `lean/extract` (the length
 # shim) and `lean/extract-bigint` (the big_integer shim) so each module's extracted
 # model + drift-check stay independent.
+# Own workspace root: stays independent of any enclosing Cargo workspace (e.g. a checkout nested under another repo).
+[workspace]
+
 [package]
 name = "der-oid-extract"
 version = "0.0.0"
